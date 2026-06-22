@@ -22,6 +22,7 @@ final class UploadAssetsCommand extends Command
     {
         $this->publishBuildAssets();
         $this->publishVendorAssets();
+        $this->publishStaticFiles();
     }
 
     private function publishBuildAssets(): void
@@ -50,5 +51,33 @@ final class UploadAssetsCommand extends Command
         }
 
         $this->info('Build assets published successfully');
+    }
+
+    /**
+     * Publishes hand-maintained static files that live on the local public disk and need to mirror to R2. These are not
+     * Vite build output, so they are pushed by their known relative path rather than discovered on disk.
+     */
+    private function publishStaticFiles(): void
+    {
+        $this->info('Publishing static files...');
+
+        $staticFiles = [
+            'check-mods/ignored-updates.json',
+        ];
+
+        foreach ($staticFiles as $staticFile) {
+            $contents = Storage::disk('public')->get($staticFile);
+
+            if ($contents === null) {
+                $this->warn('Skipping missing static file: '.$staticFile);
+
+                continue;
+            }
+
+            $this->info('Uploading static file to: '.$staticFile);
+            Storage::disk('r2')->put($staticFile, $contents);
+        }
+
+        $this->info('Static files published successfully');
     }
 }
