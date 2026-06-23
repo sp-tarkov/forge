@@ -12,21 +12,26 @@ Alpine.data('visitorTracker', (initialPeak, initialDate, wire) => ({
     channel: null,
     peakChannel: null,
     lastPeakCheck: 0,
-    navigationHandlers: null,
 
+    // This component is wrapped in @persist in the footer, so it initializes exactly once per page session and survives
+    // wire:navigate untouched. That means the presence subscription below is created a single time; Pusher keeps the
+    // socket open across SPA navigation and automatically re-subscribes (re-firing `here`) after any genuine reconnect,
+    // so there is no need to leave/rejoin the channel on navigation.
     init() {
-        this.connect();
-        this.handleLivewireNavigation();
-    },
+        if (!window.Echo) {
+            console.error('Echo not initialized');
+            this.connectionError = true;
+            return;
+        }
 
-    connect() {
-        this.disconnect();
-        this.setupEchoListeners();
+        this.bindConnectionState();
         this.joinVisitorChannel();
         this.listenForPeakUpdates();
     },
 
-    disconnect() {
+    // Alpine only calls this if the persisted element is ever removed from the DOM entirely (e.g. navigating to a layout
+    // variant without a footer). Clean up so we never leak a subscription or pending leave timers in that edge case.
+    destroy() {
         this.leavingTimers.forEach((timer) => clearTimeout(timer));
         this.leavingTimers.clear();
         if (this.channel) {
@@ -40,9 +45,7 @@ Alpine.data('visitorTracker', (initialPeak, initialDate, wire) => ({
     },
 
     joinVisitorChannel() {
-        if (!window.Echo) {
-            console.error('Echo not initialized');
-            this.connectionError = true;
+        if (this.channel) {
             return;
         }
 
@@ -66,6 +69,7 @@ Alpine.data('visitorTracker', (initialPeak, initialDate, wire) => ({
                     if (!this.visitors.has(user.id)) {
                         this.visitors.set(user.id, user);
                         this.updateCounts();
+                        this.checkForNewPeak();
                     }
                 })
                 .leaving((user) => {
@@ -87,7 +91,9 @@ Alpine.data('visitorTracker', (initialPeak, initialDate, wire) => ({
     },
 
     listenForPeakUpdates() {
-        if (!window.Echo) return;
+        if (this.peakChannel) {
+            return;
+        }
 
         this.peakChannel = window.Echo.channel('peak-visitors').listen('PeakVisitorUpdated', (data) => {
             this.peakCount = data.count;
@@ -110,21 +116,12 @@ Alpine.data('visitorTracker', (initialPeak, initialDate, wire) => ({
         }
     },
 
-    setupEchoListeners() {
-        if (!window.Echo) {
-            console.error('Echo not initialized');
-            this.connectionError = true;
-            return;
-        }
-
+    // Reflect the live socket state in the UI. Bound once, because init() runs once. We deliberately do not leave and
+    // rejoin channels here: on reconnect Pusher transparently re-subscribes every channel it still holds and re-fires
+    // `here`, which repopulates the member list. The null guards only cover the unlikely case where the very first
+    // join attempt happened before the socket was usable.
+    bindConnectionState() {
         const pusher = window.Echo.connector.pusher;
-
-        pusher.connection.unbind('error');
-        pusher.connection.unbind('unavailable');
-        pusher.connection.unbind('failed');
-        pusher.connection.unbind('disconnected');
-        pusher.connection.unbind('connected');
-        pusher.connection.unbind('state_change');
 
         pusher.connection.bind('error', () => {
             this.connectionError = true;
@@ -147,34 +144,5 @@ Alpine.data('visitorTracker', (initialPeak, initialDate, wire) => ({
                 this.listenForPeakUpdates();
             }
         });
-
-        pusher.connection.bind('state_change', (states) => {
-            if (states.current === 'connected' && states.previous !== 'connected') {
-                this.connectionError = false;
-                if (!this.channel) {
-                    this.joinVisitorChannel();
-                }
-                if (!this.peakChannel) {
-                    this.listenForPeakUpdates();
-                }
-            }
-        });
-    },
-
-    handleLivewireNavigation() {
-        if (!this.navigationHandlers) {
-            this.navigationHandlers = {
-                navigated: () => {
-                    setTimeout(() => {
-                        this.connect();
-                    }, 100);
-                },
-                navigating: () => {
-                    this.disconnect();
-                },
-            };
-            document.addEventListener('livewire:navigated', this.navigationHandlers.navigated);
-            document.addEventListener('livewire:navigating', this.navigationHandlers.navigating);
-        }
     },
 }));

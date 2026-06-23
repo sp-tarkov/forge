@@ -31,11 +31,6 @@ new class extends Component
     public array $onlineUsers = [];
 
     /**
-     * Current user ID for event listeners.
-     */
-    public ?int $userId = null;
-
-    /**
      * Array of conversation hash IDs the user is part of.
      *
      * @var array<int, string>
@@ -280,20 +275,14 @@ new class extends Component
         $listeners = [
             'conversation-archived' => 'refreshOnArchive',
             'conversation-updated' => 'refreshOnUpdate',
-            'echo-presence:presence.online,here' => 'handleUsersHere',
-            'echo-presence:presence.online,joining' => 'handleUserJoining',
-            'echo-presence:presence.online,leaving' => 'handleUserLeaving',
             'check-user-offline' => 'checkUserOffline',
             'conversation-created' => 'handleConversationCreated',
         ];
 
-        // Add dynamic listeners if user is authenticated
-        if ($this->userId) {
-            $listeners[sprintf('echo-private:user.%s,MessageSent', $this->userId)] = 'handleNewMessage';
-            $listeners[sprintf('echo-private:user.%s,ConversationUpdated', $this->userId)] = 'handleConversationUpdated';
-        }
-
-        // Add typing listeners for all user's conversations
+        // The global presence.online channel and the per-user private user.{id} channel are each subscribed exactly once
+        // in navigation-chat.js. They are intentionally not declared as native Livewire echo listeners here: doing so
+        // double-subscribed presence.online and rebound to a dead $wire on navigation. Typing indicators stay on native
+        // listeners because they are per-conversation and Livewire manages their subscription lifecycle.
         foreach ($this->conversationHashes as $hash) {
             $listeners[sprintf('echo-presence:conversation.%s,UserStartedTyping', $hash)] = 'handleTypingStarted';
             $listeners[sprintf('echo-presence:conversation.%s,UserStoppedTyping', $hash)] = 'handleTypingStopped';

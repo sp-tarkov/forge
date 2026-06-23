@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 #[Description('Downloads assets from Cloudflare R2 to local storage (skips existing files)')]
-#[Signature('app:download-r2-assets {--filter="profile-photos/*"} {--chunk=50}')]
+#[Signature('app:download-r2-assets {--filter=} {--chunk=50}')]
 final class DownloadR2AssetsCommand extends Command
 {
     /**

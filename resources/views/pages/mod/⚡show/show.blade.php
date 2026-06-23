@@ -681,12 +681,24 @@
                         @endif
                     @endif
                 </ul>
-                <livewire:report-component
-                    variant="link"
-                    :reportable-id="$mod->id"
-                    :reportable-type="get_class($mod)"
-                />
             </div>
+
+            {{-- List & Favourite Presence --}}
+            @if ($presenceSummary)
+                <div
+                    class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        {{ $presenceSummary['sentence'] }}
+                        <span class="italic text-gray-500 dark:text-gray-500">{{ $presenceSummary['flavour'] }}</span>
+                    </p>
+                </div>
+            @endif
+
+            <livewire:report-component
+                variant="link"
+                :reportable-id="$mod->id"
+                :reportable-type="get_class($mod)"
+            />
         </div>
     </div>
 </div>
