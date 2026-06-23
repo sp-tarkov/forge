@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Enums\ListPopularityTier;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Traits\Livewire\ModeratesAddon;
 use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -212,7 +214,87 @@ new #[Layout('layouts::base')] class extends Component
             'commentCount' => $this->getCommentCount(),
             'addonCount' => $this->getAddonCount(),
             'fikaStatus' => $this->mod->getOverallFikaCompatibility(),
+            'presenceSummary' => $this->getPresenceSummary(),
         ];
+    }
+
+    /**
+     * Build the list-presence blurb shown at the bottom of the mod detail sidebar.
+     *
+     * The wording adapts to which count is non-zero, and a tiered remark, chosen at random on every render, is appended
+     * based on the combined total of lists and favourites. Returns null when the mod is in no lists and has no
+     * favourites, so the sidebar can omit the container entirely rather than render an empty-state line.
+     *
+     * @return array{sentence: string, flavour: string}|null
+     */
+    protected function getPresenceSummary(): ?array
+    {
+        ['lists' => $lists, 'favourites' => $favourites] = $this->getListPresenceCounts();
+
+        if ($lists === 0 && $favourites === 0) {
+            return null;
+        }
+
+        return [
+            'sentence' => $this->buildPresenceSentence($lists, $favourites),
+            'flavour' => ListPopularityTier::fromTotal($lists + $favourites)->randomSaying(),
+        ];
+    }
+
+    /**
+     * Get the count of non-favourite lists and favourites the mod actively appears in.
+     *
+     * Lists of every visibility count toward the list total, excluding only the per-user Favourites lists, which are
+     * counted separately, and moderator-disabled lists. Tombstoned items are ignored via the active scope. The counts
+     * feed a light-hearted blurb that tolerates mild staleness, so they are cached for fifteen minutes rather than
+     * recomputed on every request; only the two integers are cached, while the sentence and remark rebuild per render.
+     *
+     * @return array{lists: int, favourites: int}
+     */
+    protected function getListPresenceCounts(): array
+    {
+        return Cache::remember(
+            sprintf('mod:%d:list-presence-counts', $this->mod->id),
+            now()->addMinutes(15),
+            fn (): array => [
+                'lists' => $this->mod->listItems()
+                    ->active()
+                    ->whereHas('modList', fn (Builder $query): Builder => $query
+                        ->where('is_default', false)
+                        ->where('disabled', false))
+                    ->count(),
+                'favourites' => $this->mod->listItems()
+                    ->active()
+                    ->whereHas('modList', fn (Builder $query): Builder => $query
+                        ->where('is_default', true)
+                        ->where('disabled', false))
+                    ->count(),
+            ],
+        );
+    }
+
+    /**
+     * Compose the count-driven sentence, pluralizing each clause and dropping any clause whose count is zero. At least
+     * one of the two counts is always non-zero here; the empty case is handled earlier by omitting the container.
+     */
+    protected function buildPresenceSentence(int $lists, int $favourites): string
+    {
+        if ($favourites === 0) {
+            return __('This mod is featured in :lists.', [
+                'lists' => trans_choice(':count list|:count lists', $lists, ['count' => $lists]),
+            ]);
+        }
+
+        if ($lists === 0) {
+            return __('This mod has been favourited :favourites.', [
+                'favourites' => trans_choice(':count time|:count times', $favourites, ['count' => $favourites]),
+            ]);
+        }
+
+        return __('This mod is featured in :lists and favourited :favourites.', [
+            'lists' => trans_choice(':count list|:count lists', $lists, ['count' => $lists]),
+            'favourites' => trans_choice(':count time|:count times', $favourites, ['count' => $favourites]),
+        ]);
     }
 
     /**
