@@ -1,65 +1,49 @@
-const offlineDeboune = 2000;
+const offlineDebounce = 2000;
 const offlineTimers = new Map();
-let navPresenceChannelJoined = false;
+let presenceChannelJoined = false;
 let userPrivateChannel = null;
 
-// Join the global presence channel for tracking online users
+// Join the global presence channel for tracking online users. This is the single subscription to presence.online; the
+// component deliberately does not also declare native Livewire echo-presence listeners for it. Because the component is
+// persisted across wire:navigate, this handler runs once and its callbacks stay bound to a live $wire.
 $wire.on('join-presence-channel', () => {
-    if (!window.Echo) return;
+    if (!window.Echo || presenceChannelJoined) return;
 
-    const existingChannel = window.Echo.connector.channels['presence-presence.online'];
-    if (existingChannel?.subscription?.members) {
-        // Already joined, get current members
-        const users = [];
-        existingChannel.subscription.members.each((member) => {
-            users.push({
-                id: member.id,
-                name: member.info.name,
-                profile_photo_url: member.info.profile_photo_url,
-            });
-        });
-        $wire.handleUsersHere(users);
-    } else if (!navPresenceChannelJoined) {
-        // Not joined yet, join the channel
-        navPresenceChannelJoined = true;
-        window.Echo.join('presence.online')
-            .here((users) => $wire.handleUsersHere(users))
-            .joining((user) => {
-                // Clear any pending offline timer
-                if (offlineTimers.has(user.id)) {
-                    clearTimeout(offlineTimers.get(user.id));
-                    offlineTimers.delete(user.id);
-                }
-                $wire.handleUserJoining(user);
-            })
-            .leaving((user) => $wire.handleUserLeaving(user))
-            .error((error) => console.error('Nav - Presence channel error:', error));
-    }
+    presenceChannelJoined = true;
+    window.Echo.join('presence.online')
+        .here((users) => $wire.handleUsersHere(users))
+        .joining((user) => {
+            // Cancel a pending offline check if the user rejoins inside the debounce window.
+            if (offlineTimers.has(user.id)) {
+                clearTimeout(offlineTimers.get(user.id));
+                offlineTimers.delete(user.id);
+            }
+            $wire.handleUserJoining(user);
+        })
+        .leaving((user) => $wire.handleUserLeaving(user))
+        .error((error) => console.error('Nav - Presence channel error:', error));
 });
 
-// Handle debounced offline check
+// Mark a user offline after a debounce window, cancelling if they rejoin first.
 $wire.on('debounce-user-offline', ({ userId }) => {
-    // Clear existing timer if any
     if (offlineTimers.has(userId)) {
         clearTimeout(offlineTimers.get(userId));
     }
 
-    // Set new timer
     const timerId = setTimeout(() => {
-        $wire.dispatch('check-user-offline', {
-            userId,
-        });
+        $wire.dispatch('check-user-offline', { userId });
         offlineTimers.delete(userId);
-    }, offlineDeboune);
+    }, offlineDebounce);
 
     offlineTimers.set(userId, timerId);
 });
 
-// Set up private channel for user-specific events
+// Subscribe to the per-user private channel for message and conversation events. This is the single subscription to
+// user.{id}, handled here rather than via native Livewire echo-private listeners (which never registered because the
+// server-side userId property was never set).
 $wire.on('set-user-id', ({ userId }) => {
     if (!window.Echo || !userId) return;
 
-    // Clean up existing channel
     if (userPrivateChannel) {
         window.Echo.leave(`user.${userPrivateChannel}`);
     }
