@@ -164,23 +164,20 @@ describe('Mod Create Form', function (): void {
                 ->assertRedirect();
         });
 
-        it('treats GUIDs as case-sensitive for uniqueness validation', function (): void {
+        it('rejects GUIDs containing uppercase letters', function (): void {
             $license = License::factory()->create();
             $category = ModCategory::factory()->create();
             $user = User::factory()->withMfa()->create();
 
-            // Create a mod with a specific GUID using lowercase
-            Mod::factory()->create(['guid' => 'com.example.casesensitive']);
-
             $this->actingAs($user);
 
-            // Attempt to create a new mod with a different case GUID - should be allowed
+            // GUIDs must be lowercase; an uppercase value fails the pattern.
             Livewire::test('pages::mod.create')
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
                 ->set('name', 'New Mod Name')
-                ->set('guid', 'com.example.CaseSensitive')
+                ->set('guid', 'com.example.UpperCase')
                 ->set('teaser', 'New teaser')
                 ->set('description', 'New description')
                 ->set('license', (string) $license->id)
@@ -190,8 +187,7 @@ describe('Mod Create Form', function (): void {
                 ->set('containsAiContent', false)
                 ->set('containsAds', false)
                 ->call('save')
-                ->assertHasNoErrors()
-                ->assertRedirect();
+                ->assertHasErrors(['guid']);
         });
     });
 
@@ -286,10 +282,10 @@ describe('Mod Create Form', function (): void {
                 ->assertHasNoErrors()
                 ->assertRedirect();
 
-            // Verify the mod was created with empty GUID
+            // Verify the mod was created with no GUID (empty input is stored as null)
             $mod = Mod::query()->where('name', 'Test Mod')->first();
             expect($mod)->not->toBeNull();
-            expect($mod->guid)->toBe('');
+            expect($mod->guid)->toBeNull();
         });
 
         it('validates GUID format when provided', function (): void {

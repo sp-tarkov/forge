@@ -27,7 +27,7 @@ final class AddonController extends Controller
      *
      * Retrieves a paginated list of addons, allowing filtering, sorting, and relationship inclusion.
      *
-     * Fields available:<br /><code>guid, name, slug, teaser, thumbnail, downloads, detail_url,
+     * Fields available:<br /><code>name, slug, teaser, thumbnail, downloads, detail_url,
      * contains_ai_content, contains_ads, mod_id, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
@@ -44,7 +44,6 @@ final class AddonController extends Controller
      *      "data": [
      *          {
      *              "id": 1,
-     *              "guid": "com.example.music-pack",
      *              "name": "Ultimate Music Pack",
      *              "slug": "ultimate-music-pack",
      *              "teaser": "A collection of atmospheric music tracks",
@@ -110,7 +109,6 @@ final class AddonController extends Controller
      */
     #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,created_at')]
     #[UrlParam('filter[id]', description: 'Filter by comma-separated Addon IDs.', required: false, example: '1,5,10')]
-    #[UrlParam('filter[guid]', description: 'Filter by comma-separated GUIDs.', required: false, example: 'com.example.addon1,com.example.addon2')]
     #[UrlParam('filter[name]', description: 'Filter by name (fuzzy filter).', required: false, example: 'Music Pack')]
     #[UrlParam('filter[slug]', description: 'Filter by slug (fuzzy filter).', required: false, example: 'some-addon')]
     #[UrlParam('filter[teaser]', description: 'Filter by teaser text (fuzzy filter).', required: false, example: 'important')]
@@ -148,7 +146,7 @@ final class AddonController extends Controller
      *
      * Retrieves details for a single addon, allowing relationship inclusion.
      *
-     * Fields available:<br /><code>guid, name, slug, teaser, description, thumbnail, downloads, source_code_links,
+     * Fields available:<br /><code>name, slug, teaser, description, thumbnail, downloads, source_code_links,
      * detail_url, contains_ai_content, custom_ai_disclosure, contains_ads, mod_id, is_detached, published_at,
      * created_at, updated_at</code>
      *
@@ -165,7 +163,6 @@ final class AddonController extends Controller
      *      "success": true,
      *      "data": {
      *          "id": 1,
-     *          "guid": "com.example.music-pack",
      *          "name": "Ultimate Music Pack",
      *          "slug": "ultimate-music-pack",
      *          "teaser": "A collection of atmospheric music tracks",

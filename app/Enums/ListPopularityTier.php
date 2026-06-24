@@ -8,62 +8,62 @@ namespace App\Enums;
  * Represents how widely a mod has spread across user lists and favourites, bucketed by the combined total so the mod
  * detail page can append a tiered, light-hearted remark to its list-presence sentence.
  */
-enum ListPopularityTier
+enum ListPopularityTier: string
 {
     /**
      * The mod has not been added to any list or favourited yet.
      */
-    case None;
+    case None = 'none';
 
     /**
      * A small handful of placements (1-4 combined).
      */
-    case Emerging;
+    case Emerging = 'emerging';
 
     /**
      * A growing following (5-19 combined).
      */
-    case Growing;
+    case Growing = 'growing';
 
     /**
      * A genuine crowd-pleaser (20-49 combined).
      */
-    case Popular;
+    case Popular = 'popular';
 
     /**
      * A proven staple (50-99 combined).
      */
-    case Established;
+    case Established = 'established';
 
     /**
      * Widely recommended by name (100-249 combined).
      */
-    case Renowned;
+    case Renowned = 'renowned';
 
     /**
      * Genuinely cherished by the community (250-499 combined).
      */
-    case Beloved;
+    case Beloved = 'beloved';
 
     /**
      * A fixture of the modding scene (500-999 combined).
      */
-    case Iconic;
+    case Iconic = 'iconic';
 
     /**
      * A bona fide legend of the Forge (1000-2499 combined).
      */
-    case Legendary;
+    case Legendary = 'legendary';
 
     /**
      * The stuff of modding myth (2500-4999 combined).
      */
-    case Mythic;
+    case Mythic = 'mythic';
 
     /**
      * A true Forge institution (5000 or more combined).
      */
-    case Hallowed;
+    case Hallowed = 'hallowed';
 
     /**
      * Resolve the tier for a combined list-and-favourite total.
@@ -158,6 +158,6 @@ enum ListPopularityTier
     {
         $sayings = $this->sayings();
 
-        return $sayings[array_rand($sayings)];
+        return $sayings[random_int(0, count($sayings) - 1)];
     }
 }

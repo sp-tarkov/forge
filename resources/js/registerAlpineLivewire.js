@@ -7,5 +7,6 @@ Alpine.plugin(collapse);
 
 // Register Alpine components before Livewire starts
 import './visitorTracker';
+import './registerGuidInput';
 
 Livewire.start();

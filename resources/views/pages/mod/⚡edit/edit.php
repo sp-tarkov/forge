@@ -314,7 +314,7 @@ new #[Layout('layouts::base')] class extends Component
         // Update mod fields
         $this->mod->name = $this->name;
         $this->mod->slug = Str::slug($this->name);
-        $this->mod->guid = $this->guid ?: '';
+        $this->mod->guid = $this->guid;
         $this->mod->teaser = $this->teaser;
         $this->mod->description = $this->description;
         $this->mod->license_id = (int) $this->license;
@@ -442,7 +442,13 @@ new #[Layout('layouts::base')] class extends Component
     protected function rules(): array
     {
         // GUID is required if any existing mod version targets SPT >= 4.0.0
-        $guidRules = $this->isGuidRequired ? 'required|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid,'.$this->mod->id : 'nullable|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid,'.$this->mod->id;
+        $guidRules = [
+            $this->isGuidRequired ? 'required' : 'nullable',
+            'string',
+            'max:255',
+            'regex:'.Mod::GUID_REGEX,
+            'unique:mods,guid,'.$this->mod->id,
+        ];
 
         return [
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',

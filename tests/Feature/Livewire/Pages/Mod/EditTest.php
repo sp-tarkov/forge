@@ -566,9 +566,9 @@ describe('GUID Requirements for Mod Editing', function (): void {
             ->assertHasNoErrors()
             ->assertRedirect();
 
-        // Verify the mod still has empty GUID
+        // Verify the mod still has no GUID (empty input is stored as null)
         $mod->refresh();
-        expect($mod->guid)->toBe('');
+        expect($mod->guid)->toBeNull();
     });
 
     it('requires GUID when editing a mod with versions targeting SPT 4.0.0+', function (): void {

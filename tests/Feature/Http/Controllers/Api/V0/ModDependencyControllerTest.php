@@ -128,6 +128,33 @@ describe('resolve', function (): void {
                 ]);
         });
 
+        it('resolves GUID identifiers case-insensitively', function (): void {
+            $sptVersion = SptVersion::factory()->create([
+                'version' => '3.9.0',
+                'publish_date' => now()->subDay(),
+            ]);
+
+            $mod = Mod::factory()->create([
+                'guid' => 'com.example.testmod',
+            ]);
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'version' => '1.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $modVersion->sptVersions()->sync([$sptVersion->id]);
+
+            // A mixed-case identifier still resolves to the lowercase-stored mod.
+            $response = $this->getJson('/api/v0/mods/dependencies?mods=Com.Example.TestMod:1.0.0');
+
+            $response->assertSuccessful()
+                ->assertJson([
+                    'success' => true,
+                    'data' => [],
+                ]);
+        });
+
         it('accepts mixed mod_id and GUID identifiers in same request', function (): void {
             $sptVersion = SptVersion::factory()->create([
                 'version' => '3.9.0',

@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use stdClass;
 
 final class DependencyService
@@ -115,7 +116,7 @@ final class DependencyService
                         if ($pair['is_mod_id']) {
                             $q->where('mods.id', (int) $pair['identifier']);
                         } else {
-                            $q->where('mods.guid', $pair['identifier']);
+                            $q->where('mods.guid', Str::lower($pair['identifier']));
                         }
                     });
                 }

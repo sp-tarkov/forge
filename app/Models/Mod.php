@@ -40,7 +40,7 @@ use Stevebauman\Purify\Facades\Purify;
 /**
  * @property int $id
  * @property int|null $hub_id
- * @property string $guid
+ * @property string|null $guid
  * @property int|null $owner_id
  * @property string $name
  * @property string $slug
@@ -104,6 +104,12 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
 
     use Searchable;
     use Visitable;
+
+    /**
+     * The validation pattern for a mod GUID. Lowercase reverse-domain notation allowing digits and hyphens within
+     * each dot-separated segment (for example "com.example.my-mod").
+     */
+    public const string GUID_REGEX = '/^[a-z0-9-]+(\.[a-z0-9-]+)*$/';
 
     /**
      * The relationship between a mod and its owner (User).
@@ -735,6 +741,20 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
         return Attribute::make(
             get: fn (mixed $value): string => is_string($value) ? Str::lower($value) : '',
             set: fn (?string $value): string => $value ? Str::slug($value) : '',
+        );
+    }
+
+    /**
+     * Normalize the GUID to lowercase on read and write, collapsing empty values to null. Collapsing empty values to
+     * null lets the unique index treat all "no GUID" rows as distinct.
+     *
+     * @return Attribute<string|null, string|null>
+     */
+    protected function guid(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value): ?string => (is_string($value) && $value !== '') ? Str::lower($value) : null,
+            set: fn (?string $value): ?string => ($value === null || $value === '') ? null : Str::lower($value),
         );
     }
 

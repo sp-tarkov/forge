@@ -361,11 +361,11 @@ new #[Layout('layouts::base')] class extends Component
         // Validate the GUID
         $this->validate(
             [
-                'newModGuid' => 'required|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid,'.$this->mod->id,
+                'newModGuid' => ['required', 'string', 'max:255', 'regex:'.Mod::GUID_REGEX, 'unique:mods,guid,'.$this->mod->id],
             ],
             [
                 'newModGuid.required' => 'The mod GUID is required.',
-                'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only letters, numbers, hyphens, and dots.',
+                'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only lowercase letters, numbers, hyphens, and dots.',
             ],
         );
 
@@ -373,8 +373,7 @@ new #[Layout('layouts::base')] class extends Component
         $this->mod->guid = $this->newModGuid;
         $this->mod->save();
 
-        // Update the component state
-        $this->modGuid = $this->newModGuid;
+        $this->modGuid = $this->mod->guid ?? '';
         $this->guidSaved = true;
 
         // Show success message
@@ -542,7 +541,7 @@ new #[Layout('layouts::base')] class extends Component
 
         // Add mod GUID validation if required and mod doesn't have one and hasn't been saved already
         if ($this->modGuidRequired && ($this->modGuid === '' || $this->modGuid === '0') && ! $this->guidSaved) {
-            $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/', 'unique:mods,guid'];
+            $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:'.Mod::GUID_REGEX, 'unique:mods,guid'];
         }
 
         // Add mod category validation if mod doesn't have one and hasn't been saved already

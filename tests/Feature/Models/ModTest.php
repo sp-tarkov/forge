@@ -13,6 +13,7 @@ use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Hash;
@@ -2400,6 +2401,37 @@ describe('Cheat Notice', function (): void {
 
             // Default should be falsy (false or null)
             expect($mod->cheat_notice)->toBeFalsy();
+        });
+    });
+
+    describe('GUID normalization', function (): void {
+        it('lowercases the GUID on save', function (): void {
+            $mod = Mod::factory()->create(['guid' => 'Com.Example.MixedCase']);
+
+            expect($mod->guid)->toBe('com.example.mixedcase');
+            expect($mod->fresh()->guid)->toBe('com.example.mixedcase');
+        });
+
+        it('stores an empty GUID as null', function (): void {
+            $mod = Mod::factory()->create(['guid' => '']);
+
+            expect($mod->guid)->toBeNull();
+            expect($mod->fresh()->guid)->toBeNull();
+        });
+
+        it('allows multiple mods with no GUID', function (): void {
+            Mod::factory()->create(['guid' => '']);
+            Mod::factory()->create(['guid' => null]);
+
+            expect(Mod::query()->whereNull('guid')->count())->toBe(2);
+        });
+
+        it('enforces case-insensitive uniqueness of GUIDs', function (): void {
+            Mod::factory()->create(['guid' => 'com.example.duplicate']);
+
+            // A mixed-case variant normalizes to the same stored value and collides with the unique index.
+            expect(fn (): Mod => Mod::factory()->create(['guid' => 'com.example.DUPLICATE']))
+                ->toThrow(QueryException::class);
         });
     });
 });
