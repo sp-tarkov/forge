@@ -2,11 +2,102 @@
     "schemaVersion": 1,
     "ignored": [
         {
+            "apiModId": 551,
+            "name": "Custom Raid Times",
+            "guid": "com.refringe.customraidtimes",
+            "localVersion": "2.0.0",
+            "ignoredLatestVersion": "2.0.1"
+        },
+        {
+            "apiModId": 1023,
+            "name": "WTT- Artem",
+            "guid": "com.crackbone.artem-wtt",
+            "localVersion": "3.0.0",
+            "ignoredLatestVersion": "3.0.1"
+        },
+        {
             "apiModId": 1090,
             "name": "Color Converter API",
             "guid": "com.rairai.colorconverterapi.eft",
             "localVersion": "1.1.0",
             "ignoredLatestVersion": "1.1.1"
+        },
+        {
+            "apiModId": 1263,
+            "name": "Epic's All in One",
+            "guid": "com.epicrangetime.aio",
+            "localVersion": "4.0.7",
+            "ignoredLatestVersion": "4.0.8"
+        },
+        {
+            "apiModId": 1274,
+            "name": "Healing Autocancel",
+            "guid": "HealingAutoCancel",
+            "localVersion": "1.0.0",
+            "ignoredLatestVersion": "5.0.0"
+        },
+        {
+            "apiModId": 2195,
+            "name": "ECOT - Eukyre's Consortium of Things",
+            "guid": "com.eukyre.ecot",
+            "localVersion": "1.3.1",
+            "ignoredLatestVersion": "1.3.2"
+        },
+        {
+            "apiModId": 2206,
+            "name": "Item Preview QoL + screenshots",
+            "guid": "com.jbobyh.itempreviewqol",
+            "localVersion": "1.1.6",
+            "ignoredLatestVersion": "1.1.7"
+        },
+        {
+            "apiModId": 2239,
+            "name": "Couturier - gear and clothing pack",
+            "guid": "com.turbodestroyer.couturier",
+            "localVersion": "2.0.2",
+            "ignoredLatestVersion": "2.0.3"
+        },
+        {
+            "apiModId": 2288,
+            "name": "Eco's Attachment Emporium",
+            "guid": "com.wtt.ecoattachmentemporium",
+            "localVersion": "2.0.6",
+            "ignoredLatestVersion": "2.0.8"
+        },
+        {
+            "apiModId": 2329,
+            "name": "BushWhacker - Standalone",
+            "guid": "com.hazelify.bushwhacker",
+            "localVersion": "1.5.0",
+            "ignoredLatestVersion": "1.6.0"
+        },
+        {
+            "apiModId": 2443,
+            "name": "Backdoor Bandit - NG",
+            "guid": "com.raitheraichu.backdoorbanditserver",
+            "localVersion": "2.0.3",
+            "ignoredLatestVersion": "2.0.4"
+        },
+        {
+            "apiModId": 2516,
+            "name": ".22lr Ammunition",
+            "guid": "com.c11.spt22lr",
+            "localVersion": "1.5.0",
+            "ignoredLatestVersion": "1.6.0"
+        },
+        {
+            "apiModId": 2711,
+            "name": "Better OKP-7",
+            "guid": "com.eukyre.betterokp7",
+            "localVersion": "1.0.0",
+            "ignoredLatestVersion": "1.0.1"
+        },
+        {
+            "apiModId": 2737,
+            "name": "Knight's Armament KS-1",
+            "guid": "com.spy.kac-ks1",
+            "localVersion": "1.0.0",
+            "ignoredLatestVersion": "1.0.4"
         }
     ]
 }
