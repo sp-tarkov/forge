@@ -42,11 +42,6 @@
                             />
                         </svg>
                     </a>
-                    <x-sf-icon
-                        href="https://sanctumfall.com"
-                        target="_blank"
-                        title="{{ __('Sanctumfall') }}"
-                    />
                 </p>
                 <p class="mt-4 text-sm text-gray-400">
                     This site is open source.<br /><a
