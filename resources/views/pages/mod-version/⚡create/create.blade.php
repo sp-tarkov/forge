@@ -176,7 +176,7 @@
                                                 <div>
                                                     <strong>{{ __('Mod GUID Required') }}</strong>
                                                     <p class="mt-1 text-sm">
-                                                        {{ __('This mod version targets SPT 4.0.0 or above, which requires a mod GUID. Enter a unique identifier for your mod in reverse domain notation. This GUID will be saved to the mod and should match the one in your mod files.') }}
+                                                        {{ __('This mod version targets SPT 4.0.0 or above, which requires a mod GUID. Enter a unique identifier for your mod in reverse domain notation, using only lowercase letters, numbers, hyphens, and dots. This GUID will be saved to the mod and should correspond to the one in your mod files, though casing is ignored.') }}
                                                         {!! __(
                                                             'Please see the <a href=":url" target="_blank" class="underline hover:no-underline">Content Guidelines</a> for more information.',
                                                             ['url' => route('static.content-guidelines') . '#mod-types-requirements'],
@@ -193,7 +193,7 @@
                                                             wire:model.live="newModGuid"
                                                             maxlength="255"
                                                             x-model="text"
-                                                            @input="count = text.length"
+                                                            @input="text = $normalizeGuid($el); count = text.length"
                                                             placeholder="com.username.modname"
                                                         />
                                                         <div

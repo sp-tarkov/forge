@@ -114,14 +114,14 @@
                             >
                                 <flux:label badge="Optional">{{ __('Mod GUID') }}</flux:label>
                                 <flux:description>
-                                    {{ __('A unique identifier for your mod in reverse domain notation. This GUID should match the one in your mod files and will be used to identify your mod across different systems. Use only lowercase letters, numbers, and dots. Required for mod versions compatible with SPT 4.0.0 and above.') }}
+                                    {{ __('A unique identifier for your mod in reverse domain notation, used to identify your mod across different systems. It should correspond to the GUID in your mod files, though casing is ignored. Use only lowercase letters, numbers, hyphens, and dots; GUIDs are matched case-insensitively and stored in lowercase. Required for mod versions compatible with SPT 4.0.0 and above.') }}
                                 </flux:description>
                                 <flux:input
                                     type="text"
                                     wire:model.blur="guid"
                                     maxlength="255"
                                     x-model="text"
-                                    @input="count = text.length"
+                                    @input="text = $normalizeGuid($el); count = text.length"
                                     placeholder="com.username.modname"
                                 />
                                 <div

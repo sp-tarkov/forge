@@ -11,6 +11,7 @@ use App\Models\SptVersion;
 use App\Support\VersionMatcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Override;
 
 /**
@@ -256,7 +257,6 @@ final class ModQueryBuilder extends AbstractQueryBuilder
     /**
      * Filter by GUID.
      *
-     * Requires DB column to have case sensitive collation (like utf8mb4_0900_as_cs in MySQL).
      *
      * @param  Builder<Mod>  $query
      */
@@ -266,7 +266,7 @@ final class ModQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
-        $inputGuids = self::parseCommaSeparatedInput($guids);
+        $inputGuids = self::parseCommaSeparatedInput(Str::lower($guids));
         $query->whereIn('mods.guid', $inputGuids);
     }
 

@@ -217,7 +217,7 @@ new #[Layout('layouts::base')] class extends Component
             'owner_id' => auth()->user()?->id,
             'name' => $this->name,
             'slug' => Str::slug($this->name),
-            'guid' => $this->guid ?: '',
+            'guid' => $this->guid,
             'teaser' => $this->teaser,
             'description' => $this->description,
             'license_id' => $this->license,
@@ -318,7 +318,7 @@ new #[Layout('layouts::base')] class extends Component
         return [
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'name' => 'required|string|max:75',
-            'guid' => 'nullable|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid',
+            'guid' => ['nullable', 'string', 'max:255', 'regex:'.Mod::GUID_REGEX, 'unique:mods,guid'],
             'teaser' => 'required|string|max:255',
             'description' => 'required|string',
             'license' => 'required|exists:licenses,id',

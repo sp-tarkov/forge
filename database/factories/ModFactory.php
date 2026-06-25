@@ -29,7 +29,8 @@ final class ModFactory extends Factory
             'owner_id' => User::factory(),
             'name' => $name,
             'slug' => $modSlug,
-            'guid' => 'com.'.explode('.', $domain)[0].'.'.$modSlug,
+            // Append a random lowercase segment so generated GUIDs never collide under the unique index.
+            'guid' => 'com.'.explode('.', $domain)[0].'.'.$modSlug.'.'.Str::lower(Str::random(6)),
             'teaser' => fake()->sentence(),
             'description' => fake()->paragraphs(random_int(4, 20), true),
             'license_id' => License::query()->inRandomOrder()->first()->id ?? License::factory(),

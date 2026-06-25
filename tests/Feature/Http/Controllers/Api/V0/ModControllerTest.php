@@ -560,36 +560,22 @@ describe('index', function (): void {
             ->not->toContain($modIncompatible->id);
     });
 
-    it('treats GUID filtering as case-sensitive', function (): void {
+    it('treats GUID filtering as case-insensitive', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
 
-        // Create mods with similar GUIDs but different cases, each with a published version
-        $modLowercase = Mod::factory()->create(['guid' => 'com.example.casesensitive']);
-        ModVersion::factory()->recycle($modLowercase)->create(['spt_version_constraint' => '^1.0.0']);
+        // The GUID is stored lowercase regardless of the casing supplied to the factory.
+        $mod = Mod::factory()->create(['guid' => 'com.example.CaseInsensitive']);
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '^1.0.0']);
 
-        $modUppercase = Mod::factory()->create(['guid' => 'com.example.CaseSensitive']);
-        ModVersion::factory()->recycle($modUppercase)->create(['spt_version_constraint' => '^1.0.0']);
+        expect($mod->guid)->toBe('com.example.caseinsensitive');
 
-        $modMixedcase = Mod::factory()->create(['guid' => 'com.example.CASESENSITIVE']);
-        ModVersion::factory()->recycle($modMixedcase)->create(['spt_version_constraint' => '^1.0.0']);
+        // Any casing in the filter resolves to the same stored mod.
+        foreach (['com.example.caseinsensitive', 'com.example.CaseInsensitive', 'com.example.CASEINSENSITIVE'] as $query) {
+            $response = $this->getJson('/api/v0/mods?filter[guid]='.$query);
 
-        // Filter by the lowercase GUID should only return the lowercase mod
-        $response = $this->getJson('/api/v0/mods?filter[guid]=com.example.casesensitive');
-
-        $response->assertOk()->assertJsonCount(1, 'data');
-        expect($response->json('data.0.id'))->toBe($modLowercase->id);
-
-        // Filter by the uppercase variant should only return that specific mod
-        $response2 = $this->getJson('/api/v0/mods?filter[guid]=com.example.CaseSensitive');
-
-        $response2->assertOk()->assertJsonCount(1, 'data');
-        expect($response2->json('data.0.id'))->toBe($modUppercase->id);
-
-        // Filter by the all-caps variant should only return that specific mod
-        $response3 = $this->getJson('/api/v0/mods?filter[guid]=com.example.CASESENSITIVE');
-
-        $response3->assertOk()->assertJsonCount(1, 'data');
-        expect($response3->json('data.0.id'))->toBe($modMixedcase->id);
+            $response->assertOk()->assertJsonCount(1, 'data');
+            expect($response->json('data.0.id'))->toBe($mod->id);
+        }
     });
 });
 
