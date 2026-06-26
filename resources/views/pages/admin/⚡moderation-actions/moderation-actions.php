@@ -241,7 +241,7 @@ new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class 
     {
         if ($this->search !== '' && $this->search !== '0') {
             $query->where(function (Builder $q): void {
-                $q->whereRaw('LOWER(JSON_EXTRACT(additional_data, "$")) LIKE ?', ['%'.mb_strtolower($this->search).'%']);
+                $q->whereRaw('LOWER(JSON_EXTRACT(event_data, "$")) LIKE ?', ['%'.mb_strtolower($this->search).'%']);
             });
         }
 

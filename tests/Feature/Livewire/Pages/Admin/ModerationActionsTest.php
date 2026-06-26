@@ -117,6 +117,38 @@ it('can filter by moderator', function (): void {
     expect($filteredAction->visitor_id)->toBe($this->adminUser->id);
 });
 
+it('can filter by search term against event data', function (): void {
+    $mod1 = Mod::factory()->create();
+    $mod2 = Mod::factory()->create();
+
+    TrackingEvent::factory()->moderationAction()->create([
+        'event_name' => TrackingEventType::MOD_DISABLE->value,
+        'visitor_id' => $this->adminUser->id,
+        'visitable_type' => Mod::class,
+        'visitable_id' => $mod1->id,
+        'event_data' => ['snapshot' => ['name' => 'Hideout Expansion']],
+    ]);
+
+    TrackingEvent::factory()->moderationAction()->create([
+        'event_name' => TrackingEventType::MOD_DISABLE->value,
+        'visitor_id' => $this->adminUser->id,
+        'visitable_type' => Mod::class,
+        'visitable_id' => $mod2->id,
+        'event_data' => ['snapshot' => ['name' => 'Raid Timer']],
+    ]);
+
+    $this->actingAs($this->adminUser);
+
+    // Without a search term, both actions are returned.
+    $component = Livewire::test('pages::admin.moderation-actions');
+    expect($component->instance()->actions->total())->toBe(2);
+
+    // Searching against the event_data JSON column must not error and narrows to the matching event. Previously this
+    // queried a non-existent additional_data column and threw a 500.
+    $component->set('search', 'hideout');
+    expect($component->instance()->actions->total())->toBe(1);
+});
+
 it('can reset filters', function (): void {
     $this->actingAs($this->adminUser);
 
