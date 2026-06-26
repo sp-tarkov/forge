@@ -10,6 +10,7 @@ use App\Models\Mod;
 use App\Models\SptVersion;
 use App\Support\VersionMatcher;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Override;
@@ -151,7 +152,15 @@ final class ModQueryBuilder extends AbstractQueryBuilder
         $query = Mod::query()
             ->select('mods.*')
             ->where('mods.disabled', false)
-            ->with(['owner', 'additionalAuthors']);
+            ->with([
+                'owner',
+                'additionalAuthors',
+                // Resolve the mod-level fika_compatibility flag in one batched query for the whole page rather than an
+                // EXISTS query per mod. Only the keys are needed because the flag is an existence check.
+                'fikaCompatibleVersions' => function (Relation $relation): void {
+                    $relation->select('mod_versions.id', 'mod_versions.mod_id');
+                },
+            ]);
 
         // Apply the SPT version condition if the filter is not being used
         // This also ensures mods have at least one visible version

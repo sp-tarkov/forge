@@ -288,6 +288,22 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
+     * Versions of this mod that are published and confirmed Fika compatible. The API query builder eager-loads this so
+     * the mod-level fika_compatibility flag can be resolved from a single batched query for the whole page instead of
+     * one EXISTS query per mod during serialization. It is loaded for existence only; do not read other columns off the
+     * resulting models, as the eager-load selects just the keys.
+     *
+     * @return HasMany<ModVersion, $this>
+     */
+    public function fikaCompatibleVersions(): HasMany
+    {
+        return $this->hasMany(ModVersion::class)
+            ->where('fika_compatibility', FikaCompatibility::Compatible)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
+    }
+
+    /**
      * The data that is searchable by Scout.
      *
      * @return array<string, mixed>
@@ -628,16 +644,25 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     /**
      * Determine if the mod has any published version that is Fika compatible.
      *
+     * When the fikaCompatibleVersions relationship has been eager-loaded (as the API query builder does), the flag is
+     * resolved from the loaded collection to avoid an N+1 EXISTS query per mod during serialization. Otherwise it falls
+     * back to a scoped existence check that returns the identical result.
+     *
      * @return Attribute<bool, never>
      */
     protected function fikaCompatibility(): Attribute
     {
-        return Attribute::get(fn (): bool => $this->versions()
-            ->where('fika_compatibility', FikaCompatibility::Compatible)
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->exists()
-        )->shouldCache();
+        return Attribute::get(function (): bool {
+            if ($this->relationLoaded('fikaCompatibleVersions')) {
+                return $this->fikaCompatibleVersions->isNotEmpty();
+            }
+
+            return $this->versions()
+                ->where('fika_compatibility', FikaCompatibility::Compatible)
+                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->exists();
+        })->shouldCache();
     }
 
     /**
