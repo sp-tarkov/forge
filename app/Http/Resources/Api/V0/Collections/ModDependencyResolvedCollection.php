@@ -6,6 +6,7 @@ namespace App\Http\Resources\Api\V0\Collections;
 
 use App\Http\Resources\Api\V0\ModResource;
 use App\Http\Resources\Api\V0\ModVersionResource;
+use App\Models\Mod;
 use App\Models\ModVersion;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Request;
@@ -70,7 +71,16 @@ final class ModDependencyResolvedCollection extends ResourceCollection
                     return [];
                 }
 
-                $mod = $firstDependencyVersion->mod;
+                // The dependent mod can resolve to null when it is hidden by the public-visibility scope (e.g.
+                // unpublished or disabled) while a resolved-dependency row still points at one of its versions. Skip
+                // the group rather than reading id on null and 500ing the whole response. getRelationValue() returns
+                // the eager-loaded relation as it stands (a Mod or null), unlike the ->mod accessor whose type asserts
+                // a non-null Mod.
+                $mod = $firstDependencyVersion->getRelationValue('mod');
+                if (! $mod instanceof Mod) {
+                    return [];
+                }
+
                 $modData = new ModResource($mod)->toArray($request);
 
                 // Collect all versions from the dependencies for this specific mod.
@@ -82,7 +92,7 @@ final class ModDependencyResolvedCollection extends ResourceCollection
             }
         );
 
-        // Return the final array, indexed numerically
-        return $result->values()->all();
+        // Return the final array, indexed numerically, dropping any groups skipped above (empty arrays).
+        return $result->reject(fn (array $modData): bool => $modData === [])->values()->all();
     }
 }
