@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V0;
 
 use App\Models\User;
+use App\Support\Api\V0\PublicViewpoint;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
@@ -22,8 +23,10 @@ final class UserResource extends JsonResource
     #[Override]
     public function toArray(Request $request): array
     {
-        // Determine if the current request is for the authenticated user's own details
-        $isCurrentUserRequest = $request->user()?->id === $this->id;
+        // Determine if the current request is for the authenticated user's own details. The open v0 API pins every
+        // request to the public viewpoint (see ForcePublicViewpoint), so the private email fields are never exposed
+        // there regardless of who is authenticated, keeping the open endpoints identical for every caller.
+        $isCurrentUserRequest = ! PublicViewpoint::isForced() && $request->user()?->id === $this->id;
 
         return [
             'id' => $this->id,

@@ -43,6 +43,22 @@ describe('index', function (): void {
             ->assertJsonPath('meta.total', 24);
     });
 
+    it('returns the public view to administrators', function (): void {
+        $published = SptVersion::factory()->create(['version' => '1.0.0', 'publish_date' => now()->subDay()]);
+        $unpublished = SptVersion::factory()->create(['version' => '1.0.1', 'publish_date' => null]);
+
+        $admin = User::factory()->admin()->create();
+
+        $guestIds = collect($this->getJson('/api/v0/spt/versions')->assertOk()->json('data'))->pluck('id');
+        $adminIds = collect($this->actingAs($admin)->getJson('/api/v0/spt/versions')->assertOk()->json('data'))->pluck('id');
+
+        // A guest never sees the unpublished SPT version, and an authenticated admin resolves the exact same set: the
+        // open API is pinned to the public viewpoint, so output does not widen for staff.
+        expect($guestIds)->toContain($published->id)
+            ->not->toContain($unpublished->id);
+        expect($adminIds->all())->toBe($guestIds->all());
+    });
+
     it('returns a paginated list of SPT versions with per_page parameter', function (): void {
         SptVersion::factory()
             ->count(25)

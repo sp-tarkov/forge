@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models\Scopes;
 
 use App\Models\SptVersion;
+use App\Support\Api\V0\PublicViewpoint;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
@@ -28,8 +29,10 @@ final class PublishedSptVersionScope implements Scope
             'PublishedSptVersionScope can only be applied to SptVersion models.'
         );
 
-        // If user is authenticated and is a moderator or admin, show everything.
-        if (Auth::check() && Auth::user()?->isModOrAdmin()) {
+        // The open v0 API pins every request to the public viewpoint (see ForcePublicViewpoint), so moderators and
+        // admins resolve the same published-only SPT versions as a guest. The website leaves this off and keeps the
+        // staff bypass below.
+        if (! PublicViewpoint::isForced() && Auth::check() && Auth::user()?->isModOrAdmin()) {
             return;
         }
 

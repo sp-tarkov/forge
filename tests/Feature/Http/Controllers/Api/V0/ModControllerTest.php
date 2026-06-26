@@ -596,16 +596,38 @@ describe('index', function (): void {
         $this->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 4);
     });
 
-    it('does not cache the pagination total for authenticated users', function (): void {
+    it('caches the pagination total identically for authenticated users', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
         Mod::factory()->count(3)->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
 
+        // The open API forces the public viewpoint for every caller, so an authenticated request caches the total
+        // exactly like a guest request rather than computing a per-user count.
         $this->actingAs($this->user)->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 3);
 
         Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
 
-        // Authenticated visibility is user-specific, so the total is always computed live.
-        $this->actingAs($this->user)->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 4);
+        // The cached total is reused within the TTL, so the count is identical regardless of authentication.
+        $this->actingAs($this->user)->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 3);
+    });
+
+    it('returns the public view to administrators', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $publishedMod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
+            ->create(['published_at' => now()->subDay()]);
+        $unpublishedMod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
+            ->create(['published_at' => null]);
+
+        $admin = User::factory()->admin()->create();
+
+        $guestIds = collect($this->getJson('/api/v0/mods')->assertOk()->json('data'))->pluck('id');
+        $adminIds = collect($this->actingAs($admin)->getJson('/api/v0/mods')->assertOk()->json('data'))->pluck('id');
+
+        // A guest never sees the unpublished mod, and an authenticated admin resolves the exact same set: the open API
+        // is pinned to the public viewpoint, so output does not widen for staff.
+        expect($guestIds)->toContain($publishedMod->id)
+            ->not->toContain($unpublishedMod->id);
+        expect($adminIds->all())->toBe($guestIds->all());
     });
 });
 
@@ -632,6 +654,21 @@ describe('show', function (): void {
                     'contains_ai_content', 'published_at', 'created_at', 'updated_at',
                 ],
             ]);
+    });
+
+    it('never exposes owner email fields to an authenticated owner', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
+            ->create(['owner_id' => $this->user->id]);
+
+        // Even when the owner is authenticated, the open API stays pinned to the public viewpoint, so the private
+        // email fields never appear in the embedded owner payload.
+        $response = $this->actingAs($this->user)->getJson('/api/v0/mod/'.$mod->id);
+
+        $response->assertOk()
+            ->assertJsonPath('data.owner.id', $this->user->id)
+            ->assertJsonMissingPath('data.owner.email')
+            ->assertJsonMissingPath('data.owner.email_verified_at');
     });
 
     it('does not include source_code_links by default', function (): void {

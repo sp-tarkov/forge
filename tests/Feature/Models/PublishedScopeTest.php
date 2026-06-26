@@ -7,6 +7,7 @@ use App\Models\AddonVersion;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
+use App\Support\Api\V0\PublicViewpoint;
 use Illuminate\Support\Facades\Date;
 
 describe('PublishedScope', function (): void {
@@ -389,6 +390,49 @@ describe('PublishedScope', function (): void {
             expect($modVersionResults->pluck('id'))->not->toContain($unpublishedModVersion->id);
             expect($addonVersionResults->pluck('id'))->toContain($publishedAddonVersion->id);
             expect($addonVersionResults->pluck('id'))->not->toContain($unpublishedAddonVersion->id);
+        });
+    });
+
+    describe('Forced public viewpoint (open API)', function (): void {
+        it('hides unpublished mods even from admins', function (): void {
+            $publishedMod = Mod::factory()->create(['published_at' => Date::now()->subDay()]);
+            $unpublishedMod = Mod::factory()->create(['published_at' => null]);
+            $futureMod = Mod::factory()->create(['published_at' => Date::now()->addDay()]);
+
+            $this->actingAs($this->admin);
+            PublicViewpoint::force(request());
+
+            $results = Mod::query()->get();
+
+            expect($results->pluck('id'))->toContain($publishedMod->id)
+                ->not->toContain($unpublishedMod->id)
+                ->not->toContain($futureMod->id);
+        });
+
+        it("hides an owner's own unpublished mods", function (): void {
+            $publishedMod = Mod::factory()->create(['owner_id' => $this->owner->id, 'published_at' => Date::now()->subDay()]);
+            $unpublishedMod = Mod::factory()->create(['owner_id' => $this->owner->id, 'published_at' => null]);
+
+            $this->actingAs($this->owner);
+            PublicViewpoint::force(request());
+
+            $results = Mod::query()->get();
+
+            expect($results->pluck('id'))->toContain($publishedMod->id)
+                ->not->toContain($unpublishedMod->id);
+        });
+
+        it('hides unpublished addons even from admins', function (): void {
+            $publishedAddon = Addon::factory()->create(['published_at' => Date::now()->subDay()]);
+            $unpublishedAddon = Addon::factory()->create(['published_at' => null]);
+
+            $this->actingAs($this->admin);
+            PublicViewpoint::force(request());
+
+            $results = Addon::query()->get();
+
+            expect($results->pluck('id'))->toContain($publishedAddon->id)
+                ->not->toContain($unpublishedAddon->id);
         });
     });
 });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Api\V0\QueryBuilder;
 
 use App\Exceptions\Api\V0\InvalidQueryException;
+use App\Support\Api\V0\PublicViewpoint;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -588,9 +589,10 @@ abstract class AbstractQueryBuilder
      * Resolve the total row count used to build the paginator, caching it for guests when the builder opts in.
      *
      * The total is the most expensive part of a paginated request: a correlated COUNT that ignores the page and scans
-     * the whole visible set. For an anonymous listing it only changes when records are published or hidden, so builders
-     * that return a stable signature from countCacheSignature() have their guest total cached. Authenticated totals
-     * depend on per-user visibility (PublishedScope) and are always computed live.
+     * the whole visible set. The open API resolves the public viewpoint for every caller (see ForcePublicViewpoint), so
+     * the total only changes when records are published or hidden and is identical regardless of authentication;
+     * builders that return a stable signature from countCacheSignature() have it cached. Only a non-public,
+     * authenticated context (i.e. the website, never this API) depends on per-user visibility and is computed live.
      *
      * @param  Builder<TModel>  $builder
      */
@@ -600,7 +602,7 @@ abstract class AbstractQueryBuilder
 
         $signature = $this->countCacheSignature();
 
-        if ($signature === null || Auth::check()) {
+        if ($signature === null || (! PublicViewpoint::isForced() && Auth::check())) {
             return $count();
         }
 
