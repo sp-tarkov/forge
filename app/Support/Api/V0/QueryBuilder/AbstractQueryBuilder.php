@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 use LogicException;
@@ -241,7 +243,9 @@ abstract class AbstractQueryBuilder
     {
         $perPage = min($perPage, $allowed_max);
 
-        return $this->apply()->paginate($perPage);
+        $builder = $this->apply();
+
+        return $builder->paginate($perPage, ['*'], 'page', null, $this->resolveTotal($builder));
     }
 
     /**
@@ -294,6 +298,28 @@ abstract class AbstractQueryBuilder
             'boolean' => self::parseBooleanInput($value),
             default => $value,
         }, $values);
+    }
+
+    /**
+     * The cache signature that uniquely identifies this query's guest total, or null to disable count caching.
+     *
+     * Returning a value opts the builder into caching, so the signature MUST capture every input that changes the
+     * result count: all filters, search terms, and any constructor-injected scoping. It must NOT include the page,
+     * per-page, or sort, none of which affect the total.
+     *
+     * @return array<mixed>|null
+     */
+    protected function countCacheSignature(): ?array
+    {
+        return null;
+    }
+
+    /**
+     * The number of seconds a cached guest pagination total remains valid.
+     */
+    protected function countCacheTtl(): int
+    {
+        return config()->integer('api.pagination.count_cache_ttl', 60);
     }
 
     /**
@@ -556,6 +582,31 @@ abstract class AbstractQueryBuilder
                 $this->builder->orderBy($column, $isReverse ? 'desc' : 'asc');
             }
         }
+    }
+
+    /**
+     * Resolve the total row count used to build the paginator, caching it for guests when the builder opts in.
+     *
+     * The total is the most expensive part of a paginated request: a correlated COUNT that ignores the page and scans
+     * the whole visible set. For an anonymous listing it only changes when records are published or hidden, so builders
+     * that return a stable signature from countCacheSignature() have their guest total cached. Authenticated totals
+     * depend on per-user visibility (PublishedScope) and are always computed live.
+     *
+     * @param  Builder<TModel>  $builder
+     */
+    private function resolveTotal(Builder $builder): int
+    {
+        $count = fn (): int => (clone $builder)->toBase()->getCountForPagination();
+
+        $signature = $this->countCacheSignature();
+
+        if ($signature === null || Auth::check()) {
+            return $count();
+        }
+
+        $key = 'api:pagination-count:'.md5(serialize([static::class, $signature]));
+
+        return Cache::remember($key, $this->countCacheTtl(), $count);
     }
 
     /**

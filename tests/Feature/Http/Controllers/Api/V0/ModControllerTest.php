@@ -577,6 +577,36 @@ describe('index', function (): void {
             expect($response->json('data.0.id'))->toBe($mod->id);
         }
     });
+
+    it('caches the pagination total for guests', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        Mod::factory()->count(3)->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        // The first request computes the total and caches it for the guest signature.
+        $this->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 3);
+
+        // A newly published mod joins the live result set...
+        Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        // ...but the cached total is reused within the TTL, so it lags behind the live count.
+        $this->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 3);
+
+        // Clearing the cache forces a fresh count that reflects the new mod.
+        Cache::clear();
+        $this->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 4);
+    });
+
+    it('does not cache the pagination total for authenticated users', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        Mod::factory()->count(3)->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        $this->actingAs($this->user)->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 3);
+
+        Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        // Authenticated visibility is user-specific, so the total is always computed live.
+        $this->actingAs($this->user)->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 4);
+    });
 });
 
 describe('show', function (): void {
