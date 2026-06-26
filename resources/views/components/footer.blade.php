@@ -156,9 +156,7 @@
                     </p>
                 </div>
                 <div class="flex items-center">
-                    @persist('visitor-tracker')
-                        <livewire:visitor-tracker />
-                    @endpersist
+                    <livewire:visitor-tracker />
                 </div>
             </div>
         </div>
