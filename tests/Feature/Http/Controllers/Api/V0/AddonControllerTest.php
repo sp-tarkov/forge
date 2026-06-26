@@ -257,6 +257,38 @@ describe('index', function (): void {
         expect($returnedIds[1])->toBe($addon2->id);
         expect($returnedIds[2])->toBe($addon1->id);
     });
+
+    it('caches the pagination total for guests', function (): void {
+        foreach (range(1, 3) as $i) {
+            ($this->createVisibleAddon)();
+        }
+
+        // The first request computes the total and caches it for the guest signature.
+        $this->getJson('/api/v0/addons')->assertOk()->assertJsonPath('meta.total', 3);
+
+        // A newly published addon joins the live result set...
+        ($this->createVisibleAddon)();
+
+        // ...but the cached total is reused within the TTL, so it lags behind the live count.
+        $this->getJson('/api/v0/addons')->assertOk()->assertJsonPath('meta.total', 3);
+
+        // Clearing the cache forces a fresh count that reflects the new addon.
+        Cache::clear();
+        $this->getJson('/api/v0/addons')->assertOk()->assertJsonPath('meta.total', 4);
+    });
+
+    it('does not cache the pagination total for authenticated users', function (): void {
+        foreach (range(1, 3) as $i) {
+            ($this->createVisibleAddon)();
+        }
+
+        $this->actingAs($this->user)->getJson('/api/v0/addons')->assertOk()->assertJsonPath('meta.total', 3);
+
+        ($this->createVisibleAddon)();
+
+        // Authenticated visibility is user-specific, so the total is always computed live.
+        $this->actingAs($this->user)->getJson('/api/v0/addons')->assertOk()->assertJsonPath('meta.total', 4);
+    });
 });
 
 describe('show', function (): void {

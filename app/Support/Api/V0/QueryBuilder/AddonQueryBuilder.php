@@ -122,6 +122,19 @@ final class AddonQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
+     * Cache the guest pagination total by the active filters and search term. The addons listing takes no
+     * constructor-injected scoping, so its visible count is fully determined by the constant base query plus these
+     * inputs; the page, per-page, and sort are intentionally excluded because they do not change the total.
+     *
+     * @return array<mixed>
+     */
+    #[Override]
+    protected function countCacheSignature(): array
+    {
+        return [$this->filters, $this->searchQuery];
+    }
+
+    /**
      * Get the base query for the model.
      *
      * @return Builder<Addon>
