@@ -7,6 +7,7 @@ use App\Exceptions\Api\V0\InvalidQueryException;
 use App\Http\Middleware\RecordApiUsage;
 use App\Http\Middleware\RejectMalformedUtf8;
 use App\Http\Middleware\SanitizeBroadcastSocketId;
+use App\Http\Middleware\SetApiCacheControl;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -36,6 +37,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Track v0 API usage as aggregate counters. Registered globally (it self-gates to `api/v0/*`) so it captures
         // 404s on unmatched paths and 429s from the throttle middleware, and records in terminate() off the hot path.
         $middleware->append(RecordApiUsage::class);
+
+        // Mark cacheable v0 API reads as publicly cacheable so a CDN and browsers can absorb repeat traffic. Self-gates
+        // to `api/v0/*` GET 200 responses for guests.
+        $middleware->append(SetApiCacheControl::class);
 
         $middleware->append(IPBanned::class);
 

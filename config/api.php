@@ -71,4 +71,28 @@ return [
         'count_cache_ttl' => (int) env('API_PAGINATION_COUNT_CACHE_TTL', 60),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | API Cache-Control
+    |--------------------------------------------------------------------------
+    |
+    | Successful anonymous GET responses are marked publicly cacheable so a CDN (Cloudflare) and browsers can serve
+    | repeats without reaching the origin, which is the primary defence against a traffic spike on a single server.
+    | Authenticated responses are never marked public because their visibility is user-specific. The body is unchanged;
+    | only freshness is affected, so a cached copy can be up to max-age seconds stale. Set the default to 0 to disable.
+    | Per-route overrides are keyed by route name: near-static endpoints can cache for far longer, and the health check
+    | is never cached. Cloudflare additionally needs a Cache Rule to store JSON at the edge.
+    |
+    */
+
+    'cache_control' => [
+        'default_max_age' => (int) env('API_CACHE_CONTROL_MAX_AGE', 60),
+
+        'overrides' => [
+            'api.v0.mod-categories' => (int) env('API_CACHE_CONTROL_MAX_AGE_CATEGORIES', 3600),
+            'api.v0.spt.versions' => (int) env('API_CACHE_CONTROL_MAX_AGE_SPT', 3600),
+            'api.v0.ping' => 0,
+        ],
+    ],
+
 ];
