@@ -69,6 +69,11 @@
                                 class="text-sm leading-6 text-gray-300 hover:text-white"
                             >Mods</a></li>
                         <li><a
+                                href="{{ route('static.developers') }}"
+                                wire:navigate
+                                class="text-sm leading-6 text-gray-300 hover:text-white"
+                            >API</a></li>
+                        <li><a
                                 href="https://wiki.sp-tarkov.com"
                                 target="_blank"
                                 class="text-sm leading-6 text-gray-300 hover:text-white"

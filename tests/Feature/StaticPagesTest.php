@@ -31,6 +31,13 @@ describe('static pages', function (): void {
         $this->get('/installer')->assertOk();
     });
 
+    it('renders the developers API page', function (): void {
+        $this->get('/developers')
+            ->assertOk()
+            ->assertSee('The Forge API')
+            ->assertSee('api/v0');
+    });
+
     it('renders the banned user page', function (): void {
         $this->get('/user-banned')->assertOk();
     });

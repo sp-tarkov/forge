@@ -205,6 +205,7 @@ Route::middleware('auth.banned')->group(function (): void {
     Route::get('/community-standards', fn (): Factory|View => view('static.community-standards'))->name('static.community-standards');
     Route::get('/content-guidelines', fn (): Factory|View => view('static.content-guidelines'))->name('static.content-guidelines');
     Route::get('/installer', fn (): Factory|View => view('static.installer'))->name('static.installer');
+    Route::get('/developers', fn (): Factory|View => view('static.developers'))->name('static.developers');
     Route::get('/privacy-policy', fn (): Factory|View => view('static.privacy'))->name('static.privacy');
     Route::get('/terms-of-service', fn (): Factory|View => view('static.tos'))->name('static.terms');
 });
