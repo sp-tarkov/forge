@@ -451,6 +451,23 @@ describe('index', function (): void {
         'list array on spt_version' => ['filter[spt_version][]=4.0.13&filter[spt_version][]=4.0.7', 'spt_version'],
     ]);
 
+    it('returns a 400 instead of a 500 when filter is given a bare scalar value', function (string $garbage): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        $response = $this->getJson('/api/v0/mods?filter='.urlencode($garbage));
+
+        $response->assertBadRequest()
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('code', 'INVALID_QUERY_PARAMETER')
+            ->assertJsonFragment([
+                'message' => "The 'filter' parameter must be provided as filter[name]=value pairs (e.g. filter[name]=value).",
+            ]);
+    })->with([
+        'object-serialised string' => '[object Object]',
+        'bare scalar' => 'foo',
+    ]);
+
     it('returns only the fields requested', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
 

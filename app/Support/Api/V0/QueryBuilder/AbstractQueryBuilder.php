@@ -153,14 +153,35 @@ abstract class AbstractQueryBuilder
     /**
      * Set the filters for the query.
      *
-     * @param  array<string, mixed>|null  $filters
+     * The value comes straight from request input, so a client can supply any type. Bracket syntax such as
+     * filter[name]=value yields the expected array, but a bare scalar such as ?filter=foo (or the literal
+     * ?filter=[object Object] some HTTP clients send when they fail to serialise an object) arrives as a string.
+     * Reject anything that is not an array as a client error rather than letting it surface as a 500 TypeError at the
+     * call site.
+     *
+     * @param  mixed  $filters  Raw request input; an array<string, mixed> of filter pairs, or null when omitted.
      * @return self<TModel>
+     *
+     * @throws InvalidQueryException
      */
-    final public function withFilters(?array $filters): self
+    final public function withFilters(mixed $filters): self
     {
-        if ($filters !== null) {
-            $this->filters = $filters;
+        if ($filters === null) {
+            return $this;
         }
+
+        if (! is_array($filters)) {
+            throw new InvalidQueryException(
+                "The 'filter' parameter must be provided as filter[name]=value pairs (e.g. filter[name]=value)."
+            );
+        }
+
+        // Force string keys so the filter-name => value contract holds even for list-style input such as filter[]=x;
+        // an out-of-place numeric key then surfaces as an invalid filter name in applyFilters() rather than here.
+        $this->filters = array_combine(
+            array_map(strval(...), array_keys($filters)),
+            $filters
+        );
 
         return $this;
     }
