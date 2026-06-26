@@ -39,11 +39,11 @@ final class CreateNewUser implements CreatesNewUsers
                 'password' => Hash::make($input['password']),
                 'timezone' => $input['timezone'],
             ]);
-        } catch (UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $uniqueConstraintViolationException) {
             // A concurrent registration can claim the same name or email between the unique validation above and this
             // insert, leaving the database constraint as the final arbiter. Translate that race into the same
             // field-level validation error the user would otherwise have seen rather than surfacing a 500.
-            $field = str_contains($e->getMessage(), 'users_name_unique') ? 'name' : 'email';
+            $field = str_contains($uniqueConstraintViolationException->getMessage(), 'users_name_unique') ? 'name' : 'email';
 
             throw ValidationException::withMessages([
                 $field => __('validation.unique', ['attribute' => $field]),

@@ -105,8 +105,8 @@ describe('registration', function (): void {
         try {
             new CreateNewUser()->create($input);
             $this->fail('Expected a ValidationException for the duplicate email.');
-        } catch (ValidationException $e) {
-            expect($e->errors())->toHaveKey('email');
+        } catch (ValidationException $validationException) {
+            expect($validationException->errors())->toHaveKey('email');
         }
 
         // Only the row that won the race exists; the losing registration did not create a duplicate.

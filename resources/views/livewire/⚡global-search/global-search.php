@@ -137,11 +137,11 @@ new class extends Component
         try {
             /** @var array{results: array<int, array{hits: array<int, mixed>}>} $response */
             $response = $client->multiSearch($queries);
-        } catch (ApiException $e) {
+        } catch (ApiException $apiException) {
             // Meilisearch raises "Index `x` not found" while an index is being (re)built, e.g. after a flush or on a
             // fresh deploy before scout:import has run. Degrade to no results so the search box stays usable rather
             // than throwing a 500 on every keystroke; the indexes reappear once reindexing finishes.
-            Log::warning('Global search degraded: Meilisearch multi-search failed.', ['exception' => $e->getMessage()]);
+            Log::warning('Global search degraded: Meilisearch multi-search failed.', ['exception' => $apiException->getMessage()]);
 
             return ['mod' => collect(), 'addon' => collect(), 'user' => collect()];
         }

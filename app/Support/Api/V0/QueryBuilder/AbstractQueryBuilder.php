@@ -155,7 +155,7 @@ abstract class AbstractQueryBuilder
      *
      * The value comes straight from request input, so a client can supply any type. Bracket syntax such as
      * filter[name]=value yields the expected array, but a bare scalar such as ?filter=foo (or the literal
-     * ?filter=[object Object] some HTTP clients send when they fail to serialise an object) arrives as a string.
+     * ?filter=[object Object] some HTTP clients send when they fail to serialize an object) arrives as a string.
      * Reject anything that is not an array as a client error rather than letting it surface as a 500 TypeError at the
      * call site.
      *
@@ -170,11 +170,7 @@ abstract class AbstractQueryBuilder
             return $this;
         }
 
-        if (! is_array($filters)) {
-            throw new InvalidQueryException(
-                "The 'filter' parameter must be provided as filter[name]=value pairs (e.g. filter[name]=value)."
-            );
-        }
+        throw_unless(is_array($filters), InvalidQueryException::class, "The 'filter' parameter must be provided as filter[name]=value pairs (e.g. filter[name]=value).");
 
         // Force string keys so the filter-name => value contract holds even for list-style input such as filter[]=x;
         // an out-of-place numeric key then surfaces as an invalid filter name in applyFilters() rather than here.
@@ -390,7 +386,7 @@ abstract class AbstractQueryBuilder
         $ttl = $this->searchCacheTtl();
         /** @var array<int, array<string, mixed>> $hits */
         $hits = $ttl > 0
-            ? Cache::remember('api:search:'.md5($modelClass.'|'.$searchQuery), $ttl, $fetchHits)
+            ? Cache::remember('api:search:'.hash('xxh128', $modelClass.'|'.$searchQuery), $ttl, $fetchHits)
             : $fetchHits();
 
         if ($hits === []) {
@@ -648,7 +644,7 @@ abstract class AbstractQueryBuilder
             return $count();
         }
 
-        $key = 'api:pagination-count:'.md5(serialize([static::class, $signature]));
+        $key = 'api:pagination-count:'.hash('xxh128', serialize([static::class, $signature]));
 
         return Cache::remember($key, $this->countCacheTtl(), $count);
     }

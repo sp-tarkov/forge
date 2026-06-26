@@ -464,7 +464,7 @@ describe('index', function (): void {
                 'message' => "The 'filter' parameter must be provided as filter[name]=value pairs (e.g. filter[name]=value).",
             ]);
     })->with([
-        'object-serialised string' => '[object Object]',
+        'object-serialized string' => '[object Object]',
         'bare scalar' => 'foo',
     ]);
 
@@ -635,7 +635,7 @@ describe('index', function (): void {
 
         // Pre-seed the raw Scout hits so the request resolves from the cache instead of the search engine. The seeded
         // hit order (beta before alpha) must survive end to end, proving the cached relevance ranking drives the order.
-        Cache::put('api:search:'.md5(Mod::class.'|zzqcacheprobe'), [
+        Cache::put('api:search:'.hash('xxh128', Mod::class.'|zzqcacheprobe'), [
             ['id' => $beta->id],
             ['id' => $alpha->id],
         ], 60);
@@ -654,7 +654,7 @@ describe('index', function (): void {
         $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
 
         // A pre-seeded cache entry that would otherwise surface the mod for this query.
-        Cache::put('api:search:'.md5(Mod::class.'|zzqcacheprobe'), [['id' => $mod->id]], 60);
+        Cache::put('api:search:'.hash('xxh128', Mod::class.'|zzqcacheprobe'), [['id' => $mod->id]], 60);
 
         // With caching disabled the engine is queried directly; the collection driver yields no hits for the probe
         // term, so the seeded cache is ignored and no records are returned.
