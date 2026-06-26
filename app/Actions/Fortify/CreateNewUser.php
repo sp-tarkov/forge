@@ -7,8 +7,10 @@ namespace App\Actions\Fortify;
 use App\Models\User;
 use App\Rules\NotDisposableEmail;
 use DateTimeZone;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 final class CreateNewUser implements CreatesNewUsers
@@ -30,11 +32,22 @@ final class CreateNewUser implements CreatesNewUsers
             'terms' => ['accepted', 'required'],
         ])->validate();
 
-        return User::query()->create([
-            'name' => $input['name'],
-            'email' => $input['email'],
-            'password' => Hash::make($input['password']),
-            'timezone' => $input['timezone'],
-        ]);
+        try {
+            return User::query()->create([
+                'name' => $input['name'],
+                'email' => $input['email'],
+                'password' => Hash::make($input['password']),
+                'timezone' => $input['timezone'],
+            ]);
+        } catch (UniqueConstraintViolationException $e) {
+            // A concurrent registration can claim the same name or email between the unique validation above and this
+            // insert, leaving the database constraint as the final arbiter. Translate that race into the same
+            // field-level validation error the user would otherwise have seen rather than surfacing a 500.
+            $field = str_contains($e->getMessage(), 'users_name_unique') ? 'name' : 'email';
+
+            throw ValidationException::withMessages([
+                $field => __('validation.unique', ['attribute' => $field]),
+            ]);
+        }
     }
 }
