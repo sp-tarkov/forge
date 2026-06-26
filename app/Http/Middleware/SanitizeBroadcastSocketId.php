@@ -11,10 +11,13 @@ use Symfony\Component\HttpFoundation\Response;
 final class SanitizeBroadcastSocketId
 {
     /**
-     * Drop the X-Socket-ID header when the client sends a non-numeric value
-     * (typically the literal string "undefined" when Echo has not finished
-     * its handshake). Pusher rejects such values with an exception, which
-     * surfaces as a 500 on otherwise-valid broadcast triggers.
+     * Guard Pusher against malformed socket IDs, which it rejects with an exception that surfaces as a 500.
+     *
+     * Two vectors are covered. The X-Socket-ID header carries a non-numeric value (typically the literal string
+     * "undefined" before Echo finishes its handshake) and is simply dropped. The broadcasting auth endpoint also reads
+     * socket_id from the request body and forwards it straight to Pusher; the header drop does not cover that, so a
+     * body socket_id that is not the canonical <number>.<number> form (e.g. an injection probe) is rejected as
+     * forbidden. Legitimate clients always send a well-formed id, so this never affects real traffic.
      *
      * @param  Closure(Request): (Response)  $next
      */
@@ -24,6 +27,12 @@ final class SanitizeBroadcastSocketId
 
         if (is_string($socketId) && ! preg_match('/^\d+\.\d+$/', $socketId)) {
             $request->headers->remove('X-Socket-ID');
+        }
+
+        $socketIdInput = $request->input('socket_id');
+
+        if ($socketIdInput !== null && (! is_string($socketIdInput) || ! preg_match('/^\d+\.\d+$/', $socketIdInput))) {
+            abort(Response::HTTP_FORBIDDEN);
         }
 
         return $next($request);
