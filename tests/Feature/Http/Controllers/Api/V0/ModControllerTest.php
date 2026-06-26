@@ -610,6 +610,40 @@ describe('index', function (): void {
         $this->actingAs($this->user)->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 3);
     });
 
+    it('serves search results from the cached Scout hits', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $alpha = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['name' => 'Alpha']);
+        $beta = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['name' => 'Beta']);
+
+        // Pre-seed the raw Scout hits so the request resolves from the cache instead of the search engine. The seeded
+        // hit order (beta before alpha) must survive end to end, proving the cached relevance ranking drives the order.
+        Cache::put('api:search:'.md5(Mod::class.'|zzqcacheprobe'), [
+            ['id' => $beta->id],
+            ['id' => $alpha->id],
+        ], 60);
+
+        $response = $this->getJson('/api/v0/mods?query=zzqcacheprobe')->assertOk()->assertJsonCount(2, 'data');
+
+        // The collection test driver never returns Meilisearch-shaped hits, so getting both mods back in the seeded
+        // order can only come from the cached hits rather than a live engine round-trip.
+        expect(collect($response->json('data'))->pluck('id')->all())->toBe([$beta->id, $alpha->id]);
+    });
+
+    it('bypasses the search cache when the TTL is zero', function (): void {
+        config(['api.search.cache_ttl' => 0]);
+
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        // A pre-seeded cache entry that would otherwise surface the mod for this query.
+        Cache::put('api:search:'.md5(Mod::class.'|zzqcacheprobe'), [['id' => $mod->id]], 60);
+
+        // With caching disabled the engine is queried directly; the collection driver yields no hits for the probe
+        // term, so the seeded cache is ignored and no records are returned.
+        $this->getJson('/api/v0/mods?query=zzqcacheprobe')->assertOk()->assertJsonCount(0, 'data');
+    });
+
     it('returns the public view to administrators', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
 

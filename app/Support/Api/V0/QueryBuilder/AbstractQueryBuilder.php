@@ -324,6 +324,14 @@ abstract class AbstractQueryBuilder
     }
 
     /**
+     * The number of seconds cached Scout search hits remain valid. A non-positive value disables search caching.
+     */
+    protected function searchCacheTtl(): int
+    {
+        return config()->integer('api.search.cache_ttl', 60);
+    }
+
+    /**
      * Apply the search query using Scout if available.
      */
     protected function applySearch(): void
@@ -344,21 +352,34 @@ abstract class AbstractQueryBuilder
         // verified above)
         throw_unless(method_exists($model, 'search'), LogicException::class, 'Searchable trait is present but search() method is missing.');
 
-        /** @var \Laravel\Scout\Builder<Model> $scoutBuilder */
-        $scoutBuilder = $model->search($this->searchQuery);
-        /** @var array{hits?: array<int, array<string, mixed>>} $searchResults */
-        $searchResults = $scoutBuilder->options(['showRankingScore' => true])->raw();
+        // A search query is an external Meilisearch round-trip whose hits depend only on the search string (the index
+        // holds only public records and matches identically for every caller; per-caller visibility is applied by the
+        // database query that follows). Cache the raw hits for a short window to spare the engine on repeated searches.
+        $searchQuery = $this->searchQuery;
 
-        if (empty($searchResults['hits'])) {
-            // If no search results, force no records to be returned
+        $fetchHits = function () use ($model, $searchQuery): array {
+            /** @var \Laravel\Scout\Builder<Model> $scoutBuilder */
+            $scoutBuilder = $model->search($searchQuery);
+            /** @var array{hits?: array<int, array<string, mixed>>} $searchResults */
+            $searchResults = $scoutBuilder->options(['showRankingScore' => true])->raw();
+
+            return $searchResults['hits'] ?? [];
+        };
+
+        $ttl = $this->searchCacheTtl();
+        /** @var array<int, array<string, mixed>> $hits */
+        $hits = $ttl > 0
+            ? Cache::remember('api:search:'.md5($modelClass.'|'.$searchQuery), $ttl, $fetchHits)
+            : $fetchHits();
+
+        if ($hits === []) {
+            // If no search results (or caching disabled and none returned), force no records to be returned
             $this->builder->whereRaw('1 = 0');
 
             return;
         }
 
         // Sort results by version segments first, then by ranking score
-        /** @var array<int, array<string, mixed>> $hits */
-        $hits = $searchResults['hits'];
         $sortedHits = collect($hits)
             ->sortBy([
                 ['latestVersionMajor', 'desc'],

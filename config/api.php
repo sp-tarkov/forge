@@ -73,6 +73,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | API Search
+    |--------------------------------------------------------------------------
+    |
+    | A search query on the listing endpoints triggers an external Meilisearch round-trip. The matching hits depend only
+    | on the query string (the index holds only public records and is identical for every caller), so the ordered hits
+    | are cached for a short window to spare the engine on repeated identical searches. Newly indexed records can take up
+    | to this many seconds to surface in search. Set to 0 to disable.
+    |
+    */
+
+    'search' => [
+        'cache_ttl' => (int) env('API_SEARCH_CACHE_TTL', 60),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | API Cache-Control
     |--------------------------------------------------------------------------
     |
