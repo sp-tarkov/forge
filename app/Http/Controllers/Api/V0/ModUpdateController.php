@@ -12,6 +12,7 @@ use App\Models\SptVersion;
 use App\Services\DependencyService;
 use App\Support\VersionMatcher;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -23,6 +24,15 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class ModUpdateController extends Controller
 {
+    /**
+     * Per-request memo of published versions keyed by "modId@sptVersion". A single update check resolves the same
+     * dependency mods repeatedly (popular libraries are shared across many installed mods), and the candidate version
+     * list for a mod depends only on the target SPT version, not the constraint being tested.
+     *
+     * @var array<string, EloquentCollection<int, ModVersion>>
+     */
+    private array $candidateVersionsForSpt = [];
+
     public function __construct(private readonly DependencyService $dependencyService) {}
 
     /**
@@ -386,7 +396,7 @@ final class ModUpdateController extends Controller
         $candidateDependencies = $candidate->dependencies;
 
         foreach ($candidateDependencies as $dep) {
-            $satisfyingVersion = $this->dependencyService->findSatisfyingVersion(
+            $satisfyingVersion = $this->findSatisfyingDependencyVersion(
                 $dep->dependent_mod_id,
                 $dep->constraint,
                 $sptVersion
@@ -440,6 +450,19 @@ final class ModUpdateController extends Controller
         }
 
         return ['valid' => true];
+    }
+
+    /**
+     * Resolve the highest version of a dependency mod that satisfies the constraint for the target SPT version, reusing
+     * the per-mod version list across every constraint checked in this request. The list depends only on the mod and
+     * SPT version, so applying each constraint in memory avoids the previous one-query-per-dependency lookup.
+     */
+    private function findSatisfyingDependencyVersion(int $modId, string $constraint, string $sptVersion): ?ModVersion
+    {
+        $versions = $this->candidateVersionsForSpt[$modId.'@'.$sptVersion]
+            ??= $this->dependencyService->publishedVersionsForSpt($modId, $sptVersion);
+
+        return $versions->first(fn (ModVersion $version): bool => VersionMatcher::satisfies($version->version, $constraint));
     }
 
     /**
