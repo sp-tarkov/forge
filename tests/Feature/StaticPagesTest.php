@@ -20,7 +20,9 @@ describe('static pages', function (): void {
     });
 
     it('renders the terms of service page', function (): void {
-        $this->get('/terms-of-service')->assertOk();
+        $this->get('/terms-of-service')
+            ->assertOk()
+            ->assertSee('No scraping');
     });
 
     it('renders the DMCA page', function (): void {
