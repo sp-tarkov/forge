@@ -153,6 +153,18 @@ it('creates peak record if it does not exist', function (): void {
     Event::assertDispatched(PeakVisitorUpdated::class);
 });
 
+it('left-aligns counts on mobile and right-aligns them once the footer expands to multiple columns', function (): void {
+    ApiUsageMetric::factory()->create([
+        'period' => ApiUsagePeriod::Minute,
+        'period_start' => now()->utc()->subHour(),
+        'request_count' => 1234,
+    ]);
+
+    Livewire::test('visitor-tracker')
+        ->assertSeeHtml('flex items-center justify-start sm:justify-end space-x-2')
+        ->assertSeeHtml('text-left sm:text-right mt-1');
+});
+
 it('prevents client-side modification of locked properties', function (): void {
     Visitor::query()->create([
         'peak_count' => 100,

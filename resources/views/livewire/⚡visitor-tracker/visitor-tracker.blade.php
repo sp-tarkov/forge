@@ -5,7 +5,7 @@
 >
     {{-- Connection error state --}}
     <template x-if="connectionError">
-        <div class="flex items-center justify-end space-x-2">
+        <div class="flex items-center justify-start sm:justify-end space-x-2">
             <div class="relative flex h-2 w-2">
                 <span class="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
             </div>
@@ -18,7 +18,7 @@
     {{-- Normal state with visitor count --}}
     <template x-if="!connectionError">
         <div>
-            <div class="flex items-center justify-end space-x-2">
+            <div class="flex items-center justify-start sm:justify-end space-x-2">
                 <div class="relative flex h-2 w-2">
                     <span
                         class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
@@ -41,7 +41,7 @@
 
             {{-- Peak display --}}
             <template x-if="peakCount > 0 && peakDate">
-                <div class="text-right mt-1">
+                <div class="text-left sm:text-right mt-1">
                     <span class="text-gray-500">Peak:</span>
                     <span
                         class="font-medium text-gray-400"
@@ -56,7 +56,7 @@
 
             {{-- API requests served in the last 24 hours --}}
             @if ($apiRequests24h > 0)
-                <div class="text-right mt-1">
+                <div class="text-left sm:text-right mt-1">
                     <span class="font-medium text-gray-400">{{ number_format($apiRequests24h) }}</span>
                     <span class="text-gray-500">{{ __('API requests in the last 24h') }}</span>
                 </div>
