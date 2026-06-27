@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Contracts\VisitorPresenceStore;
+use App\Jobs\FetchCloudflareApiAnalyticsJob;
 use App\Models\ApiUsageMetric;
 use App\Models\Visitor;
 use Illuminate\Support\Facades\Cache;
@@ -38,10 +39,24 @@ new class extends Component
     public ?string $peakDate = null;
 
     /**
-     * The number of API requests served in the trailing 24 hours.
+     * The number of API requests served in the trailing 24 hours, counted at the origin. Used as the fallback display
+     * when Cloudflare edge totals are unavailable.
      */
     #[Locked]
     public int $apiRequests24h = 0;
+
+    /**
+     * The total API requests Cloudflare handled at the edge in the trailing 24 hours, including those served from cache
+     * that never reached the origin. Zero when Cloudflare analytics are unavailable.
+     */
+    #[Locked]
+    public int $apiEdgeRequests24h = 0;
+
+    /**
+     * The percentage of edge requests that Cloudflare served from cache, or null when no edge data is available.
+     */
+    #[Locked]
+    public ?int $apiCachedPct = null;
 
     /**
      * Render the current online count, peak, and API usage. The component re-mounts on every navigation, so these
@@ -86,6 +101,22 @@ new class extends Component
         ]);
 
         $this->apiRequests24h = $apiUsage['count'];
+
+        // Prefer the Cloudflare edge total when a recent fetch is cached: it counts the API requests Cloudflare served
+        // from cache too, which never reach the origin counters above. A scheduled job populates this key, so the read
+        // here is pure cache and never makes an external call on a footer render. When the key is absent the footer
+        // falls back to the origin-only count.
+        $edgeUsage = Cache::get(FetchCloudflareApiAnalyticsJob::CACHE_KEY);
+
+        if (is_array($edgeUsage)
+            && isset($edgeUsage['edge_total'], $edgeUsage['cached_pct'])
+            && is_int($edgeUsage['edge_total'])
+            && is_numeric($edgeUsage['cached_pct'])
+            && $edgeUsage['edge_total'] > 0
+        ) {
+            $this->apiEdgeRequests24h = $edgeUsage['edge_total'];
+            $this->apiCachedPct = (int) round((float) $edgeUsage['cached_pct']);
+        }
     }
 
     /**

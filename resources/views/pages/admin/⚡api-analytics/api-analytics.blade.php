@@ -12,6 +12,12 @@
     <div class="px-6 lg:px-8">
         <div class="space-y-6 my-6">
 
+            <flux:callout icon="information-circle" color="blue" inline>
+                <flux:callout.text>
+                    {{ __('These figures count only API requests that reached the origin server. A large share of API traffic is now served from the Cloudflare edge cache and never appears here. See the Cloudflare-handled total in the site footer for the full picture.') }}
+                </flux:callout.text>
+            </flux:callout>
+
             {{-- Range selector --}}
             <div class="flex items-center justify-between gap-4">
                 <p class="text-sm text-gray-500 dark:text-gray-400">

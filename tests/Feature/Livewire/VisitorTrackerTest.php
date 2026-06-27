@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Contracts\VisitorPresenceStore;
 use App\Enums\Api\V0\ApiUsagePeriod;
+use App\Jobs\FetchCloudflareApiAnalyticsJob;
 use App\Models\ApiUsageMetric;
 use App\Models\Visitor;
 use Illuminate\Support\Facades\Cache;
@@ -57,6 +58,35 @@ it('initializes with the API request count from the last 24 hours', function ():
 
     Livewire::test('visitor-tracker')
         ->assertSet('apiRequests24h', 1234);
+});
+
+it('prefers the Cloudflare edge total and shows the cached percentage when available', function (): void {
+    Cache::put(FetchCloudflareApiAnalyticsJob::CACHE_KEY, [
+        'edge_total' => 1284302,
+        'cached' => 1168315,
+        'origin' => 115987,
+        'cached_pct' => 91.0,
+    ], now()->addMinutes(15));
+
+    Livewire::test('visitor-tracker')
+        ->assertSet('apiEdgeRequests24h', 1284302)
+        ->assertSet('apiCachedPct', 91)
+        ->assertSee('1,284,302')
+        ->assertSee('served from Cloudflare cache');
+});
+
+it('falls back to the origin API count when no Cloudflare data is cached', function (): void {
+    ApiUsageMetric::factory()->create([
+        'period' => ApiUsagePeriod::Minute,
+        'period_start' => now()->utc()->subHour(),
+        'request_count' => 555,
+    ]);
+
+    Livewire::test('visitor-tracker')
+        ->assertSet('apiEdgeRequests24h', 0)
+        ->assertSet('apiCachedPct', null)
+        ->assertSet('apiRequests24h', 555)
+        ->assertDontSee('served from Cloudflare cache');
 });
 
 it('renders the current online and member counts', function (): void {

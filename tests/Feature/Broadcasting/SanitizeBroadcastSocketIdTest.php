@@ -60,8 +60,8 @@ it('rejects a malformed socket_id request parameter with a 403', function (strin
     try {
         (new SanitizeBroadcastSocketId)->handle($request, fn (): Response => new Response);
         $this->fail('Expected a 403 for the malformed socket_id.');
-    } catch (HttpException $e) {
-        expect($e->getStatusCode())->toBe(Response::HTTP_FORBIDDEN);
+    } catch (HttpException $httpException) {
+        expect($httpException->getStatusCode())->toBe(Response::HTTP_FORBIDDEN);
     }
 })->with([
     'sql injection probe' => '198766*667891 from DUAL',
@@ -78,8 +78,8 @@ it('rejects an array socket_id request parameter with a 403', function (): void 
     try {
         (new SanitizeBroadcastSocketId)->handle($request, fn (): Response => new Response);
         $this->fail('Expected a 403 for the array socket_id.');
-    } catch (HttpException $e) {
-        expect($e->getStatusCode())->toBe(Response::HTTP_FORBIDDEN);
+    } catch (HttpException $httpException) {
+        expect($httpException->getStatusCode())->toBe(Response::HTTP_FORBIDDEN);
     }
 });
 

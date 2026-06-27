@@ -31,9 +31,7 @@ final class SanitizeBroadcastSocketId
 
         $socketIdInput = $request->input('socket_id');
 
-        if ($socketIdInput !== null && (! is_string($socketIdInput) || ! preg_match('/^\d+\.\d+$/', $socketIdInput))) {
-            abort(Response::HTTP_FORBIDDEN);
-        }
+        abort_if($socketIdInput !== null && (! is_string($socketIdInput) || ! preg_match('/^\d+\.\d+$/', $socketIdInput)), Response::HTTP_FORBIDDEN);
 
         return $next($request);
     }

@@ -25,7 +25,17 @@
         @endif
 
         {{-- API requests served in the last 24 hours --}}
-        @if ($apiRequests24h > 0)
+        @if ($apiEdgeRequests24h > 0)
+            <div class="text-left sm:text-right mt-1">
+                <span class="font-medium text-gray-400">{{ number_format($apiEdgeRequests24h) }}</span>
+                <span class="text-gray-500">{{ __('API requests in the last 24h') }}</span>
+            </div>
+            @if ($apiCachedPct !== null)
+                <div class="text-left sm:text-right text-gray-500">
+                    {{ $apiCachedPct }}% {{ __('served from Cloudflare cache') }}
+                </div>
+            @endif
+        @elseif ($apiRequests24h > 0)
             <div class="text-left sm:text-right mt-1">
                 <span class="font-medium text-gray-400">{{ number_format($apiRequests24h) }}</span>
                 <span class="text-gray-500">{{ __('API requests in the last 24h') }}</span>

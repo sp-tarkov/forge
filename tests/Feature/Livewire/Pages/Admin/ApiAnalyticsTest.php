@@ -66,6 +66,12 @@ describe('ApiAnalytics Display', function (): void {
             ->assertSee('No usage recorded');
     });
 
+    it('shows a notice that the figures are origin-only', function (): void {
+        Livewire::actingAs(User::factory()->admin()->create())
+            ->test('pages::admin.api-analytics')
+            ->assertSee('reached the origin server');
+    });
+
     it('falls back to the default range for an unsupported value', function (): void {
         Livewire::actingAs(User::factory()->admin()->create())
             ->test('pages::admin.api-analytics')
