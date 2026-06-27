@@ -646,7 +646,7 @@ abstract class AbstractQueryBuilder
 
         $key = 'api:pagination-count:'.hash('xxh128', serialize([static::class, $signature]));
 
-        return Cache::remember($key, $this->countCacheTtl(), $count);
+        return (int) Cache::remember($key, $this->countCacheTtl(), $count);
     }
 
     /**

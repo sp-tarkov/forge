@@ -10,6 +10,7 @@ use App\Models\ModCategory;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use App\Support\Api\V0\QueryBuilder\ModQueryBuilder;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
@@ -611,6 +612,22 @@ describe('index', function (): void {
         // Clearing the cache forces a fresh count that reflects the new mod.
         Cache::clear();
         $this->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 4);
+    });
+
+    it('coerces a numeric-string cached total back to an int', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        Mod::factory()->count(3)->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        // The Redis cache store keeps numeric values as raw, unserialized strings so counts stay atomically
+        // incrementable, then returns them verbatim on read; a cache hit therefore hands back a numeric string rather
+        // than an int. The array store used in tests never reproduces this, so seed the guest count key with the
+        // string form a Redis hit would yield. A bare GET /api/v0/mods builds the ModQueryBuilder with no filters and
+        // an empty search string, which is the cache signature below. Without coercion the paginator total's int
+        // return type throws a 500; with it the request succeeds and reports the total as an int.
+        $key = 'api:pagination-count:'.hash('xxh128', serialize([ModQueryBuilder::class, [[], '']]));
+        Cache::put($key, '3', 60);
+
+        $this->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 3);
     });
 
     it('caches the pagination total identically for authenticated users', function (): void {
