@@ -8,6 +8,7 @@ use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Mod;
 use App\Models\ModVersion;
+use App\Support\Api\V0\PublicViewpoint;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
@@ -32,12 +33,17 @@ final class PublishedScope implements Scope
             'PublishedScope can only be applied to Mod, ModVersion, Addon, or AddonVersion models.'
         );
 
+        // The open v0 API pins every request to the public viewpoint (see ForcePublicViewpoint), so authentication is
+        // ignored entirely: moderators, admins, owners, and authors all resolve the same published-only results. The
+        // website leaves this off, preserving the per-user visibility below.
+        $forcePublic = PublicViewpoint::isForced();
+
         // If user is authenticated and is an admin or moderator, show everything.
-        if (Auth::check() && Auth::user()?->isModOrAdmin()) {
+        if (! $forcePublic && Auth::check() && Auth::user()?->isModOrAdmin()) {
             return;
         }
 
-        $builder->where(function (Builder $query) use ($model): void {
+        $builder->where(function (Builder $query) use ($model, $forcePublic): void {
             // Show published models to everyone.
             $query->where(function (Builder $publishedQuery) use ($model): void {
                 $publishedQuery->whereNotNull($model->getTable().'.published_at')
@@ -47,7 +53,7 @@ final class PublishedScope implements Scope
             // Show unpublished and future-published models to owners and authors.
             // Uses cached ID sets instead of whereHas('additionalAuthors') subqueries
             // to avoid expensive EXISTS joins on every query for authenticated users.
-            if (Auth::check()) {
+            if (! $forcePublic && Auth::check()) {
                 $query->orWhere(function (Builder $unpublishedQuery) use ($model): void {
                     $unpublishedQuery->where(function (Builder $dateQuery) use ($model): void {
                         $dateQuery->whereNull($model->getTable().'.published_at')

@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Actions\Fortify\CreateNewUser;
 use App\Models\DisposableEmailBlocklist;
+use App\Models\User;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Features;
 
 describe('registration', function (): void {
@@ -75,4 +78,38 @@ describe('registration', function (): void {
         $response->assertSee('This email address has been detected as disposable and is not supported.');
         $this->assertGuest();
     })->skip(fn (): bool => ! Features::enabled(Features::registration()), 'Registration support is not enabled.');
+
+    it('translates a duplicate-email registration race into a validation error', function (): void {
+        $input = [
+            'name' => 'Racer One',
+            'email' => 'race@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'timezone' => 'America/New_York',
+            'terms' => true,
+        ];
+
+        // Simulate the race: a concurrent request claims the same email after our unique validation has passed but
+        // before our insert runs. The creating hook fires once (guarded) so the conflicting factory insert that wins
+        // the row does not recurse.
+        $conflictInserted = false;
+        User::creating(function (User $user) use (&$conflictInserted): void {
+            if ($conflictInserted) {
+                return;
+            }
+
+            $conflictInserted = true;
+            User::factory()->create(['email' => $user->email]);
+        });
+
+        try {
+            new CreateNewUser()->create($input);
+            $this->fail('Expected a ValidationException for the duplicate email.');
+        } catch (ValidationException $validationException) {
+            expect($validationException->errors())->toHaveKey('email');
+        }
+
+        // Only the row that won the race exists; the losing registration did not create a duplicate.
+        expect(User::query()->where('email', 'race@example.com')->count())->toBe(1);
+    });
 });

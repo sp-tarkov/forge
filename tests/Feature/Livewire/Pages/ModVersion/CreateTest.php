@@ -54,6 +54,29 @@ describe('Mod Version Create Form', function (): void {
                 ->assertHasErrors(['version', 'description', 'link', 'sptVersionConstraint']);
         });
 
+        it('rejects a link longer than the column allows instead of erroring at insert', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+            // A signed release-asset URL can run to many hundreds of characters, well past the varchar(255) link
+            // column. Previously this passed validation and threw a 500 at insert.
+            $longLink = 'https://example.com/download.zip?token='.str_repeat('a', 300);
+
+            Livewire::test('pages::mod-version.create', ['mod' => $mod])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('version', '1.0.0')
+                ->set('description', 'Test description')
+                ->set('link', $longLink)
+                ->set('sptVersionConstraint', '~3.11.0')
+                ->set('virusTotalLinks.0.url', 'https://www.virustotal.com/test')
+                ->call('save')
+                ->assertHasErrors(['link' => 'max']);
+        });
+
         it('validates version format', function (): void {
             $user = User::factory()->withMfa()->create();
             $this->actingAs($user);

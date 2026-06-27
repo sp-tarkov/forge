@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Support\Api\V0\QueryBuilder;
 
 use App\Exceptions\Api\V0\InvalidQueryException;
+use App\Support\Api\V0\PublicViewpoint;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 use LogicException;
@@ -150,14 +153,31 @@ abstract class AbstractQueryBuilder
     /**
      * Set the filters for the query.
      *
-     * @param  array<string, mixed>|null  $filters
+     * The value comes straight from request input, so a client can supply any type. Bracket syntax such as
+     * filter[name]=value yields the expected array, but a bare scalar such as ?filter=foo (or the literal
+     * ?filter=[object Object] some HTTP clients send when they fail to serialize an object) arrives as a string.
+     * Reject anything that is not an array as a client error rather than letting it surface as a 500 TypeError at the
+     * call site.
+     *
+     * @param  mixed  $filters  Raw request input; an array<string, mixed> of filter pairs, or null when omitted.
      * @return self<TModel>
+     *
+     * @throws InvalidQueryException
      */
-    final public function withFilters(?array $filters): self
+    final public function withFilters(mixed $filters): self
     {
-        if ($filters !== null) {
-            $this->filters = $filters;
+        if ($filters === null) {
+            return $this;
         }
+
+        throw_unless(is_array($filters), InvalidQueryException::class, "The 'filter' parameter must be provided as filter[name]=value pairs (e.g. filter[name]=value).");
+
+        // Force string keys so the filter-name => value contract holds even for list-style input such as filter[]=x;
+        // an out-of-place numeric key then surfaces as an invalid filter name in applyFilters() rather than here.
+        $this->filters = array_combine(
+            array_map(strval(...), array_keys($filters)),
+            $filters
+        );
 
         return $this;
     }
@@ -241,7 +261,9 @@ abstract class AbstractQueryBuilder
     {
         $perPage = min($perPage, $allowed_max);
 
-        return $this->apply()->paginate($perPage);
+        $builder = $this->apply();
+
+        return $builder->paginate($perPage, ['*'], 'page', null, $this->resolveTotal($builder));
     }
 
     /**
@@ -297,6 +319,36 @@ abstract class AbstractQueryBuilder
     }
 
     /**
+     * The cache signature that uniquely identifies this query's guest total, or null to disable count caching.
+     *
+     * Returning a value opts the builder into caching, so the signature MUST capture every input that changes the
+     * result count: all filters, search terms, and any constructor-injected scoping. It must NOT include the page,
+     * per-page, or sort, none of which affect the total.
+     *
+     * @return array<mixed>|null
+     */
+    protected function countCacheSignature(): ?array
+    {
+        return null;
+    }
+
+    /**
+     * The number of seconds a cached guest pagination total remains valid.
+     */
+    protected function countCacheTtl(): int
+    {
+        return config()->integer('api.pagination.count_cache_ttl', 60);
+    }
+
+    /**
+     * The number of seconds cached Scout search hits remain valid. A non-positive value disables search caching.
+     */
+    protected function searchCacheTtl(): int
+    {
+        return config()->integer('api.search.cache_ttl', 60);
+    }
+
+    /**
      * Apply the search query using Scout if available.
      */
     protected function applySearch(): void
@@ -317,21 +369,34 @@ abstract class AbstractQueryBuilder
         // verified above)
         throw_unless(method_exists($model, 'search'), LogicException::class, 'Searchable trait is present but search() method is missing.');
 
-        /** @var \Laravel\Scout\Builder<Model> $scoutBuilder */
-        $scoutBuilder = $model->search($this->searchQuery);
-        /** @var array{hits?: array<int, array<string, mixed>>} $searchResults */
-        $searchResults = $scoutBuilder->options(['showRankingScore' => true])->raw();
+        // A search query is an external Meilisearch round-trip whose hits depend only on the search string (the index
+        // holds only public records and matches identically for every caller; per-caller visibility is applied by the
+        // database query that follows). Cache the raw hits for a short window to spare the engine on repeated searches.
+        $searchQuery = $this->searchQuery;
 
-        if (empty($searchResults['hits'])) {
-            // If no search results, force no records to be returned
+        $fetchHits = function () use ($model, $searchQuery): array {
+            /** @var \Laravel\Scout\Builder<Model> $scoutBuilder */
+            $scoutBuilder = $model->search($searchQuery);
+            /** @var array{hits?: array<int, array<string, mixed>>} $searchResults */
+            $searchResults = $scoutBuilder->options(['showRankingScore' => true])->raw();
+
+            return $searchResults['hits'] ?? [];
+        };
+
+        $ttl = $this->searchCacheTtl();
+        /** @var array<int, array<string, mixed>> $hits */
+        $hits = $ttl > 0
+            ? Cache::remember('api:search:'.hash('xxh128', $modelClass.'|'.$searchQuery), $ttl, $fetchHits)
+            : $fetchHits();
+
+        if ($hits === []) {
+            // If no search results (or caching disabled and none returned), force no records to be returned
             $this->builder->whereRaw('1 = 0');
 
             return;
         }
 
         // Sort results by version segments first, then by ranking score
-        /** @var array<int, array<string, mixed>> $hits */
-        $hits = $searchResults['hits'];
         $sortedHits = collect($hits)
             ->sortBy([
                 ['latestVersionMajor', 'desc'],
@@ -556,6 +621,32 @@ abstract class AbstractQueryBuilder
                 $this->builder->orderBy($column, $isReverse ? 'desc' : 'asc');
             }
         }
+    }
+
+    /**
+     * Resolve the total row count used to build the paginator, caching it for guests when the builder opts in.
+     *
+     * The total is the most expensive part of a paginated request: a correlated COUNT that ignores the page and scans
+     * the whole visible set. The open API resolves the public viewpoint for every caller (see ForcePublicViewpoint), so
+     * the total only changes when records are published or hidden and is identical regardless of authentication;
+     * builders that return a stable signature from countCacheSignature() have it cached. Only a non-public,
+     * authenticated context (i.e. the website, never this API) depends on per-user visibility and is computed live.
+     *
+     * @param  Builder<TModel>  $builder
+     */
+    private function resolveTotal(Builder $builder): int
+    {
+        $count = fn (): int => (clone $builder)->toBase()->getCountForPagination();
+
+        $signature = $this->countCacheSignature();
+
+        if ($signature === null || (! PublicViewpoint::isForced() && Auth::check())) {
+            return $count();
+        }
+
+        $key = 'api:pagination-count:'.hash('xxh128', serialize([static::class, $signature]));
+
+        return Cache::remember($key, $this->countCacheTtl(), $count);
     }
 
     /**

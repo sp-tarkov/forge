@@ -42,11 +42,6 @@
                             />
                         </svg>
                     </a>
-                    <x-sf-icon
-                        href="https://sanctumfall.com"
-                        target="_blank"
-                        title="{{ __('Sanctumfall') }}"
-                    />
                 </p>
                 <p class="mt-4 text-sm text-gray-400">
                     This site is open source.<br /><a
@@ -73,6 +68,11 @@
                                 wire:navigate
                                 class="text-sm leading-6 text-gray-300 hover:text-white"
                             >Mods</a></li>
+                        <li><a
+                                href="{{ route('static.developers') }}"
+                                wire:navigate
+                                class="text-sm leading-6 text-gray-300 hover:text-white"
+                            >API</a></li>
                         <li><a
                                 href="https://wiki.sp-tarkov.com"
                                 target="_blank"
@@ -156,9 +156,7 @@
                     </p>
                 </div>
                 <div class="flex items-center">
-                    @persist('visitor-tracker')
-                        <livewire:visitor-tracker />
-                    @endpersist
+                    <livewire:visitor-tracker />
                 </div>
             </div>
         </div>

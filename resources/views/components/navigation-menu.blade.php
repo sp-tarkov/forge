@@ -83,6 +83,10 @@
                                 @endauth
                             </flux:navmenu>
                         </flux:dropdown>
+                        <x-nav-link
+                            href="{{ route('static.developers') }}"
+                            :active="request()->routeIs('static.developers')"
+                        >{{ __('API') }}</x-nav-link>
                         <a
                             href="https://wiki.sp-tarkov.com/"
                             target="_blank"
@@ -322,12 +326,6 @@
                                     wire:navigate
                                 >{{ __('My Lists') }}</flux:navmenu.item>
 
-                                <flux:navmenu.separator />
-                                <flux:navmenu.item
-                                    icon="book-open"
-                                    href="/docs/index.html"
-                                >{{ __('API Documentation') }}</flux:navmenu.item>
-
                                 {{-- Logout --}}
                                 <flux:navmenu.separator />
                                 <form
@@ -424,6 +422,10 @@
                     </span>
                 </x-responsive-nav-link>
             @endauth
+            <x-responsive-nav-link
+                href="{{ route('static.developers') }}"
+                :active="request()->routeIs('static.developers')"
+            >{{ __('API') }}</x-responsive-nav-link>
             <a
                 href="https://wiki.sp-tarkov.com/"
                 target="_blank"
@@ -517,12 +519,6 @@
                         <span class="flex items-center gap-2">
                             <flux:icon.list-bullet class="h-5 w-5" />
                             {{ __('My Lists') }}
-                        </span>
-                    </x-responsive-nav-link>
-                    <x-responsive-nav-link href="/docs/index.html">
-                        <span class="flex items-center gap-2">
-                            <flux:icon.book-open class="h-5 w-5" />
-                            {{ __('API Documentation') }}
                         </span>
                     </x-responsive-nav-link>
                     {{-- Logout --}}

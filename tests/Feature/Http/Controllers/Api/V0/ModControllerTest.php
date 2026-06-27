@@ -451,6 +451,23 @@ describe('index', function (): void {
         'list array on spt_version' => ['filter[spt_version][]=4.0.13&filter[spt_version][]=4.0.7', 'spt_version'],
     ]);
 
+    it('returns a 400 instead of a 500 when filter is given a bare scalar value', function (string $garbage): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        $response = $this->getJson('/api/v0/mods?filter='.urlencode($garbage));
+
+        $response->assertBadRequest()
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('code', 'INVALID_QUERY_PARAMETER')
+            ->assertJsonFragment([
+                'message' => "The 'filter' parameter must be provided as filter[name]=value pairs (e.g. filter[name]=value).",
+            ]);
+    })->with([
+        'object-serialized string' => '[object Object]',
+        'bare scalar' => 'foo',
+    ]);
+
     it('returns only the fields requested', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
@@ -577,6 +594,92 @@ describe('index', function (): void {
             expect($response->json('data.0.id'))->toBe($mod->id);
         }
     });
+
+    it('caches the pagination total for guests', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        Mod::factory()->count(3)->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        // The first request computes the total and caches it for the guest signature.
+        $this->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 3);
+
+        // A newly published mod joins the live result set...
+        Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        // ...but the cached total is reused within the TTL, so it lags behind the live count.
+        $this->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 3);
+
+        // Clearing the cache forces a fresh count that reflects the new mod.
+        Cache::clear();
+        $this->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 4);
+    });
+
+    it('caches the pagination total identically for authenticated users', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        Mod::factory()->count(3)->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        // The open API forces the public viewpoint for every caller, so an authenticated request caches the total
+        // exactly like a guest request rather than computing a per-user count.
+        $this->actingAs($this->user)->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 3);
+
+        Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        // The cached total is reused within the TTL, so the count is identical regardless of authentication.
+        $this->actingAs($this->user)->getJson('/api/v0/mods')->assertOk()->assertJsonPath('meta.total', 3);
+    });
+
+    it('serves search results from the cached Scout hits', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $alpha = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['name' => 'Alpha']);
+        $beta = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['name' => 'Beta']);
+
+        // Pre-seed the raw Scout hits so the request resolves from the cache instead of the search engine. The seeded
+        // hit order (beta before alpha) must survive end to end, proving the cached relevance ranking drives the order.
+        Cache::put('api:search:'.hash('xxh128', Mod::class.'|zzqcacheprobe'), [
+            ['id' => $beta->id],
+            ['id' => $alpha->id],
+        ], 60);
+
+        $response = $this->getJson('/api/v0/mods?query=zzqcacheprobe')->assertOk()->assertJsonCount(2, 'data');
+
+        // The collection test driver never returns Meilisearch-shaped hits, so getting both mods back in the seeded
+        // order can only come from the cached hits rather than a live engine round-trip.
+        expect(collect($response->json('data'))->pluck('id')->all())->toBe([$beta->id, $alpha->id]);
+    });
+
+    it('bypasses the search cache when the TTL is zero', function (): void {
+        config(['api.search.cache_ttl' => 0]);
+
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        // A pre-seeded cache entry that would otherwise surface the mod for this query.
+        Cache::put('api:search:'.hash('xxh128', Mod::class.'|zzqcacheprobe'), [['id' => $mod->id]], 60);
+
+        // With caching disabled the engine is queried directly; the collection driver yields no hits for the probe
+        // term, so the seeded cache is ignored and no records are returned.
+        $this->getJson('/api/v0/mods?query=zzqcacheprobe')->assertOk()->assertJsonCount(0, 'data');
+    });
+
+    it('returns the public view to administrators', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $publishedMod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
+            ->create(['published_at' => now()->subDay()]);
+        $unpublishedMod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
+            ->create(['published_at' => null]);
+
+        $admin = User::factory()->admin()->create();
+
+        $guestIds = collect($this->getJson('/api/v0/mods')->assertOk()->json('data'))->pluck('id');
+        $adminIds = collect($this->actingAs($admin)->getJson('/api/v0/mods')->assertOk()->json('data'))->pluck('id');
+
+        // A guest never sees the unpublished mod, and an authenticated admin resolves the exact same set: the open API
+        // is pinned to the public viewpoint, so output does not widen for staff.
+        expect($guestIds)->toContain($publishedMod->id)
+            ->not->toContain($unpublishedMod->id);
+        expect($adminIds->all())->toBe($guestIds->all());
+    });
 });
 
 describe('show', function (): void {
@@ -602,6 +705,21 @@ describe('show', function (): void {
                     'contains_ai_content', 'published_at', 'created_at', 'updated_at',
                 ],
             ]);
+    });
+
+    it('never exposes owner email fields to an authenticated owner', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
+            ->create(['owner_id' => $this->user->id]);
+
+        // Even when the owner is authenticated, the open API stays pinned to the public viewpoint, so the private
+        // email fields never appear in the embedded owner payload.
+        $response = $this->actingAs($this->user)->getJson('/api/v0/mod/'.$mod->id);
+
+        $response->assertOk()
+            ->assertJsonPath('data.owner.id', $this->user->id)
+            ->assertJsonMissingPath('data.owner.email')
+            ->assertJsonMissingPath('data.owner.email_verified_at');
     });
 
     it('does not include source_code_links by default', function (): void {

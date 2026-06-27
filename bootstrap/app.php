@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 use App\Exceptions\Api\V0\Handler as ApiV0ExceptionHandler;
 use App\Exceptions\Api\V0\InvalidQueryException;
+use App\Http\Middleware\ForcePublicViewpoint;
 use App\Http\Middleware\RecordApiUsage;
 use App\Http\Middleware\RejectMalformedUtf8;
 use App\Http\Middleware\SanitizeBroadcastSocketId;
+use App\Http\Middleware\SetApiCacheControl;
+use App\Http\Middleware\TrackVisitorPresence;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -37,6 +40,15 @@ return Application::configure(basePath: dirname(__DIR__))
         // 404s on unmatched paths and 429s from the throttle middleware, and records in terminate() off the hot path.
         $middleware->append(RecordApiUsage::class);
 
+        // Mark cacheable v0 API reads as publicly cacheable so a CDN and browsers can absorb repeat traffic. Self-gates
+        // to `api/v0/*` GET 200 responses for guests.
+        $middleware->append(SetApiCacheControl::class);
+
+        // Pin every open v0 API request to the public (guest) viewpoint so listings and detail endpoints return the
+        // same published-only data for every caller, including authenticated moderators and admins. Applied to the
+        // `api` group (which all api/v0 routes share) so it runs before any controller builds a query.
+        $middleware->api(prepend: [ForcePublicViewpoint::class]);
+
         $middleware->append(IPBanned::class);
 
         // Use Redis-backed rate limiting (skip in tests where Redis may not be available).
@@ -54,9 +66,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // X-Forwarded-For values sent on direct-to-origin requests.
         $middleware->trustProxies(at: ['127.0.0.1', '::1']);
 
-        // Protect against spam on the web middleware group.
+        // Protect against spam on the web middleware group, and record visitor presence for the footer "users online"
+        // count. Presence is appended to the web group (after the session has started) so it can identify guests; the
+        // actual Redis write is deferred until after the response, so it never delays the request.
         $middleware->web(append: [
             ProtectAgainstSpam::class,
+            TrackVisitorPresence::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

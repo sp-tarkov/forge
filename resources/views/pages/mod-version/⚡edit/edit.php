@@ -597,9 +597,11 @@ new #[Layout('layouts::base')] class extends Component
             }
         }
 
-        // Download link validation
+        // Download link validation. Cap the link at the mod_versions.link column size (varchar 255). Without this an
+        // over-long URL (e.g. a signed release-asset link) passes validation and then fails at insert with a 500. bail
+        // short-circuits the remaining rules, including the network HEAD check, once a cheaper rule fails.
         $this->downloadLinkRule = new DirectDownloadLink();
-        $rules['link'] = ['required', 'string', 'url', 'starts_with:https://,http://', $this->downloadLinkRule];
+        $rules['link'] = ['bail', 'required', 'string', 'max:255', 'url', 'starts_with:https://,http://', $this->downloadLinkRule];
 
         return $rules;
     }

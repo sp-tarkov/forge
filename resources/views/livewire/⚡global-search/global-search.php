@@ -6,12 +6,14 @@ use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Session;
 use Livewire\Component;
 use Meilisearch\Client;
 use Meilisearch\Contracts\SearchQuery;
+use Meilisearch\Exceptions\ApiException;
 
 new class extends Component
 {
@@ -132,8 +134,17 @@ new class extends Component
             new SearchQuery()->setIndexUid($prefix.new User()->getTable())->setQuery($query),
         ];
 
-        /** @var array{results: array<int, array{hits: array<int, mixed>}>} $response */
-        $response = $client->multiSearch($queries);
+        try {
+            /** @var array{results: array<int, array{hits: array<int, mixed>}>} $response */
+            $response = $client->multiSearch($queries);
+        } catch (ApiException $apiException) {
+            // Meilisearch raises "Index `x` not found" while an index is being (re)built, e.g. after a flush or on a
+            // fresh deploy before scout:import has run. Degrade to no results so the search box stays usable rather
+            // than throwing a 500 on every keystroke; the indexes reappear once reindexing finishes.
+            Log::warning('Global search degraded: Meilisearch multi-search failed.', ['exception' => $apiException->getMessage()]);
+
+            return ['mod' => collect(), 'addon' => collect(), 'user' => collect()];
+        }
 
         return [
             'mod' => $this->processModResults($response['results'][0]['hits']),

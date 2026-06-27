@@ -2,22 +2,37 @@
 
 declare(strict_types=1);
 
+use App\Contracts\VisitorPresenceStore;
 use App\Enums\Api\V0\ApiUsagePeriod;
-use App\Events\PeakVisitorUpdated;
+use App\Jobs\FetchCloudflareApiAnalyticsJob;
 use App\Models\ApiUsageMetric;
 use App\Models\Visitor;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Event;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
     Cache::flush();
+
+    // Run the deferred peak persistence inline so assertions see the database write within the test.
+    $this->withoutDefer();
 });
 
+/**
+ * Mark a number of visitors as currently online, of which the first $members are authenticated.
+ */
+function seedVisitorPresence(int $total, int $members = 0): void
+{
+    $store = resolve(VisitorPresenceStore::class);
+
+    for ($i = 0; $i < $total; $i++) {
+        $isMember = $i < $members;
+        $store->record(($isMember ? 'u:' : 'g:').$i, $isMember);
+    }
+}
+
 it('initializes with current peak data', function (): void {
-    // Create a peak record.
     Visitor::query()->create([
         'peak_count' => 100,
         'peak_date' => Date::parse('2025-01-01'),
@@ -45,112 +60,128 @@ it('initializes with the API request count from the last 24 hours', function ():
         ->assertSet('apiRequests24h', 1234);
 });
 
-it('updates peak when new count is higher', function (): void {
-    Event::fake([PeakVisitorUpdated::class]);
+it('prefers the Cloudflare edge total and shows the cached percentage when available', function (): void {
+    Cache::put(FetchCloudflareApiAnalyticsJob::CACHE_KEY, [
+        'edge_total' => 1284302,
+        'cached' => 1168315,
+        'origin' => 115987,
+        'cached_pct' => 91.0,
+    ], now()->addMinutes(15));
 
-    // Create initial peak.
+    Livewire::test('visitor-tracker')
+        ->assertSet('apiEdgeRequests24h', 1284302)
+        ->assertSet('apiCachedPct', 91)
+        ->assertSee('1,284,302')
+        ->assertSee('served from Cloudflare cache');
+});
+
+it('falls back to the origin API count when no Cloudflare data is cached', function (): void {
+    ApiUsageMetric::factory()->create([
+        'period' => ApiUsagePeriod::Minute,
+        'period_start' => now()->utc()->subHour(),
+        'request_count' => 555,
+    ]);
+
+    Livewire::test('visitor-tracker')
+        ->assertSet('apiEdgeRequests24h', 0)
+        ->assertSet('apiCachedPct', null)
+        ->assertSet('apiRequests24h', 555)
+        ->assertDontSee('served from Cloudflare cache');
+});
+
+it('renders the current online and member counts', function (): void {
+    seedVisitorPresence(5, 2);
+
+    Livewire::test('visitor-tracker')
+        ->assertSet('onlineCount', 5)
+        ->assertSet('memberCount', 2)
+        ->assertSee('users currently online')
+        ->assertSee('(2 members)');
+});
+
+it('uses singular wording for a single online visitor', function (): void {
+    seedVisitorPresence(1);
+
+    Livewire::test('visitor-tracker')
+        ->assertSet('onlineCount', 1)
+        ->assertSee('user currently online');
+});
+
+it('updates the peak when the live total exceeds it', function (): void {
     Visitor::query()->create([
         'peak_count' => 50,
         'peak_date' => Date::yesterday(),
     ]);
 
-    $component = Livewire::test('visitor-tracker');
+    seedVisitorPresence(75);
 
-    // Call updatePeak with higher count.
-    $component->call('updatePeak', 75);
-
-    // Check component state updated.
-    $component->assertSet('peakCount', 75)
+    Livewire::test('visitor-tracker')
+        ->assertSet('peakCount', 75)
         ->assertSet('peakDate', now()->format('M j, Y'));
 
-    // Check database updated.
     $peak = Visitor::query()->first();
     expect($peak->peak_count)->toBe(75);
     expect($peak->peak_date->toDateString())->toBe(now()->toDateString());
 
-    // Check event was broadcast.
-    Event::assertDispatched(PeakVisitorUpdated::class, fn ($event): bool => $event->count === 75 && $event->date === now()->format('M j, Y'));
-
-    // Check cache was cleared.
+    // The peak cache is busted so the next reader picks up the new value.
     expect(Cache::has('peak_visitor_data'))->toBeFalse();
 });
 
-it('does not update peak when new count is lower', function (): void {
-    Event::fake([PeakVisitorUpdated::class]);
-
-    // Create initial peak.
+it('does not update the peak when the live total is lower', function (): void {
     $peakDate = Date::yesterday();
     Visitor::query()->create([
         'peak_count' => 100,
         'peak_date' => $peakDate,
     ]);
 
-    $component = Livewire::test('visitor-tracker');
+    seedVisitorPresence(75);
 
-    // Call updatePeak with lower count.
-    $component->call('updatePeak', 75);
-
-    // Check component state unchanged.
-    $component->assertSet('peakCount', 100)
+    Livewire::test('visitor-tracker')
+        ->assertSet('peakCount', 100)
         ->assertSet('peakDate', $peakDate->format('M j, Y'));
 
-    // Check database unchanged.
-    $peak = Visitor::query()->first();
-    expect($peak->peak_count)->toBe(100);
-    expect($peak->peak_date->toDateString())->toBe($peakDate->toDateString());
-
-    // Check no event was broadcast.
-    Event::assertNotDispatched(PeakVisitorUpdated::class);
+    expect(Visitor::query()->first()->peak_count)->toBe(100);
 });
 
-it('handles concurrent peak updates with mutex lock', function (): void {
-    Event::fake([PeakVisitorUpdated::class]);
-
-    // Create initial peak.
-    Visitor::query()->create([
-        'peak_count' => 50,
-        'peak_date' => Date::yesterday(),
-    ]);
-
-    // Simulate concurrent updates.
-    $component1 = Livewire::test('visitor-tracker');
-    $component2 = Livewire::test('visitor-tracker');
-
-    // Both try to update at same time with same count.
-    $component1->call('updatePeak', 75);
-    $component2->call('updatePeak', 75);
-
-    // Check only one update occurred.
-    $peak = Visitor::query()->first();
-    expect($peak->peak_count)->toBe(75);
-
-    // Only one event should be dispatched.
-    Event::assertDispatchedTimes(PeakVisitorUpdated::class, 1);
-});
-
-it('creates peak record if it does not exist', function (): void {
-    Event::fake([PeakVisitorUpdated::class]);
-
-    // No peak record initially.
+it('creates a peak record when none exists and visitors are online', function (): void {
     expect(Visitor::query()->count())->toBe(0);
 
-    $component = Livewire::test('visitor-tracker');
+    seedVisitorPresence(25);
 
-    // Call updatePeak.
-    $component->call('updatePeak', 25);
+    Livewire::test('visitor-tracker')
+        ->assertSet('peakCount', 25)
+        ->assertSet('peakDate', now()->format('M j, Y'));
 
-    // Check peak was created.
     $peak = Visitor::query()->first();
     expect($peak)->not->toBeNull();
     expect($peak->peak_count)->toBe(25);
-    expect($peak->peak_date->toDateString())->toBe(now()->toDateString());
+});
 
-    // Check component state.
-    $component->assertSet('peakCount', 25)
-        ->assertSet('peakDate', now()->format('M j, Y'));
+it('does not re-apply the peak once it has been reached', function (): void {
+    Visitor::query()->create([
+        'peak_count' => 10,
+        'peak_date' => Date::yesterday(),
+    ]);
 
-    // Check event was broadcast.
-    Event::assertDispatched(PeakVisitorUpdated::class);
+    seedVisitorPresence(40);
+
+    Livewire::test('visitor-tracker')->assertSet('peakCount', 40);
+    Livewire::test('visitor-tracker')->assertSet('peakCount', 40);
+
+    expect(Visitor::query()->count())->toBe(1);
+    expect(Visitor::query()->first()->peak_count)->toBe(40);
+});
+
+it('left-aligns counts on mobile and right-aligns them once the footer expands to multiple columns', function (): void {
+    ApiUsageMetric::factory()->create([
+        'period' => ApiUsagePeriod::Minute,
+        'period_start' => now()->utc()->subHour(),
+        'request_count' => 1234,
+    ]);
+
+    Livewire::test('visitor-tracker')
+        ->assertSeeHtml('flex items-center justify-start sm:justify-end space-x-2')
+        ->assertSeeHtml('text-left sm:text-right mt-1');
 });
 
 it('prevents client-side modification of locked properties', function (): void {
@@ -164,7 +195,6 @@ it('prevents client-side modification of locked properties', function (): void {
 })->throws(CannotUpdateLockedPropertyException::class);
 
 it('uses cache for initial peak data', function (): void {
-    // Create a peak record.
     Visitor::query()->create([
         'peak_count' => 100,
         'peak_date' => Date::parse('2025-01-01'),
@@ -178,7 +208,7 @@ it('uses cache for initial peak data', function (): void {
 
     // Second component should still get cached value.
     Livewire::test('visitor-tracker')
-        ->assertSet('peakCount', 100)  // Cached value, not 200
+        ->assertSet('peakCount', 100)
         ->assertSet('peakDate', 'Jan 1, 2025');
 
     // Clear cache and test again.

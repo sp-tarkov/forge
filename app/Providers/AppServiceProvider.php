@@ -8,10 +8,10 @@ use App\Contracts\ApiUsageStore;
 use App\Contracts\DependencyResolver;
 use App\Contracts\Geolocator;
 use App\Contracts\SpamChecker;
+use App\Contracts\VisitorPresenceStore;
 use App\Enums\TrackingEventType;
 use App\Facades\CachedGate;
 use App\Facades\Track;
-use App\Http\Controllers\VisitorsPresenceBroadcastingController;
 use App\Mixins\CarbonMixin;
 use App\Models\User;
 use App\Policies\BlockingPolicy;
@@ -20,11 +20,14 @@ use App\Services\DependencyVersionService;
 use App\Services\GeolocationService;
 use App\Support\ApiUsage\ArrayApiUsageStore;
 use App\Support\ApiUsage\RedisApiUsageStore;
+use App\Support\Visitors\ArrayVisitorPresenceStore;
+use App\Support\Visitors\RedisVisitorPresenceStore;
 use App\View\Composers\PaginationComposer;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Broadcasting\BroadcastController;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request;
@@ -66,6 +69,20 @@ final class AppServiceProvider extends ServiceProvider
                 config()->integer('api.usage.bucket_ttl'),
             );
         });
+
+        // Visitor presence powers the footer "users online" count. Production uses shared Redis sorted sets so every
+        // Octane worker sees the same visitors; tests run without Redis, so fall back to an in-memory store. Both are
+        // singletons: the Redis store only holds scalars, and the array store must persist across a test's requests.
+        $this->app->singleton(VisitorPresenceStore::class, function (): VisitorPresenceStore {
+            if ($this->app->runningUnitTests()) {
+                return new ArrayVisitorPresenceStore(config()->integer('visitors.online_window'));
+            }
+
+            return new RedisVisitorPresenceStore(
+                config()->string('visitors.connection'),
+                config()->integer('visitors.online_window'),
+            );
+        });
     }
 
     /**
@@ -101,9 +118,10 @@ final class AppServiceProvider extends ServiceProvider
             AuthBanned::class,
         ]);
 
-        // Register the broadcasting.auth early to load our extended controller.
+        // Register the broadcasting.auth endpoint. Every remaining channel (chat conversations, user notifications,
+        // online/typing presence) requires an authenticated user, so the framework's default controller is sufficient.
         $this->app->booted(function (): void {
-            Route::match(['get', 'post'], 'broadcasting/auth', [VisitorsPresenceBroadcastingController::class, 'authenticate'])
+            Route::match(['get', 'post'], 'broadcasting/auth', [BroadcastController::class, 'authenticate'])
                 ->name('broadcasting.auth')
                 ->middleware('web')
                 ->withoutMiddleware([PreventRequestForgery::class]);

@@ -54,4 +54,10 @@ return [
         'license_key' => env('MAXMIND_LICENSE_KEY'),
     ],
 
+    'cloudflare' => [
+        'analytics_token' => env('CF_ANALYTICS_TOKEN'),
+        'zone_id' => env('CF_ZONE_ID'),
+        'api_path_prefix' => env('CF_API_PATH_PREFIX', '/api/'),
+    ],
+
 ];

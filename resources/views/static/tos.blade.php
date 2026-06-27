@@ -74,7 +74,7 @@
         />
     </x-slot>
 
-    <p><strong>Effective Date:</strong> 2025-08-26<br><strong>Last Updated:</strong> 2025-08-26</p>
+    <p><strong>Effective Date:</strong> 2025-08-26<br><strong>Last Updated:</strong> 2026-06-25</p>
 
     <h2 id="about-these-terms">1. About These Terms</h2>
 
@@ -151,7 +151,7 @@
 
     <h4>Technical Restrictions:</h4>
     <ul>
-        <li><strong>No automated access</strong> without permission (bots, scrapers, etc.)</li>
+        <li><strong>No scraping</strong> of our website's HTML content (crawlers, scrapers, headless browsers, etc.)</li>
         <li><strong>No circumventing</strong> security measures or access controls</li>
         <li><strong>No reverse engineering</strong> of our platform or services</li>
         <li><strong>No excessive bandwidth usage</strong> that impacts service quality</li>
@@ -441,5 +441,5 @@
                 href="{{ route('static.dmca') }}"
             >DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
 
-    <p><em>Last updated: 2025-08-26</em></p>
+    <p><em>Last updated: 2026-06-25</em></p>
 </x-layouts::static-toc>

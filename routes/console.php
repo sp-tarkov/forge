@@ -9,6 +9,7 @@ use App\Console\Commands\UpdateGeoLiteDatabase;
 use App\Jobs\AggregateApiUsageDailyJob;
 use App\Jobs\AggregateApiUsageJob;
 use App\Jobs\DetectDownloadChangesJob;
+use App\Jobs\FetchCloudflareApiAnalyticsJob;
 use App\Jobs\ProcessPinnedModVersionPublishDates;
 use App\Jobs\SendDiscordNotifications;
 use App\Jobs\UpdateDisposableEmailBlocklist;
@@ -37,6 +38,13 @@ if (config('verification.enabled')) {
 if (config('api.usage.enabled')) {
     Schedule::job(new AggregateApiUsageJob)->everyMinute()->onOneServer()->withoutOverlapping();
     Schedule::job(new AggregateApiUsageDailyJob)->dailyAt('00:15')->onOneServer();
+}
+
+// Refresh the Cloudflare edge request totals shown in the footer. Origin counters miss everything Cloudflare serves
+// from cache, so this fills in the full picture. Scheduled whenever the analytics credentials are present, regardless
+// of environment, so any environment pointed at a Cloudflare zone reflects real edge traffic.
+if (config('services.cloudflare.analytics_token') && config('services.cloudflare.zone_id')) {
+    Schedule::job(new FetchCloudflareApiAnalyticsJob)->everyFiveMinutes()->onOneServer()->withoutOverlapping();
 }
 
 if (app()->isLocal() && config('telescope.enabled')) {

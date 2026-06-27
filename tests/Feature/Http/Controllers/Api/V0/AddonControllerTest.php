@@ -257,6 +257,62 @@ describe('index', function (): void {
         expect($returnedIds[1])->toBe($addon2->id);
         expect($returnedIds[2])->toBe($addon1->id);
     });
+
+    it('caches the pagination total for guests', function (): void {
+        foreach (range(1, 3) as $i) {
+            ($this->createVisibleAddon)();
+        }
+
+        // The first request computes the total and caches it for the guest signature.
+        $this->getJson('/api/v0/addons')->assertOk()->assertJsonPath('meta.total', 3);
+
+        // A newly published addon joins the live result set...
+        ($this->createVisibleAddon)();
+
+        // ...but the cached total is reused within the TTL, so it lags behind the live count.
+        $this->getJson('/api/v0/addons')->assertOk()->assertJsonPath('meta.total', 3);
+
+        // Clearing the cache forces a fresh count that reflects the new addon.
+        Cache::clear();
+        $this->getJson('/api/v0/addons')->assertOk()->assertJsonPath('meta.total', 4);
+    });
+
+    it('caches the pagination total identically for authenticated users', function (): void {
+        foreach (range(1, 3) as $i) {
+            ($this->createVisibleAddon)();
+        }
+
+        // The open API forces the public viewpoint for every caller, so an authenticated request caches the total
+        // exactly like a guest request rather than computing a per-user count.
+        $this->actingAs($this->user)->getJson('/api/v0/addons')->assertOk()->assertJsonPath('meta.total', 3);
+
+        ($this->createVisibleAddon)();
+
+        // The cached total is reused within the TTL, so the count is identical regardless of authentication.
+        $this->actingAs($this->user)->getJson('/api/v0/addons')->assertOk()->assertJsonPath('meta.total', 3);
+    });
+
+    it('returns the public view to administrators', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '^3.8.0']);
+
+        $visibleAddon = ($this->createVisibleAddon)([], $mod);
+
+        // An unpublished addon on the same visible mod, otherwise complete: only its own publish state hides it.
+        $hiddenAddon = Addon::factory()->for($mod)->create(['published_at' => null]);
+        AddonVersion::factory()->create(['addon_id' => $hiddenAddon->id]);
+
+        $admin = User::factory()->admin()->create();
+
+        $guestIds = collect($this->getJson('/api/v0/addons')->assertOk()->json('data'))->pluck('id');
+        $adminIds = collect($this->actingAs($admin)->getJson('/api/v0/addons')->assertOk()->json('data'))->pluck('id');
+
+        // A guest never sees the unpublished addon, and an authenticated admin resolves the exact same set: the open
+        // API is pinned to the public viewpoint, so output does not widen for staff.
+        expect($guestIds)->toContain($visibleAddon->id)
+            ->not->toContain($hiddenAddon->id);
+        expect($adminIds->all())->toBe($guestIds->all());
+    });
 });
 
 describe('show', function (): void {

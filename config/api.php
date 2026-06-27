@@ -54,4 +54,61 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | API Pagination
+    |--------------------------------------------------------------------------
+    |
+    | The total row count is the most expensive part of a paginated listing: a correlated COUNT that scans the whole
+    | visible set on every request, regardless of which page is asked for. For the open v0 API the anonymous total only
+    | changes when records are published or hidden, so guest totals are cached for a short window. The page contents are
+    | always live; only the total (and the last-page links derived from it) can lag by up to this many seconds. Lower it
+    | for fresher totals, raise it to shed more COUNT load during a traffic spike.
+    |
+    */
+
+    'pagination' => [
+        'count_cache_ttl' => (int) env('API_PAGINATION_COUNT_CACHE_TTL', 60),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | API Search
+    |--------------------------------------------------------------------------
+    |
+    | A search query on the listing endpoints triggers an external Meilisearch round-trip. The matching hits depend only
+    | on the query string (the index holds only public records and is identical for every caller), so the ordered hits
+    | are cached for a short window to spare the engine on repeated identical searches. Newly indexed records can take up
+    | to this many seconds to surface in search. Set to 0 to disable.
+    |
+    */
+
+    'search' => [
+        'cache_ttl' => (int) env('API_SEARCH_CACHE_TTL', 60),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | API Cache-Control
+    |--------------------------------------------------------------------------
+    |
+    | Successful anonymous GET responses are marked publicly cacheable so a CDN (Cloudflare) and browsers can serve
+    | repeats without reaching the origin, which is the primary defence against a traffic spike on a single server.
+    | Authenticated responses are never marked public because their visibility is user-specific. The body is unchanged;
+    | only freshness is affected, so a cached copy can be up to max-age seconds stale. Set the default to 0 to disable.
+    | Per-route overrides are keyed by route name: near-static endpoints can cache for far longer, and the health check
+    | is never cached. Cloudflare additionally needs a Cache Rule to store JSON at the edge.
+    |
+    */
+
+    'cache_control' => [
+        'default_max_age' => (int) env('API_CACHE_CONTROL_MAX_AGE', 60),
+
+        'overrides' => [
+            'api.v0.mod-categories' => (int) env('API_CACHE_CONTROL_MAX_AGE_CATEGORIES', 3600),
+            'api.v0.spt.versions' => (int) env('API_CACHE_CONTROL_MAX_AGE_SPT', 3600),
+            'api.v0.ping' => 0,
+        ],
+    ],
+
 ];

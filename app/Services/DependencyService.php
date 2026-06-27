@@ -10,6 +10,7 @@ use App\Models\ModVersion;
 use App\Support\Api\V0\QueryBuilder\ModDependencyTreeQueryBuilder;
 use App\Support\VersionMatcher;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -419,11 +420,16 @@ final class DependencyService
     }
 
     /**
-     * Find a mod version that satisfies the given constraint for a specific SPT version.
+     * Get the published, visible versions of a mod that are compatible with a specific SPT version, ordered newest
+     * first. The result depends only on the mod and the SPT version, not on any dependency constraint, so a caller
+     * resolving many constraints against the same target can fetch this once and apply each constraint in memory
+     * instead of issuing one query per constraint.
+     *
+     * @return EloquentCollection<int, ModVersion>
      */
-    public function findSatisfyingVersion(int $modId, string $constraint, string $sptVersion): ?ModVersion
+    public function publishedVersionsForSpt(int $modId, string $sptVersion): EloquentCollection
     {
-        $versions = ModVersion::query()
+        return ModVersion::query()
             ->where('mod_id', $modId)
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
@@ -444,11 +450,15 @@ final class DependencyService
             ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
             ->orderBy('version_labels')
             ->get();
+    }
 
-        // Find the highest version that satisfies the constraint
-        $satisfyingVersions = $versions->filter(fn (ModVersion $version): bool => VersionMatcher::satisfies($version->version, $constraint));
-
-        return $satisfyingVersions->first();
+    /**
+     * Find the highest mod version that satisfies the given constraint for a specific SPT version.
+     */
+    public function findSatisfyingVersion(int $modId, string $constraint, string $sptVersion): ?ModVersion
+    {
+        return $this->publishedVersionsForSpt($modId, $sptVersion)
+            ->first(fn (ModVersion $version): bool => VersionMatcher::satisfies($version->version, $constraint));
     }
 
     /**

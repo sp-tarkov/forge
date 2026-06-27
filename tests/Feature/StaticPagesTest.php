@@ -20,7 +20,9 @@ describe('static pages', function (): void {
     });
 
     it('renders the terms of service page', function (): void {
-        $this->get('/terms-of-service')->assertOk();
+        $this->get('/terms-of-service')
+            ->assertOk()
+            ->assertSee('No scraping');
     });
 
     it('renders the DMCA page', function (): void {
@@ -29,6 +31,13 @@ describe('static pages', function (): void {
 
     it('renders the installer page', function (): void {
         $this->get('/installer')->assertOk();
+    });
+
+    it('renders the developers API page', function (): void {
+        $this->get('/developers')
+            ->assertOk()
+            ->assertSee('The Forge API')
+            ->assertSee('api/v0');
     });
 
     it('renders the banned user page', function (): void {

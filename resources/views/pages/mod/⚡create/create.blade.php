@@ -114,7 +114,7 @@
                             >
                                 <flux:label badge="Optional">{{ __('Mod GUID') }}</flux:label>
                                 <flux:description>
-                                    {{ __('A unique identifier for your mod in reverse domain notation, used to identify your mod across different systems. It should correspond to the GUID in your mod files, though casing is ignored. Use only lowercase letters, numbers, hyphens, and dots; GUIDs are matched case-insensitively and stored in lowercase. Required for mod versions compatible with SPT 4.0.0 and above.') }}
+                                    {{ __('A unique identifier in reverse domain notation that matches the GUID in your mod files. Stored lowercase, matched case-insensitively. Required for SPT 4.0.0 and above.') }}
                                 </flux:description>
                                 <flux:input
                                     type="text"

@@ -7,6 +7,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function (): void {
     $this->user = User::factory()->create();
@@ -673,6 +674,77 @@ describe('check', function (): void {
                         'blocked_updates' => [],
                     ],
                 ]);
+        });
+
+        it('resolves a shared dependency once instead of once per dependent mod', function (): void {
+            $sptVersion = SptVersion::factory()->create([
+                'version' => '3.11.5',
+                'publish_date' => now()->subDays(1),
+            ]);
+
+            // A common library that several installed mods depend on.
+            $library = Mod::factory()->create(['guid' => 'com.example.library', 'published_at' => now()->subDays(10)]);
+            $libraryVersion = ModVersion::factory()->create([
+                'mod_id' => $library->id,
+                'version' => '1.0.0',
+                'version_major' => 1,
+                'version_minor' => 0,
+                'version_patch' => 0,
+                'version_labels' => '',
+                'published_at' => now()->subDays(10),
+            ]);
+            $libraryVersion->sptVersions()->syncWithoutDetaching([$sptVersion->id]);
+
+            // Three installed mods, each on 1.0.0 with a 1.5.0 candidate that depends on the shared library.
+            $installed = [];
+            foreach (range(1, 3) as $index) {
+                $host = Mod::factory()->create(['guid' => 'com.example.host'.$index, 'published_at' => now()->subDays(10)]);
+
+                $current = ModVersion::factory()->create([
+                    'mod_id' => $host->id,
+                    'version' => '1.0.0',
+                    'version_major' => 1,
+                    'version_minor' => 0,
+                    'version_patch' => 0,
+                    'version_labels' => '',
+                    'published_at' => now()->subDays(10),
+                ]);
+                $current->sptVersions()->syncWithoutDetaching([$sptVersion->id]);
+
+                $candidate = ModVersion::factory()->create([
+                    'mod_id' => $host->id,
+                    'version' => '1.5.0',
+                    'version_major' => 1,
+                    'version_minor' => 5,
+                    'version_patch' => 0,
+                    'version_labels' => '',
+                    'published_at' => now()->subDays(5),
+                ]);
+                $candidate->sptVersions()->syncWithoutDetaching([$sptVersion->id]);
+
+                Dependency::factory()->create([
+                    'dependable_id' => $candidate->id,
+                    'dependent_mod_id' => $library->id,
+                    'constraint' => '^1.0.0',
+                ]);
+
+                $installed[] = $host->id.':1.0.0';
+            }
+
+            DB::enableQueryLog();
+            $response = $this->getJson(sprintf('/api/v0/mods/updates?mods=%s&spt_version=3.11.5', implode(',', $installed)));
+            // The shared library's candidate version list is fetched with a `where mod_id = <library>` query; count how
+            // many of those ran during the request.
+            $libraryLookups = collect(DB::getQueryLog())
+                ->filter(fn (array $query): bool => str_contains((string) $query['query'], 'from `mod_versions`')
+                    && in_array($library->id, $query['bindings'], true))
+                ->count();
+            DB::disableQueryLog();
+
+            $response->assertSuccessful()->assertJsonCount(3, 'data.updates');
+
+            // Memoized per request, so the library is resolved once rather than once per dependent mod.
+            expect($libraryLookups)->toBe(1);
         });
     });
 
