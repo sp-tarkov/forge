@@ -26,6 +26,7 @@ Homestead.yaml
 /public/docs
 /public/hot
 /public/storage
+/public/vendor/horizon
 /storage/*.key
 /storage/app/private/livewire-tmp
 !/storage/app/private/livewire-tmp/.gitkeep
