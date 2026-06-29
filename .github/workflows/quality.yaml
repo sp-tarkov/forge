@@ -69,7 +69,7 @@ jobs:
         run: npm run lint
 
       - name: Pint Cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .pint.cache
           key: ${{ runner.os }}-pint-${{ hashFiles('pint.json', 'composer.lock') }}-${{ github.run_id }}
@@ -103,7 +103,7 @@ jobs:
         run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
       - name: Rector Cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .rector/cache
           key: ${{ runner.os }}-rector-${{ github.run_id }}
@@ -137,7 +137,7 @@ jobs:
         run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
       - name: PHPStan Cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: /tmp/phpstan
           key: ${{ runner.os }}-phpstan-${{ hashFiles('phpstan.neon') }}-${{ github.run_id }}
