@@ -10,7 +10,7 @@ use App\Http\Responses\Api\V0\ApiResponse;
 use App\Support\Api\V0\QueryBuilder\SptVersionQueryBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Knuckles\Scribe\Attributes\UrlParam;
+use Knuckles\Scribe\Attributes\QueryParam;
 
 /**
  * @group SPT Versions
@@ -98,14 +98,14 @@ final class SptVersionController extends Controller
      *     "message": "Unauthenticated."
      * }
      */
-    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,version,created_at')]
-    #[UrlParam('filter[id]', description: 'Filter by SPT version ID. Comma-separated.', required: false, example: '234,432')]
-    #[UrlParam('filter[created_between]', description: 'Filter between by two created_at dates.', required: false, example: '2025-01-01,2025-03-31')]
-    #[UrlParam('filter[updated_between]', description: 'Filter between by two updated_at dates.', required: false, example: '2025-01-01,2025-03-31')]
-    #[UrlParam('filter[spt_version]', description: 'Filter versions that are compatible with a SemVer constraint.', required: false, example: '^3.9.0')]
-    #[UrlParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields.', required: false, example: '-version,created_at')]
-    #[UrlParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
-    #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
+    #[QueryParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,version,created_at')]
+    #[QueryParam('filter[id]', description: 'Filter by SPT version ID. Comma-separated.', required: false, example: '234,432')]
+    #[QueryParam('filter[created_between]', description: 'Filter between by two created_at dates.', required: false, example: '2025-01-01,2025-03-31')]
+    #[QueryParam('filter[updated_between]', description: 'Filter between by two updated_at dates.', required: false, example: '2025-01-01,2025-03-31')]
+    #[QueryParam('filter[spt_version]', description: 'Filter versions that are compatible with a SemVer constraint.', required: false, example: '^3.9.0')]
+    #[QueryParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields.', required: false, example: '-version,created_at')]
+    #[QueryParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
+    #[QueryParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
     public function index(Request $request): JsonResponse
     {
         /** @var array<string, mixed>|null $filters */

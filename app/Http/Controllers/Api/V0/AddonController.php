@@ -12,7 +12,7 @@ use App\Support\Api\V0\QueryBuilder\AddonQueryBuilder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Knuckles\Scribe\Attributes\UrlParam;
+use Knuckles\Scribe\Attributes\QueryParam;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -107,23 +107,23 @@ final class AddonController extends Controller
      *      "message": "Unauthenticated."
      *  }
      */
-    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,created_at')]
-    #[UrlParam('filter[id]', description: 'Filter by comma-separated Addon IDs.', required: false, example: '1,5,10')]
-    #[UrlParam('filter[name]', description: 'Filter by name (fuzzy filter).', required: false, example: 'Music Pack')]
-    #[UrlParam('filter[slug]', description: 'Filter by slug (fuzzy filter).', required: false, example: 'some-addon')]
-    #[UrlParam('filter[teaser]', description: 'Filter by teaser text (fuzzy filter).', required: false, example: 'important')]
-    #[UrlParam('filter[mod_id]', description: 'Filter by comma-separated mod IDs (parent mod).', required: false, example: '1,2,3')]
-    #[UrlParam('filter[contains_ads]', type: 'boolean', description: 'Filter by contains_ads status (1, true, 0, false).', required: false, example: 'false')]
-    #[UrlParam('filter[contains_ai_content]', type: 'boolean', description: 'Filter by contains_ai_content status (1, true, 0, false).', required: false, example: 'false')]
-    #[UrlParam('filter[is_detached]', type: 'boolean', description: 'Filter by detached status (1, true, 0, false).', required: false, example: 'false')]
-    #[UrlParam('filter[created_between]', description: 'Filter by creation date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
-    #[UrlParam('filter[updated_between]', description: 'Filter by update date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
-    #[UrlParam('filter[published_between]', description: 'Filter by publication date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
-    #[UrlParam('query', description: 'Search query to filter addons using Meilisearch. This will search across name, slug, and description fields.', required: false, example: 'music pack')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `versions`, `license`, `mod`, `source_code_links`.', required: false, example: 'versions,mod')]
-    #[UrlParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields. Allowed: `name`, `created_at`, `updated_at`, `published_at`.', required: false, example: '-name')]
-    #[UrlParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
-    #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
+    #[QueryParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,created_at')]
+    #[QueryParam('filter[id]', description: 'Filter by comma-separated Addon IDs.', required: false, example: '1,5,10')]
+    #[QueryParam('filter[name]', description: 'Filter by name (fuzzy filter).', required: false, example: 'Music Pack')]
+    #[QueryParam('filter[slug]', description: 'Filter by slug (fuzzy filter).', required: false, example: 'some-addon')]
+    #[QueryParam('filter[teaser]', description: 'Filter by teaser text (fuzzy filter).', required: false, example: 'important')]
+    #[QueryParam('filter[mod_id]', description: 'Filter by comma-separated mod IDs (parent mod).', required: false, example: '1,2,3')]
+    #[QueryParam('filter[contains_ads]', type: 'boolean', description: 'Filter by contains_ads status (1, true, 0, false).', required: false, example: 'false')]
+    #[QueryParam('filter[contains_ai_content]', type: 'boolean', description: 'Filter by contains_ai_content status (1, true, 0, false).', required: false, example: 'false')]
+    #[QueryParam('filter[is_detached]', type: 'boolean', description: 'Filter by detached status (1, true, 0, false).', required: false, example: 'false')]
+    #[QueryParam('filter[created_between]', description: 'Filter by creation date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
+    #[QueryParam('filter[updated_between]', description: 'Filter by update date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
+    #[QueryParam('filter[published_between]', description: 'Filter by publication date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
+    #[QueryParam('query', description: 'Search query to filter addons using Meilisearch. This will search across name, slug, and description fields.', required: false, example: 'music pack')]
+    #[QueryParam('include', description: 'Comma-separated list of relationships. Available: `versions`, `license`, `mod`, `source_code_links`.', required: false, example: 'versions,mod')]
+    #[QueryParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields. Allowed: `name`, `created_at`, `updated_at`, `published_at`.', required: false, example: '-name')]
+    #[QueryParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
+    #[QueryParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
     public function index(Request $request): JsonResponse
     {
         /** @var array<string, mixed>|null $filters */
@@ -195,8 +195,8 @@ final class AddonController extends Controller
      *      "message": "Resource not found."
      *  }
      */
-    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,created_at')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `versions`, `license`, `mod`, `source_code_links`.', required: false, example: 'versions,license')]
+    #[QueryParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,created_at')]
+    #[QueryParam('include', description: 'Comma-separated list of relationships. Available: `versions`, `license`, `mod`, `source_code_links`.', required: false, example: 'versions,license')]
     public function show(Request $request, int $addonId): JsonResponse
     {
         $queryBuilder = (new AddonQueryBuilder)

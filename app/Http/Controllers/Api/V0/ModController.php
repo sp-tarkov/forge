@@ -12,7 +12,7 @@ use App\Support\Api\V0\QueryBuilder\ModQueryBuilder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Knuckles\Scribe\Attributes\UrlParam;
+use Knuckles\Scribe\Attributes\QueryParam;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -321,29 +321,29 @@ final class ModController extends Controller
      *      "message": "Unauthenticated."
      *  }
      */
-    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,featured,created_at')]
-    #[UrlParam('filter[id]', description: 'Filter by comma-separated Mod IDs.', required: false, example: '1,5,10')]
-    #[UrlParam('filter[hub_id]', description: 'Filter by comma-separated Hub IDs.', required: false, example: '123,456')]
-    #[UrlParam('filter[guid]', description: 'Filter by comma-separated GUIDs. Matching is case-insensitive.', required: false, example: 'com.example.mymod1,com.example.mymod2')]
-    #[UrlParam('filter[name]', description: 'Filter by name (fuzzy filter).', required: false, example: 'Raid Time')]
-    #[UrlParam('filter[slug]', description: 'Filter by slug (fuzzy filter).', required: false, example: 'some-mod')]
-    #[UrlParam('filter[teaser]', description: 'Filter by teaser text (fuzzy filter).', required: false, example: 'important')]
-    #[UrlParam('filter[featured]', description: 'Filter by featured status (1, true, 0, false).', required: false, example: 'true')]
-    #[UrlParam('filter[contains_ads]', type: 'boolean', description: 'Filter by contains_ads status (1, true, 0, false).', required: false, example: 'false')]
-    #[UrlParam('filter[contains_ai_content]', type: 'boolean', description: 'Filter by contains_ai_content status (1, true, 0, false).', required: false, example: 'false')]
-    #[UrlParam('filter[category_id]', description: 'Filter by comma-separated category IDs.', required: false, example: '1,2,3')]
-    #[UrlParam('filter[category_slug]', description: 'Filter by comma-separated category slugs.', required: false, example: 'weapons,gear')]
-    #[UrlParam('filter[created_between]', description: 'Filter by creation date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
-    #[UrlParam('filter[updated_between]', description: 'Filter by update date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
-    #[UrlParam('filter[published_between]', description: 'Filter by publication date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
-    #[UrlParam('filter[spt_version]', description: 'Filter mods that are compatible with an SPT version SemVer constraint. This will only filter the mods, not the mod versions.', required: false, example: '^3.8.0')]
-    #[UrlParam('filter[fika_compatibility]', type: 'boolean', description: 'Filter by Fika compatibility status. When true, only shows mods with Fika compatible versions (1, true, 0, false).', required: false, example: 'true')]
-    #[UrlParam('filter[include_legacy]', type: 'boolean', description: 'Include legacy mods (mods with versions that have no SPT version constraint). By default, legacy mods are excluded from results (1, true, 0, false).', required: false, example: 'true')]
-    #[UrlParam('query', description: 'Search query to filter mods using Meilisearch. This will search across name, slug, and description fields.', required: false, example: 'raid time')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `versions`, `license`, `category`, `source_code_links`.', required: false, example: 'versions,category')]
-    #[UrlParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields. Allowed: `name`, `featured`, `created_at`, `updated_at`, `published_at`.', required: false, example: 'featured,-name')]
-    #[UrlParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
-    #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
+    #[QueryParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,featured,created_at')]
+    #[QueryParam('filter[id]', description: 'Filter by comma-separated Mod IDs.', required: false, example: '1,5,10')]
+    #[QueryParam('filter[hub_id]', description: 'Filter by comma-separated Hub IDs.', required: false, example: '123,456')]
+    #[QueryParam('filter[guid]', description: 'Filter by comma-separated GUIDs. Matching is case-insensitive.', required: false, example: 'com.example.mymod1,com.example.mymod2')]
+    #[QueryParam('filter[name]', description: 'Filter by name (fuzzy filter).', required: false, example: 'Raid Time')]
+    #[QueryParam('filter[slug]', description: 'Filter by slug (fuzzy filter).', required: false, example: 'some-mod')]
+    #[QueryParam('filter[teaser]', description: 'Filter by teaser text (fuzzy filter).', required: false, example: 'important')]
+    #[QueryParam('filter[featured]', description: 'Filter by featured status (1, true, 0, false).', required: false, example: 'true')]
+    #[QueryParam('filter[contains_ads]', type: 'boolean', description: 'Filter by contains_ads status (1, true, 0, false).', required: false, example: 'false')]
+    #[QueryParam('filter[contains_ai_content]', type: 'boolean', description: 'Filter by contains_ai_content status (1, true, 0, false).', required: false, example: 'false')]
+    #[QueryParam('filter[category_id]', description: 'Filter by comma-separated category IDs.', required: false, example: '1,2,3')]
+    #[QueryParam('filter[category_slug]', description: 'Filter by comma-separated category slugs.', required: false, example: 'weapons,gear')]
+    #[QueryParam('filter[created_between]', description: 'Filter by creation date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
+    #[QueryParam('filter[updated_between]', description: 'Filter by update date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
+    #[QueryParam('filter[published_between]', description: 'Filter by publication date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
+    #[QueryParam('filter[spt_version]', description: 'Filter mods that are compatible with an SPT version SemVer constraint. This will only filter the mods, not the mod versions.', required: false, example: '^3.8.0')]
+    #[QueryParam('filter[fika_compatibility]', type: 'boolean', description: 'Filter by Fika compatibility status. When true, only shows mods with Fika compatible versions (1, true, 0, false).', required: false, example: 'true')]
+    #[QueryParam('filter[include_legacy]', type: 'boolean', description: 'Include legacy mods (mods with versions that have no SPT version constraint). By default, legacy mods are excluded from results (1, true, 0, false).', required: false, example: 'true')]
+    #[QueryParam('query', description: 'Search query to filter mods using Meilisearch. This will search across name, slug, and description fields.', required: false, example: 'raid time')]
+    #[QueryParam('include', description: 'Comma-separated list of relationships. Available: `versions`, `license`, `category`, `source_code_links`.', required: false, example: 'versions,category')]
+    #[QueryParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields. Allowed: `name`, `featured`, `created_at`, `updated_at`, `published_at`.', required: false, example: 'featured,-name')]
+    #[QueryParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
+    #[QueryParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
     public function index(Request $request): JsonResponse
     {
         /** @var array<string, mixed>|null $filters */
@@ -557,8 +557,8 @@ final class ModController extends Controller
      *      "message": "Resource not found."
      *  }
      */
-    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,featured,created_at')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `versions`, `license`, `category`, `source_code_links`.', required: false, example: 'versions,license')]
+    #[QueryParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,featured,created_at')]
+    #[QueryParam('include', description: 'Comma-separated list of relationships. Available: `versions`, `license`, `category`, `source_code_links`.', required: false, example: 'versions,license')]
     public function show(Request $request, int $modId): JsonResponse
     {
         $queryBuilder = (new ModQueryBuilder)

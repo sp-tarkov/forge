@@ -11,7 +11,7 @@ use App\Http\Responses\Api\V0\ApiResponse;
 use App\Support\Api\V0\QueryBuilder\ModCategoryQueryBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Knuckles\Scribe\Attributes\UrlParam;
+use Knuckles\Scribe\Attributes\QueryParam;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -87,13 +87,13 @@ final class ModCategoryController extends Controller
      *     "message": "Unauthenticated."
      * }
      */
-    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,title,slug')]
-    #[UrlParam('filter[id]', description: 'Filter by category ID. Comma-separated.', required: false, example: '1,2,3')]
-    #[UrlParam('filter[slug]', description: 'Filter by category slug. Comma-separated.', required: false, example: 'weapons,gear')]
-    #[UrlParam('filter[title]', description: 'Filter by category title (wildcard search).', required: false, example: 'weapon')]
-    #[UrlParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields.', required: false, example: 'title,-slug')]
-    #[UrlParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
-    #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 100).', required: false, example: 50)]
+    #[QueryParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,title,slug')]
+    #[QueryParam('filter[id]', description: 'Filter by category ID. Comma-separated.', required: false, example: '1,2,3')]
+    #[QueryParam('filter[slug]', description: 'Filter by category slug. Comma-separated.', required: false, example: 'weapons,gear')]
+    #[QueryParam('filter[title]', description: 'Filter by category title (wildcard search).', required: false, example: 'weapon')]
+    #[QueryParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields.', required: false, example: 'title,-slug')]
+    #[QueryParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
+    #[QueryParam('per_page', type: 'integer', description: 'The number of results per page (max 100).', required: false, example: 50)]
     public function index(Request $request): JsonResponse
     {
         $sorts = $request->string('sort')->explode(',')->filter()->all();
@@ -139,7 +139,7 @@ final class ModCategoryController extends Controller
      *     "message": "The requested resource was not found."
      * }
      */
-    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,title,slug')]
+    #[QueryParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,title,slug')]
     public function show(Request $request, string $identifier): JsonResponse
     {
         $queryBuilder = (new ModCategoryQueryBuilder)
