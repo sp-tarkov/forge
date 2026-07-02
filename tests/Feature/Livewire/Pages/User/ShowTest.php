@@ -916,3 +916,37 @@ describe('wall tab', function (): void {
         $response->assertSeeText('Nice work on your mods!');
     });
 });
+
+describe('search indexing', function (): void {
+    it('marks a profile with no public content as noindex', function (): void {
+        $user = User::factory()->create();
+
+        $response = $this->get(route('user.show', [
+            'userId' => $user->id,
+            'slug' => $user->slug,
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertSee('noindex,follow', false);
+    });
+
+    it('does not mark an author profile as noindex', function (): void {
+        $author = User::factory()->create();
+        $mod = Mod::factory()->for($author, 'owner')->create([
+            'disabled' => false,
+            'published_at' => now()->subDay(),
+        ]);
+        ModVersion::factory()->recycle($mod)->create([
+            'disabled' => false,
+            'published_at' => now()->subDay(),
+        ]);
+
+        $response = $this->get(route('user.show', [
+            'userId' => $author->id,
+            'slug' => $author->slug,
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('noindex', false);
+    });
+});

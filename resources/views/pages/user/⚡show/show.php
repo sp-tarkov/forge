@@ -74,6 +74,19 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
+     * Resolve the robots meta directive for this profile. Profiles with no publicly visible mods or addons are marked
+     * noindex so the large pool of content-less accounts stays out of the search index, matching the authors sitemap.
+     * The public viewpoint (null viewer) is used so the verdict is the same for a guest crawler and the owner.
+     */
+    public function getRobots(): ?string
+    {
+        $hasPublicContent = $this->user->visibleModsFor(null)->exists()
+            || $this->user->visibleAddonsFor(null)->exists();
+
+        return $hasPublicContent ? null : 'noindex,follow';
+    }
+
+    /**
      * Get view data.
      *
      * @return array<string, mixed>
@@ -86,6 +99,7 @@ new #[Layout('layouts::base')] class extends Component
             'modCount' => $this->getModCount(),
             'addonCount' => $this->getAddonCount(),
             'activeBan' => $this->getActiveBan(),
+            'robots' => $this->getRobots(),
         ];
     }
 
