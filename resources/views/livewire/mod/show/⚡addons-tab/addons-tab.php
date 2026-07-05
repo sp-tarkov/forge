@@ -143,7 +143,7 @@ new #[Lazy] class extends Component
         $mod = $this->mod;
         $user = auth()->user();
 
-        return $mod // @phpstan-ignore return.type (Livewire computed property caching)
+        return $mod
             ->addons()
             ->with([
                 'owner',

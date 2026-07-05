@@ -40,7 +40,7 @@ final class ModPolicy
         // For non-privileged users, check if mod is publicly visible
         $isPrivilegedUser = $user && ($mod->isAuthorOrOwner($user) || $user->isModOrAdmin());
 
-        return ! (! $isPrivilegedUser && ! $mod->isPubliclyVisible());
+        return $isPrivilegedUser || $mod->isPubliclyVisible();
     }
 
     /**
