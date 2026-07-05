@@ -147,6 +147,7 @@
                 class="divide-y divide-gray-200 dark:divide-gray-700"
             >
                 @foreach ($dependencies as $dependency)
+                    @continue($dependency->mod === null)
                     <li class="py-3 first:pt-0 last:pb-0">
                         <a
                             href="{{ route('mod.show', [$dependency->mod->id, $dependency->mod->slug]) }}"

@@ -245,6 +245,7 @@
             </p>
             <ul>
                 @foreach ($version->latestDependenciesResolved as $resolvedDependency)
+                    @continue($resolvedDependency->mod === null)
                     <li>
                         <a
                             href="{{ $resolvedDependency->mod->detail_url }}"
