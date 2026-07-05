@@ -11,7 +11,9 @@ use App\Http\Controllers\CommentSubscriptionController;
 use App\Http\Controllers\FileRedirectController;
 use App\Http\Controllers\ModRssFeedController;
 use App\Http\Controllers\ModVersionController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SocialiteController;
+use App\Http\Middleware\ForcePublicViewpoint;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModList;
@@ -20,6 +22,17 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Route;
+
+Route::middleware(ForcePublicViewpoint::class)->group(function (): void {
+    Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.index');
+    Route::get('/sitemap-pages.xml', [SitemapController::class, 'pages'])->name('sitemap.pages');
+    Route::get('/sitemap-mods.xml', [SitemapController::class, 'mods'])->name('sitemap.mods');
+    Route::get('/sitemap-addons.xml', [SitemapController::class, 'addons'])->name('sitemap.addons');
+    Route::get('/sitemap-authors.xml', [SitemapController::class, 'authors'])->name('sitemap.authors');
+    Route::get('/sitemap-lists.xml', [SitemapController::class, 'lists'])->name('sitemap.lists');
+});
+
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 Route::middleware('auth.banned')->group(function (): void {
 
@@ -122,6 +135,9 @@ Route::middleware('auth.banned')->group(function (): void {
         Route::livewire('/mod/guidelines', 'pages::mod.guidelines-acknowledgment')
             ->name('mod.guidelines');
 
+        Route::livewire('/mod/path-check', 'pages::mod.path-check')
+            ->name('mod.path-check');
+
         Route::livewire('/mod/create', 'pages::mod.create')
             ->name('mod.create');
 
@@ -196,6 +212,9 @@ Route::middleware('auth.banned')->group(function (): void {
             Route::livewire('/admin/role-management', 'pages::admin.role-management')->name('admin.role-management');
             Route::livewire('/admin/spt-versions', 'pages::admin.spt-version-management')->name('admin.spt-versions');
             Route::livewire('/admin/file-verification', 'pages::admin.file-verification')->name('admin.file-verification');
+            Route::livewire('/admin/alt-detection/{user?}', 'pages::admin.alt-detection')
+                ->whereNumber('user')
+                ->name('admin.alt-detection');
         });
     });
 

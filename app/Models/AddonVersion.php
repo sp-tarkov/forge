@@ -148,7 +148,8 @@ final class AddonVersion extends Model
     }
 
     /**
-     * The relationship between an addon version and each of its resolved dependencies' latest versions.
+     * The relationship between an addon version and each of its resolved dependencies' latest versions. Excludes
+     * dependencies whose mod is hidden from the current viewer by the PublishedScope.
      *
      * @return BelongsToMany<ModVersion, $this>
      */
@@ -156,6 +157,7 @@ final class AddonVersion extends Model
     {
         return $this->belongsToMany(ModVersion::class, 'dependencies_resolved', 'dependable_id', 'resolved_mod_version_id')
             ->wherePivot('dependable_type', self::class)
+            ->whereHas('mod')
             ->withPivot('dependency_id')
             ->join('mod_versions as latest_versions', function (JoinClause $join): void {
                 $join->on('latest_versions.id', '=', 'mod_versions.id')

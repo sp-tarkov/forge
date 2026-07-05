@@ -60,7 +60,7 @@ new #[Lazy] class extends Component
     {
         $user = auth()->user();
 
-        return $this->mod // @phpstan-ignore return.type (Livewire computed property caching)
+        return $this->mod
             ->versions()
             ->with(['latestSptVersion', 'sptVersions', 'latestDependenciesResolved.mod:id,name,slug,thumbnail,thumbnail_hash,owner_id', 'latestDependenciesResolved.mod.owner.role'])
             ->unless($user?->can('viewAny', [ModVersion::class, $this->mod]), function (Builder $query): void {

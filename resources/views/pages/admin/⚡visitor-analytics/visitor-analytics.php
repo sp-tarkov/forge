@@ -5,9 +5,11 @@ declare(strict_types=1);
 use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
 use App\Models\User;
+use App\Services\VisitorAnalyticsService;
+use App\Support\DataTransferObjects\VisitorAnalyticsFilters;
 use Illuminate\Contracts\Pagination\Paginator;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Date;
+use Illuminate\Database\QueryException;
+use Illuminate\Pagination\Paginator as SimplePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -18,6 +20,32 @@ use Livewire\WithPagination;
 new #[Layout('layouts::base')] #[Title('Event Analytics - The Forge')] class extends Component
 {
     use WithPagination;
+
+    /**
+     * The columns the events table can be sorted by.
+     *
+     * @var list<string>
+     */
+    private const array SORTABLE_COLUMNS = [
+        'created_at',
+        'event_name',
+        'visitor_id',
+        'ip',
+        'browser',
+        'platform',
+        'device',
+        'country_name',
+    ];
+
+    /**
+     * The MySQL-side execution cap for the events list query, in milliseconds.
+     */
+    private const int LIST_QUERY_TIMEOUT_MS = 20000;
+
+    /**
+     * The MySQL error number raised when a query exceeds its MAX_EXECUTION_TIME hint.
+     */
+    private const int MYSQL_MAX_EXECUTION_TIME_ERRNO = 3024;
 
     /**
      * User-based filters.
@@ -83,6 +111,11 @@ new #[Layout('layouts::base')] #[Title('Event Analytics - The Forge')] class ext
     public string $sortDirection = 'desc';
 
     /**
+     * Whether the last events list query was cancelled by the database-side execution cap.
+     */
+    public bool $listTimedOut = false;
+
+    /**
      * Modal state for viewing event details.
      */
     public bool $showEventModal = false;
@@ -102,29 +135,31 @@ new #[Layout('layouts::base')] #[Title('Event Analytics - The Forge')] class ext
     {
         abort_unless((bool) auth()->user()?->isAdmin(), 403, 'Access denied. Staff privileges required.');
 
-        // Set default date range (last month)
         $this->dateTo = now()->format('Y-m-d');
-        $this->dateFrom = now()->subMonth()->format('Y-m-d');
+        $this->dateFrom = now()->subDays(VisitorAnalyticsFilters::DEFAULT_RANGE_DAYS)->format('Y-m-d');
     }
 
     /**
      * Get paginated tracking events based on current filters.
      *
-     * Uses simplePaginate() instead of paginate() to avoid expensive COUNT(*) query
-     * on millions of rows. This trades "total results" display for much faster queries.
+     * Uses simplePaginate() instead of paginate() to avoid expensive COUNT(*) query on millions of rows. The query
+     * carries a MAX_EXECUTION_TIME optimizer hint so a pathological filter combination is cancelled by MySQL and
+     * rendered as a friendly notice instead of hitting the request timeout.
      *
      * @return Paginator<int, TrackingEvent>
      */
     #[Computed]
     public function events(): Paginator
     {
+        $this->listTimedOut = false;
+
         $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->all();
 
         $query = TrackingEvent::query()
             ->with(['user', 'visitable'])
             ->whereIn('event_name', $validEventNames)
-            ->select([
-                'tracking_events.id',
+            ->selectRaw(sprintf('/*+ MAX_EXECUTION_TIME(%d) */ tracking_events.id', self::LIST_QUERY_TIMEOUT_MS))
+            ->addSelect([
                 'tracking_events.event_name',
                 'tracking_events.event_data',
                 'tracking_events.visitor_id',
@@ -145,13 +180,25 @@ new #[Layout('layouts::base')] #[Title('Event Analytics - The Forge')] class ext
                 'tracking_events.created_at',
             ]);
 
-        $this->applyFilters($query);
+        resolve(VisitorAnalyticsService::class)->applyFilters($query, $this->filters());
 
+        $sortColumn = in_array($this->sortBy, self::SORTABLE_COLUMNS, true) ? $this->sortBy : 'created_at';
         $direction = $this->sortDirection === 'asc' ? 'asc' : 'desc';
 
-        return $query
-            ->orderBy('tracking_events.'.$this->sortBy, $direction)
-            ->simplePaginate(50);
+        try {
+            return $query
+                ->orderBy('tracking_events.'.$sortColumn, $direction)
+                ->simplePaginate(50);
+        } catch (QueryException $queryException) {
+            throw_if(($queryException->errorInfo[1] ?? null) !== self::MYSQL_MAX_EXECUTION_TIME_ERRNO, $queryException);
+
+            $this->listTimedOut = true;
+
+            /** @var list<TrackingEvent> $emptyItems */
+            $emptyItems = [];
+
+            return new SimplePaginator($emptyItems, 50);
+        }
     }
 
     /**
@@ -162,13 +209,14 @@ new #[Layout('layouts::base')] #[Title('Event Analytics - The Forge')] class ext
     public function getActiveFilters(): array
     {
         $filters = [];
+        $filterSet = $this->filters();
 
-        // Date range
-        if ($this->dateFrom && $this->dateTo) {
-            $fromDate = Date::parse($this->dateFrom)->format('M j, Y');
-            $toDate = Date::parse($this->dateTo)->format('M j, Y');
-            $filters[] = sprintf('%s - %s', $fromDate, $toDate);
-        }
+        // Date range, shown as the effective (defaulted and capped) range actually queried
+        $filters[] = sprintf(
+            '%s - %s',
+            $filterSet->effectiveDateFrom()->format('M j, Y'),
+            $filterSet->effectiveDateTo()->format('M j, Y')
+        );
 
         // User type filter
         if ($this->filter === 'authenticated') {
@@ -184,8 +232,11 @@ new #[Layout('layouts::base')] #[Title('Event Analytics - The Forge')] class ext
 
         // Event filter
         if ($this->eventFilter !== '' && $this->eventFilter !== '0') {
-            $eventType = TrackingEventType::from($this->eventFilter);
-            $filters[] = sprintf("Event: '%s'", $eventType->getName());
+            $eventType = TrackingEventType::tryFrom($this->eventFilter);
+
+            if ($eventType instanceof TrackingEventType) {
+                $filters[] = sprintf("Event: '%s'", $eventType->getName());
+            }
         }
 
         // Technical filters
@@ -228,7 +279,7 @@ new #[Layout('layouts::base')] #[Title('Event Analytics - The Forge')] class ext
     {
         $this->filter = 'all';
         $this->userSearch = '';
-        $this->dateFrom = now()->subMonth()->format('Y-m-d');
+        $this->dateFrom = now()->subDays(VisitorAnalyticsFilters::DEFAULT_RANGE_DAYS)->format('Y-m-d');
         $this->dateTo = now()->format('Y-m-d');
         $this->eventFilter = '';
         $this->ipFilter = '';
@@ -248,6 +299,10 @@ new #[Layout('layouts::base')] #[Title('Event Analytics - The Forge')] class ext
      */
     public function sortByColumn(string $field): void
     {
+        if (! in_array($field, self::SORTABLE_COLUMNS, true)) {
+            return;
+        }
+
         if ($this->sortBy === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
@@ -329,13 +384,19 @@ new #[Layout('layouts::base')] #[Title('Event Analytics - The Forge')] class ext
     /**
      * Livewire lifecycle method: Called after any component property is updated.
      *
-     * This magic method is automatically triggered by Livewire whenever any property
-     * with wire:model is updated. It ensures pagination resets to page 1 when filters
-     * change, preventing "no results" confusion when the current page doesn't exist
-     * in the filtered dataset.
+     * Resets pagination to page 1 when filters change and refills cleared date inputs with their defaults so the
+     * queried range always matches what the inputs show.
      */
     public function updated(): void
     {
+        if ($this->dateFrom === null || $this->dateFrom === '') {
+            $this->dateFrom = now()->subDays(VisitorAnalyticsFilters::DEFAULT_RANGE_DAYS)->format('Y-m-d');
+        }
+
+        if ($this->dateTo === null || $this->dateTo === '') {
+            $this->dateTo = now()->format('Y-m-d');
+        }
+
         $this->resetPage();
     }
 
@@ -417,123 +478,24 @@ new #[Layout('layouts::base')] #[Title('Event Analytics - The Forge')] class ext
     }
 
     /**
-     * Apply all active filters to the given query.
-     *
-     * @param  Builder<TrackingEvent>  $query
+     * The filter DTO for the component's current filter values.
      */
-    private function applyFilters(Builder $query): void
+    private function filters(): VisitorAnalyticsFilters
     {
-        $this->applyDateFilters($query);
-        $this->applyEventFilters($query);
-        $this->applyTechnicalFilters($query);
-        $this->applyGeographicFilters($query);
-        $this->applyUserFilters($query);
-    }
-
-    /**
-     * Apply date range filters to the query.
-     *
-     * @param  Builder<TrackingEvent>  $query
-     */
-    private function applyDateFilters(Builder $query): void
-    {
-        if ($this->dateFrom) {
-            $query->where('tracking_events.created_at', '>=', $this->dateFrom.' 00:00:00');
-        }
-
-        if ($this->dateTo) {
-            $query->where('tracking_events.created_at', '<=', $this->dateTo.' 23:59:59');
-        }
-    }
-
-    /**
-     * Apply event-specific filters to the query.
-     *
-     * @param  Builder<TrackingEvent>  $query
-     */
-    private function applyEventFilters(Builder $query): void
-    {
-        if ($this->eventFilter !== '' && $this->eventFilter !== '0') {
-            $query->where('tracking_events.event_name', '=', $this->eventFilter);
-        }
-    }
-
-    /**
-     * Apply technical filters (IP, browser, platform, device, referer) to the query.
-     *
-     * @param  Builder<TrackingEvent>  $query
-     */
-    private function applyTechnicalFilters(Builder $query): void
-    {
-        if ($this->ipFilter !== '' && $this->ipFilter !== '0') {
-            $query->where('tracking_events.ip', 'like', '%'.$this->ipFilter.'%');
-        }
-
-        if ($this->browserFilter !== '' && $this->browserFilter !== '0') {
-            if ($this->browserFilter === 'Other') {
-                $query->whereNotIn('tracking_events.browser', ['Chrome', 'Firefox', 'Safari', 'Edge', 'Opera']);
-            } else {
-                $query->where('tracking_events.browser', '=', $this->browserFilter);
-            }
-        }
-
-        if ($this->platformFilter !== '' && $this->platformFilter !== '0') {
-            if ($this->platformFilter === 'Other') {
-                $query->whereNotIn('tracking_events.platform', ['Windows', 'macOS', 'Linux', 'iOS', 'Android']);
-            } else {
-                $query->where('tracking_events.platform', '=', $this->platformFilter);
-            }
-        }
-
-        if ($this->deviceFilter !== '' && $this->deviceFilter !== '0') {
-            $query->where('tracking_events.device', '=', $this->deviceFilter);
-        }
-
-        if ($this->refererFilter !== '' && $this->refererFilter !== '0') {
-            $query->whereJsonContains('tracking_events.event_data->referer', $this->refererFilter);
-        }
-    }
-
-    /**
-     * Apply geographic filters to the query.
-     *
-     * @param  Builder<TrackingEvent>  $query
-     */
-    private function applyGeographicFilters(Builder $query): void
-    {
-        if ($this->countryFilter !== '' && $this->countryFilter !== '0') {
-            $query->where('tracking_events.country_name', 'like', '%'.$this->countryFilter.'%');
-        }
-
-        if ($this->regionFilter !== '' && $this->regionFilter !== '0') {
-            $query->where('tracking_events.region_name', 'like', '%'.$this->regionFilter.'%');
-        }
-
-        if ($this->cityFilter !== '' && $this->cityFilter !== '0') {
-            $query->where('tracking_events.city_name', 'like', '%'.$this->cityFilter.'%');
-        }
-    }
-
-    /**
-     * Apply user-related filters to the query.
-     *
-     * @param  Builder<TrackingEvent>  $query
-     */
-    private function applyUserFilters(Builder $query): void
-    {
-        // User type filter
-        if ($this->filter === 'authenticated') {
-            $query->whereNotNull('tracking_events.visitor_id');
-        } elseif ($this->filter === 'anonymous') {
-            $query->whereNull('tracking_events.visitor_id');
-        }
-
-        // User search
-        if ($this->userSearch !== '' && $this->userSearch !== '0') {
-            $query->whereHas('user', function (Builder $q): void {
-                $q->where('name', 'like', '%'.$this->userSearch.'%')
-                    ->orWhere('email', 'like', '%'.$this->userSearch.'%');
-            })->orWhere('tracking_events.visitor_id', 'like', '%'.$this->userSearch.'%');
-        }
+        return new VisitorAnalyticsFilters(
+            userType: $this->filter,
+            userSearch: $this->userSearch,
+            dateFrom: $this->dateFrom,
+            dateTo: $this->dateTo,
+            eventName: $this->eventFilter,
+            ip: $this->ipFilter,
+            browser: $this->browserFilter,
+            platform: $this->platformFilter,
+            device: $this->deviceFilter,
+            referer: $this->refererFilter,
+            country: $this->countryFilter,
+            region: $this->regionFilter,
+            city: $this->cityFilter,
+        );
     }
 };

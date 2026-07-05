@@ -47,7 +47,7 @@ new #[Lazy] class extends Component
     #[Computed]
     public function versions(): LengthAwarePaginator
     {
-        return $this->addon // @phpstan-ignore return.type (Livewire computed property caching)
+        return $this->addon
             ->versions()
             ->with(['compatibleModVersions'])
             ->unless(

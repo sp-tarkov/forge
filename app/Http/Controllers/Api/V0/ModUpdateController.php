@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Knuckles\Scribe\Attributes\UrlParam;
+use Knuckles\Scribe\Attributes\QueryParam;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -151,8 +151,8 @@ final class ModUpdateController extends Controller
      *      "message": "Unauthenticated."
      *  }
      */
-    #[UrlParam('mods', description: 'Comma-separated list of identifier:version pairs for installed mods. Identifier can be mod_id (numeric) or GUID (string).', required: true, example: '5:1.2.0,com.example.mod:2.0.5')]
-    #[UrlParam('spt_version', description: 'Target SPT version to check compatibility against.', required: true, example: '3.11.5')]
+    #[QueryParam('mods', description: 'Comma-separated list of identifier:version pairs for installed mods. Identifier can be mod_id (numeric) or GUID (string).', required: true, example: '5:1.2.0,com.example.mod:2.0.5')]
+    #[QueryParam('spt_version', description: 'Target SPT version to check compatibility against.', required: true, example: '3.11.5')]
     public function check(Request $request): JsonResponse
     {
         $modsParam = $request->string('mods')->trim()->toString();

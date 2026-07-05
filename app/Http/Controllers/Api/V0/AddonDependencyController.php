@@ -15,7 +15,7 @@ use App\Support\VersionMatcher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Knuckles\Scribe\Attributes\UrlParam;
+use Knuckles\Scribe\Attributes\QueryParam;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -98,7 +98,7 @@ final class AddonDependencyController extends Controller
      *      "message": "Unauthenticated."
      *  }
      */
-    #[UrlParam('addons', description: 'Comma-separated list of identifier:version pairs to resolve dependencies for. Identifier can be either an addon_id (numeric) or slug (string). Version strings must match exactly.', required: true, example: '5:1.2.0,my-addon:2.0.5,15:3.1.0')]
+    #[QueryParam('addons', description: 'Comma-separated list of identifier:version pairs to resolve dependencies for. Identifier can be either an addon_id (numeric) or slug (string). Version strings must match exactly.', required: true, example: '5:1.2.0,my-addon:2.0.5,15:3.1.0')]
     public function resolve(Request $request): JsonResponse
     {
         $addonsParam = $request->string('addons')->trim()->toString();

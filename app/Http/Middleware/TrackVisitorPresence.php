@@ -15,10 +15,10 @@ use function Illuminate\Support\defer;
 /**
  * Records the current visitor's activity so the footer can show a live "users online" count without WebSockets.
  *
- * The visitor token is derived synchronously (it is already in memory), but the Redis write is handed to `defer()` so
- * it runs after the response has been flushed to the client. The request therefore never waits on presence tracking.
- * Recording is idempotent per visitor, so navigating or reloading only refreshes the timestamp, never inflates the
- * count. The namespaced `defer` import is required so it does not collide with Swoole's global `defer` under Octane.
+ * The Redis write is deferred so the response never waits on it, and recording is idempotent per visitor token.
+ * Guests are only recorded once their session cookie round-trips, which keeps cookieless clients like crawlers (a
+ * fresh session id on every request) from counting once per request. The namespaced `defer` import avoids colliding
+ * with Swoole's global `defer` under Octane.
  */
 final readonly class TrackVisitorPresence
 {
@@ -56,7 +56,7 @@ final readonly class TrackVisitorPresence
             return ['u:'.$user->id, true];
         }
 
-        if (! $request->hasSession()) {
+        if (! $request->hasPreviousSession()) {
             return null;
         }
 

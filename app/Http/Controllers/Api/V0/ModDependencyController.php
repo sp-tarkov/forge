@@ -15,7 +15,7 @@ use App\Support\VersionMatcher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Knuckles\Scribe\Attributes\UrlParam;
+use Knuckles\Scribe\Attributes\QueryParam;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -155,7 +155,7 @@ final class ModDependencyController extends Controller
      *      "message": "Unauthenticated."
      *  }
      */
-    #[UrlParam('mods', description: 'Comma-separated list of identifier:version pairs to resolve dependencies for. Identifier can be either a mod_id (numeric) or GUID (string). Version strings must match exactly.', required: true, example: '5:1.2.0,com.example.mod:2.0.5,15:3.1.0')]
+    #[QueryParam('mods', description: 'Comma-separated list of identifier:version pairs to resolve dependencies for. Identifier can be either a mod_id (numeric) or GUID (string). Version strings must match exactly.', required: true, example: '5:1.2.0,com.example.mod:2.0.5,15:3.1.0')]
     public function resolve(Request $request): JsonResponse
     {
         // Reject array input (e.g. mods[]=x) before string casting, which would otherwise raise an

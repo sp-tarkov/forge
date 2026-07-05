@@ -160,7 +160,8 @@ abstract class AbstractQueryBuilder
      * call site.
      *
      * @param  mixed  $filters  Raw request input; an array<string, mixed> of filter pairs, or null when omitted.
-     * @return self<TModel>
+     *
+     * @phpstan-return $this
      *
      * @throws InvalidQueryException
      */
@@ -186,7 +187,8 @@ abstract class AbstractQueryBuilder
      * Set the includes for the query.
      *
      * @param  array<string>|null  $includes
-     * @return self<TModel>
+     *
+     * @phpstan-return $this
      */
     final public function withIncludes(?array $includes): self
     {
@@ -201,7 +203,8 @@ abstract class AbstractQueryBuilder
      * Set the fields for the query.
      *
      * @param  array<string>|null  $fields
-     * @return self<TModel>
+     *
+     * @phpstan-return $this
      */
     final public function withFields(?array $fields): self
     {
@@ -216,7 +219,8 @@ abstract class AbstractQueryBuilder
      * Set the sorts for the query.
      *
      * @param  array<string>|null  $sorts
-     * @return self<TModel>
+     *
+     * @phpstan-return $this
      */
     final public function withSorts(?array $sorts): self
     {
@@ -230,7 +234,7 @@ abstract class AbstractQueryBuilder
     /**
      * Set the search query for the query.
      *
-     * @return self<TModel>
+     * @phpstan-return $this
      */
     final public function withSearch(?string $query): self
     {

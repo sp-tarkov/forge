@@ -90,7 +90,7 @@ processes:
     restart_when_changed: []
     env: {}
   Queue Worker:
-    command: php artisan queue:work redis --queue=default,verification,long --memory=512
+    command: php artisan queue:work redis --queue=default,verification-detection,verification,alt-detection,visitor-analytics,long --memory=512
     working_dir: null
     auto_start: true
     auto_restart: true

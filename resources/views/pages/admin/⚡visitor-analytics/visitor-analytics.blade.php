@@ -122,7 +122,7 @@
                             class="text-xs"
                         >IP Address</flux:label>
                         <flux:input
-                            wire:model.live.debounce.300ms="ipFilter"
+                            wire:model.live.debounce.750ms="ipFilter"
                             id="ipFilter"
                             placeholder="Filter by IP..."
                             size="sm"
@@ -200,7 +200,7 @@
                             class="text-xs"
                         >Referer</flux:label>
                         <flux:input
-                            wire:model.live.debounce.300ms="refererFilter"
+                            wire:model.live.debounce.750ms="refererFilter"
                             id="refererFilter"
                             placeholder="Filter by referer..."
                             size="sm"
@@ -232,7 +232,7 @@
                             class="text-xs"
                         >User Search</flux:label>
                         <flux:input
-                            wire:model.live.debounce.300ms="userSearch"
+                            wire:model.live.debounce.750ms="userSearch"
                             id="userSearch"
                             placeholder="Search users..."
                             size="sm"
@@ -246,7 +246,7 @@
                             class="text-xs"
                         >Country</flux:label>
                         <flux:input
-                            wire:model.live.debounce.300ms="countryFilter"
+                            wire:model.live.debounce.750ms="countryFilter"
                             id="countryFilter"
                             placeholder="Filter by country..."
                             size="sm"
@@ -260,7 +260,7 @@
                             class="text-xs"
                         >Region/State</flux:label>
                         <flux:input
-                            wire:model.live.debounce.300ms="regionFilter"
+                            wire:model.live.debounce.750ms="regionFilter"
                             id="regionFilter"
                             placeholder="Filter by region..."
                             size="sm"
@@ -274,7 +274,7 @@
                             class="text-xs"
                         >City</flux:label>
                         <flux:input
-                            wire:model.live.debounce.300ms="cityFilter"
+                            wire:model.live.debounce.750ms="cityFilter"
                             id="cityFilter"
                             placeholder="Filter by city..."
                             size="sm"
@@ -289,6 +289,18 @@
                 <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Visits</h3>
                 </div>
+
+                @if ($this->listTimedOut)
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <flux:callout
+                            icon="clock"
+                            color="amber"
+                        >
+                            <flux:callout.heading>This filter combination took too long to load.</flux:callout.heading>
+                            <flux:callout.text>Try a shorter date range or more specific filters, then try again.</flux:callout.text>
+                        </flux:callout>
+                    </div>
+                @endif
 
                 {{-- Top Pagination --}}
                 @if ($this->events->hasPages())

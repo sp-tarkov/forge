@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Models\Addon;
 use App\Models\AddonVersion;
+use App\Models\Dependency;
+use App\Models\DependencyResolved;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
@@ -276,5 +278,38 @@ describe('constraint resolution', function (): void {
         expect($compatibleIds)->toContain($v1_0_0->id)
             ->toContain($v1_5_2->id)
             ->not->toContain($v2_0_0->id);
+    });
+});
+
+describe('resolved dependency visibility', function (): void {
+    it('excludes resolved dependencies whose mod is hidden from the viewer', function (): void {
+        $user = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->for($user, 'owner')->create(['published_at' => now()]);
+        $addon = Addon::factory()->for($mod)->for($user, 'owner')->published()->create();
+        $addonVersion = AddonVersion::factory()->for($addon)->create();
+
+        $hiddenMod = Mod::factory()->unpublished()->create();
+        $hiddenModVersion = ModVersion::factory()->for($hiddenMod)->create(['version' => '1.0.0']);
+
+        $dependency = Dependency::factory()->make([
+            'dependable_type' => AddonVersion::class,
+            'dependable_id' => $addonVersion->id,
+            'dependent_mod_id' => $hiddenMod->id,
+            'constraint' => '^1.0',
+        ]);
+        $dependency->saveQuietly();
+
+        DependencyResolved::factory()->make([
+            'dependable_type' => AddonVersion::class,
+            'dependable_id' => $addonVersion->id,
+            'dependency_id' => $dependency->id,
+            'resolved_mod_version_id' => $hiddenModVersion->id,
+        ])->saveQuietly();
+
+        expect($addonVersion->latestDependenciesResolved()->get())->toHaveCount(0);
+
+        $this->actingAs(User::factory()->admin()->create());
+
+        expect($addonVersion->latestDependenciesResolved()->get())->toHaveCount(1);
     });
 });

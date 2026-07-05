@@ -206,6 +206,18 @@ return [
             'timeout' => 60,
             'memory' => 128,
         ],
+        'supervisor-alt-detection' => [
+            'connection' => 'redis',
+            'queue' => ['alt-detection', 'visitor-analytics'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'minProcesses' => 1,
+            'balanceMaxShift' => 1,
+            'balanceCooldown' => 3,
+            'tries' => 1,
+            'timeout' => 300,
+            'memory' => 256,
+        ],
 
         // The verification queue is consumed by a dedicated server running queue:work,
         // not by Horizon on the main application server. Jobs are dispatched to the
@@ -222,6 +234,9 @@ return [
             'supervisor-verification-detection' => [
                 'maxProcesses' => 10,
             ],
+            'supervisor-alt-detection' => [
+                'maxProcesses' => 3,
+            ],
         ],
         'local' => [
             'supervisor-default' => [
@@ -229,6 +244,9 @@ return [
             ],
             'supervisor-verification-detection' => [
                 'maxProcesses' => 3,
+            ],
+            'supervisor-alt-detection' => [
+                'maxProcesses' => 2,
             ],
         ],
     ],

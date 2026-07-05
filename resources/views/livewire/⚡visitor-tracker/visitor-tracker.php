@@ -15,6 +15,12 @@ use function Illuminate\Support\defer;
 new class extends Component
 {
     /**
+     * The heartbeat poll interval in seconds.
+     */
+    #[Locked]
+    public int $heartbeatSeconds = 60;
+
+    /**
      * The number of visitors currently online.
      */
     #[Locked]
@@ -59,10 +65,20 @@ new class extends Component
     public ?int $apiCachedPct = null;
 
     /**
-     * Render the current online count, peak, and API usage. The component re-mounts on every navigation, so these
-     * values refresh as a visitor browses without any polling or WebSocket connection.
+     * Load the stats for the initial render.
      */
     public function mount(VisitorPresenceStore $presence): void
+    {
+        $this->heartbeatSeconds = max(10, intdiv(config()->integer('visitors.online_window'), 3));
+
+        $this->refreshStats($presence);
+    }
+
+    /**
+     * Refresh the online count, peak, and API usage. Runs on mount and on every heartbeat poll; the poll request
+     * itself re-records the visitor's presence through the middleware, keeping idle open tabs counted.
+     */
+    public function refreshStats(VisitorPresenceStore $presence): void
     {
         // The presence read is exact for the live window; cache it for a few seconds so bursts of footer renders share
         // one Redis read rather than one each. A plain array round-trips safely through the cache.

@@ -23,6 +23,12 @@ describe('admin page access', function (): void {
             ->assertOk();
     });
 
+    it('renders the admin alt detection page', function (): void {
+        $this->actingAs(User::factory()->admin()->create())
+            ->get('/admin/alt-detection')
+            ->assertOk();
+    });
+
     it('redirects guests from admin pages to login', function (): void {
         $this->get('/admin/user-management')->assertRedirect('/login');
     });

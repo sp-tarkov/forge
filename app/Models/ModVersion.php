@@ -140,7 +140,8 @@ final class ModVersion extends Model implements Trackable
     }
 
     /**
-     * The relationship between a mod version and each of it's resolved dependencies' latest versions.
+     * The relationship between a mod version and each of it's resolved dependencies' latest versions. Excludes
+     * dependencies whose mod is hidden from the current viewer by the PublishedScope.
      *
      * @return BelongsToMany<ModVersion, $this>
      */
@@ -148,6 +149,7 @@ final class ModVersion extends Model implements Trackable
     {
         return $this->belongsToMany(self::class, 'dependencies_resolved', 'dependable_id', 'resolved_mod_version_id')
             ->wherePivot('dependable_type', self::class)
+            ->whereHas('mod')
             ->withPivot('dependency_id')
             ->join('mod_versions as latest_versions', function (JoinClause $join): void {
                 $join->on('latest_versions.id', '=', 'mod_versions.id')

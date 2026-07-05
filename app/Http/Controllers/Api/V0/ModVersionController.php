@@ -10,7 +10,7 @@ use App\Http\Responses\Api\V0\ApiResponse;
 use App\Support\Api\V0\QueryBuilder\ModVersionQueryBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Knuckles\Scribe\Attributes\UrlParam;
+use Knuckles\Scribe\Attributes\QueryParam;
 
 /**
  * @group Mods
@@ -233,21 +233,21 @@ final class ModVersionController extends Controller
      *      "message": "Unauthenticated."
      *  }
      */
-    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,version,link,created_at')]
-    #[UrlParam('filter[id]', description: 'Filter by mod version ID. Comma-separated.', required: false, example: '234,432')]
-    #[UrlParam('filter[hub_id]', description: 'Filter by mod hub ID. Comma-separated.', required: false, example: '234,432')]
-    #[UrlParam('filter[version]', description: 'Filter mod versions by using a SemVer constraint.', required: false, example: '^1.0.0')]
-    #[UrlParam('filter[description]', description: 'Fuzzy-filter by mod version description.', required: false, example: 'This is a description')]
-    #[UrlParam('filter[link]', description: 'Filter by mod version link.', required: false, example: 'example.com')]
-    #[UrlParam('filter[published_between]', description: 'Filter by mod version published between.', required: false, example: '2025-01-01,2025-03-31')]
-    #[UrlParam('filter[created_between]', description: 'Filter by mod version created between.', required: false, example: '2025-01-01,2025-03-31')]
-    #[UrlParam('filter[updated_between]', description: 'Filter by mod version updated between.', required: false, example: '2025-01-01,2025-03-31')]
-    #[UrlParam('filter[spt_version]', description: 'Filter mod versions that are compatible with a SemVer constraint.', required: false, example: '^3.8.0')]
-    #[UrlParam('filter[fika_compatibility]', description: 'Filter by Fika compatibility status. Comma-separated. Available values: compatible, incompatible, unknown.', required: false, example: 'compatible')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: dependencies, virus_total_links.', required: false, example: 'dependencies,virus_total_links')]
-    #[UrlParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields.', required: false, example: '-version,-created_at')]
-    #[UrlParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
-    #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
+    #[QueryParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,version,link,created_at')]
+    #[QueryParam('filter[id]', description: 'Filter by mod version ID. Comma-separated.', required: false, example: '234,432')]
+    #[QueryParam('filter[hub_id]', description: 'Filter by mod hub ID. Comma-separated.', required: false, example: '234,432')]
+    #[QueryParam('filter[version]', description: 'Filter mod versions by using a SemVer constraint.', required: false, example: '^1.0.0')]
+    #[QueryParam('filter[description]', description: 'Fuzzy-filter by mod version description.', required: false, example: 'This is a description')]
+    #[QueryParam('filter[link]', description: 'Filter by mod version link.', required: false, example: 'example.com')]
+    #[QueryParam('filter[published_between]', description: 'Filter by mod version published between.', required: false, example: '2025-01-01,2025-03-31')]
+    #[QueryParam('filter[created_between]', description: 'Filter by mod version created between.', required: false, example: '2025-01-01,2025-03-31')]
+    #[QueryParam('filter[updated_between]', description: 'Filter by mod version updated between.', required: false, example: '2025-01-01,2025-03-31')]
+    #[QueryParam('filter[spt_version]', description: 'Filter mod versions that are compatible with a SemVer constraint.', required: false, example: '^3.8.0')]
+    #[QueryParam('filter[fika_compatibility]', description: 'Filter by Fika compatibility status. Comma-separated. Available values: compatible, incompatible, unknown.', required: false, example: 'compatible')]
+    #[QueryParam('include', description: 'Comma-separated list of relationships. Available: dependencies, virus_total_links.', required: false, example: 'dependencies,virus_total_links')]
+    #[QueryParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields.', required: false, example: '-version,-created_at')]
+    #[QueryParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
+    #[QueryParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
     public function index(Request $request, int $modId): JsonResponse
     {
         /** @var array<string, mixed>|null $filters */

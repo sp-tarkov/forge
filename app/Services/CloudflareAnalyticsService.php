@@ -10,13 +10,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
- * Reads edge-side request analytics for the open API from the Cloudflare GraphQL Analytics API.
- *
- * The origin-side counters (see App\Http\Middleware\RecordApiUsage) only see traffic that reaches this server, so once
- * Cloudflare caches API responses at the edge they no longer reflect the true request volume. This service asks
- * Cloudflare directly how many API requests it handled in the trailing 24 hours and how many of those it served from
- * cache without ever touching the origin. The result is intentionally a small array of scalars so it round-trips
- * through the cache (which has object serialization disabled).
+ * Reads edge-side request analytics for the open API from the Cloudflare GraphQL Analytics API: the requests
+ * Cloudflare handled for the API hostname in the trailing 24 hours, split into cached and origin-bound totals. The
+ * result is a small array of scalars so it round-trips through the cache (which has object serialization disabled).
  */
 final class CloudflareAnalyticsService
 {
@@ -51,6 +47,12 @@ final class CloudflareAnalyticsService
             return null;
         }
 
+        $host = $this->apiHost();
+
+        if ($host === '') {
+            return null;
+        }
+
         $until = now()->utc();
         $since = $until->subDay();
         $prefix = config('services.cloudflare.api_path_prefix', '/api/');
@@ -69,6 +71,7 @@ final class CloudflareAnalyticsService
                         'zone' => $zoneId,
                         'since' => $since->toIso8601ZuluString(),
                         'until' => $until->toIso8601ZuluString(),
+                        'host' => $host,
                         'path' => $pathFilter,
                     ],
                 ]);
@@ -92,7 +95,7 @@ final class CloudflareAnalyticsService
             return null;
         }
 
-        /** @var array<int, array{count?: int, dimensions?: array{cacheStatus?: string}, avg?: array{sampleInterval?: float}}>|null $groups */
+        /** @var array<int, array{count?: int, dimensions?: array{cacheStatus?: string}}>|null $groups */
         $groups = $response->json('data.viewer.zones.0.httpRequestsAdaptiveGroups');
         if ($groups === null) {
             Log::warning('Cloudflare analytics response was missing the expected request groups');
@@ -104,10 +107,26 @@ final class CloudflareAnalyticsService
     }
 
     /**
-     * Reduce the per-cache-status groups into cached / origin totals. Adaptive groups are sampled, so each group's raw
-     * count is scaled by its average sample interval to estimate the real number of requests.
+     * The hostname whose edge requests are counted: the configured API host, or the application URL's host.
+     */
+    private function apiHost(): string
+    {
+        $host = config('services.cloudflare.api_host');
+
+        if (is_string($host) && $host !== '') {
+            return $host;
+        }
+
+        $appHost = parse_url(config()->string('app.url'), PHP_URL_HOST);
+
+        return is_string($appHost) ? $appHost : '';
+    }
+
+    /**
+     * Reduce the per-cache-status groups into cached / origin totals. Each group's count arrives from Cloudflare
+     * already adjusted for sampling and must not be scaled by its sampleInterval.
      *
-     * @param  array<int, array{count?: int, dimensions?: array{cacheStatus?: string}, avg?: array{sampleInterval?: float}}>  $groups
+     * @param  array<int, array{count?: int, dimensions?: array{cacheStatus?: string}}>  $groups
      * @return array{edge_total: int, cached: int, origin: int, cached_pct: float}
      */
     private function summarize(array $groups): array
@@ -116,14 +135,13 @@ final class CloudflareAnalyticsService
         $origin = 0;
 
         foreach ($groups as $group) {
-            $sampleInterval = $group['avg']['sampleInterval'] ?? 1.0;
-            $estimated = (int) round(($group['count'] ?? 0) * $sampleInterval);
+            $count = $group['count'] ?? 0;
             $status = Str::lower($group['dimensions']['cacheStatus'] ?? '');
 
             if (in_array($status, self::CACHED_STATUSES, true)) {
-                $cached += $estimated;
+                $cached += $count;
             } else {
-                $origin += $estimated;
+                $origin += $count;
             }
         }
 
@@ -138,21 +156,20 @@ final class CloudflareAnalyticsService
     }
 
     /**
-     * The GraphQL query that groups the zone's API requests by cache status over a datetime window.
+     * The GraphQL query that groups the API hostname's requests by cache status over a datetime window.
      */
     private function query(): string
     {
         return <<<'GRAPHQL'
-        query ($zone: String!, $since: Time!, $until: Time!, $path: String!) {
+        query ($zone: String!, $since: Time!, $until: Time!, $host: String!, $path: String!) {
             viewer {
                 zones(filter: { zoneTag: $zone }) {
                     httpRequestsAdaptiveGroups(
                         limit: 50,
-                        filter: { datetime_geq: $since, datetime_leq: $until, clientRequestPath_like: $path }
+                        filter: { datetime_geq: $since, datetime_leq: $until, clientRequestHTTPHost: $host, clientRequestPath_like: $path }
                     ) {
                         count
                         dimensions { cacheStatus }
-                        avg { sampleInterval }
                     }
                 }
             }

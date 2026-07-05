@@ -8,6 +8,10 @@
 
 <x-slot:header></x-slot>
 
+@if ($robots)
+    <x-slot:robots>{{ $robots }}</x-slot>
+@endif
+
 @if ($openGraphImage)
     <x-slot:openGraphImage>{{ $openGraphImage }}</x-slot>
 @endif
