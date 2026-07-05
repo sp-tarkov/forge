@@ -17,12 +17,12 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
-     * User agrees to guidelines and proceeds to the mod path check.
+     * User confirms a mod is the right path and proceeds to mod creation.
      */
-    public function agree(): void
+    public function proceed(): void
     {
         $this->authorize('create', Mod::class);
 
-        $this->redirect(route('mod.path-check'));
+        $this->redirect(route('mod.create'));
     }
 };

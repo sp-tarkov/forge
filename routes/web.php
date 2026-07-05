@@ -135,6 +135,9 @@ Route::middleware('auth.banned')->group(function (): void {
         Route::livewire('/mod/guidelines', 'pages::mod.guidelines-acknowledgment')
             ->name('mod.guidelines');
 
+        Route::livewire('/mod/path-check', 'pages::mod.path-check')
+            ->name('mod.path-check');
+
         Route::livewire('/mod/create', 'pages::mod.create')
             ->name('mod.create');
 
