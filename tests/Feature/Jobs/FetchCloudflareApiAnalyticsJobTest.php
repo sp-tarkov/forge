@@ -11,6 +11,7 @@ beforeEach(function (): void {
     config([
         'services.cloudflare.analytics_token' => 'test-token',
         'services.cloudflare.zone_id' => 'zone-123',
+        'services.cloudflare.api_host' => 'forge.example.com',
         'services.cloudflare.api_path_prefix' => '/api/',
     ]);
 });
@@ -20,8 +21,8 @@ it('caches the usage returned by the service', function (): void {
         'api.cloudflare.com/*' => Http::response([
             'data' => ['viewer' => ['zones' => [[
                 'httpRequestsAdaptiveGroups' => [
-                    ['count' => 900, 'dimensions' => ['cacheStatus' => 'hit'], 'avg' => ['sampleInterval' => 1]],
-                    ['count' => 100, 'dimensions' => ['cacheStatus' => 'miss'], 'avg' => ['sampleInterval' => 1]],
+                    ['count' => 900, 'dimensions' => ['cacheStatus' => 'hit']],
+                    ['count' => 100, 'dimensions' => ['cacheStatus' => 'miss']],
                 ],
             ]]]],
         ]),
