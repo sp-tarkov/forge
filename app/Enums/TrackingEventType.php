@@ -119,6 +119,8 @@ enum TrackingEventType: string
 
     case IP_UNBAN = 'ip_unban';
 
+    case ALT_INVESTIGATION = 'alt_investigation';
+
     case MOD_FEATURE = 'mod_feature';
 
     case MOD_UNFEATURE = 'mod_unfeature';
@@ -222,6 +224,7 @@ enum TrackingEventType: string
             self::USER_UNBANNED => 'Was unbanned',
             self::IP_BAN => 'Banned IP address',
             self::IP_UNBAN => 'Unbanned IP address',
+            self::ALT_INVESTIGATION => 'Investigated alt accounts',
             self::MOD_FEATURE => 'Featured mod',
             self::MOD_UNFEATURE => 'Unfeatured mod',
             self::MOD_DISABLE => 'Disabled mod',
@@ -293,6 +296,7 @@ enum TrackingEventType: string
             self::USER_UNBANNED => 'User was unbanned by a moderator',
             self::IP_BAN => 'Moderator banned an IP address',
             self::IP_UNBAN => 'Moderator unbanned an IP address',
+            self::ALT_INVESTIGATION => 'Staff investigated a user for alternate accounts',
             self::MOD_FEATURE => 'Moderator featured a mod',
             self::MOD_UNFEATURE => 'Moderator unfeatured a mod',
             self::MOD_DISABLE => 'Moderator disabled a mod',
@@ -321,7 +325,7 @@ enum TrackingEventType: string
             self::ADDON_CREATE, self::ADDON_EDIT, self::ADDON_DELETE, self::ADDON_REPORT, self::ADDON_ATTACH, self::ADDON_DETACH, self::ADDON_DISABLE, self::ADDON_ENABLE, self::ADDON_PUBLISH, self::ADDON_UNPUBLISH => Addon::class,
             self::ADDON_DOWNLOAD, self::ADDON_VERSION_CREATE, self::ADDON_VERSION_EDIT, self::ADDON_VERSION_DELETE, self::ADDON_VERSION_DISABLE, self::ADDON_VERSION_ENABLE, self::ADDON_VERSION_PUBLISH, self::ADDON_VERSION_UNPUBLISH => AddonVersion::class,
             self::COMMENT_CREATE, self::COMMENT_EDIT, self::COMMENT_SOFT_DELETE, self::COMMENT_HARD_DELETE, self::COMMENT_LIKE, self::COMMENT_UNLIKE, self::COMMENT_REPORT, self::COMMENT_PIN, self::COMMENT_UNPIN, self::COMMENT_RESTORE, self::COMMENT_MARK_SPAM, self::COMMENT_MARK_CLEAN => Comment::class,
-            self::USER_BAN, self::USER_UNBAN, self::USER_BANNED, self::USER_UNBANNED => User::class,
+            self::USER_BAN, self::USER_UNBAN, self::USER_BANNED, self::USER_UNBANNED, self::ALT_INVESTIGATION => User::class,
             self::MOD_LIST_DISABLE, self::MOD_LIST_ENABLE, self::MOD_LIST_DELETE => ModList::class,
             default => null,
         };
@@ -392,6 +396,7 @@ enum TrackingEventType: string
             self::USER_UNBANNED => 'check-circle',
             self::IP_BAN => 'shield-exclamation',
             self::IP_UNBAN => 'shield-check',
+            self::ALT_INVESTIGATION => 'finger-print',
             self::MOD_FEATURE => 'star',
             self::MOD_UNFEATURE => 'star',
             self::MOD_DISABLE => 'eye-slash',
@@ -478,6 +483,7 @@ enum TrackingEventType: string
             self::USER_UNBANNED => 'green',
             self::IP_BAN => 'red',
             self::IP_UNBAN => 'green',
+            self::ALT_INVESTIGATION => 'amber',
             self::MOD_FEATURE => 'yellow',
             self::MOD_UNFEATURE => 'gray',
             self::MOD_DISABLE => 'red',
@@ -542,6 +548,7 @@ enum TrackingEventType: string
             self::USER_UNBAN,
             self::IP_BAN,
             self::IP_UNBAN,
+            self::ALT_INVESTIGATION,
             self::MOD_FEATURE,
             self::MOD_UNFEATURE,
             self::MOD_DISABLE,

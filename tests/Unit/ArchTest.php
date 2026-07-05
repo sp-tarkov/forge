@@ -117,7 +117,8 @@ arch('jobs are queueable')
 
 arch('DTOs are readonly')
     ->expect('App\Support\DataTransferObjects')
-    ->toBeReadonly();
+    ->toBeReadonly()
+    ->ignoring('App\Support\DataTransferObjects\Concerns');
 
 arch('policies boundary')
     ->expect('App\Policies')

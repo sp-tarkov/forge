@@ -265,6 +265,11 @@
                                                 href="{{ route('admin.file-verification') }}"
                                                 wire:navigate
                                             >{{ __('File Verification') }}</flux:navmenu.item>
+                                            <flux:navmenu.item
+                                                icon="finger-print"
+                                                href="{{ route('admin.alt-detection') }}"
+                                                wire:navigate
+                                            >{{ __('Alt Detection') }}</flux:navmenu.item>
                                         @endif
                                     </flux:navmenu>
                                 </flux:dropdown>
@@ -645,6 +650,15 @@
                             <span class="flex items-center gap-2">
                                 <flux:icon.shield-check class="h-5 w-5" />
                                 {{ __('File Verification') }}
+                            </span>
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link
+                            href="{{ route('admin.alt-detection') }}"
+                            :active="request()->routeIs('admin.alt-detection')"
+                        >
+                            <span class="flex items-center gap-2">
+                                <flux:icon.finger-print class="h-5 w-5" />
+                                {{ __('Alt Detection') }}
                             </span>
                         </x-responsive-nav-link>
                     </div>
