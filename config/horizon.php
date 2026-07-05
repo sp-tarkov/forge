@@ -208,7 +208,7 @@ return [
         ],
         'supervisor-alt-detection' => [
             'connection' => 'redis',
-            'queue' => ['alt-detection'],
+            'queue' => ['alt-detection', 'visitor-analytics'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'minProcesses' => 1,
