@@ -99,6 +99,44 @@ it('renders the current online and member counts', function (): void {
         ->assertSee('(2 members)');
 });
 
+it('refreshes the online counts when the heartbeat poll fires', function (): void {
+    seedVisitorPresence(3, 1);
+
+    $component = Livewire::test('visitor-tracker')
+        ->assertSet('onlineCount', 3)
+        ->assertSet('memberCount', 1);
+
+    $store = resolve(VisitorPresenceStore::class);
+    $store->record('g:late-arrival-1', false);
+    $store->record('g:late-arrival-2', false);
+    Cache::forget('online_visitor_counts');
+
+    $component->call('refreshStats')
+        ->assertSet('onlineCount', 5)
+        ->assertSet('memberCount', 1);
+});
+
+it('polls the refresh action from background tabs to keep open sessions counted', function (): void {
+    Livewire::test('visitor-tracker')
+        ->assertSet('heartbeatSeconds', 60)
+        ->assertSeeHtml('wire:poll.60s.keep-alive="refreshStats"');
+});
+
+it('derives the heartbeat interval from the presence window', function (): void {
+    config(['visitors.online_window' => 300]);
+
+    Livewire::test('visitor-tracker')
+        ->assertSet('heartbeatSeconds', 100)
+        ->assertSeeHtml('wire:poll.100s.keep-alive="refreshStats"');
+});
+
+it('clamps the heartbeat interval to a sane floor for very short presence windows', function (): void {
+    config(['visitors.online_window' => 15]);
+
+    Livewire::test('visitor-tracker')
+        ->assertSet('heartbeatSeconds', 10);
+});
+
 it('uses singular wording for a single online visitor', function (): void {
     seedVisitorPresence(1);
 

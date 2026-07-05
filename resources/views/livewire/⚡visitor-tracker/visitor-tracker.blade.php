@@ -1,4 +1,5 @@
-<div class="text-xs text-gray-400">
+{{-- Presence heartbeat; keep-alive keeps background tabs polling. --}}
+<div class="text-xs text-gray-400" wire:poll.{{ $heartbeatSeconds }}s.keep-alive="refreshStats">
     <div>
         {{-- Online count --}}
         <div class="flex items-center justify-start sm:justify-end space-x-2">
