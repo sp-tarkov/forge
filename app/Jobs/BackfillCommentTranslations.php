@@ -84,6 +84,7 @@ final class BackfillCommentTranslations implements ShouldQueue
             if ($version === null) {
                 continue;
             }
+
             if ($version->language_detected_at !== null) {
                 continue;
             }
