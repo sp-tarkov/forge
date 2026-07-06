@@ -64,7 +64,8 @@
                     {{ __('Store these recovery codes in a secure password manager. They can be used to recover access to your account if your two factor authentication device is lost.') }}
                 </flux:text>
 
-                <div class="mt-4 grid gap-1 max-w-xl rounded-xl border border-white/10 bg-white/5 p-4 font-mono text-sm text-zinc-300">
+                <div
+                    class="mt-4 grid max-w-xl gap-1 rounded-xl border border-white/10 bg-white/5 p-4 font-mono text-sm text-zinc-300">
                     @foreach (json_decode(decrypt($this->user->two_factor_recovery_codes), true) as $code)
                         <div>{{ $code }}</div>
                     @endforeach
@@ -73,13 +74,13 @@
         @endif
 
         <div class="mt-5 flex flex-wrap gap-3">
-            @if (! $this->enabled)
+            @if (!$this->enabled)
                 <x-confirms-password wire:then="enableTwoFactorAuthentication">
                     <flux:button
                         variant="primary"
                         size="sm"
                         type="button"
-                        class="my-1.5 text-white hover:bg-cyan-600 bg-cyan-700"
+                        class="my-1.5 bg-cyan-700 text-white hover:bg-cyan-600"
                         wire:loading.attr="disabled"
                     >
                         {{ __('Enable') }}
@@ -101,7 +102,7 @@
                             variant="primary"
                             size="sm"
                             type="button"
-                            class="my-1.5 text-white hover:bg-cyan-600 bg-cyan-700"
+                            class="my-1.5 bg-cyan-700 text-white hover:bg-cyan-600"
                             wire:loading.attr="disabled"
                         >
                             {{ __('Confirm') }}

@@ -7,34 +7,34 @@
 </x-slot>
 
 <x-slot:header>
-    <h2 class="font-semibold text-xl text-gray-200 leading-tight flex items-center gap-2">
-        <flux:icon.puzzle-piece class="w-5 h-5" />
+    <h2 class="flex items-center gap-2 text-xl font-semibold leading-tight text-gray-200">
+        <flux:icon.puzzle-piece class="h-5 w-5" />
         {{ __('Edit Addon') }}: {{ $addon->name }}
     </h2>
 </x-slot>
 
 <div>
-    <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl py-10 sm:px-6 lg:px-8">
         <div class="md:grid md:grid-cols-3 md:gap-6">
-            <div class="md:col-span-1 flex justify-between">
+            <div class="flex justify-between md:col-span-1">
                 <div class="px-4 sm:px-0">
                     <h3 class="text-lg font-medium text-gray-100">Addon Information</h3>
-                    <p class="my-2 text-sm/6 text-sm text-gray-400">
+                    <p class="my-2 text-sm text-sm/6 text-gray-400">
                         Update the information for <strong>{{ $addon->name }}</strong>, an addon for
                         <strong>{{ $addon->mod?->name ?? 'Unknown Mod' }}</strong>.
                     </p>
-                    <p class="my-2 text-sm/6 text-sm text-gray-400">
+                    <p class="my-2 text-sm text-sm/6 text-gray-400">
                         Changes will be visible immediately after saving. Please ensure your content follows the <a
                             href="{{ route('static.community-standards') }}"
                             target="_blank"
-                            class="underline text-white hover:text-cyan-200 transition-colors"
+                            class="text-white underline transition-colors hover:text-cyan-200"
                         >Community Standards</a>.
                     </p>
                 </div>
             </div>
-            <div class="mt-5 md:mt-0 md:col-span-2">
+            <div class="mt-5 md:col-span-2 md:mt-0">
                 <form wire:submit="save">
-                    <div class="px-4 py-5 bg-gray-900 sm:p-6 shadow-sm sm:rounded-tl-md sm:rounded-tr-md">
+                    <div class="bg-gray-900 px-4 py-5 shadow-sm sm:rounded-tl-md sm:rounded-tr-md sm:p-6">
                         <div class="grid grid-cols-6 gap-8">
                             @csrf
 
@@ -43,9 +43,10 @@
                                 <flux:description>
                                     {{ __('Upload a new thumbnail image. The image should be square, JPG or PNG, and no larger than 2MB.') }}
                                 </flux:description>
-                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                                     @if ($thumbnail)
-                                        <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
+                                        <div
+                                            class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
                                             @if ($thumbnail->isPreviewable())
                                                 <img
                                                     src="{{ $thumbnail->temporaryUrl() }}"
@@ -53,9 +54,11 @@
                                                     alt="{{ __('Thumbnail preview') }}"
                                                 >
                                             @endif
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-medium text-zinc-300 truncate">{{ $thumbnail->getClientOriginalName() }}</p>
-                                                <p class="mt-0.5 text-xs text-zinc-400">{{ Number::fileSize($thumbnail->getSize(), 1) }}</p>
+                                            <div class="min-w-0 flex-1">
+                                                <p class="truncate text-sm font-medium text-zinc-300">
+                                                    {{ $thumbnail->getClientOriginalName() }}</p>
+                                                <p class="mt-0.5 text-xs text-zinc-400">
+                                                    {{ Number::fileSize($thumbnail->getSize(), 1) }}</p>
                                             </div>
                                             <flux:button
                                                 size="sm"
@@ -66,15 +69,19 @@
                                             />
                                         </div>
                                     @elseif ($addon->thumbnail)
-                                        <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
+                                        <div
+                                            class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
                                             <img
                                                 src="{{ $addon->thumbnailUrl }}"
                                                 class="size-20 shrink-0 rounded-lg object-cover"
                                                 alt="{{ __('Current thumbnail') }}"
                                             >
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-medium text-zinc-300">{{ __('Current Thumbnail') }}</p>
-                                                <p class="mt-0.5 text-xs text-zinc-400">{{ __('Upload a new image to replace, or delete the current one.') }}</p>
+                                            <div class="min-w-0 flex-1">
+                                                <p class="text-sm font-medium text-zinc-300">
+                                                    {{ __('Current Thumbnail') }}</p>
+                                                <p class="mt-0.5 text-xs text-zinc-400">
+                                                    {{ __('Upload a new image to replace, or delete the current one.') }}
+                                                </p>
                                             </div>
                                             <flux:button
                                                 size="sm"
@@ -86,7 +93,13 @@
                                             />
                                         </div>
                                     @endif
-                                    <flux:file-upload wire:model="thumbnail" @class(['h-full', 'lg:col-span-2' => !$thumbnail && !$addon->thumbnail])>
+                                    <flux:file-upload
+                                        wire:model="thumbnail"
+                                        @class([
+                                            'h-full',
+                                            'lg:col-span-2' => !$thumbnail && !$addon->thumbnail,
+                                        ])
+                                    >
                                         <flux:file-upload.dropzone
                                             heading="{{ __('Drop image here or click to browse') }}"
                                             text="{{ __('JPG or PNG, square, up to 2MB') }}"
@@ -208,13 +221,13 @@
                                         :key="link.key"
                                     >
                                         <div>
-                                            <div class="flex gap-2 items-center">
+                                            <div class="flex items-center gap-2">
                                                 <div class="flex-1">
                                                     <input
                                                         type="url"
                                                         x-model.lazy="link.url"
                                                         placeholder="https://github.com/username/addon-name"
-                                                        class="w-full border rounded-lg appearance-none text-base sm:text-sm py-2 h-10 leading-[1.375rem] ps-3 pe-3 bg-white/10 text-zinc-300 placeholder-zinc-400 shadow-xs border-b-zinc-300/80 border-white/10"
+                                                        class="shadow-xs h-10 w-full appearance-none rounded-lg border border-white/10 border-b-zinc-300/80 bg-white/10 py-2 pe-3 ps-3 text-base leading-[1.375rem] text-zinc-300 placeholder-zinc-400 sm:text-sm"
                                                     />
                                                 </div>
                                                 <div class="w-40">
@@ -222,14 +235,14 @@
                                                         type="text"
                                                         x-model.lazy="link.label"
                                                         placeholder="Label (optional)"
-                                                        class="w-full border rounded-lg appearance-none text-base sm:text-sm py-2 h-10 leading-[1.375rem] ps-3 pe-3 bg-white/10 text-zinc-300 placeholder-zinc-400 shadow-xs border-b-zinc-300/80 border-white/10"
+                                                        class="shadow-xs h-10 w-full appearance-none rounded-lg border border-white/10 border-b-zinc-300/80 bg-white/10 py-2 pe-3 ps-3 text-base leading-[1.375rem] text-zinc-300 placeholder-zinc-400 sm:text-sm"
                                                     />
                                                 </div>
                                                 <button
                                                     x-show="links.length > 1"
                                                     x-on:click="removeLink(index)"
                                                     type="button"
-                                                    class="inline-flex items-center justify-center p-1.5 text-zinc-400 hover:text-zinc-200 transition-colors"
+                                                    class="inline-flex items-center justify-center p-1.5 text-zinc-400 transition-colors hover:text-zinc-200"
                                                 >
                                                     <flux:icon.x-mark class="size-5" />
                                                 </button>
@@ -241,7 +254,7 @@
                                         x-show="links.length < 4"
                                         x-on:click="addLink()"
                                         type="button"
-                                        class="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+                                        class="inline-flex items-center gap-1 text-sm text-zinc-400 transition-colors hover:text-zinc-200"
                                     >
                                         <flux:icon.plus class="size-4" />
                                         {{ __('Add another link') }}
@@ -292,7 +305,7 @@
                                                 the published date will be interpreted as a UTC date. Alternatively, you
                                                 can <a
                                                     href="/user/profile"
-                                                    class="underline text-white hover:text-cyan-200 transition-colors"
+                                                    class="text-white underline transition-colors hover:text-cyan-200"
                                                 >edit your profile</a> to set a specific timezone.
                                             </flux:callout.text>
                                         </flux:callout>
@@ -300,7 +313,7 @@
                                         {{ __('Your timezone is set to :timezone.', ['timezone' => auth()->user()->timezone]) }}
                                     @endif
                                 </flux:description>
-                                <div class="flex gap-2 items-center">
+                                <div class="flex items-center gap-2">
                                     <flux:date-picker
                                         wire:model="publishedAtDate"
                                         clearable
@@ -342,50 +355,56 @@
                             >
                                 <flux:field>
                                     <flux:checkbox.group label="AI Disclosure">
-                                    @if ($this->aiContentLockedForUser)
-                                        <div class="flex items-start gap-2">
-                                            <div class="flex-1">
+                                        @if ($this->aiContentLockedForUser)
+                                            <div class="flex items-start gap-2">
+                                                <div class="flex-1">
+                                                    <flux:checkbox
+                                                        value="true"
+                                                        :checked="true"
+                                                        disabled
+                                                        label="Contains AI Content"
+                                                        description="This addon contains content or code that was partially or wholly generated by AI."
+                                                    />
+                                                </div>
+                                                <flux:tooltip content="This setting is locked and may not be changed.">
+                                                    <flux:icon.lock-closed class="mt-0.5 size-4 text-zinc-400" />
+                                                </flux:tooltip>
+                                            </div>
+                                        @elseif ($this->canLockAiContent)
+                                            <div class="space-y-4">
                                                 <flux:checkbox
                                                     value="true"
-                                                    :checked="true"
-                                                    disabled
+                                                    x-model="aiContent"
+                                                    x-bind:disabled="aiLocked"
                                                     label="Contains AI Content"
                                                     description="This addon contains content or code that was partially or wholly generated by AI."
                                                 />
+                                                <div class="flex items-start gap-2">
+                                                    <flux:icon.arrow-turn-down-right
+                                                        class="mt-1 size-4 text-zinc-500" />
+                                                    <div class="flex-1">
+                                                        <flux:field variant="inline">
+                                                            <flux:checkbox
+                                                                value="true"
+                                                                x-model="aiLocked"
+                                                            />
+                                                            <flux:label badge="Admin">Lock 'Contains AI Content' Flag
+                                                            </flux:label>
+                                                            <flux:description>When locked, only staff can change the
+                                                                flag. Locking forces it to enabled.</flux:description>
+                                                        </flux:field>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <flux:tooltip content="This setting is locked and may not be changed.">
-                                                <flux:icon.lock-closed class="size-4 mt-0.5 text-zinc-400" />
-                                            </flux:tooltip>
-                                        </div>
-                                    @elseif ($this->canLockAiContent)
-                                        <div class="space-y-4">
+                                        @else
                                             <flux:checkbox
                                                 value="true"
                                                 x-model="aiContent"
-                                                x-bind:disabled="aiLocked"
                                                 label="Contains AI Content"
                                                 description="This addon contains content or code that was partially or wholly generated by AI."
                                             />
-                                            <div class="flex items-start gap-2">
-                                                <flux:icon.arrow-turn-down-right class="size-4 mt-1 text-zinc-500" />
-                                                <div class="flex-1">
-                                                    <flux:field variant="inline">
-                                                        <flux:checkbox value="true" x-model="aiLocked" />
-                                                        <flux:label badge="Admin">Lock 'Contains AI Content' Flag</flux:label>
-                                                        <flux:description>When locked, only staff can change the flag. Locking forces it to enabled.</flux:description>
-                                                    </flux:field>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @else
-                                        <flux:checkbox
-                                            value="true"
-                                            x-model="aiContent"
-                                            label="Contains AI Content"
-                                            description="This addon contains content or code that was partially or wholly generated by AI."
-                                        />
-                                    @endif
-                                </flux:checkbox.group>
+                                        @endif
+                                    </flux:checkbox.group>
                                     <flux:field
                                         class="mt-4"
                                         x-show="aiContent"
@@ -434,11 +453,11 @@
                         </div>
                     </div>
                     <div
-                        class="flex items-center justify-end px-4 py-3 bg-gray-900 border-t-2 border-transparent border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-4">
+                        class="flex items-center justify-end gap-4 border-t-2 border-transparent border-t-gray-700 bg-gray-900 px-4 py-3 text-end shadow-sm sm:rounded-bl-md sm:rounded-br-md sm:px-6">
                         <flux:button
                             variant="primary"
                             size="sm"
-                            class="my-1.5 text-white hover:bg-cyan-600 bg-cyan-700"
+                            class="my-1.5 bg-cyan-700 text-white hover:bg-cyan-600"
                             type="submit"
                         >{{ __('Save Changes') }}</flux:button>
                     </div>

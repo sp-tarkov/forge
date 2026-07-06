@@ -6,10 +6,10 @@
         <x-slot name="description">{{ $description }}</x-slot>
     </x-section-title>
 
-    <div class="mt-5 md:mt-0 md:col-span-2">
+    <div class="mt-5 md:col-span-2 md:mt-0">
         <form wire:submit="{{ $submit }}">
             <div
-                class="px-4 py-5 bg-gray-900 sm:p-6 shadow-sm {{ isset($actions) ? 'sm:rounded-tl-md sm:rounded-tr-md' : 'sm:rounded-md' }}">
+                class="{{ isset($actions) ? 'sm:rounded-tl-md sm:rounded-tr-md' : 'sm:rounded-md' }} bg-gray-900 px-4 py-5 shadow-sm sm:p-6">
                 <div class="grid grid-cols-6 gap-8">
                     {{ $form }}
                 </div>
@@ -17,7 +17,7 @@
 
             @if (isset($actions))
                 <div
-                    class="flex items-center justify-end px-4 py-3 bg-gray-900 border-t-2 border-transparent border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md">
+                    class="flex items-center justify-end border-t-2 border-transparent border-t-gray-700 bg-gray-900 px-4 py-3 text-end shadow-sm sm:rounded-bl-md sm:rounded-br-md sm:px-6">
                     {{ $actions }}
                 </div>
             @endif

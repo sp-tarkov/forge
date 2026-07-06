@@ -2,10 +2,10 @@
 
 <div {{ $attributes->merge(['class' => 'mod-list-component relative mx-auto max-w-2xl h-full w-full']) }}>
     <!-- Official badge -->
-    <div class="absolute top-3 right-3 z-10">
+    <div class="absolute right-3 top-3 z-10">
         <span class="inline-flex items-center rounded-md bg-blue-600 px-2 py-1 text-xs font-medium text-white shadow-lg">
             <svg
-                class="w-3 h-3 mr-1"
+                class="mr-1 h-3 w-3"
                 fill="currentColor"
                 viewBox="0 0 20 20"
             >
@@ -21,15 +21,15 @@
 
     <a
         href="{{ $link }}"
-        class="flex flex-col group h-full w-full bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl overflow-hidden hover:shadow-xl hover:bg-gray-900 hover:shadow-blue-900/20 transition-[shadow,border] ease-out duration-300 border border-transparent hover:border-blue-800"
+        class="group flex h-full w-full flex-col overflow-hidden rounded-xl border border-transparent bg-gray-950 shadow-md shadow-gray-950 drop-shadow-2xl transition-[shadow,border] duration-300 ease-out hover:border-blue-800 hover:bg-gray-900 hover:shadow-xl hover:shadow-blue-900/20"
     >
-        <div class="h-auto md:h-full md:flex">
+        <div class="h-auto md:flex md:h-full">
             <!-- Icon section -->
             <div
-                class="relative h-32 md:h-full md:w-32 md:shrink-0 overflow-hidden bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
+                class="relative flex h-32 items-center justify-center overflow-hidden bg-gradient-to-br from-blue-600 to-blue-800 md:h-full md:w-32 md:shrink-0">
                 @if ($name === 'Releases')
                     <svg
-                        class="w-12 h-12 text-white drop-shadow-lg"
+                        class="h-12 w-12 text-white drop-shadow-lg"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -43,7 +43,7 @@
                     </svg>
                 @elseif($name === 'Installer')
                     <svg
-                        class="w-12 h-12 text-white drop-shadow-lg"
+                        class="h-12 w-12 text-white drop-shadow-lg"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -63,7 +63,7 @@
                     </svg>
                 @else
                     <svg
-                        class="w-12 h-12 text-white drop-shadow-lg"
+                        class="h-12 w-12 text-white drop-shadow-lg"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -81,14 +81,13 @@
                 <div class="absolute inset-0 bg-gradient-to-br from-transparent to-black/10"></div>
             </div>
 
-            <div class="flex flex-col w-full justify-between p-6">
+            <div class="flex w-full flex-col justify-between p-6">
                 <div class="pb-3">
-                    <h3
-                        class="my-1 text-xl leading-tight font-semibold text-white group-hover:text-blue-400">
+                    <h3 class="my-1 text-xl font-semibold leading-tight text-white group-hover:text-blue-400">
                         {{ $name }}</h3>
-                    <p class="no-underline mb-3 text-sm font-medium text-blue-400 flex items-center">
+                    <p class="mb-3 flex items-center text-sm font-medium text-blue-400 no-underline">
                         <svg
-                            class="w-4 h-4 mr-1"
+                            class="mr-1 h-4 w-4"
                             fill="currentColor"
                             viewBox="0 0 20 20"
                         >
@@ -100,18 +99,17 @@
                         </svg>
                         Created by SPT Team
                     </p>
-                    <p class="text-gray-300 leading-relaxed">
+                    <p class="leading-relaxed text-gray-300">
                         {{ $desc }}
                     </p>
                 </div>
 
                 <!-- Call to action footer -->
-                <div class="pt-4 border-t border-gray-700">
-                    <div
-                        class="flex items-center text-sm font-medium text-blue-400 group-hover:text-blue-300">
+                <div class="border-t border-gray-700 pt-4">
+                    <div class="flex items-center text-sm font-medium text-blue-400 group-hover:text-blue-300">
                         <span>Get started</span>
                         <svg
-                            class="ml-1 w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200"
+                            class="ml-1 h-4 w-4 transform transition-transform duration-200 group-hover:translate-x-1"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"

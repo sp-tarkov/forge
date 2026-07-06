@@ -65,10 +65,10 @@
                     <flux:error name="recovery_code" />
                 </div>
 
-                <div class="flex items-center justify-end mt-4">
+                <div class="mt-4 flex items-center justify-end">
                     <button
                         type="button"
-                        class="text-sm text-gray-400 hover:text-gray-100 underline cursor-pointer"
+                        class="cursor-pointer text-sm text-gray-400 underline hover:text-gray-100"
                         x-show="! recovery"
                         x-on:click="
                                         recovery = true;
@@ -80,7 +80,7 @@
 
                     <button
                         type="button"
-                        class="text-sm text-gray-400 hover:text-gray-100 underline cursor-pointer"
+                        class="cursor-pointer text-sm text-gray-400 underline hover:text-gray-100"
                         x-cloak
                         x-show="recovery"
                         x-on:click="
@@ -93,7 +93,10 @@
 
                     <x-honeypot />
 
-                    <flux:button variant="primary" type="submit">
+                    <flux:button
+                        variant="primary"
+                        type="submit"
+                    >
                         {{ __('Log in') }}
                     </flux:button>
                 </div>

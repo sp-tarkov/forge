@@ -1,5 +1,4 @@
-<div
-    class="relative min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-900 overflow-hidden">
+<div class="relative flex min-h-screen flex-col items-center overflow-hidden bg-gray-900 pt-6 sm:justify-center sm:pt-0">
     {{-- Video Background --}}
     <video
         autoplay
@@ -23,7 +22,7 @@
     </div>
 
     <div
-        class="relative z-10 w-full sm:max-w-md mt-6 p-6 bg-gray-900/95 backdrop-blur-sm shadow-xl overflow-hidden sm:rounded-lg">
+        class="relative z-10 mt-6 w-full overflow-hidden bg-gray-900/95 p-6 shadow-xl backdrop-blur-sm sm:max-w-md sm:rounded-lg">
         {{ $slot }}
     </div>
 </div>

@@ -7,13 +7,13 @@
     </x-slot>
 
     <x-slot name="header">
-        <div class="flex items-center justify-between w-full">
+        <div class="flex w-full items-center justify-between">
             <div class="flex items-center gap-3">
                 <flux:icon
                     name="cloud-arrow-down"
                     class="size-8 text-gray-100"
                 />
-                <h2 class="font-semibold text-xl text-gray-100 leading-tight">
+                <h2 class="text-xl font-semibold leading-tight text-gray-100">
                     {{ __('SPT Installer') }}
                 </h2>
                 <flux:badge
@@ -27,46 +27,43 @@
             <a
                 href="https://ligma.waffle-lord.net/SPTInstaller.exe"
                 target="_blank"
-                class="group relative inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-emerald-700 to-emerald-600 px-6 py-3 text-base font-semibold text-white shadow-xl border border-emerald-600 hover:from-emerald-600 hover:to-emerald-500 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/25 active:scale-95 transition-all duration-300 backdrop-blur-sm transform hover:-translate-y-0.5"
+                class="group relative inline-flex transform items-center justify-center rounded-lg border border-emerald-600 bg-gradient-to-r from-emerald-700 to-emerald-600 px-6 py-3 text-base font-semibold text-white shadow-xl backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-500 hover:from-emerald-600 hover:to-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/25 active:scale-95"
             >
                 {{-- Animated background effect --}}
                 <div
-                    class="absolute inset-0 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    class="absolute inset-0 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                 </div>
 
                 {{-- Button content --}}
                 <div class="relative flex items-center">
                     <flux:icon
                         name="cloud-arrow-down"
-                        class="mr-2 h-5 w-5 transform group-hover:scale-110 transition-transform duration-200"
+                        class="mr-2 h-5 w-5 transform transition-transform duration-200 group-hover:scale-110"
                     />
                     Download Installer
                 </div>
 
                 {{-- Shine effect --}}
-                <div class="absolute inset-0 rounded-lg overflow-hidden opacity-0 group-hover:opacity-100">
+                <div class="absolute inset-0 overflow-hidden rounded-lg opacity-0 group-hover:opacity-100">
                     <div
-                        class="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-500 ease-out w-1/2">
+                        class="absolute inset-0 w-1/2 -translate-x-full -skew-x-12 transform bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-500 ease-out group-hover:translate-x-full">
                     </div>
                 </div>
             </a>
         </div>
     </x-slot>
 
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div
-            class="bg-gray-900 overflow-hidden shadow-xl shadow-gray-900 rounded-none sm:rounded-lg">
+    <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div class="overflow-hidden rounded-none bg-gray-900 shadow-xl shadow-gray-900 sm:rounded-lg">
             <div class="px-4 py-8 sm:px-6 lg:px-8">
 
                 {{-- Hero Section --}}
                 <div
-                    class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-950 border border-gray-800 rounded-xl shadow-2xl mb-12">
+                    class="relative mb-12 overflow-hidden rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900 via-black to-gray-950 shadow-2xl">
                     {{-- Light/Dark gritty texture overlays --}}
-                    <div
-                        class="absolute inset-0 bg-gradient-to-br from-gray-800/20 via-transparent to-black/30">
+                    <div class="absolute inset-0 bg-gradient-to-br from-gray-800/20 via-transparent to-black/30">
                     </div>
-                    <div
-                        class="absolute inset-0 bg-gradient-to-tl from-gray-700/10 to-transparent">
+                    <div class="absolute inset-0 bg-gradient-to-tl from-gray-700/10 to-transparent">
                     </div>
 
                     {{-- Noise/grain pattern for texture --}}
@@ -80,13 +77,11 @@
                     ></div>
 
                     {{-- Industrial wear patterns --}}
-                    <div
-                        class="absolute top-0 left-1/4 w-32 h-px bg-gray-600/20 transform rotate-2">
+                    <div class="absolute left-1/4 top-0 h-px w-32 rotate-2 transform bg-gray-600/20">
                     </div>
-                    <div
-                        class="absolute bottom-0 right-1/3 w-24 h-px bg-gray-500/15 transform -rotate-1">
+                    <div class="absolute bottom-0 right-1/3 h-px w-24 -rotate-1 transform bg-gray-500/15">
                     </div>
-                    <div class="absolute top-1/3 right-0 w-px h-16 bg-gray-600/10"></div>
+                    <div class="absolute right-0 top-1/3 h-16 w-px bg-gray-600/10"></div>
 
                     {{-- Subtle inner shadow for depth --}}
                     <div class="absolute inset-0 rounded-xl shadow-inner shadow-black/40"></div>
@@ -95,13 +90,12 @@
                         <div class="mx-auto max-w-4xl text-center">
                             <div class="mb-6 flex justify-center">
                                 <div
-                                    class="relative flex h-24 w-24 items-center justify-center rounded-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black shadow-2xl overflow-hidden border border-gray-700">
+                                    class="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg border border-gray-700 bg-gradient-to-br from-gray-800 via-gray-900 to-black shadow-2xl">
                                     {{-- Light/Dark gritty texture overlays --}}
                                     <div
                                         class="absolute inset-0 bg-gradient-to-br from-gray-700/30 via-transparent to-gray-900/40">
                                     </div>
-                                    <div
-                                        class="absolute inset-0 bg-gradient-to-tl from-gray-600/20 to-transparent">
+                                    <div class="absolute inset-0 bg-gradient-to-tl from-gray-600/20 to-transparent">
                                     </div>
 
                                     {{-- Noise/grain effect --}}
@@ -121,11 +115,10 @@
                                 </div>
                             </div>
 
-                            <h1
-                                class="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-4">
+                            <h1 class="mb-4 text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl">
                                 SPT Installer
                             </h1>
-                            <p class="text-lg text-gray-300 mb-6">
+                            <p class="mb-6 text-lg text-gray-300">
                                 Get up and running with Single Player Tarkov in a few clicks. Our installer handles all
                                 the complex setup for you.
                             </p>
@@ -135,21 +128,21 @@
                                 <span class="flex items-center">
                                     <flux:icon.check-circle
                                         variant="mini"
-                                        class="size-4 mr-2 text-green-500"
+                                        class="mr-2 size-4 text-green-500"
                                     />
                                     Lightning Fast Setup
                                 </span>
                                 <span class="flex items-center">
                                     <flux:icon.check-circle
                                         variant="mini"
-                                        class="size-4 mr-2 text-green-500"
+                                        class="mr-2 size-4 text-green-500"
                                     />
                                     Fully Automated Reliability
                                 </span>
                                 <span class="flex items-center">
                                     <flux:icon.check-circle
                                         variant="mini"
-                                        class="size-4 mr-2 text-green-500"
+                                        class="mr-2 size-4 text-green-500"
                                     />
                                     Beginner Friendly
                                 </span>
@@ -159,26 +152,24 @@
                 </div>
 
                 {{-- Two Column Layout for Installer Info & Warning --}}
-                <div class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:items-stretch">
+                <div class="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-stretch">
                     {{-- What the Installer Does --}}
                     <div class="relative h-full overflow-hidden">
                         {{-- Background Icon --}}
-                        <div
-                            class="absolute -top-8 -right-8 text-blue-400/10 select-none pointer-events-none z-0">
+                        <div class="pointer-events-none absolute -right-8 -top-8 z-0 select-none text-blue-400/10">
                             <flux:icon
                                 name="cog-6-tooth"
                                 class="size-48"
                             />
                         </div>
-                        <div
-                            class="relative z-10 h-full bg-blue-950/50 border border-blue-800 rounded-xl p-6">
-                            <h3 class="font-semibold text-lg text-blue-100 mb-4">The Installer Will:
+                        <div class="relative z-10 h-full rounded-xl border border-blue-800 bg-blue-950/50 p-6">
+                            <h3 class="mb-4 text-lg font-semibold text-blue-100">The Installer Will:
                             </h3>
                             <ul class="space-y-3">
                                 <li class="flex items-start">
                                     <flux:icon
                                         name="check-circle"
-                                        class="size-4 mt-1 mr-3 text-blue-600 flex-shrink-0"
+                                        class="mr-3 mt-1 size-4 flex-shrink-0 text-blue-600"
                                     />
                                     <span class="text-blue-200">Check you have the correct version of
                                         .NET installed</span>
@@ -186,7 +177,7 @@
                                 <li class="flex items-start">
                                     <flux:icon
                                         name="check-circle"
-                                        class="size-4 mt-1 mr-3 text-blue-600 flex-shrink-0"
+                                        class="mr-3 mt-1 size-4 flex-shrink-0 text-blue-600"
                                     />
                                     <span class="text-blue-200">Duplicate your EFT installation to a
                                         selected folder</span>
@@ -194,7 +185,7 @@
                                 <li class="flex items-start">
                                     <flux:icon
                                         name="check-circle"
-                                        class="size-4 mt-1 mr-3 text-blue-600 flex-shrink-0"
+                                        class="mr-3 mt-1 size-4 flex-shrink-0 text-blue-600"
                                     />
                                     <span class="text-blue-200">Patch the duplicated EFT files to the
                                         version required for SPT</span>
@@ -202,7 +193,7 @@
                                 <li class="flex items-start">
                                     <flux:icon
                                         name="check-circle"
-                                        class="size-4 mt-1 mr-3 text-blue-600 flex-shrink-0"
+                                        class="mr-3 mt-1 size-4 flex-shrink-0 text-blue-600"
                                     />
                                     <span class="text-blue-200">Download the most recent version of
                                         SPT and install it into the duplicated folder</span>
@@ -214,22 +205,20 @@
                     {{-- Warning Section --}}
                     <div class="relative h-full overflow-hidden">
                         {{-- Background Icon --}}
-                        <div
-                            class="absolute -top-8 -right-8 text-yellow-400/10 select-none pointer-events-none z-0">
+                        <div class="pointer-events-none absolute -right-8 -top-8 z-0 select-none text-yellow-400/10">
                             <flux:icon
                                 name="exclamation-triangle"
                                 class="size-48"
                             />
                         </div>
-                        <div
-                            class="relative z-10 h-full bg-yellow-950/50 border border-yellow-800 rounded-xl p-6">
-                            <h3 class="font-semibold text-lg text-yellow-100 mb-4">Things to Note
+                        <div class="relative z-10 h-full rounded-xl border border-yellow-800 bg-yellow-950/50 p-6">
+                            <h3 class="mb-4 text-lg font-semibold text-yellow-100">Things to Note
                             </h3>
                             <ul class="space-y-3">
                                 <li class="flex items-start">
                                     <flux:icon
                                         name="arrow-right"
-                                        class="size-4 mt-1 mr-3 text-yellow-600 flex-shrink-0"
+                                        class="mr-3 mt-1 size-4 flex-shrink-0 text-yellow-600"
                                     />
                                     <span class="text-yellow-200">Make sure you have a legitimate
                                         copy of Escape From Tarkov installed and up-to-date before running the
@@ -238,7 +227,7 @@
                                 <li class="flex items-start">
                                     <flux:icon
                                         name="arrow-right"
-                                        class="size-4 mt-1 mr-3 text-yellow-600 flex-shrink-0"
+                                        class="mr-3 mt-1 size-4 flex-shrink-0 text-yellow-600"
                                     />
                                     <span class="text-yellow-200">Do not place this installer on
                                         your desktop and run it</span>
@@ -246,11 +235,11 @@
                                 <li class="flex items-start">
                                     <flux:icon
                                         name="arrow-right"
-                                        class="size-4 mt-1 mr-3 text-yellow-600 flex-shrink-0"
+                                        class="mr-3 mt-1 size-4 flex-shrink-0 text-yellow-600"
                                     />
                                     <span class="text-yellow-200">The installer downloads SPT and
                                         patcher files to: <br /><code
-                                            class="bg-gray-800 px-1 py-0.5 rounded text-xs whitespace-nowrap"
+                                            class="whitespace-nowrap rounded bg-gray-800 px-1 py-0.5 text-xs"
                                         >%appdata%\spt-installer\cache</code></span>
                                 </li>
                             </ul>
@@ -259,54 +248,52 @@
                 </div>
 
                 {{-- Two Column Layout for Usage Guide & How to Run SPT --}}
-                <div class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:items-stretch">
+                <div class="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-stretch">
                     {{-- Usage Guide --}}
                     <div class="relative h-full overflow-hidden">
                         {{-- Background Icon --}}
-                        <div
-                            class="absolute -top-8 -right-8 text-green-400/10 select-none pointer-events-none z-0">
+                        <div class="pointer-events-none absolute -right-8 -top-8 z-0 select-none text-green-400/10">
                             <flux:icon
                                 name="book-open"
                                 class="size-48"
                             />
                         </div>
-                        <div
-                            class="relative z-10 h-full bg-green-950/50 border border-green-800 rounded-xl p-6">
-                            <h3 class="font-semibold text-lg text-green-100 mb-4">Step-by-Step
+                        <div class="relative z-10 h-full rounded-xl border border-green-800 bg-green-950/50 p-6">
+                            <h3 class="mb-4 text-lg font-semibold text-green-100">Step-by-Step
                                 Usage Guide</h3>
                             <ol class="space-y-3">
                                 <li class="flex items-start">
                                     <span
-                                        class="flex-shrink-0 w-6 h-6 bg-green-900 text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5"
+                                        class="mr-3 mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-900 text-sm font-medium text-green-200"
                                     >1</span>
                                     <span class="text-green-200">Download installer</span>
                                 </li>
                                 <li class="flex items-start">
                                     <span
-                                        class="flex-shrink-0 w-6 h-6 bg-green-900 text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5"
+                                        class="mr-3 mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-900 text-sm font-medium text-green-200"
                                     >2</span>
                                     <span class="text-green-200">Place in a new folder. We
                                         recommend: <br /><code
-                                            class="bg-gray-800 px-2 py-1 rounded text-sm whitespace-nowrap"
+                                            class="whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-sm"
                                         >C:\Games\SPT-4.0\</code></span>
                                 </li>
                                 <li class="flex items-start">
                                     <span
-                                        class="flex-shrink-0 w-6 h-6 bg-green-900 text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5"
+                                        class="mr-3 mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-900 text-sm font-medium text-green-200"
                                     >3</span>
                                     <span class="text-green-200">Ensure your EFT install is updated
                                         to the latest version</span>
                                 </li>
                                 <li class="flex items-start">
                                     <span
-                                        class="flex-shrink-0 w-6 h-6 bg-green-900 text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5"
+                                        class="mr-3 mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-900 text-sm font-medium text-green-200"
                                     >4</span>
                                     <div class="text-green-200">
                                         <span>Run installer</span>
-                                        <div class="mt-1 ml-2 text-sm text-red-400">
+                                        <div class="ml-2 mt-1 text-sm text-red-400">
                                             <flux:icon
                                                 name="exclamation-triangle"
-                                                class="size-4 inline mr-1"
+                                                class="mr-1 inline size-4"
                                             />
                                             If something shows as <span class="font-medium">RED</span>, you should read
                                             carefully!
@@ -315,14 +302,14 @@
                                 </li>
                                 <li class="flex items-start">
                                     <span
-                                        class="flex-shrink-0 w-6 h-6 bg-green-900 text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5"
+                                        class="mr-3 mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-900 text-sm font-medium text-green-200"
                                     >5</span>
                                     <span class="text-green-200">Wait for it to say it has
                                         completed</span>
                                 </li>
                                 <li class="flex items-start">
                                     <span
-                                        class="flex-shrink-0 w-6 h-6 bg-green-900 text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5"
+                                        class="mr-3 mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-900 text-sm font-medium text-green-200"
                                     >6</span>
                                     <span class="text-green-200">Close the installer. You are ready
                                         to play!</span>
@@ -334,45 +321,43 @@
                     {{-- How to Run SPT --}}
                     <div class="relative h-full overflow-hidden">
                         {{-- Background Icon --}}
-                        <div
-                            class="absolute -top-8 -right-8 text-cyan-400/10 select-none pointer-events-none z-0">
+                        <div class="pointer-events-none absolute -right-8 -top-8 z-0 select-none text-cyan-400/10">
                             <flux:icon
                                 name="play"
                                 class="size-48"
                             />
                         </div>
-                        <div
-                            class="relative z-10 h-full bg-cyan-950/50 border border-cyan-800 rounded-xl p-6">
-                            <h3 class="font-semibold text-lg text-cyan-100 mb-4">How to Run SPT
+                        <div class="relative z-10 h-full rounded-xl border border-cyan-800 bg-cyan-950/50 p-6">
+                            <h3 class="mb-4 text-lg font-semibold text-cyan-100">How to Run SPT
                                 After Installation</h3>
                             <ol class="space-y-3">
                                 <li class="flex items-start">
                                     <span
-                                        class="flex-shrink-0 w-6 h-6 bg-cyan-900 text-cyan-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5"
+                                        class="mr-3 mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-cyan-900 text-sm font-medium text-cyan-200"
                                     >1</span>
                                     <span class="text-cyan-200">Start the <code
-                                            class="bg-gray-800 px-2 py-1 rounded text-sm"
+                                            class="rounded bg-gray-800 px-2 py-1 text-sm"
                                         >Spt.Server.exe</code> and wait for it to say <span
-                                            class="text-green-600 font-medium"
+                                            class="font-medium text-green-600"
                                         >Happy Playing!</span></span>
                                 </li>
                                 <li class="flex items-start">
                                     <span
-                                        class="flex-shrink-0 w-6 h-6 bg-cyan-900 text-cyan-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5"
+                                        class="mr-3 mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-cyan-900 text-sm font-medium text-cyan-200"
                                     >2</span>
                                     <span class="text-cyan-200">Start the <code
-                                            class="bg-gray-800 px-2 py-1 rounded text-sm"
+                                            class="rounded bg-gray-800 px-2 py-1 text-sm"
                                         >Spt.Launcher.exe</code></span>
                                 </li>
                                 <li class="flex items-start">
                                     <span
-                                        class="flex-shrink-0 w-6 h-6 bg-cyan-900 text-cyan-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5"
+                                        class="mr-3 mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-cyan-900 text-sm font-medium text-cyan-200"
                                     >3</span>
                                     <span class="text-cyan-200">Create a profile</span>
                                 </li>
                                 <li class="flex items-start">
                                     <span
-                                        class="flex-shrink-0 w-6 h-6 bg-cyan-900 text-cyan-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5"
+                                        class="mr-3 mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-cyan-900 text-sm font-medium text-cyan-200"
                                     >4</span>
                                     <span class="text-cyan-200">Launch the game</span>
                                 </li>
@@ -386,15 +371,15 @@
                     id="video-guide"
                     class="text-center"
                 >
-                    <h3 class="font-semibold text-lg mb-2 text-gray-200">Video Installation Guide
+                    <h3 class="mb-2 text-lg font-semibold text-gray-200">Video Installation Guide
                     </h3>
-                    <p class="text-sm text-gray-400 mb-6">Created by McDewgle</p>
-                    <div class="max-w-4xl mx-auto">
+                    <p class="mb-6 text-sm text-gray-400">Created by McDewgle</p>
+                    <div class="mx-auto max-w-4xl">
                         <div
-                            class="relative overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-2">
+                            class="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 p-2 shadow-2xl">
                             <div class="aspect-video w-full">
                                 <video
-                                    class="w-full h-full rounded-lg"
+                                    class="h-full w-full rounded-lg"
                                     controls
                                     preload="metadata"
                                     poster="{{ Vite::asset('resources/images/installation-guide-poster.png') }}"
@@ -403,7 +388,7 @@
                                         src="{{ Vite::asset('resources/video/installation-guide.mp4') }}"
                                         type="video/mp4"
                                     >
-                                    <p class="text-center p-4 text-gray-400">
+                                    <p class="p-4 text-center text-gray-400">
                                         Your browser does not support the video element. Please upgrade your browser to
                                         view the installation guide.
                                     </p>

@@ -88,7 +88,7 @@
                 'border-cyan-600 text-white': activeTab === 'write',
                 'border-transparent text-slate-400 hover:text-slate-300': activeTab !== 'write'
             }"
-            class="px-4 py-2 text-sm font-medium border-b-2 rounded-t-lg transition-colors focus:outline-none focus:bg-slate-800"
+            class="rounded-t-lg border-b-2 px-4 py-2 text-sm font-medium transition-colors focus:bg-slate-800 focus:outline-none"
         >
             {{ __('Write') }}
         </button>
@@ -102,7 +102,7 @@
                 'border-cyan-600 text-white': activeTab === 'preview',
                 'border-transparent text-slate-400 hover:text-slate-300': activeTab !== 'preview'
             }"
-            class="px-4 py-2 text-sm font-medium border-b-2 rounded-t-lg transition-colors focus:outline-none focus:bg-slate-800"
+            class="rounded-t-lg border-b-2 px-4 py-2 text-sm font-medium transition-colors focus:bg-slate-800 focus:outline-none"
         >
             {{ __('Preview') }}
         </button>
@@ -132,14 +132,14 @@
             x-cloak
             role="tabpanel"
             :aria-hidden="activeTab !== 'preview'"
-            class="min-h-[{{ $rows * 1.5 }}rem] py-3 px-4 sm:py-4 sm:px-6 bg-white/10 rounded-xl border border-slate-700"
+            class="min-h-[{{ $rows * 1.5 }}rem] rounded-xl border border-slate-700 bg-white/10 px-4 py-3 sm:px-6 sm:py-4"
         >
             <div
                 x-show="isLoadingPreview"
                 class="flex items-center justify-center py-8"
             >
                 <svg
-                    class="animate-spin h-8 w-8 text-cyan-500"
+                    class="h-8 w-8 animate-spin text-cyan-500"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"

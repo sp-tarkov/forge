@@ -1,8 +1,8 @@
 <div>
     <x-slot name="header">
-        <div class="flex items-center justify-between w-full">
+        <div class="flex w-full items-center justify-between">
             <div>
-                <h2 class="font-semibold text-xl text-gray-200 leading-tight">
+                <h2 class="text-xl font-semibold leading-tight text-gray-200">
                     {{ __('Visitor Analytics') }}
                 </h2>
             </div>
@@ -12,8 +12,8 @@
     <div class="px-6 lg:px-8">
         @if ($this->getActiveFilters())
             <div class="my-6">
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                    <span class="text-sm font-medium text-gray-300 flex-shrink-0">Filtering:</span>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                    <span class="flex-shrink-0 text-sm font-medium text-gray-300">Filtering:</span>
                     <div class="min-w-0">
                         <flux:breadcrumbs class="inline-flex flex-wrap">
                             @foreach ($this->getActiveFilters() as $index => $filter)
@@ -59,9 +59,9 @@
             {{-- Filters Section --}}
             <div
                 id="filters-container"
-                class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6"
+                class="rounded-lg border border-gray-700 bg-gray-900 p-6 shadow-sm"
             >
-                <div class="flex items-center justify-between mb-4">
+                <div class="mb-4 flex items-center justify-between">
                     <h3 class="text-lg font-semibold text-gray-100">Filters</h3>
                     <flux:button
                         wire:click="resetFilters"
@@ -73,7 +73,7 @@
                     </flux:button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {{-- Date Range Filter --}}
                     <div>
                         <flux:label class="text-xs">Date From</flux:label>
@@ -284,27 +284,27 @@
             </div>
 
             {{-- Visits Table --}}
-            <div
-                class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 overflow-hidden">
-                <div class="p-6 border-b border-gray-700">
+            <div class="overflow-hidden rounded-lg border border-gray-700 bg-gray-900 shadow-sm">
+                <div class="border-b border-gray-700 p-6">
                     <h3 class="text-lg font-semibold text-gray-100">Recent Visits</h3>
                 </div>
 
                 @if ($this->listTimedOut)
-                    <div class="px-6 py-4 border-b border-gray-700">
+                    <div class="border-b border-gray-700 px-6 py-4">
                         <flux:callout
                             icon="clock"
                             color="amber"
                         >
                             <flux:callout.heading>This filter combination took too long to load.</flux:callout.heading>
-                            <flux:callout.text>Try a shorter date range or more specific filters, then try again.</flux:callout.text>
+                            <flux:callout.text>Try a shorter date range or more specific filters, then try again.
+                            </flux:callout.text>
                         </flux:callout>
                     </div>
                 @endif
 
                 {{-- Top Pagination --}}
                 @if ($this->events->hasPages())
-                    <div class="px-6 py-4 border-b border-gray-700 bg-gray-800">
+                    <div class="border-b border-gray-700 bg-gray-800 px-6 py-4">
                         {{ $this->events->links(data: ['scrollTo' => '#filters-container']) }}
                     </div>
                 @endif
@@ -317,134 +317,134 @@
                         <thead class="bg-gray-900">
                             <tr>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('created_at')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
+                                        class="flex w-full cursor-pointer select-none items-center space-x-1 text-left hover:text-gray-300"
                                     >
                                         <span>Time</span>
                                         @if ($sortBy === 'created_at')
                                             <flux:icon.chevron-down
-                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                                class="{{ $sortDirection === 'desc' ? '' : 'rotate-180' }} h-3 w-3"
                                             />
                                         @endif
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('event_name')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
+                                        class="flex w-full cursor-pointer select-none items-center space-x-1 text-left hover:text-gray-300"
                                     >
                                         <span>Event</span>
                                         @if ($sortBy === 'event_name')
                                             <flux:icon.chevron-down
-                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                                class="{{ $sortDirection === 'desc' ? '' : 'rotate-180' }} h-3 w-3"
                                             />
                                         @endif
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('visitor_id')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
+                                        class="flex w-full cursor-pointer select-none items-center space-x-1 text-left hover:text-gray-300"
                                     >
                                         <span>User</span>
                                         @if ($sortBy === 'visitor_id')
                                             <flux:icon.chevron-down
-                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                                class="{{ $sortDirection === 'desc' ? '' : 'rotate-180' }} h-3 w-3"
                                             />
                                         @endif
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('ip')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
+                                        class="flex w-full cursor-pointer select-none items-center space-x-1 text-left hover:text-gray-300"
                                     >
                                         <span>IP</span>
                                         @if ($sortBy === 'ip')
                                             <flux:icon.chevron-down
-                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                                class="{{ $sortDirection === 'desc' ? '' : 'rotate-180' }} h-3 w-3"
                                             />
                                         @endif
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('browser')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
+                                        class="flex w-full cursor-pointer select-none items-center space-x-1 text-left hover:text-gray-300"
                                     >
                                         <span>Browser</span>
                                         @if ($sortBy === 'browser')
                                             <flux:icon.chevron-down
-                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                                class="{{ $sortDirection === 'desc' ? '' : 'rotate-180' }} h-3 w-3"
                                             />
                                         @endif
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('platform')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
+                                        class="flex w-full cursor-pointer select-none items-center space-x-1 text-left hover:text-gray-300"
                                     >
                                         <span>Platform</span>
                                         @if ($sortBy === 'platform')
                                             <flux:icon.chevron-down
-                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                                class="{{ $sortDirection === 'desc' ? '' : 'rotate-180' }} h-3 w-3"
                                             />
                                         @endif
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('device')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
+                                        class="flex w-full cursor-pointer select-none items-center space-x-1 text-left hover:text-gray-300"
                                     >
                                         <span>Device</span>
                                         @if ($sortBy === 'device')
                                             <flux:icon.chevron-down
-                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                                class="{{ $sortDirection === 'desc' ? '' : 'rotate-180' }} h-3 w-3"
                                             />
                                         @endif
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('country_name')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
+                                        class="flex w-full cursor-pointer select-none items-center space-x-1 text-left hover:text-gray-300"
                                     >
                                         <span>Location</span>
                                         @if ($sortBy === 'country_name')
                                             <flux:icon.chevron-down
-                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                                class="{{ $sortDirection === 'desc' ? '' : 'rotate-180' }} h-3 w-3"
                                             />
                                         @endif
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                                     &nbsp;</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-gray-800 divide-y divide-gray-700">
+                        <tbody class="divide-y divide-gray-700 bg-gray-800">
                             @forelse($this->events as $event)
                                 <tr class="hover:bg-gray-700">
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-100">
+                                    <td class="whitespace-nowrap px-4 py-4 text-sm text-gray-100">
                                         <div class="text-xs">
                                             <div>{{ \Carbon\Carbon::parse($event->created_at)->format('M j, Y') }}
                                             </div>
@@ -460,17 +460,17 @@
                                             >
                                                 <flux:icon
                                                     name="{{ \App\Enums\TrackingEventType::from($event->event_name)->getIcon() }}"
-                                                    class="w-3 h-3 mr-1"
+                                                    class="mr-1 h-3 w-3"
                                                 />
                                                 {{ $event->event_display_name }}
                                             </flux:badge>
 
                                             @if ($displayText = $this->getEventDisplayText($event))
-                                                <div class="text-xs text-gray-400 mt-1">
+                                                <div class="mt-1 text-xs text-gray-400">
                                                     @if ($eventUrl = $this->getEventUrl($event))
                                                         <a
                                                             href="{{ $eventUrl }}"
-                                                            class="hover:text-gray-300 underline hover:no-underline"
+                                                            class="underline hover:text-gray-300 hover:no-underline"
                                                             target="_blank"
                                                         >
                                                             {{ Str::limit($displayText, 40) }}
@@ -482,7 +482,7 @@
                                             @endif
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm">
+                                    <td class="whitespace-nowrap px-4 py-4 text-sm">
                                         @if ($this->getEventDisplayUser($event) && $this->getEventUserId($event))
                                             <div class="flex items-center space-x-2">
                                                 <flux:avatar
@@ -495,7 +495,7 @@
                                                 <div class="flex flex-col">
                                                     <a
                                                         href="{{ route('user.show', ['userId' => $this->getEventUserId($event), 'slug' => Str::slug($this->getEventDisplayUser($event)->name)]) }}"
-                                                        class="text-xs font-medium text-gray-100 underline hover:text-gray-300 truncate max-w-24"
+                                                        class="max-w-24 truncate text-xs font-medium text-gray-100 underline hover:text-gray-300"
                                                     >
                                                         {{ $this->getEventDisplayUser($event)->name }}
                                                     </a>
@@ -520,10 +520,10 @@
                                                 </div>
                                             </div>
                                         @else
-                                            <span class="text-gray-500 text-xs">Anonymous</span>
+                                            <span class="text-xs text-gray-500">Anonymous</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-xs font-mono">
+                                    <td class="whitespace-nowrap px-4 py-4 font-mono text-xs">
                                         @if ($event->ip)
                                             <a
                                                 href="https://whatismyipaddress.com/ip/{{ $event->ip }}"
@@ -536,7 +536,7 @@
                                             <span class="text-gray-100">Unknown</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-xs">
+                                    <td class="whitespace-nowrap px-4 py-4 text-xs">
                                         @if ($event->browser)
                                             <button
                                                 wire:click="$set('browserFilter', '{{ $event->browser }}')"
@@ -548,7 +548,7 @@
                                             <span class="text-gray-100">Unknown</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-xs">
+                                    <td class="whitespace-nowrap px-4 py-4 text-xs">
                                         @if ($event->platform)
                                             <button
                                                 wire:click="$set('platformFilter', '{{ $event->platform }}')"
@@ -560,7 +560,7 @@
                                             <span class="text-gray-100">Unknown</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-xs">
+                                    <td class="whitespace-nowrap px-4 py-4 text-xs">
                                         @if ($event->device)
                                             <button
                                                 wire:click="$set('deviceFilter', '{{ $event->device }}')"
@@ -572,7 +572,7 @@
                                             <span class="text-gray-100">Unknown</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-xs">
+                                    <td class="whitespace-nowrap px-4 py-4 text-xs">
                                         @if ($event->country_name)
                                             <div class="flex items-center space-x-2">
                                                 <span
@@ -580,7 +580,7 @@
                                                 <div class="text-gray-100">
                                                     <button
                                                         wire:click="setGeographicFilter('country', '{{ $event->country_name }}')"
-                                                        class="font-medium underline hover:text-gray-300 text-left"
+                                                        class="text-left font-medium underline hover:text-gray-300"
                                                     >
                                                         {{ $event->country_name }}
                                                     </button>
@@ -622,7 +622,7 @@
                                             <span class="text-gray-500">Unknown</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-xs">
+                                    <td class="whitespace-nowrap px-4 py-4 text-xs">
                                         <flux:button
                                             wire:click="showEventDetails({{ $event->id }})"
                                             variant="outline"
@@ -639,9 +639,7 @@
                                         colspan="10"
                                         class="px-6 py-12 text-center text-gray-400"
                                     >
-                                        <flux:icon.chart-bar-square
-                                            class="w-12 h-12 mx-auto mb-4 text-gray-600"
-                                        />
+                                        <flux:icon.chart-bar-square class="mx-auto mb-4 h-12 w-12 text-gray-600" />
                                         <p class="text-gray-400">No events found for the selected
                                             filters.</p>
                                     </td>
@@ -652,7 +650,7 @@
                 </div>
 
                 @if ($this->events->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-700">
+                    <div class="border-t border-gray-700 px-6 py-4">
                         {{ $this->events->links(data: ['scrollTo' => '#filters-container']) }}
                     </div>
                 @endif
@@ -666,11 +664,11 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-700 pb-6 mb-6">
+                <div class="mb-6 border-b border-gray-700 pb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="eye"
-                            class="w-8 h-8 text-blue-600"
+                            class="h-8 w-8 text-blue-600"
                         />
                         <div>
                             <flux:heading
@@ -679,7 +677,7 @@
                             >
                                 Event Details
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-sm text-gray-400">
                                 Complete event data in JSON format
                             </flux:text>
                         </div>
@@ -689,15 +687,14 @@
                 {{-- Content Section --}}
                 <div class="space-y-4">
                     @if ($selectedEvent)
-                        <div class="bg-gray-800 rounded-lg p-4 overflow-auto max-h-96">
-                            <pre class="text-xs text-gray-100 whitespace-pre-wrap font-mono">{{ json_encode($selectedEvent, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</pre>
+                        <div class="max-h-96 overflow-auto rounded-lg bg-gray-800 p-4">
+                            <pre class="whitespace-pre-wrap font-mono text-xs text-gray-100">{{ json_encode($selectedEvent, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</pre>
                         </div>
                     @endif
                 </div>
 
                 {{-- Footer Actions --}}
-                <div
-                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
+                <div class="mt-6 flex items-center justify-end gap-3 border-t border-gray-700 pt-6">
                     <flux:button
                         x-on:click="$wire.showEventModal = false"
                         variant="outline"

@@ -11,7 +11,7 @@
         {{-- Addon card placeholders --}}
         <div class="grid gap-4">
             @for ($i = 0; $i < 3; $i++)
-                <div class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
+                <div class="rounded-xl bg-gray-950 p-4 shadow-md shadow-gray-950 drop-shadow-2xl sm:p-6">
                     <flux:skeleton.group class="space-y-3">
                         {{-- Header row --}}
                         <div class="flex items-center justify-between">
@@ -55,8 +55,8 @@
             {{ $this->addons->links() }}
         </div>
     @else
-        <div class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
-            <div class="text-center py-8">
+        <div class="rounded-xl bg-gray-950 p-4 shadow-md shadow-gray-950 drop-shadow-2xl sm:p-6">
+            <div class="py-8 text-center">
                 <flux:icon.puzzle-piece class="mx-auto size-12 text-gray-400" />
                 <h3 class="mt-2 text-sm font-semibold text-gray-100">
                     {{ __('No Addons Yet') }}

@@ -4,7 +4,7 @@
     class="p-6"
 >
     {{-- Header --}}
-    <div class="flex items-center justify-between mb-6">
+    <div class="mb-6 flex items-center justify-between">
         <h3 class="text-lg font-semibold text-white">
             {{ __('Notifications') }}
         </h3>
@@ -15,7 +15,7 @@
                         type="button"
                         wire:click="markAllAsRead"
                         wire:loading.attr="disabled"
-                        class="text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50 transition-colors"
+                        class="text-xs text-blue-400 transition-colors hover:text-blue-300 disabled:opacity-50"
                     >
                         <span
                             wire:loading.remove
@@ -32,7 +32,7 @@
                     wire:click="deleteAll"
                     wire:loading.attr="disabled"
                     wire:confirm="{{ __('Are you sure you want to delete all notifications?') }}"
-                    class="text-xs text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors"
+                    class="text-xs text-red-400 transition-colors hover:text-red-300 disabled:opacity-50"
                 >
                     <span
                         wire:loading.remove
@@ -64,7 +64,7 @@
 
     {{-- Notifications List --}}
     @if ($this->notifications->isEmpty())
-        <div class="text-center py-12">
+        <div class="py-12 text-center">
             <flux:icon.bell-slash class="mx-auto size-12 text-gray-700" />
             <h3 class="mt-4 text-sm font-medium text-white">
                 {{ __('No notifications') }}

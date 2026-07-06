@@ -151,7 +151,8 @@
 
     <h4>Technical Restrictions:</h4>
     <ul>
-        <li><strong>No scraping</strong> of our website's HTML content (crawlers, scrapers, headless browsers, etc.)</li>
+        <li><strong>No scraping</strong> of our website's HTML content (crawlers, scrapers, headless browsers, etc.)
+        </li>
         <li><strong>No circumventing</strong> security measures or access controls</li>
         <li><strong>No reverse engineering</strong> of our platform or services</li>
         <li><strong>No excessive bandwidth usage</strong> that impacts service quality</li>

@@ -37,8 +37,11 @@
 
             <x-honeypot />
 
-            <div class="flex justify-end mt-4">
-                <flux:button variant="primary" type="submit">
+            <div class="mt-4 flex justify-end">
+                <flux:button
+                    variant="primary"
+                    type="submit"
+                >
                     {{ __('Confirm') }}
                 </flux:button>
             </div>

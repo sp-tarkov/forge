@@ -7,7 +7,7 @@
 </x-slot>
 
 <x-slot:header>
-    <h2 class="font-semibold text-xl text-gray-100 leading-tight">
+    <h2 class="text-xl font-semibold leading-tight text-gray-100">
         {{ __('Dashboard') }}
     </h2>
 </x-slot>
@@ -15,7 +15,7 @@
 <div>
     <livewire:timezone-warning />
 
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
         @session('status')
             <flux:callout
                 icon="check-circle"
@@ -26,7 +26,7 @@
             </flux:callout>
         @endsession
 
-        <div class="bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
+        <div class="overflow-hidden bg-gray-900 shadow-xl sm:rounded-lg">
             <x-welcome />
         </div>
     </div>

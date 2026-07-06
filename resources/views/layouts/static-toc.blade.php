@@ -9,12 +9,12 @@
     </x-slot>
 
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-100 leading-tight">
+        <h2 class="text-xl font-semibold leading-tight text-gray-100">
             {{ $pageTitle ?? 'Static Content' }}
         </h2>
     </x-slot>
 
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div class="lg:flex lg:gap-8">
             <!-- Table of Contents Sidebar -->
             <x-table-of-contents :title="$title">
@@ -22,10 +22,10 @@
             </x-table-of-contents>
 
             <!-- Main Content -->
-            <div class="flex-1 bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="px-4 py-8 sm:px-6 lg:px-8 prose prose-invert max-w-none static-content">
+            <div class="flex-1 overflow-hidden bg-gray-900 shadow-xl sm:rounded-lg">
+                <div class="prose prose-invert static-content max-w-none px-4 py-8 sm:px-6 lg:px-8">
                     <!-- Page Title in Content -->
-                    <h1 class="text-3xl font-bold text-gray-100 mb-6">
+                    <h1 class="mb-6 text-3xl font-bold text-gray-100">
                         {{ $pageTitle ?? 'Static Content' }}</h1>
 
                     <!-- Main Content Slot -->

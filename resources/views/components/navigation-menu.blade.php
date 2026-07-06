@@ -1,25 +1,23 @@
 <nav
     x-data="{ profileDropdownOpen: false, mobileMenuOpen: false }"
-    class="relative bg-gradient-to-br from-gray-900 via-black to-gray-950 border-b border-gray-800 z-50"
+    class="relative z-50 border-b border-gray-800 bg-gradient-to-br from-gray-900 via-black to-gray-950"
     aria-label="{{ __('Main navigation') }}"
 >
     <div class="absolute inset-0 overflow-hidden">
-        <div
-            class="absolute inset-0 bg-gradient-to-br from-gray-800/30 via-transparent to-black/40">
+        <div class="absolute inset-0 bg-gradient-to-br from-gray-800/30 via-transparent to-black/40">
         </div>
-        <div
-            class="absolute inset-0 bg-gradient-to-tl from-gray-700/20 to-transparent">
+        <div class="absolute inset-0 bg-gradient-to-tl from-gray-700/20 to-transparent">
         </div>
         <div
             class="absolute inset-0 opacity-35"
             style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 0); background-size: 4px 4px;"
         ></div>
-        <div class="absolute top-0 left-1/4 w-32 h-px bg-gray-600/30 transform rotate-2"></div>
-        <div class="absolute bottom-0 right-1/3 w-24 h-px bg-gray-500/25 transform -rotate-1"></div>
-        <div class="absolute top-1/3 right-0 w-px h-16 bg-gray-600/20"></div>
+        <div class="absolute left-1/4 top-0 h-px w-32 rotate-2 transform bg-gray-600/30"></div>
+        <div class="absolute bottom-0 right-1/3 h-px w-24 -rotate-1 transform bg-gray-500/25"></div>
+        <div class="absolute right-0 top-1/3 h-16 w-px bg-gray-600/20"></div>
         <div class="absolute inset-0 shadow-inner shadow-black/60"></div>
     </div>
-    <div class="relative mx-auto max-w-7xl px-2 sm:px-4 lg:px-8 z-10">
+    <div class="relative z-10 mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
         <div class="relative flex h-16 items-center justify-between">
             <div class="flex items-center px-2 lg:px-0">
                 <div class="shrink-0">
@@ -39,10 +37,10 @@
                         <flux:dropdown align="start">
                             <button
                                 type="button"
-                                class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-200 hover:bg-gray-700/50 hover:text-white transition duration-150 ease-in-out"
+                                class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-200 transition duration-150 ease-in-out hover:bg-gray-700/50 hover:text-white"
                             >
                                 {{ __('Mods') }}
-                                <flux:icon.chevron-down class="size-3 ml-1" />
+                                <flux:icon.chevron-down class="ml-1 size-3" />
                             </button>
                             <flux:navmenu>
                                 <flux:navmenu.item
@@ -61,7 +59,7 @@
                                         wire:navigate
                                         icon="sparkles"
                                     >
-                                        <span class="flex items-center justify-between w-full gap-2">
+                                        <span class="flex w-full items-center justify-between gap-2">
                                             {{ __('Recently Created') }}
                                             <livewire:navigation-created-mods-badge />
                                         </span>
@@ -71,7 +69,7 @@
                                         wire:navigate
                                         icon="arrow-path"
                                     >
-                                        <span class="flex items-center justify-between w-full gap-2">
+                                        <span class="flex w-full items-center justify-between gap-2">
                                             {{ __('Recently Updated') }}
                                             <livewire:navigation-updated-mods-badge />
                                         </span>
@@ -86,7 +84,7 @@
                         <a
                             href="https://wiki.sp-tarkov.com/"
                             target="_blank"
-                            class="rounded-md px-3 py-2 text-sm font-medium text-gray-200 hover:bg-gray-700/50 hover:text-white transition duration-150 ease-in-out inline-flex items-center gap-1"
+                            class="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-gray-200 transition duration-150 ease-in-out hover:bg-gray-700/50 hover:text-white"
                         >
                             {{ __('Wiki') }}
                             <flux:icon.arrow-top-right-on-square class="h-3 w-3" />
@@ -102,7 +100,7 @@
                 <button
                     x-on:click="mobileMenuOpen = !mobileMenuOpen"
                     type="button"
-                    class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-300 hover:bg-gray-700/50 hover:text-white focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-white"
+                    class="focus:outline-hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-300 hover:bg-gray-700/50 hover:text-white focus:ring-2 focus:ring-inset focus:ring-white"
                     aria-controls="mobile-menu"
                     :aria-expanded="mobileMenuOpen"
                 >
@@ -152,7 +150,7 @@
                                     <flux:navmenu class="w-56">
                                         {{-- Moderation --}}
                                         <div class="px-2 py-1.5">
-                                            <div class="text-xs text-zinc-400 font-medium">{{ __('Moderation') }}</div>
+                                            <div class="text-xs font-medium text-zinc-400">{{ __('Moderation') }}</div>
                                         </div>
                                         <flux:navmenu.item
                                             icon="document-text"
@@ -174,7 +172,7 @@
                                             {{-- Staff --}}
                                             <flux:navmenu.separator />
                                             <div class="px-2 py-1.5">
-                                                <div class="text-xs text-zinc-400 font-medium">{{ __('Staff') }}</div>
+                                                <div class="text-xs font-medium text-zinc-400">{{ __('Staff') }}</div>
                                             </div>
                                             <flux:navmenu.item
                                                 icon="cube"
@@ -231,7 +229,7 @@
                         >
                             <button
                                 type="button"
-                                class="rounded-full focus:outline-hidden focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                                class="focus:outline-hidden rounded-full focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                             >
                                 <img
                                     class="h-8 w-8 rounded-full"
@@ -299,7 +297,7 @@
                             <a
                                 href="{{ route('login') }}"
                                 wire:navigate
-                                class="text-sm font-semibold leading-6 text-gray-100 whitespace-nowrap"
+                                class="whitespace-nowrap text-sm font-semibold leading-6 text-gray-100"
                             >Log in <span aria-hidden="true">&rarr;</span></a>
                         </div>
                     @endguest
@@ -310,11 +308,11 @@
 
     {{-- Mobile Menu --}}
     <div
-        class="lg:hidden relative z-50"
+        class="relative z-50 lg:hidden"
         x-show="mobileMenuOpen"
         id="mobile-menu"
     >
-        <div class="border-y border-gray-700 space-y-1 mx-3 py-3">
+        <div class="mx-3 space-y-1 border-y border-gray-700 py-3">
             <x-responsive-nav-link
                 href="{{ route('static.installer') }}"
                 :active="request()->routeIs('static.installer')"
@@ -332,7 +330,7 @@
                     href="{{ route('mods.recently-created') }}"
                     :active="request()->routeIs('mods.recently-created')"
                 >
-                    <span class="flex items-center justify-between w-full">
+                    <span class="flex w-full items-center justify-between">
                         {{ __('Recently Created') }}
                         <livewire:navigation-created-mods-badge />
                     </span>
@@ -341,7 +339,7 @@
                     href="{{ route('mods.recently-updated') }}"
                     :active="request()->routeIs('mods.recently-updated')"
                 >
-                    <span class="flex items-center justify-between w-full">
+                    <span class="flex w-full items-center justify-between">
                         {{ __('Recently Updated') }}
                         <livewire:navigation-updated-mods-badge />
                     </span>
@@ -354,7 +352,7 @@
             <a
                 href="https://wiki.sp-tarkov.com/"
                 target="_blank"
-                class="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out flex items-center gap-2"
+                class="block flex items-center gap-2 rounded-md px-3 py-2 text-base font-medium text-gray-400 transition duration-150 ease-in-out hover:bg-gray-700 hover:text-white"
             >
                 {{ __('Wiki') }}
                 <flux:icon.arrow-top-right-on-square class="h-4 w-4" />
@@ -377,12 +375,12 @@
                 <a
                     href="{{ route('dashboard') }}"
                     wire:navigate
-                    class="relative inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700/50 hover:text-white transition duration-150 ease-in-out"
+                    class="relative inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-gray-300 transition duration-150 ease-in-out hover:bg-gray-700/50 hover:text-white"
                 >
                     <flux:icon.bell class="h-5 w-5" />
                     @if (($mobileNotifCount = auth()->user()->unreadNotifications()->count()) > 0)
                         <span
-                            class="absolute top-1 left-2 flex h-3 w-3 items-center justify-center rounded-full bg-red-600 text-[8px] font-bold text-white"
+                            class="absolute left-2 top-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-600 text-[8px] font-bold text-white"
                         >
                             {{ $mobileNotifCount > 9 ? '9+' : $mobileNotifCount }}
                         </span>
@@ -392,7 +390,7 @@
                 <a
                     href="{{ route('chat') }}"
                     wire:navigate
-                    class="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700/50 hover:text-white transition duration-150 ease-in-out"
+                    class="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-gray-300 transition duration-150 ease-in-out hover:bg-gray-700/50 hover:text-white"
                 >
                     <flux:icon.chat-bubble-left-ellipsis class="h-5 w-5" />
                     <span>{{ __('Chat') }}</span>
@@ -468,7 +466,7 @@
 
                 @if (auth()->user()->isModOrAdmin())
                     {{-- Moderation --}}
-                    <div class="mt-3 pt-3 border-t border-gray-700">
+                    <div class="mt-3 border-t border-gray-700 pt-3">
                         <div class="px-3 pb-1 text-xs font-medium text-zinc-400">
                             {{ __('Moderation') }}
                         </div>
@@ -506,7 +504,7 @@
 
                 @if (auth()->user()->isAdmin())
                     {{-- Staff --}}
-                    <div class="mt-3 pt-3 border-t border-gray-700">
+                    <div class="mt-3 border-t border-gray-700 pt-3">
                         <div class="px-3 pb-1 text-xs font-medium text-zinc-400">
                             {{ __('Staff') }}
                         </div>
@@ -586,7 +584,7 @@
             </div>
         @endauth
         @guest
-            <div class="space-y-1 mx-3 py-3">
+            <div class="mx-3 space-y-1 py-3">
                 <x-responsive-nav-link
                     href="{{ route('login') }}"
                     :active="request()->routeIs('login')"

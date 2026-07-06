@@ -45,16 +45,17 @@
             wire:key="note-display-{{ $itemId }}"
             class="mt-2 flex items-start gap-3"
         >
-            <div class="{{ $iconColumnClass }} shrink-0 flex justify-end pt-0.5">
+            <div class="{{ $iconColumnClass }} flex shrink-0 justify-end pt-0.5">
                 <flux:icon.chat-bubble-left class="size-3 text-gray-400" />
             </div>
-            <div class="flex-1 min-w-0 flex items-start gap-1.5">
-                <div class="flex-1 text-xs italic text-gray-400 whitespace-pre-line break-words">{{ $note }}</div>
+            <div class="flex min-w-0 flex-1 items-start gap-1.5">
+                <div class="flex-1 whitespace-pre-line break-words text-xs italic text-gray-400">{{ $note }}
+                </div>
                 @if ($canManage)
                     <button
                         type="button"
                         wire:click="startEditingNote({{ $itemId }})"
-                        class="shrink-0 p-1 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 cursor-pointer"
+                        class="shrink-0 cursor-pointer rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
                         aria-label="{{ __('Edit note') }}"
                     >
                         <flux:icon.pencil class="size-3" />
@@ -71,7 +72,7 @@
             <button
                 type="button"
                 wire:click="startEditingNote({{ $itemId }})"
-                class="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-200 cursor-pointer"
+                class="inline-flex cursor-pointer items-center gap-1 text-xs text-gray-400 hover:text-gray-200"
             >
                 <flux:icon.plus class="size-3" />
                 {{ __('Add note') }}

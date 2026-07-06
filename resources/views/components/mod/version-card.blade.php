@@ -8,7 +8,7 @@
         :published-at="$version->published_at?->toISOString()"
     />
 
-    <div class="pb-6 border-b-2 border-gray-800">
+    <div class="border-b-2 border-gray-800 pb-6">
         @cachedCan('update', $version)
             <livewire:mod.version-action
                 wire:key="mod-version-show-action-{{ $version->id }}"
@@ -25,7 +25,7 @@
                 <flux:modal.trigger name="{{ $modalName() }}">
                     <button
                         type="button"
-                        class="inline-flex items-center text-3xl font-extrabold text-gray-200 hover:text-white hover:underline cursor-pointer"
+                        class="inline-flex cursor-pointer items-center text-3xl font-extrabold text-gray-200 hover:text-white hover:underline"
                     >
                         <span>{{ __('Version') }} {{ $version->version }}</span>
                         <flux:tooltip
@@ -34,17 +34,17 @@
                         >
                             <flux:icon
                                 icon="arrow-down-on-square-stack"
-                                class="inline-block size-6 ml-2"
+                                class="ml-2 inline-block size-6"
                             />
                         </flux:tooltip>
                     </button>
                 </flux:modal.trigger>
-                <div class="mt-3 flex flex-row flex-wrap justify-start items-center gap-2.5">
+                <div class="mt-3 flex flex-row flex-wrap items-center justify-start gap-2.5">
                     @if ($version->sptVersions->isNotEmpty())
-                        <div class="flex flex-wrap gap-1 items-center">
+                        <div class="flex flex-wrap items-center gap-1">
                             @if ($version->latestSptVersion)
                                 <span
-                                    class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium text-nowrap"
+                                    class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center text-nowrap rounded px-1.5 py-0.5 text-xs font-medium"
                                 >
                                     {{ $version->latestSptVersion->version_formatted }}
                                 </span>
@@ -56,14 +56,14 @@
                                     class="!inline-flex !items-center"
                                 >
                                     <span
-                                        class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-gray-800 text-gray-400 cursor-help"
+                                        class="inline-flex cursor-help items-center rounded bg-gray-800 px-1.5 py-0.5 text-xs font-medium text-gray-400"
                                     >
                                         +{{ $version->sptVersions->count() - 1 }} more
                                     </span>
                                     <flux:tooltip.content class="max-w-xs text-left">
                                         <div class="text-xs">
-                                            <div class="font-semibold mb-1 text-left">All Compatible SPT Versions:</div>
-                                            <div class="flex flex-wrap gap-1 justify-start">
+                                            <div class="mb-1 text-left font-semibold">All Compatible SPT Versions:</div>
+                                            <div class="flex flex-wrap justify-start gap-1">
                                                 @foreach ($version->sptVersions as $sptVersion)
                                                     <span
                                                         class="badge-version {{ $sptVersion->color_class }} inline-flex items-center rounded px-1 py-0.5 text-xs"
@@ -79,14 +79,14 @@
                         </div>
                     @elseif ($version->spt_version_constraint === '')
                         <span
-                            class="badge-version gray inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium text-nowrap"
+                            class="badge-version gray inline-flex items-center text-nowrap rounded px-1.5 py-0.5 text-xs font-medium"
                         >
                             {{ __('Legacy SPT Version') }}
                         </span>
                     @else
                         {{-- Has constraint but no matching SPT versions (invalid) --}}
                         <span
-                            class="badge-version bg-gray-100 text-gray-700 inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium text-nowrap"
+                            class="badge-version inline-flex items-center text-nowrap rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-700"
                         >
                             {{ __('Unknown SPT Version') }}
                         </span>
@@ -115,12 +115,12 @@
                             <flux:icon
                                 icon="puzzle-piece"
                                 variant="outline"
-                                class="w-4 h-4 group-hover:hidden"
+                                class="h-4 w-4 group-hover:hidden"
                             />
                             <flux:icon
                                 icon="puzzle-piece"
                                 variant="solid"
-                                class="w-4 h-4 text-green-500 hidden group-hover:block"
+                                class="hidden h-4 w-4 text-green-500 group-hover:block"
                             />
                             <span>View Addons</span>
                         </a>
@@ -131,14 +131,14 @@
                 'flex flex-col items-start text-gray-400 sm:items-end mt-4 sm:mt-0',
                 'sm:pr-10' => $showActions ?? Gate::check('update', $version),
             ])>
-                <p class="text-left sm:text-right text-nowrap">{{ __('Released') }}
+                <p class="text-nowrap text-left sm:text-right">{{ __('Released') }}
                     {{ $version->created_at->dynamicFormat() }}
                 </p>
                 @if ($version->virusTotalLinks->isNotEmpty())
                     <div
                         x-data="{ isMobile: window.innerWidth < 640 }"
                         x-init="window.addEventListener('resize', () => { isMobile = window.innerWidth < 640 })"
-                        class="text-left sm:text-right sm:!flex sm:!justify-end"
+                        class="text-left sm:!flex sm:!justify-end sm:text-right"
                     >
                         <flux:tooltip
                             position="top"
@@ -146,23 +146,22 @@
                             gap="0"
                             x-show="isMobile"
                         >
-                            <span class="underline text-gray-200 cursor-help">
+                            <span class="cursor-help text-gray-200 underline">
                                 {{ __('VirusTotal Results') }}
                             </span>
                             <flux:tooltip.content class="max-w-xs text-left">
                                 <div class="text-xs">
-                                    <div class="font-semibold mb-1 text-left">{{ __('VirusTotal Results:') }}</div>
+                                    <div class="mb-1 text-left font-semibold">{{ __('VirusTotal Results:') }}</div>
                                     <div class="space-y-1.5">
                                         @foreach ($version->virusTotalLinks as $virusTotalLink)
                                             <p class="truncate">
                                                 @if ($virusTotalLink->label !== '')
-                                                    <span
-                                                        class="text-gray-200">{{ $virusTotalLink->label }}:</span>
+                                                    <span class="text-gray-200">{{ $virusTotalLink->label }}:</span>
                                                     <a
                                                         href="{{ $virusTotalLink->url }}"
                                                         title="{{ $virusTotalLink->url }}"
                                                         target="_blank"
-                                                        class="underline text-gray-200 hover:text-white"
+                                                        class="text-gray-200 underline hover:text-white"
                                                     >
                                                         {{ $virusTotalLink->url }}
                                                     </a>
@@ -171,7 +170,7 @@
                                                         href="{{ $virusTotalLink->url }}"
                                                         title="{{ $virusTotalLink->url }}"
                                                         target="_blank"
-                                                        class="underline text-gray-200 hover:text-white"
+                                                        class="text-gray-200 underline hover:text-white"
                                                     >
                                                         {{ $virusTotalLink->url }}
                                                     </a>
@@ -188,23 +187,22 @@
                             gap="0"
                             x-show="!isMobile"
                         >
-                            <span class="underline text-gray-200 cursor-help">
+                            <span class="cursor-help text-gray-200 underline">
                                 {{ __('VirusTotal Results') }}
                             </span>
                             <flux:tooltip.content class="max-w-xs text-left">
                                 <div class="text-xs">
-                                    <div class="font-semibold mb-1 text-left">{{ __('VirusTotal Results:') }}</div>
+                                    <div class="mb-1 text-left font-semibold">{{ __('VirusTotal Results:') }}</div>
                                     <div class="space-y-1.5">
                                         @foreach ($version->virusTotalLinks as $virusTotalLink)
                                             <p class="truncate">
                                                 @if ($virusTotalLink->label !== '')
-                                                    <span
-                                                        class="text-gray-200">{{ $virusTotalLink->label }}:</span>
+                                                    <span class="text-gray-200">{{ $virusTotalLink->label }}:</span>
                                                     <a
                                                         href="{{ $virusTotalLink->url }}"
                                                         title="{{ $virusTotalLink->url }}"
                                                         target="_blank"
-                                                        class="underline text-gray-200 hover:text-white"
+                                                        class="text-gray-200 underline hover:text-white"
                                                     >
                                                         {{ $virusTotalLink->url }}
                                                     </a>
@@ -213,7 +211,7 @@
                                                         href="{{ $virusTotalLink->url }}"
                                                         title="{{ $virusTotalLink->url }}"
                                                         target="_blank"
-                                                        class="underline text-gray-200 hover:text-white"
+                                                        class="text-gray-200 underline hover:text-white"
                                                     >
                                                         {{ $virusTotalLink->url }}
                                                     </a>
@@ -226,10 +224,10 @@
                         </flux:tooltip>
                     </div>
                 @endif
-                <span class="text-left sm:text-right inline-flex items-center gap-1">
+                <span class="inline-flex items-center gap-1 text-left sm:text-right">
                     <flux:icon
                         icon="{{ $version->fika_compatibility->icon() }}"
-                        class="size-4 {{ $version->fika_compatibility->colorClass() }}"
+                        class="{{ $version->fika_compatibility->colorClass() }} size-4"
                     />
                     <span class="text-gray-100">
                         {{ $version->fika_compatibility->label() }}
@@ -249,7 +247,7 @@
                     <li>
                         <a
                             href="{{ $resolvedDependency->mod->detail_url }}"
-                            class="hover:underline text-gray-200 hover:text-white"
+                            class="text-gray-200 hover:text-white hover:underline"
                         >
                             {{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})
                         </a>
@@ -258,7 +256,7 @@
             </ul>
         @endif
     </div>
-    <div class="pt-3 user-markdown text-gray-400">
+    <div class="user-markdown pt-3 text-gray-400">
         {{--
         !DANGER ZONE!
 

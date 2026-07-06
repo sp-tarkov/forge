@@ -4,7 +4,7 @@
         variant="combobox"
         :filter="false"
         :placeholder="$placeholder"
-        :label="$label ?: null"
+        :label="$label ? : null"
         clearable
     >
         <x-slot name="input">

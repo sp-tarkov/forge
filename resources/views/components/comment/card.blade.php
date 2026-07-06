@@ -3,7 +3,7 @@
 <div class="relative">
     <div
         @if ($anchorId) id="{{ $anchorId }}" @endif
-        class="flex items-start sm:items-center justify-between"
+        class="flex items-start justify-between sm:items-center"
     >
         <div class="flex items-start sm:items-center">
             <flux:avatar
@@ -22,7 +22,7 @@
                     </a>
                     {{-- Pinned badge for small screens (after username) --}}
                     @if ($comment->isPinned())
-                        <span class="ml-2 inline-flex sm:hidden items-center gap-1 text-xs text-cyan-500">
+                        <span class="ml-2 inline-flex items-center gap-1 text-xs text-cyan-500 sm:hidden">
                             <flux:icon.bookmark
                                 variant="micro"
                                 class="size-4"
@@ -31,7 +31,7 @@
                         </span>
                     @endif
                 </div>
-                <span class="sm:ml-2 text-xs text-slate-400 sm:relative sm:top-0.5">
+                <span class="text-xs text-slate-400 sm:relative sm:top-0.5 sm:ml-2">
                     <x-time :datetime="$comment->created_at" />
                     @if ($comment->edited_at)
                         @can('viewVersionHistory', $comment)
@@ -46,7 +46,7 @@
                 </span>
                 {{-- Pinned badge for larger screens (after date) --}}
                 @if ($comment->isPinned())
-                    <span class="ml-2 hidden sm:inline-flex items-center gap-1 text-xs text-cyan-500 relative top-0.5">
+                    <span class="relative top-0.5 ml-2 hidden items-center gap-1 text-xs text-cyan-500 sm:inline-flex">
                         <flux:icon.bookmark
                             variant="micro"
                             class="size-4"
@@ -63,11 +63,11 @@
         @endisset
     </div>
 
-    <div class="user-markdown text-slate-200 mt-3">
+    <div class="user-markdown mt-3 text-slate-200">
         @if ($comment->isDeleted())
             @if (auth()->check() && auth()->user()->isModOrAdmin())
                 <div>
-                    <span class="text-gray-400 italic">
+                    <span class="italic text-gray-400">
                         {{ __('Comment was deleted on') }} {{ $comment->deleted_at->format('Y-m-d H:i:s') }}:
                     </span>
                     <div class="deleted">
@@ -75,7 +75,7 @@
                     </div>
                 </div>
             @else
-                <span class="text-gray-400 italic">
+                <span class="italic text-gray-400">
                     [{{ __('deleted at') }} {{ $comment->deleted_at->format('Y-m-d H:i:s') }}]
                 </span>
             @endif
@@ -84,14 +84,14 @@
         @endif
     </div>
 
-    @if (! $comment->isDeleted() && $comment->latestVersion?->isTranslated())
+    @if (!$comment->isDeleted() && $comment->latestVersion?->isTranslated())
         <div
             class="mt-3 rounded-md border border-gray-700 bg-gray-900/40"
             x-data="{ showTranslation: true }"
         >
             <button
                 type="button"
-                class="flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-gray-400 cursor-pointer"
+                class="flex w-full cursor-pointer items-center gap-1.5 px-3 py-1.5 text-xs text-gray-400"
                 x-on:click="showTranslation = ! showTranslation"
             >
                 <flux:icon.language
@@ -102,7 +102,7 @@
                 <flux:icon.chevron-down
                     variant="micro"
                     class="size-4 transition-transform"
-                    x-bind:class="{ '-rotate-90': ! showTranslation }"
+                    x-bind:class="{ '-rotate-90': !showTranslation }"
                 />
             </button>
             <div

@@ -1,6 +1,6 @@
 @props(['comment', 'permissions', 'manager', 'showRepliesToggle' => false])
 
-<div class="flex items-center gap-6 mt-4 text-slate-400">
+<div class="mt-4 flex items-center gap-6 text-slate-400">
     @if (!$comment->isDeleted())
         @verified
             @if ($comment->user_id === auth()->id())
@@ -11,7 +11,7 @@
                 >
                     <button
                         type="button"
-                        class="relative flex items-center gap-1 transition cursor-not-allowed!"
+                        class="cursor-not-allowed! relative flex items-center gap-1 transition"
                         disabled
                     >
                         <div class="relative">
@@ -20,7 +20,7 @@
                                 fill="currentColor"
                                 stroke="none"
                                 viewBox="0 0 20 20"
-                                class="w-5 h-5 relative z-10"
+                                class="relative z-10 h-5 w-5"
                             >
                                 <path
                                     d="M3.172 5.172a4 4 0 0 1 5.656 0L10 6.343l1.172-1.171a4 4 0 1 1 5.656 5.656L10 17.657l-6.828-6.829a4 4 0 0 1 0-5.656Z"
@@ -36,7 +36,7 @@
             @else
                 <button
                     type="button"
-                    class="relative flex items-center gap-1 transition {{ auth()->check() && $comment->reactions->contains('user_id', auth()->id()) ? 'text-red-400' : '' }} hover:text-red-400"
+                    class="{{ auth()->check() && $comment->reactions->contains('user_id', auth()->id()) ? 'text-red-400' : '' }} relative flex items-center gap-1 transition hover:text-red-400"
                     wire:click="toggleReaction({{ $comment->id }})"
                     data-test="reaction-button-{{ $comment->id }}"
                     x-on:click="if (!isAnimating) animate()"
@@ -63,7 +63,7 @@
                             fill="currentColor"
                             stroke="none"
                             viewBox="0 0 20 20"
-                            class="w-5 h-5 relative z-10"
+                            class="relative z-10 h-5 w-5"
                         >
                             <path
                                 d="M3.172 5.172a4 4 0 0 1 5.656 0L10 6.343l1.172-1.171a4 4 0 1 1 5.656 5.656L10 17.657l-6.828-6.829a4 4 0 0 1 0-5.656Z"
@@ -75,7 +75,7 @@
                             fill="currentColor"
                             stroke="none"
                             viewBox="0 0 20 20"
-                            class="w-5 h-5 relative z-10"
+                            class="relative z-10 h-5 w-5"
                         >
                             <path
                                 d="M3.172 5.172a4 4 0 0 1 5.656 0L10 6.343l1.172-1.171a4 4 0 1 1 5.656 5.656L10 17.657l-6.828-6.829a4 4 0 0 1 0-5.656Z"
@@ -96,7 +96,7 @@
                     fill="currentColor"
                     stroke="none"
                     viewBox="0 0 20 20"
-                    class="w-5 h-5"
+                    class="h-5 w-5"
                 >
                     <path
                         d="M3.172 5.172a4 4 0 0 1 5.656 0L10 6.343l1.172-1.171a4 4 0 1 1 5.656 5.656L10 17.657l-6.828-6.829a4 4 0 0 1 0-5.656Z"
@@ -114,7 +114,7 @@
                 type="button"
                 wire:click="toggleEditForm({{ $comment->id }})"
                 data-test="edit-button-{{ $comment->id }}"
-                class="hover:underline cursor-pointer text-xs"
+                class="cursor-pointer text-xs hover:underline"
             >
                 {{ __('Edit') }}
             </button>
@@ -125,7 +125,7 @@
                 type="button"
                 wire:click="confirmDeleteComment({{ $comment->id }})"
                 data-test="delete-button-{{ $comment->id }}"
-                class="hover:underline cursor-pointer text-xs text-red-500 hover:text-red-700"
+                class="cursor-pointer text-xs text-red-500 hover:text-red-700 hover:underline"
             >
                 {{ __('Remove') }}
             </button>
@@ -144,7 +144,7 @@
                     type="button"
                     wire:click="toggleReplyForm({{ $comment->id }})"
                     data-test="reply-button-{{ $comment->id }}"
-                    class="hover:underline cursor-pointer text-xs"
+                    class="cursor-pointer text-xs hover:underline"
                 >
                     {{ __('Reply') }}
                 </button>
@@ -156,7 +156,7 @@
         <button
             type="button"
             wire:click="{{ $comment->isPinned() ? 'unpinComment' : 'pinComment' }}({{ $comment->id }})"
-            class="hover:underline cursor-pointer text-xs text-cyan-500"
+            class="cursor-pointer text-xs text-cyan-500 hover:underline"
         >
             {{ $comment->isPinned() ? __('Unpin') : __('Pin') }}
         </button>
@@ -167,7 +167,7 @@
             type="button"
             @click="toggleExpanded()"
             data-test="toggle-replies-{{ $comment->id }}"
-            class="hover:underline cursor-pointer text-xs"
+            class="cursor-pointer text-xs hover:underline"
         >
             <span x-text="isExpanded ? 'Hide' : 'Show'">Hide</span> Replies
             ({{ $manager->getDescendantCount($comment->id) }})

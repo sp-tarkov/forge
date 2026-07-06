@@ -148,7 +148,7 @@
 
                 <div class="text-center">
                     <a
-                        class="text-sm text-gray-500 hover:text-gray-300 underline rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                        class="focus:outline-hidden rounded-md text-sm text-gray-500 underline hover:text-gray-300 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                         href="{{ route('login') }}"
                         wire:navigate
                     >
@@ -176,14 +176,14 @@
                     <flux:tooltip>
                         <a
                             x-bind:href="termsAccepted ? '{{ route('login.socialite', ['provider' => 'discord']) }}' : '#'"
-                            class="w-full inline-flex items-center justify-center px-4 py-2 bg-[#5865F2] hover:bg-[#5865F2]/90 text-white font-medium rounded-lg transition-colors"
+                            class="inline-flex w-full items-center justify-center rounded-lg bg-[#5865F2] px-4 py-2 font-medium text-white transition-colors hover:bg-[#5865F2]/90"
                             x-bind:class="termsAccepted ? '' : 'opacity-50 cursor-not-allowed'"
                             x-on:click="if(!termsAccepted) { $event.preventDefault(); }"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="currentColor"
-                                class="w-4 h-4 mr-2"
+                                class="mr-2 h-4 w-4"
                                 viewBox="0 0 16 16"
                             >
                                 <path

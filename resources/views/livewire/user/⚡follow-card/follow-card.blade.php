@@ -1,22 +1,21 @@
-<div
-    class="w-full shadow-md shadow-gray-950 drop-shadow-xl text-gray-200 bg-gray-900 rounded-xl py-4">
+<div class="w-full rounded-xl bg-gray-900 py-4 text-gray-200 shadow-md shadow-gray-950 drop-shadow-xl">
 
-    <div class="flex justify-center items-center">
+    <div class="flex items-center justify-center">
         <h2 class="text-2xl">{{ $title }}</h2>
     </div>
 
     @if ($this->followUsersCount === 0)
-        <div class="flex justify-center text-sm pt-2">
+        <div class="flex justify-center pt-2 text-sm">
             {{ $emptyMessage }}
         </div>
     @else
-        <div class="flex ml-6 py-2 justify-center items-center">
+        <div class="ml-6 flex items-center justify-center py-2">
             @foreach ($this->followUsers->take($limit) as $user)
                 {{-- User Badge --}}
-                <div class="relative group">
+                <div class="group relative">
                     <a
                         href="{{ $user->profile_url }}"
-                        class="rounded-full -ml-7 z-20 bg-gray-900 h-16 w-16 flex justify-center items-center ring-2 ring-gray-900"
+                        class="z-20 -ml-7 flex h-16 w-16 items-center justify-center rounded-full bg-gray-900 ring-2 ring-gray-900"
                     >
                         <img
                             src="{{ $user->profile_photo_url }}"
@@ -25,7 +24,7 @@
                         />
                     </a>
                     <div
-                        class="absolute bottom-full -ml-3 left-1/2 transform -translate-x-1/2 mb-2 w-max px-2 py-1 text-sm text-white bg-gray-700 rounded-sm shadow-lg opacity-0 group-hover:opacity-100">
+                        class="absolute bottom-full left-1/2 -ml-3 mb-2 w-max -translate-x-1/2 transform rounded-sm bg-gray-700 px-2 py-1 text-sm text-white opacity-0 shadow-lg group-hover:opacity-100">
                         <x-user-name
                             :user="$user"
                             class="text-white"
@@ -36,13 +35,13 @@
 
             @if ($this->followUsersCount > $limit)
                 {{-- Count Badge --}}
-                <div class="relative group">
+                <div class="group relative">
                     <button
                         wire:click="toggleFollowDialog"
-                        class="rounded-full -ml-6 z-20 bg-cyan-700 h-16 w-16 flex justify-center items-center ring-2 ring-gray-900 text-white"
+                        class="z-20 -ml-6 flex h-16 w-16 items-center justify-center rounded-full bg-cyan-700 text-white ring-2 ring-gray-900"
                     >+{{ $this->followUsersCount - $limit }}</button>
                     <div
-                        class="absolute bottom-full -ml-3 left-1/2 transform -translate-x-1/2 mb-2 w-max px-2 py-1 text-sm text-white bg-gray-700 rounded-sm shadow-lg opacity-0 group-hover:opacity-100">
+                        class="absolute bottom-full left-1/2 -ml-3 mb-2 w-max -translate-x-1/2 transform rounded-sm bg-gray-700 px-2 py-1 text-sm text-white opacity-0 shadow-lg group-hover:opacity-100">
                         {{ $this->followUsersCount }} total
                     </div>
                 </div>
@@ -52,10 +51,10 @@
 
     @if ($this->followUsersCount > $limit)
         {{-- View All Button --}}
-        <div class="flex justify-center items-center">
+        <div class="flex items-center justify-center">
             <button
                 wire:click="toggleFollowDialog"
-                class="underline text-gray-200 hover:text-white"
+                class="text-gray-200 underline hover:text-white"
             >View All</button>
         </div>
     @endif
@@ -71,7 +70,7 @@
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="users"
-                        class="w-8 h-8 text-blue-600"
+                        class="h-8 w-8 text-blue-600"
                     />
                     <div>
                         <flux:heading
@@ -80,7 +79,7 @@
                         >
                             {{ __($dialogTitle, ['name' => $profileUser->name]) }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-sm text-gray-400">
                             {{ __('View all connections') }}
                         </flux:text>
                     </div>
@@ -93,19 +92,19 @@
                     @foreach ($this->followUsers as $user)
                         <div
                             wire:key="follow-user-{{ $user->id }}"
-                            class="flex group/item hover:bg-gray-950 items-center p-2 pr-3 rounded-md"
+                            class="group/item flex items-center rounded-md p-2 pr-3 hover:bg-gray-950"
                         >
                             <a
                                 href="{{ $user->profile_url }}"
-                                class="shrink-0 w-12 h-12 items-center"
+                                class="h-12 w-12 shrink-0 items-center"
                             >
                                 <img
                                     src="{{ $user->profile_photo_url }}"
                                     alt="{{ $user->name }}"
-                                    class="block w-12 h-12 rounded-full"
+                                    class="block h-12 w-12 rounded-full"
                                 />
                             </a>
-                            <div class="flex flex-col w-full pl-3">
+                            <div class="flex w-full flex-col pl-3">
                                 <a
                                     href="{{ $user->profile_url }}"
                                     class="text-lg group-hover/item:underline"
@@ -129,7 +128,7 @@
                                             <div class="flex items-center">
                                                 <flux:icon.heart
                                                     variant="solid"
-                                                    class="text-red-500 mr-1.5"
+                                                    class="mr-1.5 text-red-500"
                                                 />
                                                 {{ __('Following') }}
                                             </div>
@@ -144,7 +143,7 @@
                                             <div class="flex items-center">
                                                 <flux:icon.heart
                                                     variant="outline"
-                                                    class="text-white mr-1.5"
+                                                    class="mr-1.5 text-white"
                                                 />
                                                 {{ __('Follow') }}
                                             </div>
@@ -158,7 +157,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 border-t border-gray-700 gap-3">
+            <div class="flex items-center justify-end gap-3 border-t border-gray-700 pt-6">
                 <flux:button
                     x-on:click="$wire.showFollowDialog = false"
                     variant="primary"

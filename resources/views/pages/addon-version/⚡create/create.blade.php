@@ -7,16 +7,16 @@
 </x-slot>
 
 <x-slot:header>
-    <h2 class="font-semibold text-xl text-gray-200 leading-tight flex items-center gap-2">
-        <flux:icon.puzzle-piece class="w-5 h-5" />
+    <h2 class="flex items-center gap-2 text-xl font-semibold leading-tight text-gray-200">
+        <flux:icon.puzzle-piece class="h-5 w-5" />
         {{ __('Create Addon Version') }}: {{ $addon->name }}
     </h2>
 </x-slot>
 
 <div>
-    <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl py-10 sm:px-6 lg:px-8">
         <div class="md:grid md:grid-cols-3 md:gap-6">
-            <div class="md:col-span-1 px-4 sm:px-0">
+            <div class="px-4 sm:px-0 md:col-span-1">
                 <h3 class="text-lg font-medium text-gray-100">Version Information</h3>
                 <p class="my-2 text-sm text-gray-400">
                     Create a new version for <strong>{{ $addon->name }}</strong>. Specify which mod versions this
@@ -24,9 +24,9 @@
                 </p>
             </div>
 
-            <div class="mt-5 md:mt-0 md:col-span-2">
+            <div class="mt-5 md:col-span-2 md:mt-0">
                 <form wire:submit="save">
-                    <div class="px-4 py-5 bg-gray-900 sm:p-6 shadow-sm sm:rounded-tl-md sm:rounded-tr-md">
+                    <div class="bg-gray-900 px-4 py-5 shadow-sm sm:rounded-tl-md sm:rounded-tr-md sm:p-6">
                         <div class="grid grid-cols-6 gap-6">
                             @csrf
 
@@ -112,9 +112,9 @@
                                     @foreach ($dependencies as $index => $dependency)
                                         <div
                                             wire:key="dependency-{{ $dependency['id'] ?? $index }}"
-                                            class="p-4 border border-gray-700 rounded-lg"
+                                            class="rounded-lg border border-gray-700 p-4"
                                         >
-                                            <div class="flex justify-between items-start mb-3">
+                                            <div class="mb-3 flex items-start justify-between">
                                                 <span
                                                     class="text-sm font-medium text-gray-300">{{ __('Dependency #:num', ['num' => $index + 1]) }}</span>
                                                 <flux:button
@@ -127,7 +127,7 @@
                                                 </flux:button>
                                             </div>
 
-                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                                 <flux:field>
                                                     <flux:label>{{ __('Mod') }}</flux:label>
                                                     <livewire:form.mod-autocomplete
@@ -153,7 +153,7 @@
 
                                             @if (isset($matchingDependencyVersions[$index]) && count($matchingDependencyVersions[$index]) > 0)
                                                 <div class="mt-3">
-                                                    <p class="text-sm text-gray-400 mb-2">
+                                                    <p class="mb-2 text-sm text-gray-400">
                                                         {{ __('Matching Versions:') }}</p>
                                                     <div class="flex flex-wrap gap-1">
                                                         @foreach ($matchingDependencyVersions[$index] as $version)
@@ -194,7 +194,7 @@
 
                                 <div class="space-y-3">
                                     @foreach ($virusTotalLinks as $index => $virusTotalLink)
-                                        <div class="flex gap-2 items-center">
+                                        <div class="flex items-center gap-2">
                                             <div class="flex-1">
                                                 <flux:input
                                                     type="url"
@@ -269,7 +269,7 @@
                                                 but the published date will be interpreted as a UTC date.
                                                 Alternatively, you can <a
                                                     href="/user/profile"
-                                                    class="underline text-white hover:text-cyan-200 transition-colors"
+                                                    class="text-white underline transition-colors hover:text-cyan-200"
                                                 >edit your profile</a> to set a specific timezone.
                                             </flux:callout.text>
                                         </flux:callout>
@@ -278,7 +278,7 @@
                                             {{ __('Your timezone is set to :timezone.', ['timezone' => auth()->user()->timezone]) }}
                                         </p>
                                     @endif
-                                    <div class="flex gap-2 items-center">
+                                    <div class="flex items-center gap-2">
                                         <flux:date-picker
                                             wire:model="publishedAtDate"
                                             clearable
@@ -307,11 +307,11 @@
                     </div>
 
                     <div
-                        class="flex items-center justify-end px-4 py-3 bg-gray-900 border-t-2 border-transparent border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-4">
+                        class="flex items-center justify-end gap-4 border-t-2 border-transparent border-t-gray-700 bg-gray-900 px-4 py-3 text-end shadow-sm sm:rounded-bl-md sm:rounded-br-md sm:px-6">
                         <flux:button
                             variant="primary"
                             size="sm"
-                            class="my-1.5 text-white hover:bg-cyan-600 bg-cyan-700"
+                            class="my-1.5 bg-cyan-700 text-white hover:bg-cyan-600"
                             type="submit"
                         >{{ __('Create Version') }}</flux:button>
                     </div>

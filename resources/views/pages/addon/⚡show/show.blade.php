@@ -10,9 +10,9 @@
 </x-slot>
 
 <x-slot:header>
-    <div class="flex items-center justify-between w-full">
-        <h2 class="font-semibold text-xl text-gray-200 leading-tight flex items-center gap-2">
-            <flux:icon.puzzle-piece class="w-5 h-5" />
+    <div class="flex w-full items-center justify-between">
+        <h2 class="flex items-center gap-2 text-xl font-semibold leading-tight text-gray-200">
+            <flux:icon.puzzle-piece class="h-5 w-5" />
             {{ __('Addon Details') }}
         </h2>
         <div class="flex items-center gap-2">
@@ -61,7 +61,7 @@
 <div>
 
     @if ($shouldShowWarnings && !empty($warningMessages))
-        <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-7xl gap-6 px-4 pb-6 sm:px-6 lg:px-8">
             <flux:callout
                 icon="exclamation-triangle"
                 color="orange"
@@ -89,12 +89,12 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 max-w-7xl mx-auto py-6 px-4 gap-6 sm:px-6 lg:px-8">
-        <div class="lg:col-span-2 flex flex-col gap-6">
+    <div class="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-3 lg:px-8">
+        <div class="flex flex-col gap-6 lg:col-span-2">
 
             {{-- Main Addon Details Card --}}
             <div
-                class="relative p-4 sm:p-6 text-center sm:text-left bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl filter-none">
+                class="relative rounded-xl bg-gray-950 p-4 text-center shadow-md shadow-gray-950 drop-shadow-2xl filter-none sm:p-6 sm:text-left">
                 @cachedCan('update', $addon)
                     <livewire:addon.action
                         wire:key="addon-action-show-{{ $addon->id }}"
@@ -114,8 +114,8 @@
                     :publicly-visible="$addon->isPubliclyVisible()"
                 />
 
-                <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
-                    <div class="grow-0 shrink-0 flex justify-center items-center">
+                <div class="flex flex-col gap-4 sm:flex-row sm:gap-6">
+                    <div class="flex shrink-0 grow-0 items-center justify-center">
                         @if ($addon->thumbnail)
                             <img
                                 src="{{ $addon->thumbnailUrl }}"
@@ -123,22 +123,20 @@
                                 class="w-36 rounded-lg"
                             >
                         @else
-                            <div
-                                class="w-36 h-36 bg-gray-800 rounded-lg flex items-center justify-center">
-                                <flux:icon.puzzle-piece class="w-20 h-20 text-gray-600" />
+                            <div class="flex h-36 w-36 items-center justify-center rounded-lg bg-gray-800">
+                                <flux:icon.puzzle-piece class="h-20 w-20 text-gray-600" />
                             </div>
                         @endif
                     </div>
-                    <div
-                        class="grow flex flex-col justify-center items-center sm:items-start text-gray-200">
-                        <div class="flex justify-between items-center space-x-3">
+                    <div class="flex grow flex-col items-center justify-center text-gray-200 sm:items-start">
+                        <div class="flex items-center justify-between space-x-3">
                             <h2 @class([
                                 'pb-1 sm:pb-2 text-3xl font-bold text-white',
                                 'sm:pr-12' => Gate::check('update', $addon),
                             ])>
                                 {{ $addon->name }}
                                 @if ($addon->latestVersion)
-                                    <span class="font-light text-nowrap text-gray-400">
+                                    <span class="text-nowrap font-light text-gray-400">
                                         {{ $addon->latestVersion->version }}
                                     </span>
                                 @endif
@@ -175,8 +173,7 @@
 
                 {{-- Addon Teaser --}}
                 @if ($addon->teaser)
-                    <p
-                        class="mt-6 pt-3 border-t-2 border-gray-800 text-gray-200">
+                    <p class="mt-6 border-t-2 border-gray-800 pt-3 text-gray-200">
                         {{ $addon->teaser }}</p>
                 @endif
             </div>
@@ -202,17 +199,15 @@
             {{-- Tabs --}}
             <div
                 x-data="{ selectedTab: window.location.hash ? (window.location.hash.includes('-comment-') ? window.location.hash.substring(1).split('-comment-')[0] : window.location.hash.substring(1)) : '{{ $addon->description ? 'description' : 'versions' }}' }"
-                x-init="
-                    $watch('selectedTab', (tab) => { window.location.hash = tab });
-                    if (selectedTab === 'comments' && window.location.hash.includes('-comment-')) {
-                        $nextTick(() => {
-                            const lazyEl = $refs.commentsTab?.querySelector('[x-intersect]');
-                            const expr = lazyEl?.getAttribute('x-intersect');
-                            if (lazyEl && expr) window.Alpine.evaluate(lazyEl, expr);
-                        });
-                    }
-                "
-                class="lg:col-span-2 flex flex-col gap-6"
+                x-init="$watch('selectedTab', (tab) => { window.location.hash = tab });
+                if (selectedTab === 'comments' && window.location.hash.includes('-comment-')) {
+                    $nextTick(() => {
+                        const lazyEl = $refs.commentsTab?.querySelector('[x-intersect]');
+                        const expr = lazyEl?.getAttribute('x-intersect');
+                        if (lazyEl && expr) window.Alpine.evaluate(lazyEl, expr);
+                    });
+                }"
+                class="flex flex-col gap-6 lg:col-span-2"
             >
                 <div>
                     {{-- Mobile Dropdown --}}
@@ -223,9 +218,11 @@
                             label:sr-only="{{ __('Select a tab') }}"
                         >
                             <flux:select.option value="description">{{ __('Description') }}</flux:select.option>
-                            <flux:select.option value="versions">{{ $versionCount }} {{ __(Str::plural('Version', $versionCount)) }}</flux:select.option>
+                            <flux:select.option value="versions">{{ $versionCount }}
+                                {{ __(Str::plural('Version', $versionCount)) }}</flux:select.option>
                             @if (!$addon->comments_disabled || auth()->user()?->isModOrAdmin() || $addon->isAuthorOrOwner(auth()->user()))
-                                <flux:select.option value="comments">{{ $commentCount }} {{ __(Str::plural('Comment', $commentCount)) }}</flux:select.option>
+                                <flux:select.option value="comments">{{ $commentCount }}
+                                    {{ __(Str::plural('Comment', $commentCount)) }}</flux:select.option>
                             @endif
                         </flux:select>
                     </div>
@@ -306,19 +303,19 @@
             @endif
 
             {{-- Additional Addon Details --}}
-            <div class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
+            <div class="rounded-xl bg-gray-950 p-4 shadow-md shadow-gray-950 drop-shadow-2xl sm:p-6">
                 <h2 class="text-2xl font-bold text-gray-100">{{ __('Details') }}</h2>
                 <ul
                     role="list"
-                    class="divide-y divide-gray-800 text-gray-100 "
+                    class="divide-y divide-gray-800 text-gray-100"
                 >
                     @if ($addon->mod)
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
-                            <h3 class="font-bold flex items-center gap-2">
+                            <h3 class="flex items-center gap-2 font-bold">
                                 <span>{{ __('Parent Mod') }}</span>
                                 @if ($addon->isDetached() && auth()->user()?->isModOrAdmin())
                                     <span
-                                        class="inline-block bg-yellow-900/30 text-yellow-200 text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide"
+                                        class="inline-block rounded bg-yellow-900/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-yellow-200"
                                     >
                                         Detached
                                     </span>
@@ -327,7 +324,7 @@
                             <p class="truncate">
                                 <a
                                     href="{{ route('mod.show', [$addon->mod->id, $addon->mod->slug]) }}"
-                                    class="underline text-gray-200 hover:text-white"
+                                    class="text-gray-200 underline hover:text-white"
                                 >
                                     {{ $addon->mod->name }}
                                 </a>
@@ -355,7 +352,7 @@
                                     href="{{ $addon->license->link }}"
                                     title="{{ $addon->license->name }}"
                                     target="_blank"
-                                    class="underline text-gray-200 hover:text-white"
+                                    class="text-gray-200 underline hover:text-white"
                                 >
                                     {{ $addon->license->name }}
                                 </a>
@@ -373,7 +370,7 @@
                                             href="{{ $link->url }}"
                                             title="{{ $link->url }}"
                                             target="_blank"
-                                            class="underline text-gray-200 hover:text-white"
+                                            class="text-gray-200 underline hover:text-white"
                                         >
                                             {{ $link->url }}
                                         </a>
@@ -382,7 +379,7 @@
                                             href="{{ $link->url }}"
                                             title="{{ $link->url }}"
                                             target="_blank"
-                                            class="underline text-gray-200 hover:text-white"
+                                            class="text-gray-200 underline hover:text-white"
                                         >
                                             {{ $link->url }}
                                         </a>
@@ -397,13 +394,12 @@
                             @foreach ($addon->latestVersion->virusTotalLinks as $virusTotalLink)
                                 <p class="truncate">
                                     @if ($virusTotalLink->label !== '')
-                                        <span
-                                            class="text-gray-200">{{ $virusTotalLink->label }}:</span>
+                                        <span class="text-gray-200">{{ $virusTotalLink->label }}:</span>
                                         <a
                                             href="{{ $virusTotalLink->url }}"
                                             title="{{ $virusTotalLink->url }}"
                                             target="_blank"
-                                            class="underline text-gray-200 hover:text-white"
+                                            class="text-gray-200 underline hover:text-white"
                                         >
                                             {{ $virusTotalLink->url }}
                                         </a>
@@ -412,7 +408,7 @@
                                             href="{{ $virusTotalLink->url }}"
                                             title="{{ $virusTotalLink->url }}"
                                             target="_blank"
-                                            class="underline text-gray-200 hover:text-white"
+                                            class="text-gray-200 underline hover:text-white"
                                         >
                                             {{ $virusTotalLink->url }}
                                         </a>
@@ -422,9 +418,9 @@
                         </li>
                     @endif
                     @if ($addon->contains_ads)
-                        <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
+                        <li class="flex flex-row items-center gap-2 px-4 py-4 last:pb-0 sm:px-0">
                             <svg
-                                class="grow-0 w-[16px] h-[16px]"
+                                class="h-[16px] w-[16px] grow-0"
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 16 16"
                                 fill="currentColor"
@@ -450,10 +446,10 @@
                                     type="button"
                                     @click="expanded = !expanded"
                                     :aria-expanded="expanded.toString()"
-                                    class="flex flex-row gap-2 items-center w-full text-left cursor-pointer"
+                                    class="flex w-full cursor-pointer flex-row items-center gap-2 text-left"
                                 >
                                     <svg
-                                        class="grow-0 w-[16px] h-[16px]"
+                                        class="h-[16px] w-[16px] grow-0"
                                         xmlns="http://www.w3.org/2000/svg"
                                         viewBox="0 0 16 16"
                                         fill="currentColor"
@@ -469,20 +465,20 @@
                                     </h3>
                                     <flux:icon.chevron-up
                                         variant="micro"
-                                        class="grow-0 size-4 text-gray-400 transition-transform"
+                                        class="size-4 grow-0 text-gray-400 transition-transform"
                                         x-bind:class="expanded ? 'rotate-180' : ''"
                                     />
                                 </button>
                                 <div
                                     x-show="expanded"
                                     x-collapse
-                                    class="user-markdown mt-2 ms-6 text-sm text-gray-300"
+                                    class="user-markdown ms-6 mt-2 text-sm text-gray-300"
                                 >{!! $addon->custom_ai_disclosure_html !!}</div>
                             </li>
                         @else
-                            <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
+                            <li class="flex flex-row items-center gap-2 px-4 py-4 last:pb-0 sm:px-0">
                                 <svg
-                                    class="grow-0 w-[16px] h-[16px]"
+                                    class="h-[16px] w-[16px] grow-0"
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 16 16"
                                     fill="currentColor"

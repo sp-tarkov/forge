@@ -17,7 +17,7 @@
         </div>
 
         @if (session('status') == 'verification-link-sent')
-            <div class="mb-4 font-medium text-sm text-green-400">
+            <div class="mb-4 text-sm font-medium text-green-400">
                 {{ __('A verification link has been sent to the email address you provided in your profile settings.') }}
             </div>
         @endif
@@ -65,7 +65,7 @@
                 @csrf
                 <button
                     type="submit"
-                    class="underline text-sm text-gray-400 hover:text-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    class="focus:outline-hidden rounded-md text-sm text-gray-400 underline hover:text-gray-100 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                 >
                     {{ __('Log Out') }}
                 </button>

@@ -4,7 +4,7 @@
         <flux:tooltip :content="$user->role->name">
             <flux:icon
                 :name="$user->role->icon"
-                class="w-4 h-4 {{ $iconColorClass() }}"
+                class="{{ $iconColorClass() }} h-4 w-4"
             />
         </flux:tooltip>
     @endif

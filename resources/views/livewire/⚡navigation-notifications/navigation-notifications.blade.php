@@ -19,7 +19,7 @@
         />
         @if ($unreadCount > 0)
             <span
-                class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white"
+                class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white"
             >
                 {{ $unreadCount > 9 ? '9+' : $unreadCount }}
             </span>
@@ -31,11 +31,11 @@
         x-show="notificationDropdownOpen"
         x-transition
         x-on:click.outside="notificationDropdownOpen = false"
-        class="absolute top-11 right-0 z-[100] flex w-full min-w-[22rem] flex-col overflow-hidden rounded-xl border border-gray-700 bg-gray-800"
+        class="absolute right-0 top-11 z-[100] flex w-full min-w-[22rem] flex-col overflow-hidden rounded-xl border border-gray-700 bg-gray-800"
         role="menu"
     >
         {{-- Header --}}
-        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-700">
+        <div class="flex items-center justify-between border-b border-gray-700 px-4 py-3">
             <h3 class="text-sm font-semibold text-white">
                 {{ __('Unread Notifications') }}
             </h3>
@@ -80,7 +80,7 @@
 
         {{-- Notification List --}}
         @if ($this->notifications->count() > 0)
-            <div class="flex flex-col divide-y divide-gray-700 max-h-96 overflow-y-auto">
+            <div class="flex max-h-96 flex-col divide-y divide-gray-700 overflow-y-auto">
                 @foreach ($this->notifications as $notification)
                     <x-notification-row.nav
                         :notification="$notification"
@@ -90,22 +90,22 @@
             </div>
 
             {{-- Footer --}}
-            <div class="flex flex-col py-1.5 border-t border-gray-700">
+            <div class="flex flex-col border-t border-gray-700 py-1.5">
                 <a
                     href="{{ route('dashboard') }}"
                     wire:navigate
                     x-on:click="notificationDropdownOpen = false"
-                    class="flex items-center gap-2 px-4 py-2 text-sm focus-visible:outline-hidden bg-gray-800 text-slate-300 hover:bg-slate-100/5 hover:text-white focus-visible:bg-slate-100/10 focus-visible:text-white"
+                    class="focus-visible:outline-hidden flex items-center gap-2 bg-gray-800 px-4 py-2 text-sm text-slate-300 hover:bg-slate-100/5 hover:text-white focus-visible:bg-slate-100/10 focus-visible:text-white"
                     role="menuitem"
                 >
-                    <flux:icon.arrow-right class="w-4 h-4" />
+                    <flux:icon.arrow-right class="h-4 w-4" />
                     {{ __('View all notifications') }}
                 </a>
             </div>
         @else
             {{-- Empty State --}}
             <div class="px-4 py-8 text-center">
-                <flux:icon.bell class="w-12 h-12 mx-auto text-gray-600 mb-3" />
+                <flux:icon.bell class="mx-auto mb-3 h-12 w-12 text-gray-600" />
                 <p class="text-sm text-gray-400">
                     {{ __('No new notifications') }}
                 </p>

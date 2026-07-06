@@ -7,15 +7,13 @@
 </x-slot>
 
 <x-slot:header>
-    <div class="flex items-center justify-between w-full">
-        <div
-            class="font-semibold text-xl text-gray-200 leading-tight flex items-center gap-2"
-        >
+    <div class="flex w-full items-center justify-between">
+        <div class="flex items-center gap-2 text-xl font-semibold leading-tight text-gray-200">
             @if ($modList->isFavourites())
-                <flux:icon.heart class="w-5 h-5 text-rose-500" />
+                <flux:icon.heart class="h-5 w-5 text-rose-500" />
                 {{ __('Favourites') }}
             @else
-                <flux:icon.list-bullet class="w-5 h-5" />
+                <flux:icon.list-bullet class="h-5 w-5" />
                 {{ __('Mod List') }}
             @endif
         </div>
@@ -66,7 +64,7 @@
     </div>
 </x-slot>
 
-<div class="mx-auto max-w-7xl sm:px-6 lg:px-8 py-6 space-y-6">
+<div class="mx-auto max-w-7xl space-y-6 py-6 sm:px-6 lg:px-8">
     <div
         aria-live="polite"
         class="sr-only"
@@ -85,26 +83,20 @@
     @endif
 
     {{-- List info --}}
-    <div
-        class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl"
-    >
+    <div class="rounded-xl bg-gray-950 p-4 shadow-md shadow-gray-950 drop-shadow-2xl sm:p-6">
         <div class="flex items-start gap-4">
             @if ($modList->isFavourites())
-                <div
-                    class="shrink-0 size-16 rounded-lg bg-rose-950/30 flex items-center justify-center"
-                >
+                <div class="flex size-16 shrink-0 items-center justify-center rounded-lg bg-rose-950/30">
                     <flux:icon.heart class="size-8 text-rose-500" />
                 </div>
             @elseif ($modList->thumbnail)
                 <img
                     src="{{ $modList->thumbnailUrl }}"
                     alt=""
-                    class="shrink-0 size-16 rounded-lg object-cover"
+                    class="size-16 shrink-0 rounded-lg object-cover"
                 >
             @else
-                <div
-                    class="shrink-0 size-16 rounded-lg bg-gray-800 flex items-center justify-center"
-                >
+                <div class="flex size-16 shrink-0 items-center justify-center rounded-lg bg-gray-800">
                     <flux:icon.list-bullet class="size-8 text-gray-400" />
                 </div>
             @endif
@@ -123,7 +115,7 @@
                     </flux:badge>
                     @if ($modList->sptVersion)
                         <span
-                            class="badge-version {{ $modList->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium whitespace-nowrap"
+                            class="badge-version {{ $modList->sptVersion->color_class }} inline-flex items-center whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium"
                         >
                             {{ __('SPT') }} {{ $modList->sptVersion->version }}
                         </span>
@@ -134,11 +126,9 @@
                             icon="share"
                             color="sky"
                         >
-                            {{ trans_choice(
-                                'Forked :count time|Forked :count times',
-                                $modList->public_forks_count,
-                                ['count' => $modList->public_forks_count],
-                            ) }}
+                            {{ trans_choice('Forked :count time|Forked :count times', $modList->public_forks_count, [
+                                'count' => $modList->public_forks_count,
+                            ]) }}
                         </flux:badge>
                     @endif
                 </div>
@@ -147,7 +137,7 @@
                     <a
                         href="{{ $modList->owner?->profile_url }}"
                         wire:navigate
-                        class="hover:underline font-medium"
+                        class="font-medium hover:underline"
                     >
                         {{ $modList->owner?->name ?? __('Unknown') }}
                     </a>
@@ -163,7 +153,7 @@
                     @endif
                 </p>
                 @if ($modList->forked_from_list_id)
-                    <p class="mt-1 text-xs text-gray-400 flex items-center gap-1.5">
+                    <p class="mt-1 flex items-center gap-1.5 text-xs text-gray-400">
                         <flux:icon.share
                             variant="micro"
                             class="size-3.5"
@@ -212,9 +202,7 @@
 
     {{-- Items --}}
     @if ($grouped->isEmpty())
-        <div
-            class="p-8 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl text-center"
-        >
+        <div class="rounded-xl bg-gray-950 p-8 text-center shadow-md shadow-gray-950 drop-shadow-2xl">
             @if ($modList->isFavourites())
                 <flux:icon.heart class="mx-auto size-12 text-rose-400" />
                 <h2 class="mt-2 text-sm font-semibold text-gray-100">
@@ -256,26 +244,27 @@
     @else
         <div
             @if ($canManage) wire:sort="reorder" @endif
-            class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch"
+            class="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2"
         >
             @foreach ($grouped as $group)
                 <div
                     wire:key="list-group-{{ $group['group_key'] }}"
                     @if ($group['is_sortable']) wire:sort:item="{{ $group['mod']->id }}" @endif
-                    class="bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl overflow-hidden"
+                    class="overflow-hidden rounded-xl bg-gray-950 shadow-md shadow-gray-950 drop-shadow-2xl"
                 >
                     @if ($group['mod_item']?->isTombstone())
                         @php
                             $tombstoneTitle = $group['tombstone_names_visible']
-                                ? ($group['mod_item']->tombstoned_name ?? __('Removed mod'))
+                                ? $group['mod_item']->tombstoned_name ?? __('Removed mod')
                                 : __('Removed item');
                         @endphp
-                        <div class="p-3 sm:p-4 flex items-start gap-3 text-gray-400">
-                            <div class="shrink-0 size-14 sm:size-16 rounded-md bg-gray-900/40 flex items-center justify-center">
+                        <div class="flex items-start gap-3 p-3 text-gray-400 sm:p-4">
+                            <div
+                                class="flex size-14 shrink-0 items-center justify-center rounded-md bg-gray-900/40 sm:size-16">
                                 <flux:icon.no-symbol class="size-7 text-gray-700" />
                             </div>
                             <div class="min-w-0 flex-1 self-center">
-                                <div class="text-sm font-medium text-gray-400 truncate">
+                                <div class="truncate text-sm font-medium text-gray-400">
                                     {{ $tombstoneTitle }}
                                 </div>
                                 <div class="text-xs italic text-gray-500">
@@ -309,7 +298,8 @@
                                     :item-id="$group['mod_item']?->id"
                                     :note="$group['mod_item']?->note"
                                     :can-manage="$canManage"
-                                    :editing="$group['mod_item'] !== null && $editingNoteItemId === $group['mod_item']->id"
+                                    :editing="$group['mod_item'] !== null &&
+                                        $editingNoteItemId === $group['mod_item']->id"
                                 />
                             </x-slot:note>
                             @if ($group['is_sortable'])
@@ -317,7 +307,7 @@
                                     type="button"
                                     wire:sort:handle
                                     aria-label="{{ __('Reorder :name', ['name' => $group['mod']->name]) }}"
-                                    class="cursor-grab text-gray-400 hover:text-gray-200 touch-none"
+                                    class="cursor-grab touch-none text-gray-400 hover:text-gray-200"
                                 >
                                     <flux:icon.bars-3 variant="micro" />
                                 </button>
@@ -335,34 +325,33 @@
                             @endif
                         </x-mod.list-row>
                     @else
-                        <div class="p-3 sm:p-4 text-sm italic text-gray-400">
+                        <div class="p-3 text-sm italic text-gray-400 sm:p-4">
                             {{ __('This mod is no longer available.') }}
                         </div>
                     @endif
 
                     @if ($group['addons']->isNotEmpty())
-                        <ul
-                            class="-mt-1 sm:-mt-2 pb-3 sm:pb-4 space-y-0.5"
-                        >
+                        <ul class="-mt-1 space-y-0.5 pb-3 sm:-mt-2 sm:pb-4">
                             @foreach ($group['addons'] as $addonItem)
                                 @if ($addonItem->isTombstone())
                                     @php
                                         $addonTombstoneTitle = $group['tombstone_names_visible']
-                                            ? ($addonItem->tombstoned_name ?? __('Removed addon'))
+                                            ? $addonItem->tombstoned_name ?? __('Removed addon')
                                             : __('Removed item');
                                     @endphp
                                     <li wire:key="list-addon-{{ $addonItem->id }}">
-                                        <div class="px-3 sm:px-4 py-1.5 flex items-center gap-3 text-gray-400">
-                                            <div class="shrink-0 w-14 sm:w-16 flex items-center justify-end">
-                                                <div class="size-10 rounded bg-gray-900/40 flex items-center justify-center">
+                                        <div class="flex items-center gap-3 px-3 py-1.5 text-gray-400 sm:px-4">
+                                            <div class="flex w-14 shrink-0 items-center justify-end sm:w-16">
+                                                <div
+                                                    class="flex size-10 items-center justify-center rounded bg-gray-900/40">
                                                     <flux:icon.no-symbol class="size-5 text-gray-700" />
                                                 </div>
                                             </div>
                                             <div class="min-w-0 flex-1">
-                                                <div class="text-sm font-medium text-gray-400 truncate">
+                                                <div class="truncate text-sm font-medium text-gray-400">
                                                     {{ $addonTombstoneTitle }}
                                                 </div>
-                                                <div class="text-xs italic text-gray-500 truncate">
+                                                <div class="truncate text-xs italic text-gray-500">
                                                     {{ __('The author has opted out of mod lists.') }}
                                                 </div>
                                             </div>
@@ -383,7 +372,7 @@
                                     <li>
                                         <x-addon.list-item
                                             :addon="$addonItem->listable"
-                                            :wire-key="'list-addon-'.$addonItem->id"
+                                            :wire-key="'list-addon-' . $addonItem->id"
                                         >
                                             <x-slot:note>
                                                 <x-list.item-note
@@ -417,7 +406,7 @@
 
     @endif
 
-    @if (! $modList->isFavourites() && $modList->visibility !== \App\Enums\ListVisibility::Private)
+    @if (!$modList->isFavourites() && $modList->visibility !== \App\Enums\ListVisibility::Private)
         <div
             id="comments"
             class="space-y-6"
@@ -502,16 +491,16 @@
                         ) }}
                     </flux:subheading>
                 </div>
-                <ul class="max-h-72 overflow-y-auto divide-y divide-gray-800 rounded-md border border-gray-800">
+                <ul class="max-h-72 divide-y divide-gray-800 overflow-y-auto rounded-md border border-gray-800">
                     @foreach ($missingDependencies as $depMod)
                         <li
                             wire:key="missing-dep-{{ $depMod->id }}"
                             class="flex items-center gap-3 p-2"
                         >
-                            <div class="shrink-0 size-8 rounded bg-gray-800 flex items-center justify-center">
+                            <div class="flex size-8 shrink-0 items-center justify-center rounded bg-gray-800">
                                 <flux:icon.cube class="size-4 text-gray-500" />
                             </div>
-                            <div class="min-w-0 text-sm font-medium truncate">
+                            <div class="min-w-0 truncate text-sm font-medium">
                                 {{ $depMod->name }}
                             </div>
                         </li>
@@ -559,7 +548,8 @@
                         :aria-label="__('Copy share link')"
                         @click="navigator.clipboard.writeText(@js($modList->shareUrl())); copied = true; setTimeout(() => copied = false, 2000)"
                     >
-                        <span x-text="copied ? @js(__('Copied')) : @js(__('Copy'))">{{ __('Copy') }}</span>
+                        <span
+                            x-text="copied ? @js(__('Copied')) : @js(__('Copy'))">{{ __('Copy') }}</span>
                     </flux:button>
                 </div>
                 <div

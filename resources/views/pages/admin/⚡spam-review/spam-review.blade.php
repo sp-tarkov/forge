@@ -7,19 +7,19 @@
 </x-slot>
 
 <x-slot:header>
-    <h2 class="font-semibold text-xl text-gray-100 leading-tight">
+    <h2 class="text-xl font-semibold leading-tight text-gray-100">
         {{ __('Spam Review') }}
     </h2>
 </x-slot>
 
 <div>
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div
             wire:poll.30s="$refresh"
-            class="bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg"
+            class="overflow-hidden bg-gray-900 shadow-xl sm:rounded-lg"
         >
             <div class="p-6">
-                <div class="mb-6 pb-4 border-b border-gray-700">
+                <div class="mb-6 border-b border-gray-700 pb-4">
                     <div class="flex items-start justify-between">
                         <div>
                             <h3
@@ -30,7 +30,7 @@
                                 {{ __('Review comments flagged as spam and confirm, approve, or delete them.') }}
                             </p>
                         </div>
-                        <div class="flex items-center gap-4 flex-shrink-0">
+                        <div class="flex flex-shrink-0 items-center gap-4">
                             @if ($this->pendingSpamCount > 0)
                                 <flux:badge
                                     color="yellow"
@@ -90,9 +90,7 @@
 
                     <div class="space-y-4">
                         @foreach ($this->comments as $comment)
-                            <div
-                                class="bg-gray-800 border border-gray-700 rounded-xl shadow-sm p-4 sm:p-6"
-                            >
+                            <div class="rounded-xl border border-gray-700 bg-gray-800 p-4 shadow-sm sm:p-6">
                                 {{-- Spam metadata badges --}}
                                 <div class="mb-4 flex flex-wrap items-center gap-2">
                                     <flux:badge
@@ -127,7 +125,8 @@
                                 <x-comment.card :comment="$comment" />
 
                                 {{-- Action bar --}}
-                                <div class="mt-4 pt-4 border-t border-gray-700 flex flex-wrap items-center justify-between gap-3">
+                                <div
+                                    class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-700 pt-4">
                                     @if ($comment->getUrl())
                                         <a
                                             href="{{ $comment->getUrl() }}"
@@ -139,7 +138,8 @@
                                             <span>{{ __('View in context') }}</span>
                                         </a>
                                     @else
-                                        <span class="text-xs text-gray-400">{{ __('No context link available') }}</span>
+                                        <span
+                                            class="text-xs text-gray-400">{{ __('No context link available') }}</span>
                                     @endif
 
                                     <div class="flex flex-wrap items-center gap-2">
@@ -198,7 +198,7 @@
                         </div>
                     @endif
                 @else
-                    <div class="text-center py-8">
+                    <div class="py-8 text-center">
                         <flux:icon.shield-check
                             size="xl"
                             class="mx-auto text-gray-400"
@@ -217,27 +217,27 @@
                 class="md:w-[500px]"
             >
                 <div class="space-y-0">
-                    <div class="border-b border-gray-700 pb-6 mb-6">
+                    <div class="mb-6 border-b border-gray-700 pb-6">
                         <div class="flex items-center gap-3">
                             @if ($selectedAction === 'confirm_spam')
                                 <flux:icon
                                     name="shield-exclamation"
-                                    class="w-8 h-8 text-red-600"
+                                    class="h-8 w-8 text-red-600"
                                 />
                             @elseif ($selectedAction === 'mark_as_ham')
                                 <flux:icon
                                     name="shield-check"
-                                    class="w-8 h-8 text-green-600"
+                                    class="h-8 w-8 text-green-600"
                                 />
                             @elseif ($selectedAction === 'soft_delete')
                                 <flux:icon
                                     name="trash"
-                                    class="w-8 h-8 text-amber-600"
+                                    class="h-8 w-8 text-amber-600"
                                 />
                             @elseif ($selectedAction === 'hard_delete')
                                 <flux:icon
                                     name="fire"
-                                    class="w-8 h-8 text-red-600"
+                                    class="h-8 w-8 text-red-600"
                                 />
                             @endif
                             <div>
@@ -255,7 +255,7 @@
                                         {{ __('Hard Delete') }}
                                     @endif
                                 </flux:heading>
-                                <flux:text class="mt-1 text-gray-400 text-sm">
+                                <flux:text class="mt-1 text-sm text-gray-400">
                                     @if ($selectedAction === 'confirm_spam')
                                         {{ __('Submit positive feedback to the spam filter so future similar comments are flagged.') }}
                                     @elseif ($selectedAction === 'mark_as_ham')
@@ -272,19 +272,17 @@
 
                     <div class="space-y-6">
                         @if ($selectedAction === 'hard_delete')
-                            <div
-                                class="bg-red-900/20 border border-red-800 rounded-lg p-4"
-                            >
+                            <div class="rounded-lg border border-red-800 bg-red-900/20 p-4">
                                 <div class="flex items-start gap-3">
                                     <flux:icon
                                         name="exclamation-triangle"
-                                        class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0"
+                                        class="mt-0.5 h-5 w-5 flex-shrink-0 text-red-500"
                                     />
                                     <div>
-                                        <flux:text class="text-red-200 text-sm font-medium">
+                                        <flux:text class="text-sm font-medium text-red-200">
                                             {{ __('Warning') }}
                                         </flux:text>
-                                        <flux:text class="text-red-300 text-sm mt-1">
+                                        <flux:text class="mt-1 text-sm text-red-300">
                                             {{ __('The comment and every reply beneath it will be permanently destroyed.') }}
                                         </flux:text>
                                     </div>
@@ -300,9 +298,7 @@
                         />
                     </div>
 
-                    <div
-                        class="flex justify-end items-center gap-3 pt-6 mt-6 border-t border-gray-700"
-                    >
+                    <div class="mt-6 flex items-center justify-end gap-3 border-t border-gray-700 pt-6">
                         <flux:button
                             wire:click="$set('showActionModal', false)"
                             variant="outline"

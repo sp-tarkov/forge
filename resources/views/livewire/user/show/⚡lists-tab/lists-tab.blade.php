@@ -8,7 +8,7 @@
         <flux:skeleton class="h-10 w-64 rounded" />
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @for ($i = 0; $i < 3; $i++)
-                <div class="p-4 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
+                <div class="rounded-xl bg-gray-950 p-4 shadow-md shadow-gray-950 drop-shadow-2xl">
                     <flux:skeleton.group class="space-y-3">
                         <flux:skeleton class="h-5 w-3/4 rounded" />
                         <flux:skeleton class="h-4 w-1/2 rounded" />
@@ -52,8 +52,8 @@
             {{ $this->lists->links() }}
         </div>
     @else
-        <div class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
-            <div class="text-center py-8">
+        <div class="rounded-xl bg-gray-950 p-4 shadow-md shadow-gray-950 drop-shadow-2xl sm:p-6">
+            <div class="py-8 text-center">
                 <flux:icon.list-bullet class="mx-auto size-12 text-gray-400" />
                 <h2 class="mt-2 text-sm font-semibold text-gray-100">
                     {{ __('No lists yet') }}

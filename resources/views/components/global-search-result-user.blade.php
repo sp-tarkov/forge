@@ -14,8 +14,8 @@
             class="size-8"
         />
     </div>
-    <div class="grow flex flex-col min-w-0">
-        <span class="text-sm font-medium truncate">{{ $result['name'] }}</span>
+    <div class="flex min-w-0 grow flex-col">
+        <span class="truncate text-sm font-medium">{{ $result['name'] }}</span>
         @if (($result['mods_count'] ?? 0) > 0 || ($result['addons_count'] ?? 0) > 0)
             <span class="text-xs text-gray-400">
                 @if (($result['mods_count'] ?? 0) > 0)

@@ -1,8 +1,8 @@
 <div>
     <x-slot name="header">
-        <div class="flex items-center justify-between w-full">
+        <div class="flex w-full items-center justify-between">
             <div>
-                <h2 class="font-semibold text-xl text-gray-200 leading-tight">
+                <h2 class="text-xl font-semibold leading-tight text-gray-200">
                     {{ __('Role Management') }}
                 </h2>
             </div>
@@ -14,14 +14,14 @@
             {{-- User Search Section --}}
             <div
                 id="search-container"
-                class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6"
+                class="rounded-lg border border-gray-700 bg-gray-900 p-6 shadow-sm"
             >
-                <div class="flex items-center gap-3 mb-4">
-                    <flux:icon.user-plus class="w-6 h-6 text-gray-400" />
+                <div class="mb-4 flex items-center gap-3">
+                    <flux:icon.user-plus class="h-6 w-6 text-gray-400" />
                     <h3 class="text-lg font-semibold text-gray-100">{{ __('Assign Role to User') }}
                     </h3>
                 </div>
-                <p class="text-sm text-gray-400 mb-4">
+                <p class="mb-4 text-sm text-gray-400">
                     {{ __('Search for a user by name or email to assign them a role.') }}
                 </p>
 
@@ -36,13 +36,13 @@
                     {{-- Search Results Dropdown --}}
                     @if ($showUserDropdown && $this->searchResults->isNotEmpty())
                         <div
-                            class="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+                            class="absolute z-50 mt-1 max-h-80 w-full overflow-y-auto rounded-lg border border-gray-700 bg-gray-800 shadow-lg">
                             @foreach ($this->searchResults as $user)
                                 <button
                                     type="button"
                                     wire:key="search-user-{{ $user->id }}"
                                     wire:click="showAssignRoleModal({{ $user->id }})"
-                                    class="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-700 text-left transition-colors"
+                                    class="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-700"
                                 >
                                     <flux:avatar
                                         circle
@@ -53,7 +53,7 @@
                                     />
                                     <div class="min-w-0 flex-1">
                                         <div class="flex items-center gap-2">
-                                            <span class="text-sm font-medium text-gray-100 truncate">
+                                            <span class="truncate text-sm font-medium text-gray-100">
                                                 {{ $user->name }}
                                             </span>
                                             @if ($user->role)
@@ -63,16 +63,16 @@
                                                 >{{ $user->role->short_name }}</flux:badge>
                                             @endif
                                         </div>
-                                        <p class="text-xs text-gray-400 truncate">
+                                        <p class="truncate text-xs text-gray-400">
                                             {{ $user->email }}</p>
                                     </div>
-                                    <flux:icon.chevron-right class="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                    <flux:icon.chevron-right class="h-4 w-4 flex-shrink-0 text-gray-400" />
                                 </button>
                             @endforeach
                         </div>
                     @elseif ($showUserDropdown && $this->searchResults->isEmpty())
                         <div
-                            class="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg p-4 text-center">
+                            class="absolute z-50 mt-1 w-full rounded-lg border border-gray-700 bg-gray-800 p-4 text-center shadow-lg">
                             <p class="text-sm text-gray-400">
                                 {{ __('No users found matching your search.') }}</p>
                         </div>
@@ -81,10 +81,9 @@
             </div>
 
             {{-- Users with Roles Table --}}
-            <div
-                class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 overflow-hidden">
-                <div class="p-6 border-b border-gray-700">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="overflow-hidden rounded-lg border border-gray-700 bg-gray-900 shadow-sm">
+                <div class="border-b border-gray-700 p-6">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <h3 class="text-lg font-semibold text-gray-100">
                             {{ __('Users with Roles') }} ({{ number_format($this->usersWithRoles->total()) }})
                         </h3>
@@ -108,7 +107,7 @@
 
                 {{-- Top Pagination --}}
                 @if ($this->usersWithRoles->hasPages())
-                    <div class="px-6 py-4 border-b border-gray-700 bg-gray-800">
+                    <div class="border-b border-gray-700 bg-gray-800 px-6 py-4">
                         {{ $this->usersWithRoles->links(data: ['scrollTo' => '#search-container']) }}
                     </div>
                 @endif
@@ -117,28 +116,25 @@
                     <table class="w-full table-auto">
                         <thead class="bg-gray-900">
                             <tr>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-400">
                                     {{ __('User') }}
                                 </th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-400">
                                     {{ __('Role') }}
                                 </th>
-                                <th
-                                    class="px-4 py-3 text-right text-xs font-medium text-gray-400 tracking-wider">
+                                <th class="px-4 py-3 text-right text-xs font-medium tracking-wider text-gray-400">
                                     {{ __('Actions') }}
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-gray-800 divide-y divide-gray-700">
+                        <tbody class="divide-y divide-gray-700 bg-gray-800">
                             @forelse ($this->usersWithRoles as $user)
                                 <tr
                                     wire:key="role-user-{{ $user->id }}"
                                     class="hover:bg-gray-700"
                                 >
                                     {{-- User Column --}}
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                    <td class="whitespace-nowrap px-4 py-4">
                                         <div class="flex items-center gap-3">
                                             <flux:avatar
                                                 circle
@@ -150,19 +146,19 @@
                                             <div class="min-w-0">
                                                 <a
                                                     href="{{ $user->profile_url }}"
-                                                    class="text-sm font-medium text-gray-100 hover:text-gray-300 underline truncate block max-w-48"
+                                                    class="block max-w-48 truncate text-sm font-medium text-gray-100 underline hover:text-gray-300"
                                                     wire:navigate
                                                 >
                                                     {{ $user->name }}
                                                 </a>
-                                                <p class="text-xs text-gray-400 truncate">
+                                                <p class="truncate text-xs text-gray-400">
                                                     {{ $user->email }}</p>
                                             </div>
                                         </div>
                                     </td>
 
                                     {{-- Role Column --}}
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                    <td class="whitespace-nowrap px-4 py-4">
                                         @if ($user->role)
                                             <flux:badge
                                                 color="{{ $user->role->color_class }}"
@@ -174,7 +170,7 @@
                                     </td>
 
                                     {{-- Actions Column --}}
-                                    <td class="px-4 py-4 whitespace-nowrap text-right">
+                                    <td class="whitespace-nowrap px-4 py-4 text-right">
                                         <div class="flex items-center justify-end gap-2">
                                             <flux:button
                                                 wire:click="showAssignRoleModal({{ $user->id }})"
@@ -201,9 +197,7 @@
                                         colspan="3"
                                         class="px-6 py-12 text-center text-gray-400"
                                     >
-                                        <flux:icon.user-group
-                                            class="w-12 h-12 mx-auto mb-4 text-gray-600"
-                                        />
+                                        <flux:icon.user-group class="mx-auto mb-4 h-12 w-12 text-gray-600" />
                                         <p class="text-gray-400">
                                             {{ __('No users with roles found.') }}</p>
                                     </td>
@@ -215,7 +209,7 @@
 
                 {{-- Bottom Pagination --}}
                 @if ($this->usersWithRoles->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-700">
+                    <div class="border-t border-gray-700 px-6 py-4">
                         {{ $this->usersWithRoles->links(data: ['scrollTo' => '#search-container']) }}
                     </div>
                 @endif
@@ -230,9 +224,9 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-700 pb-6 mb-6">
+            <div class="mb-6 border-b border-gray-700 pb-6">
                 <div class="flex items-center gap-3">
-                    <flux:icon.user-plus class="w-8 h-8 text-blue-600" />
+                    <flux:icon.user-plus class="h-8 w-8 text-blue-600" />
                     <div>
                         <flux:heading
                             size="xl"
@@ -240,7 +234,7 @@
                         >
                             {{ __('Assign Role') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-sm text-gray-400">
                             {{ __('Select a role to assign to this user') }}
                         </flux:text>
                     </div>
@@ -251,7 +245,7 @@
             <div class="space-y-6">
                 {{-- Selected User Info --}}
                 @if ($this->selectedUser)
-                    <div class="flex items-center gap-3 p-4 bg-gray-800 rounded-lg">
+                    <div class="flex items-center gap-3 rounded-lg bg-gray-800 p-4">
                         <flux:avatar
                             circle
                             src="{{ $this->selectedUser->profile_photo_url }}"
@@ -264,8 +258,7 @@
                             <p class="text-sm text-gray-400">{{ $this->selectedUser->email }}</p>
                             @if ($this->selectedUser->role)
                                 <div class="mt-1">
-                                    <span
-                                        class="text-xs text-gray-400">{{ __('Current role:') }}</span>
+                                    <span class="text-xs text-gray-400">{{ __('Current role:') }}</span>
                                     <flux:badge
                                         color="{{ $this->selectedUser->role->color_class }}"
                                         size="sm"
@@ -299,7 +292,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-gray-700">
+            <div class="mt-6 flex justify-end gap-3 border-t border-gray-700 pt-6">
                 <flux:button
                     wire:click="closeAssignModal"
                     variant="outline"
@@ -326,9 +319,9 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-700 pb-6 mb-6">
+            <div class="mb-6 border-b border-gray-700 pb-6">
                 <div class="flex items-center gap-3">
-                    <flux:icon.exclamation-triangle class="w-8 h-8 text-red-600" />
+                    <flux:icon.exclamation-triangle class="h-8 w-8 text-red-600" />
                     <div>
                         <flux:heading
                             size="xl"
@@ -336,7 +329,7 @@
                         >
                             {{ __('Remove Role') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-sm text-gray-400">
                             {{ __('Confirm role removal') }}
                         </flux:text>
                     </div>
@@ -362,7 +355,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-gray-700">
+            <div class="mt-6 flex justify-end gap-3 border-t border-gray-700 pt-6">
                 <flux:button
                     wire:click="closeRemoveModal"
                     variant="outline"

@@ -17,7 +17,7 @@
 @endif
 
 <div>
-    <div class="sm:-mt-12 mb-6 bg-gray-800 text-gray-100">
+    <div class="mb-6 bg-gray-800 text-gray-100 sm:-mt-12">
         <div>
             @if ($user->cover_photo_url)
                 <img
@@ -36,20 +36,20 @@
         </div>
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="flex items-start gap-4 md:-mt-12 md:items-end md:gap-5">
-                <div class="flex-shrink-0 -mt-12 md:mt-0">
+                <div class="-mt-12 flex-shrink-0 md:mt-0">
                     <img
                         src="{{ $user->profile_photo_url }}"
                         alt="{{ __(':name\'s Profile Picture', ['name' => $user->name]) }}"
-                        class="h-32 w-32 rounded-full ring-4 ring-gray-800 bg-gray-800"
+                        class="h-32 w-32 rounded-full bg-gray-800 ring-4 ring-gray-800"
                     />
                 </div>
                 <div
-                    class="pt-4 min-w-0 flex-1 flex flex-col items-end md:pt-0 md:flex-row md:items-center md:space-x-4">
-                    <div class="text-right md:text-left md:min-w-0 md:flex-1">
-                        <h1 class="truncate text-lg md:text-2xl font-bold">
+                    class="flex min-w-0 flex-1 flex-col items-end pt-4 md:flex-row md:items-center md:space-x-4 md:pt-0">
+                    <div class="text-right md:min-w-0 md:flex-1 md:text-left">
+                        <h1 class="truncate text-lg font-bold md:text-2xl">
                             <x-user-name :user="$user" />
                         </h1>
-                        <div class="text-xs md:text-base text-gray-400 mt-0.5">
+                        <div class="mt-0.5 text-xs text-gray-400 md:text-base">
                             {{ __('Member since') }}
                             <x-time :datetime="$user->created_at" />
                         </div>
@@ -95,7 +95,7 @@
 
                         {{-- Desktop buttons (sm size) --}}
                         <div
-                            class="hidden md:grid md:grid-cols-2 md:gap-2 md:[&>*]:w-full md:[&_button]:w-full lg:flex lg:flex-wrap lg:gap-0 lg:space-x-4 lg:[&>*]:w-auto lg:[&_button]:w-auto">
+                            class="hidden md:grid md:grid-cols-2 md:gap-2 lg:flex lg:flex-wrap lg:gap-0 lg:space-x-4 md:[&>*]:w-full lg:[&>*]:w-auto md:[&_button]:w-full lg:[&_button]:w-auto">
                             {{-- Follow Buttons --}}
                             <livewire:user.follow-buttons
                                 :profile-user-id="$user->id"
@@ -127,21 +127,19 @@
     </div>
 
     <div class="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
             {{-- Left Column --}}
             <div
                 x-data="{ selectedTab: window.location.hash ? (window.location.hash.includes('-comment-') ? window.location.hash.substring(1).split('-comment-')[0] : window.location.hash.substring(1)) : 'wall' }"
-                x-init="
-                    $watch('selectedTab', (tab) => { window.location.hash = tab });
-                    if (selectedTab === 'wall' && window.location.hash.includes('-comment-')) {
-                        $nextTick(() => {
-                            const lazyEl = $refs.wallTab?.querySelector('[x-intersect]');
-                            const expr = lazyEl?.getAttribute('x-intersect');
-                            if (lazyEl && expr) window.Alpine.evaluate(lazyEl, expr);
-                        });
-                    }
-                "
-                class="lg:col-span-3 flex flex-col gap-6"
+                x-init="$watch('selectedTab', (tab) => { window.location.hash = tab });
+                if (selectedTab === 'wall' && window.location.hash.includes('-comment-')) {
+                    $nextTick(() => {
+                        const lazyEl = $refs.wallTab?.querySelector('[x-intersect]');
+                        const expr = lazyEl?.getAttribute('x-intersect');
+                        if (lazyEl && expr) window.Alpine.evaluate(lazyEl, expr);
+                    });
+                }"
+                class="flex flex-col gap-6 lg:col-span-3"
             >
                 {{-- Ban Information (Visible to Admins/Moderators Only - Small Screens) --}}
                 @if ($activeBan && auth()->check() && auth()->user()->isModOrAdmin())
@@ -151,7 +149,7 @@
                             class="shadow-lg"
                         >
                             <div class="flex flex-col gap-2 text-sm">
-                                <div class="font-semibold text-base">{{ __('This user is currently banned') }}</div>
+                                <div class="text-base font-semibold">{{ __('This user is currently banned') }}</div>
 
                                 @if ($activeBan->comment)
                                     <div class="break-words">
@@ -191,7 +189,7 @@
                 {{-- About --}}
                 @if ($user->about)
                     <div
-                        class="user-markdown p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 text-gray-200 drop-shadow-2xl">
+                        class="user-markdown rounded-xl bg-gray-950 p-4 text-gray-200 shadow-md shadow-gray-950 drop-shadow-2xl sm:p-6">
                         {!! $user->about_html !!}
                     </div>
                 @endif
@@ -206,8 +204,10 @@
                             label:sr-only="{{ __('Select a tab') }}"
                         >
                             <flux:select.option value="wall">{{ __('Wall') }}</flux:select.option>
-                            <flux:select.option value="mods">{{ $modCount }} {{ __(Str::plural('Mod', $modCount)) }}</flux:select.option>
-                            <flux:select.option value="addons">{{ $addonCount }} {{ __(Str::plural('Addon', $addonCount)) }}</flux:select.option>
+                            <flux:select.option value="mods">{{ $modCount }}
+                                {{ __(Str::plural('Mod', $modCount)) }}</flux:select.option>
+                            <flux:select.option value="addons">{{ $addonCount }}
+                                {{ __(Str::plural('Addon', $addonCount)) }}</flux:select.option>
                             <flux:select.option value="lists">{{ __('Lists') }}</flux:select.option>
                             <flux:select.option value="activity">{{ __('Activity') }}</flux:select.option>
                         </flux:select>
@@ -296,16 +296,16 @@
             </div>
 
             {{-- Right Column --}}
-            <div class="col-span-1 flex flex-col justify-top items-center gap-6">
+            <div class="justify-top col-span-1 flex flex-col items-center gap-6">
                 {{-- Ban Information (Visible to Admins/Moderators Only - Large Screens) --}}
                 @if ($activeBan && auth()->check() && auth()->user()->isModOrAdmin())
-                    <div class="hidden lg:block w-full">
+                    <div class="hidden w-full lg:block">
                         <flux:callout
                             variant="danger"
                             class="shadow-lg"
                         >
                             <div class="flex flex-col gap-2 text-sm">
-                                <div class="font-semibold text-base">{{ __('This user is currently banned') }}</div>
+                                <div class="text-base font-semibold">{{ __('This user is currently banned') }}</div>
 
                                 @if ($activeBan->comment)
                                     <div class="break-words">

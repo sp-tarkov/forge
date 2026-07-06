@@ -13,22 +13,29 @@
         @else
             <div class="space-y-3">
                 @foreach ($this->blockedUsers as $block)
-                    <div class="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 p-4">
-                        <div class="flex items-center gap-4 min-w-0">
+                    <div
+                        class="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                        <div class="flex min-w-0 items-center gap-4">
                             <img
                                 class="size-12 shrink-0 rounded-full object-cover"
                                 src="{{ $block->blocked->profile_photo_url }}"
                                 alt="{{ $block->blocked->name }}"
                             >
                             <div class="min-w-0">
-                                <flux:heading size="sm" class="truncate">
+                                <flux:heading
+                                    size="sm"
+                                    class="truncate"
+                                >
                                     {{ $block->blocked->name }}
                                 </flux:heading>
                                 <flux:text size="sm">
                                     {{ __('Blocked') }} {{ $block->created_at->diffForHumans() }}
                                 </flux:text>
                                 @if ($block->reason)
-                                    <flux:text size="sm" class="mt-1">
+                                    <flux:text
+                                        size="sm"
+                                        class="mt-1"
+                                    >
                                         {{ __('Reason:') }} {{ $block->reason }}
                                     </flux:text>
                                 @endif

@@ -11,7 +11,7 @@
         {{-- Mod card placeholders --}}
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
             @for ($i = 0; $i < 4; $i++)
-                <div class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
+                <div class="rounded-xl bg-gray-950 p-4 shadow-md shadow-gray-950 drop-shadow-2xl sm:p-6">
                     <flux:skeleton.group class="space-y-4">
                         {{-- Thumbnail --}}
                         <flux:skeleton class="h-40 w-full rounded" />
@@ -60,8 +60,8 @@
             {{ $this->mods->links() }}
         </div>
     @else
-        <div class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
-            <div class="text-center py-8">
+        <div class="rounded-xl bg-gray-950 p-4 shadow-md shadow-gray-950 drop-shadow-2xl sm:p-6">
+            <div class="py-8 text-center">
                 <flux:icon.cube-transparent class="mx-auto size-12 text-gray-400" />
                 <h3 class="mt-2 text-sm font-semibold text-gray-100">
                     {{ __('No Mods Yet') }}

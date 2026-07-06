@@ -5,10 +5,10 @@
     :maxWidth="$maxWidth"
     {{ $attributes }}
 >
-    <div class="bg-gray-900 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+    <div class="bg-gray-900 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
         <div class="sm:flex sm:items-start">
             <div
-                class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+                class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
                 <svg
                     class="h-6 w-6 text-red-600"
                     xmlns="http://www.w3.org/2000/svg"
@@ -24,7 +24,7 @@
                     />
                 </svg>
             </div>
-            <div class="mt-3 text-center sm:mt-0 sm:ms-4 sm:text-start">
+            <div class="mt-3 text-center sm:ms-4 sm:mt-0 sm:text-start">
                 <h3 class="text-lg font-medium text-gray-100">
                     {{ $title }}
                 </h3>
@@ -35,7 +35,7 @@
             </div>
         </div>
     </div>
-    <div class="flex flex-row justify-end px-6 py-4 bg-gray-800 text-end">
+    <div class="flex flex-row justify-end bg-gray-800 px-6 py-4 text-end">
         {{ $footer }}
     </div>
 </x-modal>

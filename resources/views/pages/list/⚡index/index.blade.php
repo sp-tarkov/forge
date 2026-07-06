@@ -7,9 +7,9 @@
 </x-slot>
 
 <x-slot:header>
-    <div class="flex items-center justify-between w-full">
-        <div class="font-semibold text-xl text-gray-200 leading-tight flex items-center gap-2">
-            <flux:icon.list-bullet class="w-5 h-5" />
+    <div class="flex w-full items-center justify-between">
+        <div class="flex items-center gap-2 text-xl font-semibold leading-tight text-gray-200">
+            <flux:icon.list-bullet class="h-5 w-5" />
             {{ __('Mod Lists') }}
         </div>
         @auth
@@ -24,8 +24,9 @@
     </div>
 </x-slot>
 
-<div class="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
-    <div class="px-4 py-8 sm:px-6 lg:px-8 bg-gray-900 overflow-hidden shadow-xl shadow-gray-900 rounded-none sm:rounded-lg space-y-6">
+<div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+    <div
+        class="space-y-6 overflow-hidden rounded-none bg-gray-900 px-4 py-8 shadow-xl shadow-gray-900 sm:rounded-lg sm:px-6 lg:px-8">
         <div>
             <h1 class="text-4xl font-bold tracking-tight text-gray-200">{{ __('Mod Lists') }}</h1>
             <p class="mt-4 text-base text-gray-300">
@@ -44,7 +45,7 @@
             </flux:callout.text>
         </flux:callout>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div class="md:col-span-2">
                 <flux:input
                     wire:model.live.debounce.300ms="search"
@@ -84,7 +85,7 @@
     </div>
 
     @if ($this->lists->total() > 0)
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 px-4 sm:px-0">
+        <div class="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 sm:px-0 lg:grid-cols-3">
             @foreach ($this->lists as $list)
                 <x-list.card
                     wire:key="list-index-card-{{ $list->id }}"
@@ -97,7 +98,7 @@
             {{ $this->lists->links() }}
         </div>
     @else
-        <div class="mx-4 sm:mx-0 p-8 bg-gray-900 rounded-xl shadow-md shadow-gray-900 drop-shadow-2xl text-center">
+        <div class="mx-4 rounded-xl bg-gray-900 p-8 text-center shadow-md shadow-gray-900 drop-shadow-2xl sm:mx-0">
             <flux:icon.list-bullet class="mx-auto size-12 text-gray-400" />
             <h2 class="mt-2 text-sm font-semibold text-gray-100">
                 {{ __('No lists match your filters') }}

@@ -1,14 +1,13 @@
 @props(['ban'])
 
 <x-layouts::base title="User Banned - {{ config('app.name') }}">
-    <div class="min-h-[60vh] flex items-center justify-center px-4">
-        <div class="max-w-2xl w-full">
-            <div class="bg-gray-900 rounded-lg shadow-lg p-8 md:p-12">
+    <div class="flex min-h-[60vh] items-center justify-center px-4">
+        <div class="w-full max-w-2xl">
+            <div class="rounded-lg bg-gray-900 p-8 shadow-lg md:p-12">
                 <div class="text-center">
-                    <div
-                        class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-900/20 mb-6">
+                    <div class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-900/20">
                         <svg
-                            class="w-8 h-8 text-red-400"
+                            class="h-8 w-8 text-red-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -22,21 +21,21 @@
                         </svg>
                     </div>
 
-                    <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                    <h1 class="mb-4 text-3xl font-bold text-white md:text-4xl">
                         User Banned
                     </h1>
 
-                    <p class="text-lg text-gray-400 mb-8">
+                    <p class="mb-8 text-lg text-gray-400">
                         This user has been banned from the platform.
                         @if ($ban && $ban->expired_at)
                             <br>
-                            <span class="text-base mt-2 inline-block">
+                            <span class="mt-2 inline-block text-base">
                                 Ban expires: {{ $ban->expired_at->format('F j, Y \a\t g:i A') }}
                             </span>
                         @endif
                     </p>
 
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <div class="flex flex-col justify-center gap-4 sm:flex-row">
                         <flux:button
                             href="{{ url()->previous(url('/')) }}"
                             wire:navigate
