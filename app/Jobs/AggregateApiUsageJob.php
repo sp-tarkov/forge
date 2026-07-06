@@ -9,6 +9,7 @@ use App\Enums\Api\V0\ApiLatencyBucket;
 use App\Enums\Api\V0\ApiUsagePeriod;
 use App\Models\ApiUsageClient;
 use App\Models\ApiUsageMetric;
+use App\Models\ApiUsageUnmatchedRequest;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -92,12 +93,13 @@ final class AggregateApiUsageJob implements ShouldBeUnique, ShouldQueue
 
         $this->persistMetrics($data, $periodStart);
         $this->persistClients($data['clients'], $periodStart, $topClients);
+        $this->persistUnmatched($data['unmatched'], $periodStart, config()->integer('api.usage.top_unmatched'));
     }
 
     /**
      * Upsert the per-endpoint metric rows for a bucket.
      *
-     * @param  array{requests: array<string, int>, latency: array<string, int>, histogram: array<string, int>, clients: array<string, int>}  $data
+     * @param  array{requests: array<string, int>, latency: array<string, int>, histogram: array<string, int>, clients: array<string, int>, unmatched: array<string, int>}  $data
      */
     private function persistMetrics(array $data, CarbonImmutable $periodStart): void
     {
@@ -161,5 +163,47 @@ final class AggregateApiUsageJob implements ShouldBeUnique, ShouldQueue
         }
 
         ApiUsageClient::query()->upsert($rows, ['period', 'period_start', 'ip']);
+    }
+
+    /**
+     * Upsert the busiest unmatched-path rows for a bucket, keeping only the top-N paths.
+     *
+     * @param  array<string, int>  $unmatched
+     */
+    private function persistUnmatched(array $unmatched, CarbonImmutable $periodStart, int $topUnmatched): void
+    {
+        if ($unmatched === []) {
+            return;
+        }
+
+        arsort($unmatched);
+
+        $rows = [];
+
+        foreach (array_slice($unmatched, 0, $topUnmatched, true) as $dimension => $count) {
+            // The path segment is last and may itself contain pipes, so cap the split at three parts.
+            $parts = explode('|', (string) $dimension, 3);
+
+            if (count($parts) !== 3) {
+                continue;
+            }
+
+            [$method, $status, $path] = $parts;
+
+            $rows[] = [
+                'period' => ApiUsagePeriod::Minute->value,
+                'period_start' => $periodStart,
+                'path' => $path,
+                'method' => $method,
+                'status_code' => (int) $status,
+                'request_count' => $count,
+            ];
+        }
+
+        if ($rows === []) {
+            return;
+        }
+
+        ApiUsageUnmatchedRequest::query()->upsert($rows, ['period', 'period_start', 'path', 'method', 'status_code']);
     }
 }

@@ -6,6 +6,7 @@ use App\Enums\Api\V0\ApiUsagePeriod;
 use App\Jobs\AggregateApiUsageDailyJob;
 use App\Models\ApiUsageClient;
 use App\Models\ApiUsageMetric;
+use App\Models\ApiUsageUnmatchedRequest;
 
 it('rolls the previous day minute rows into a single daily row', function (): void {
     $dayStart = now()->utc()->subDay()->startOfDay();
@@ -63,6 +64,49 @@ it('rolls the previous day client rows into daily top clients', function (): voi
         ->where('period', ApiUsagePeriod::Day->value)
         ->where('ip', '203.0.113.7')
         ->value('request_count'))->toBe(100);
+});
+
+it('rolls the previous day unmatched rows into daily rows', function (): void {
+    $dayStart = now()->utc()->subDay()->startOfDay();
+
+    ApiUsageUnmatchedRequest::factory()->create([
+        'period' => ApiUsagePeriod::Minute,
+        'period_start' => $dayStart->addHours(1),
+        'path' => 'api/v0/nope',
+        'method' => 'GET',
+        'status_code' => 404,
+        'request_count' => 4,
+    ]);
+    ApiUsageUnmatchedRequest::factory()->create([
+        'period' => ApiUsagePeriod::Minute,
+        'period_start' => $dayStart->addHours(5),
+        'path' => 'api/v0/nope',
+        'method' => 'GET',
+        'status_code' => 404,
+        'request_count' => 6,
+    ]);
+
+    (new AggregateApiUsageDailyJob)->handle();
+
+    $day = ApiUsageUnmatchedRequest::query()
+        ->where('period', ApiUsagePeriod::Day->value)
+        ->where('path', 'api/v0/nope')
+        ->sole();
+
+    expect($day->request_count)->toBe(10)
+        ->and($day->period_start->equalTo($dayStart))->toBeTrue();
+});
+
+it('prunes unmatched rows past the retention window', function (): void {
+    config(['api.usage.retention.minute_days' => 7]);
+
+    $old = now()->utc()->subDays(10)->startOfMinute();
+
+    ApiUsageUnmatchedRequest::factory()->create(['period_start' => $old]);
+
+    (new AggregateApiUsageDailyJob)->handle();
+
+    expect(ApiUsageUnmatchedRequest::query()->where('period_start', $old)->exists())->toBeFalse();
 });
 
 it('prunes minute rows past the retention window', function (): void {

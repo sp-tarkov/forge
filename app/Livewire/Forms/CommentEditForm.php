@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Forms;
 
+use App\Jobs\TranslateComment;
 use App\Models\Comment;
 use App\Rules\DoesNotContainLogFile;
 use Illuminate\Support\Facades\Date;
@@ -59,5 +60,12 @@ final class CommentEditForm extends Form
             $comment->edited_at = Date::now();
             $comment->save();
         });
+
+        $comment->unsetRelation('latestVersion');
+
+        // The edit created a new version, so detect its language and translate it again when needed.
+        if (config()->boolean('comments.translation.enabled', false)) {
+            dispatch(new TranslateComment($comment));
+        }
     }
 }

@@ -4,6 +4,8 @@ locale = "en-ca"
 [default.extend-words]
 monolog = "monolog"
 Monolog = "Monolog"
+# The Anthropic Message Batches API uses the US spelling in its wire format.
+canceled = "canceled"
 
 [files]
 extend-exclude = [

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Anthropic\Client;
 use App\Contracts\ApiUsageStore;
+use App\Contracts\CommentTranslator;
 use App\Contracts\DependencyResolver;
 use App\Contracts\Geolocator;
 use App\Contracts\SpamChecker;
@@ -15,6 +17,7 @@ use App\Facades\Track;
 use App\Mixins\CarbonMixin;
 use App\Models\User;
 use App\Policies\BlockingPolicy;
+use App\Services\ClaudeCommentTranslationService;
 use App\Services\CommentSpamService;
 use App\Services\DependencyVersionService;
 use App\Services\GeolocationService;
@@ -42,6 +45,7 @@ use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use Mchev\Banhammer\Middleware\AuthBanned;
+use Nitotm\Eld\LanguageDetector;
 use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 
@@ -55,6 +59,12 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(SpamChecker::class, CommentSpamService::class);
         $this->app->bind(DependencyResolver::class, DependencyVersionService::class);
         $this->app->bind(Geolocator::class, GeolocationService::class);
+        $this->app->bind(CommentTranslator::class, ClaudeCommentTranslationService::class);
+        $this->app->bind(Client::class, fn (): Client => new Client(apiKey: config()->string('services.anthropic.api_key', '')));
+
+        // The ELD detector lazily loads a multi-megabyte ngram database on first use, so share one instance per
+        // worker process instead of reloading it for every job.
+        $this->app->singleton(LanguageDetector::class, fn (): LanguageDetector => new LanguageDetector);
 
         // API usage counters need a shared, atomic store (Redis) in production so every Octane worker and app server
         // increments the same buckets. Tests run without Redis, so fall back to an in-memory store there. Both are
@@ -96,6 +106,10 @@ final class AppServiceProvider extends ServiceProvider
 
         // Define the external API rate limiter for queue jobs that call external services.
         RateLimiter::for('external-api', fn () => Limit::perMinute(30));
+
+        // Throttle queue jobs that call the Anthropic API to stay just under the account's Haiku requests-per-minute
+        // limit (50/min on tier 1).
+        RateLimiter::for('anthropic-api', fn () => Limit::perMinute(config()->integer('services.anthropic.requests_per_minute', 45)));
 
         // Throttle all outbound email to stay within the shared SES sending quota.
         RateLimiter::for('outbound-email', fn () => Limit::perSecond(10));

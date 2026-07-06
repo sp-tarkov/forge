@@ -19,6 +19,11 @@ use Symfony\Component\HttpFoundation\Response;
 final readonly class RecordApiUsage
 {
     /**
+     * The sentinel route name recorded for requests that matched no registered route.
+     */
+    public const string UNMATCHED_ROUTE = 'api.v0.unmatched';
+
+    /**
      * The request attribute used to carry the high-resolution start time from handle() to terminate().
      */
     private const string STARTED_AT = 'api_usage_started_at';
@@ -48,13 +53,15 @@ final readonly class RecordApiUsage
 
         $startedAt = $request->attributes->get(self::STARTED_AT);
         $latencyMs = is_int($startedAt) ? (hrtime(true) - $startedAt) / 1_000_000 : 0.0;
+        $routeName = $request->route()?->getName();
 
         $this->recorder->record(
-            $request->route()?->getName() ?? 'api.v0.unmatched',
+            $routeName ?? self::UNMATCHED_ROUTE,
             $request->method(),
             $response->getStatusCode(),
             $latencyMs,
             $request->ip(),
+            $routeName === null ? $request->path() : null,
         );
     }
 

@@ -37,5 +37,7 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="HONEYPOT_ENABLED" value="false"/>
         <env name="AKISMET_ENABLED" value="false"/>
+        <env name="COMMENT_TRANSLATION_ENABLED" value="false"/>
+        <env name="ANTHROPIC_API_KEY" value=""/>
     </php>
 </phpunit>

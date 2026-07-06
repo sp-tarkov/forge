@@ -29,12 +29,13 @@ final readonly class RedisApiUsageStore implements ApiUsageStore
         private int $bucketTtl,
     ) {}
 
-    public function record(string $bucket, string $dimension, int $latencyMs, string $latencyColumn, ?string $ip): void
+    public function record(string $bucket, string $dimension, int $latencyMs, string $latencyColumn, ?string $ip, ?string $unmatchedDimension = null): void
     {
         $requestKey = $this->key($bucket, 'req');
         $latencyKey = $this->key($bucket, 'lat');
         $histogramKey = $this->key($bucket, 'hist');
         $clientKey = $this->key($bucket, 'ip');
+        $unmatchedKey = $this->key($bucket, 'unm');
         $ttl = $this->bucketTtl;
 
         $this->connection()->pipeline(function (PhpRedis $pipe) use (
@@ -43,10 +44,12 @@ final readonly class RedisApiUsageStore implements ApiUsageStore
             $latencyMs,
             $latencyColumn,
             $ip,
+            $unmatchedDimension,
             $requestKey,
             $latencyKey,
             $histogramKey,
             $clientKey,
+            $unmatchedKey,
             $ttl,
         ): void {
             $pipe->sadd(self::BUCKETS_KEY, $bucket);
@@ -56,6 +59,11 @@ final readonly class RedisApiUsageStore implements ApiUsageStore
 
             if ($ip !== null) {
                 $pipe->hincrby($clientKey, $ip, 1);
+            }
+
+            if ($unmatchedDimension !== null) {
+                $pipe->hincrby($unmatchedKey, $unmatchedDimension, 1);
+                $pipe->expire($unmatchedKey, $ttl);
             }
 
             $pipe->expire($requestKey, $ttl);
@@ -80,6 +88,7 @@ final readonly class RedisApiUsageStore implements ApiUsageStore
             'latency' => $this->readHash($this->key($bucket, 'lat')),
             'histogram' => $this->readHash($this->key($bucket, 'hist')),
             'clients' => $this->readHash($this->key($bucket, 'ip')),
+            'unmatched' => $this->readHash($this->key($bucket, 'unm')),
         ];
     }
 
@@ -90,6 +99,7 @@ final readonly class RedisApiUsageStore implements ApiUsageStore
             $this->key($bucket, 'lat'),
             $this->key($bucket, 'hist'),
             $this->key($bucket, 'ip'),
+            $this->key($bucket, 'unm'),
         );
 
         $this->connection()->srem(self::BUCKETS_KEY, $bucket);

@@ -42,6 +42,9 @@ return [
         // The number of heaviest client IPs to persist per bucket. Everything below this is discarded at rollup time.
         'top_clients' => (int) env('API_USAGE_TOP_CLIENTS', 50),
 
+        // The number of busiest unmatched paths to persist per bucket, bounding what scanner noise can write.
+        'top_unmatched' => (int) env('API_USAGE_TOP_UNMATCHED', 50),
+
         // Backstop expiry (seconds) on each Redis bucket so counters can never grow unbounded if the rollup stalls.
         'bucket_ttl' => (int) env('API_USAGE_BUCKET_TTL', 7200),
 

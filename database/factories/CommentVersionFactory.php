@@ -38,4 +38,29 @@ final class CommentVersionFactory extends Factory
             'version_number' => $versionNumber,
         ]);
     }
+
+    /**
+     * Create a version whose language has been detected without needing a translation.
+     */
+    public function languageDetected(?string $language = 'en'): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'detected_language' => $language,
+            'language_detected_at' => Date::now(),
+        ]);
+    }
+
+    /**
+     * Create a version translated into English from another language.
+     */
+    public function translated(string $language = 'ru'): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'detected_language' => $language,
+            'translated_body' => fake()->paragraph(),
+            'translation_metadata' => ['provider' => 'anthropic'],
+            'language_detected_at' => Date::now(),
+            'translated_at' => Date::now(),
+        ]);
+    }
 }
