@@ -70,7 +70,7 @@
             type="submit"
             variant="primary"
             size="sm"
-            class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+            class="my-1.5 bg-cyan-700 text-white hover:bg-cyan-600"
         >
             {{ __('Save') }}
         </flux:button>

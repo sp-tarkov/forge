@@ -5,7 +5,7 @@
         multiple
         :filter="false"
         :label="$label"
-        :description="$description ?: null"
+        :description="$description ? : null"
         :placeholder="$placeholder"
     >
         <x-slot name="input">
@@ -13,7 +13,7 @@
                 wire:model.live="search"
                 :placeholder="count($selectedUsers) >= $maxUsers ? __('Maximum authors reached') : $placeholder"
                 :disabled="count($selectedUsers) >= $maxUsers"
-                class="bg-transparent border-0 p-0 shadow-none focus:ring-0 text-base sm:text-sm"
+                class="border-0 bg-transparent p-0 text-base shadow-none focus:ring-0 sm:text-sm"
             />
         </x-slot>
 

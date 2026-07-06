@@ -33,8 +33,8 @@ final class Dashboard extends Component
     public function segmentClasses(HeadlineSegment $segment): string
     {
         return match ($segment->emphasis) {
-            HeadlineEmphasis::Strong => 'font-medium text-gray-900 dark:text-white',
-            HeadlineEmphasis::Muted => 'font-normal text-gray-600 dark:text-gray-400',
+            HeadlineEmphasis::Strong => 'font-medium text-white',
+            HeadlineEmphasis::Muted => 'font-normal text-gray-400',
             HeadlineEmphasis::Accent => $this->presentation->iconColorRole->tailwindAccentText(),
         };
     }

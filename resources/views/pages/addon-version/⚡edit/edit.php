@@ -171,7 +171,7 @@ new #[Layout('layouts::base')] class extends Component
     public function previewMarkdown(string $content, string $purifyConfig = 'description'): string
     {
         if (in_array(mb_trim($content), ['', '0'], true)) {
-            return '<p class="text-slate-400 dark:text-slate-500 italic">'.__('Nothing to preview.').'</p>';
+            return '<p class="text-slate-500 italic">'.__('Nothing to preview.').'</p>';
         }
 
         $converter = new GithubFlavoredMarkdownConverter();

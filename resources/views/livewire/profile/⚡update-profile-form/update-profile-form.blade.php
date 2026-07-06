@@ -14,9 +14,9 @@
             <flux:description>
                 {{ __('A square image used as your avatar across the site. JPG or PNG, up to 1MB.') }}
             </flux:description>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 @if ($photo)
-                    <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                    <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
                         @if ($photo->isPreviewable())
                             <img
                                 src="{{ $photo->temporaryUrl() }}"
@@ -24,9 +24,10 @@
                                 alt="{{ __('Profile picture preview') }}"
                             >
                         @endif
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">{{ $photo->getClientOriginalName() }}</p>
-                            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ Number::fileSize($photo->getSize(), 1) }}</p>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-medium text-zinc-300">{{ $photo->getClientOriginalName() }}
+                            </p>
+                            <p class="mt-0.5 text-xs text-zinc-400">{{ Number::fileSize($photo->getSize(), 1) }}</p>
                         </div>
                         <flux:button
                             size="sm"
@@ -37,15 +38,16 @@
                         />
                     </div>
                 @elseif ($this->user->profile_photo_path)
-                    <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                    <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
                         <img
                             src="{{ $this->user->profile_photo_url }}"
                             class="size-20 shrink-0 rounded-lg object-cover"
                             alt="{{ __('Current profile picture') }}"
                         >
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('Current Picture') }}</p>
-                            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Upload a new image to replace, or delete the current one.') }}</p>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-medium text-zinc-300">{{ __('Current Picture') }}</p>
+                            <p class="mt-0.5 text-xs text-zinc-400">
+                                {{ __('Upload a new image to replace, or delete the current one.') }}</p>
                         </div>
                         <flux:button
                             size="sm"
@@ -59,7 +61,10 @@
                 @endif
                 <flux:file-upload
                     wire:model="photo"
-                    @class(['h-full', 'lg:col-span-2' => ! $photo && ! $this->user->profile_photo_path])
+                    @class([
+                        'h-full',
+                        'lg:col-span-2' => !$photo && !$this->user->profile_photo_path,
+                    ])
                 >
                     <flux:file-upload.dropzone
                         heading="{{ __('Drop image here or click to browse') }}"
@@ -79,9 +84,9 @@
             <flux:description>
                 {{ __('A wide banner image displayed at the top of your profile. JPG or PNG, up to 2MB.') }}
             </flux:description>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 @if ($cover)
-                    <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                    <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
                         @if ($cover->isPreviewable())
                             <img
                                 src="{{ $cover->temporaryUrl() }}"
@@ -89,9 +94,10 @@
                                 alt="{{ __('Cover picture preview') }}"
                             >
                         @endif
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">{{ $cover->getClientOriginalName() }}</p>
-                            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ Number::fileSize($cover->getSize(), 1) }}</p>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-medium text-zinc-300">{{ $cover->getClientOriginalName() }}
+                            </p>
+                            <p class="mt-0.5 text-xs text-zinc-400">{{ Number::fileSize($cover->getSize(), 1) }}</p>
                         </div>
                         <flux:button
                             size="sm"
@@ -102,15 +108,16 @@
                         />
                     </div>
                 @elseif ($this->user->cover_photo_path)
-                    <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                    <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
                         <img
                             src="{{ $this->user->cover_photo_url }}"
                             class="size-20 shrink-0 rounded-lg object-cover"
                             alt="{{ __('Current cover picture') }}"
                         >
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('Current Cover') }}</p>
-                            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Upload a new image to replace, or delete the current one.') }}</p>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-medium text-zinc-300">{{ __('Current Cover') }}</p>
+                            <p class="mt-0.5 text-xs text-zinc-400">
+                                {{ __('Upload a new image to replace, or delete the current one.') }}</p>
                         </div>
                         <flux:button
                             size="sm"
@@ -124,7 +131,10 @@
                 @endif
                 <flux:file-upload
                     wire:model="cover"
-                    @class(['h-full', 'lg:col-span-2' => ! $cover && ! $this->user->cover_photo_path])
+                    @class([
+                        'h-full',
+                        'lg:col-span-2' => !$cover && !$this->user->cover_photo_path,
+                    ])
                 >
                     <flux:file-upload.dropzone
                         heading="{{ __('Drop image here or click to browse') }}"
@@ -158,7 +168,7 @@
                 @input="count = text.length"
             />
             <div
-                class="mt-1 text-sm text-gray-500 dark:text-gray-400"
+                class="mt-1 text-sm text-gray-400"
                 x-text="`Max Length: ${count}/255`"
             ></div>
             <flux:error name="name" />
@@ -181,7 +191,7 @@
             <flux:error name="email" />
 
             @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::emailVerification()) &&
-                    ! $this->user->hasVerifiedEmail())
+                    !$this->user->hasVerifiedEmail())
                 <flux:callout
                     icon="exclamation-triangle"
                     color="orange"
@@ -192,7 +202,7 @@
                         {{ __('Your email address is unverified.') }}
                         <button
                             type="button"
-                            class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                            class="text-white underline transition-colors hover:text-cyan-200"
                             wire:click.prevent="sendEmailVerification"
                         >
                             {{ __('Click here to re-send the verification email.') }}
@@ -250,7 +260,9 @@
                 wire-model="state.about"
                 name="about"
                 :label="__('About Me')"
-                :description="__('Tell other users a little about yourself. Shown on your public profile. Supports markdown formatting.')"
+                :description="__(
+                    'Tell other users a little about yourself. Shown on your public profile. Supports markdown formatting.',
+                )"
                 :placeholder="__('Tell us about yourself...')"
                 rows="6"
                 purify-config="comments"
@@ -264,7 +276,7 @@
             type="submit"
             variant="primary"
             size="sm"
-            class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+            class="my-1.5 bg-cyan-700 text-white hover:bg-cyan-600"
             wire:loading.attr="disabled"
             wire:target="photo,cover"
         >

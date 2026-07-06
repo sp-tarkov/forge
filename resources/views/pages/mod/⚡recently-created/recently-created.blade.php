@@ -7,9 +7,9 @@
 </x-slot>
 
 <x-slot:header>
-    <div class="flex items-center justify-between w-full">
-        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
-            <flux:icon.sparkles class="w-5 h-5" />
+    <div class="flex w-full items-center justify-between">
+        <h2 class="flex items-center gap-2 text-xl font-semibold leading-tight text-gray-200">
+            <flux:icon.sparkles class="h-5 w-5" />
             {{ __('Recently Created Mods') }}
         </h2>
         <div class="flex items-center gap-2">
@@ -29,11 +29,11 @@
     </div>
 </x-slot>
 
-<div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
     <div
-        class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Recently Created') }}</h1>
-        <p class="mt-4 text-base text-gray-800 dark:text-gray-300">
+        class="overflow-hidden rounded-none bg-gray-900 px-4 py-8 shadow-xl shadow-gray-900 sm:rounded-lg sm:px-6 lg:px-8">
+        <h1 class="text-4xl font-bold tracking-tight text-gray-200">{{ __('Recently Created') }}</h1>
+        <p class="mt-4 text-base text-gray-300">
             @if ($previousViewedAt)
                 {!! __(
                     'Mods that have been created since your last visit. Check back regularly to discover new additions to the community.',
@@ -47,18 +47,17 @@
 
         <section
             aria-labelledby="options-heading"
-            class="my-8 grid items-center border-t border-gray-400 dark:border-gray-700"
+            class="my-8 grid items-center border-t border-gray-700"
         >
             <h2
                 id="options-heading"
                 class="sr-only"
             >{{ __('Options') }}</h2>
-            <div class="relative col-start-1 row-start-1 py-4 border-b border-gray-400 dark:border-gray-700">
+            <div class="relative col-start-1 row-start-1 border-b border-gray-700 py-4">
                 <div
-                    class="mx-auto flex flex-wrap items-center justify-center sm:justify-start gap-2 lg:gap-0 lg:flex-nowrap max-w-7xl text-sm">
+                    class="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-2 text-sm sm:justify-start lg:flex-nowrap lg:gap-0">
                     {{-- Results Per Page Dropdown --}}
-                    <div
-                        class="flex items-center border-r border-gray-400 dark:border-gray-700 flex-shrink-0 order-1 self-stretch">
+                    <div class="order-1 flex flex-shrink-0 items-center self-stretch border-r border-gray-700">
                         <div
                             class="relative inline-block px-3 sm:px-3 lg:px-3 xl:px-4"
                             x-data="{ isResultsPerPageOpen: false }"
@@ -68,7 +67,7 @@
                                 <button
                                     type="button"
                                     x-on:click="isResultsPerPageOpen = !isResultsPerPageOpen"
-                                    class="group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                                    class="group inline-flex justify-center text-sm font-medium text-gray-300 hover:text-gray-100"
                                     id="menu-button-per-page"
                                     :aria-expanded="isResultsPerPageOpen.toString()"
                                     aria-haspopup="true"
@@ -76,7 +75,7 @@
                                     <span class="hidden lg:inline">{{ __('Per Page') }}</span>
                                     <span class="lg:hidden">{{ __(':perPage/p', ['perPage' => $perPage]) }}</span>
                                     <svg
-                                        class="-mr-1 ml-1 h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-gray-400 group-hover:text-gray-500"
+                                        class="-mr-1 ml-1 h-4 w-4 shrink-0 text-gray-400 group-hover:text-gray-500 sm:h-5 sm:w-5"
                                         viewBox="0 0 20 20"
                                         fill="currentColor"
                                         aria-hidden="true"
@@ -98,7 +97,7 @@
                                 x-transition:leave="transition ease-in duration-75"
                                 x-transition:leave-start="transform opacity-100 scale-100"
                                 x-transition:leave-end="transform opacity-0 scale-95"
-                                class="absolute top-7 left-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-400 bg-gray-200 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+                                class="absolute left-0 top-7 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-gray-700 overflow-hidden rounded-xl border border-gray-700 bg-gray-800"
                                 role="menu"
                                 aria-orientation="vertical"
                                 aria-labelledby="menu-button-per-page"
@@ -119,19 +118,19 @@
 
                     {{-- Loading indicator --}}
                     <div
-                        class="hidden sm:flex items-center flex-shrink-0 order-2 self-stretch"
-                        wire:loading.class="!flex border-l border-gray-400 dark:border-gray-700"
+                        class="order-2 hidden flex-shrink-0 items-center self-stretch sm:flex"
+                        wire:loading.class="!flex border-l border-gray-700"
                     >
-                        <div class="px-3 sm:px-4 lg:px-4 xl:px-6 min-w-[2.5rem] lg:min-w-[5rem] xl:min-w-[7rem]">
+                        <div class="min-w-[2.5rem] px-3 sm:px-4 lg:min-w-[5rem] lg:px-4 xl:min-w-[7rem] xl:px-6">
                             <p
-                                class="flex items-center font-medium text-gray-800 dark:text-gray-300"
+                                class="flex items-center font-medium text-gray-300"
                                 wire:loading.flex
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
                                     aria-hidden="true"
-                                    class="w-4 h-4 fill-cyan-600 dark:fill-cyan-600 motion-safe:animate-spin"
+                                    class="h-4 w-4 fill-cyan-600 motion-safe:animate-spin"
                                 >
                                     <path
                                         d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
@@ -141,7 +140,7 @@
                                         d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z"
                                     />
                                 </svg>
-                                <span class="pl-1.5 hidden md:inline">{{ __('Loading...') }}</span>
+                                <span class="hidden pl-1.5 md:inline">{{ __('Loading...') }}</span>
                             </p>
                         </div>
                     </div>
@@ -164,10 +163,10 @@
                 @endforeach
             </div>
         @else
-            <div class="my-8 text-center text-gray-900 dark:text-gray-300">
-                <flux:icon.check-circle class="w-12 h-12 mx-auto mb-4 text-green-500" />
+            <div class="my-8 text-center text-gray-300">
+                <flux:icon.check-circle class="mx-auto mb-4 h-12 w-12 text-green-500" />
                 <p class="text-lg font-medium">{{ __('You\'re all caught up!') }}</p>
-                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                <p class="mt-2 text-sm text-gray-400">
                     {{ __('No new mods have been created since your last visit.') }}</p>
                 <flux:button
                     href="{{ route('mods') }}"

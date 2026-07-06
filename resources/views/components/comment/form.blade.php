@@ -17,13 +17,13 @@
         :show-update-request-warning="true"
     />
 
-    <div class="flex items-center justify-between mt-2">
+    <div class="mt-2 flex items-center justify-between">
         @if ($cancelAction)
             <div class="flex items-center gap-2">
                 <flux:button
                     variant="primary"
                     size="sm"
-                    class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+                    class="bg-cyan-700 text-white hover:bg-cyan-600"
                     type="submit"
                     :loading="false"
                     ::disabled="hasLogFile"
@@ -56,14 +56,14 @@
                     {{ __('Cancel') }}
                 </flux:button>
             </div>
-            <div class="text-xs text-slate-400 text-right ml-2">
+            <div class="ml-2 text-right text-xs text-slate-400">
                 {{ __('Basic Markdown formatting is supported.') }}
             </div>
         @else
             <flux:button
                 variant="primary"
                 size="sm"
-                class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+                class="bg-cyan-700 text-white hover:bg-cyan-600"
                 type="submit"
                 :loading="false"
                 ::disabled="hasLogFile"
@@ -86,7 +86,7 @@
                     x-cloak
                 >{{ $submitText }}</span>
             </flux:button>
-            <div class="text-xs text-slate-400 text-right ml-2">
+            <div class="ml-2 text-right text-xs text-slate-400">
                 {{ __('Basic Markdown formatting is supported.') }}
             </div>
         @endif

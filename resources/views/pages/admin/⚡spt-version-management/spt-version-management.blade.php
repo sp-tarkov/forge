@@ -1,8 +1,8 @@
 <div>
     <x-slot name="header">
-        <div class="flex items-center justify-between w-full">
+        <div class="flex w-full items-center justify-between">
             <div>
-                <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+                <h2 class="text-xl font-semibold leading-tight text-gray-200">
                     {{ __('SPT Version Management') }}
                 </h2>
             </div>
@@ -12,7 +12,7 @@
     <div class="px-6 lg:px-8">
         <div class="space-y-6">
             {{-- Actions Bar --}}
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex flex-wrap gap-2">
                     <flux:button
                         wire:click="showCreateVersion"
@@ -43,10 +43,10 @@
             {{-- Filters Section --}}
             <div
                 id="filters-container"
-                class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+                class="rounded-lg border border-gray-700 bg-gray-900 p-6 shadow-sm"
             >
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filters</h3>
+                <div class="mb-4 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-100">Filters</h3>
                     <flux:button
                         wire:click="resetFilters"
                         variant="outline"
@@ -57,7 +57,7 @@
                     </flux:button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {{-- Search Filter --}}
                     <div>
                         <flux:label
@@ -95,96 +95,94 @@
             </div>
 
             {{-- Table Section --}}
-            <div
-                class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="overflow-hidden rounded-lg border border-gray-700 bg-gray-900 shadow-sm">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-gray-800">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-800">
                             <tr>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    class="cursor-pointer px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400 hover:bg-gray-700"
                                     wire:click="sortByColumn('version_major')"
                                 >
                                     <div class="flex items-center gap-2">
                                         Version
                                         @if ($sortBy === 'version_major')
                                             <flux:icon.chevron-down
-                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                                class="{{ $sortDirection === 'desc' ? '' : 'rotate-180' }} h-3 w-3"
                                             />
                                         @endif
                                     </div>
                                 </th>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                    class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400"
                                 >
                                     Color
                                 </th>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    class="cursor-pointer px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400 hover:bg-gray-700"
                                     wire:click="sortByColumn('mod_count')"
                                 >
                                     <div class="flex items-center gap-2">
                                         Mod Count
                                         @if ($sortBy === 'mod_count')
                                             <flux:icon.chevron-down
-                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                                class="{{ $sortDirection === 'desc' ? '' : 'rotate-180' }} h-3 w-3"
                                             />
                                         @endif
                                     </div>
                                 </th>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                    class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400"
                                 >
                                     Link
                                 </th>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    class="cursor-pointer px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400 hover:bg-gray-700"
                                     wire:click="sortByColumn('publish_date')"
                                 >
                                     <div class="flex items-center gap-2">
                                         Publish Date
                                         @if ($sortBy === 'publish_date')
                                             <flux:icon.chevron-down
-                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                                class="{{ $sortDirection === 'desc' ? '' : 'rotate-180' }} h-3 w-3"
                                             />
                                         @endif
                                     </div>
                                 </th>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    class="cursor-pointer px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400 hover:bg-gray-700"
                                     wire:click="sortByColumn('created_at')"
                                 >
                                     <div class="flex items-center gap-2">
                                         Created
                                         @if ($sortBy === 'created_at')
                                             <flux:icon.chevron-down
-                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                                class="{{ $sortDirection === 'desc' ? '' : 'rotate-180' }} h-3 w-3"
                                             />
                                         @endif
                                     </div>
                                 </th>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                    class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-400"
                                 >
                                     Actions
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="divide-y divide-gray-700 bg-gray-900">
                             @forelse($this->versions as $version)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                <tr class="hover:bg-gray-800">
+                                    <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-100">
                                         {{ $version->version }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <td class="whitespace-nowrap px-6 py-4 text-sm">
                                         <flux:badge
                                             :color="$version->color_class"
                                             size="sm"
@@ -192,24 +190,24 @@
                                             {{ ucfirst($version->color_class) }}
                                         </flux:badge>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                    <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-300">
                                         {{ number_format($version->mod_count) }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                    <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-300">
                                         @if ($version->link)
                                             <a
                                                 href="{{ $version->link }}"
                                                 target="_blank"
-                                                class="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+                                                class="inline-flex items-center gap-1 text-blue-400 hover:underline"
                                             >
                                                 {{ parse_url($version->link, PHP_URL_HOST) }}
                                                 <flux:icon.arrow-top-right-on-square variant="micro" />
                                             </a>
                                         @else
-                                            <span class="text-gray-400 dark:text-gray-600">—</span>
+                                            <span class="text-gray-600">—</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <td class="whitespace-nowrap px-6 py-4 text-sm">
                                         @if ($version->publish_date)
                                             @if ($version->publish_date->isFuture())
                                                 <div class="flex items-center gap-1">
@@ -218,7 +216,7 @@
                                                         class="text-amber-500"
                                                     />
                                                     <span
-                                                        class="text-amber-600 dark:text-amber-400"
+                                                        class="text-amber-400"
                                                         title="{{ $this->toUserTimezone($version->publish_date)->format('F j, Y \a\t g:i A T') }}"
                                                     >
                                                         {{ $this->toUserTimezone($version->publish_date)->format('M j, Y H:i') }}
@@ -226,7 +224,7 @@
                                                 </div>
                                             @else
                                                 <span
-                                                    class="text-green-600 dark:text-green-400"
+                                                    class="text-green-400"
                                                     title="{{ $this->toUserTimezone($version->publish_date)->format('F j, Y \a\t g:i A T') }}"
                                                 >
                                                     {{ $this->toUserTimezone($version->publish_date)->format('M j, Y') }}
@@ -239,10 +237,10 @@
                                             >Unpublished</flux:badge>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                    <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-300">
                                         {{ $version->created_at->format('M j, Y') }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                                         <div class="flex items-center justify-end gap-2">
                                             <flux:button
                                                 wire:click="showEditVersion({{ $version->id }})"
@@ -269,8 +267,8 @@
                                         class="px-6 py-12 text-center"
                                     >
                                         <div class="flex flex-col items-center justify-center gap-2">
-                                            <flux:icon.inbox class="w-12 h-12 text-gray-400 dark:text-gray-600" />
-                                            <p class="text-gray-500 dark:text-gray-400">No SPT versions found</p>
+                                            <flux:icon.inbox class="h-12 w-12 text-gray-600" />
+                                            <p class="text-gray-400">No SPT versions found</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -281,7 +279,7 @@
 
                 {{-- Pagination --}}
                 @if ($this->versions->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="border-t border-gray-700 px-6 py-4">
                         {{ $this->versions->links() }}
                     </div>
                 @endif

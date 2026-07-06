@@ -1,14 +1,11 @@
-@props([
-    'addon',
-    'wireKey' => null,
-])
+@props(['addon', 'wireKey' => null])
 
 <div
     @if ($wireKey) wire:key="{{ $wireKey }}" @endif
-    {{ $attributes->merge(['class' => 'mx-3 sm:mx-4 px-3 sm:px-4 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-900']) }}
+    {{ $attributes->merge(['class' => 'mx-3 sm:mx-4 px-3 sm:px-4 py-1.5 rounded-md hover:bg-gray-900']) }}
 >
     <div class="flex items-center gap-3">
-        <div class="shrink-0 w-11 sm:w-12 flex items-center justify-end">
+        <div class="flex w-11 shrink-0 items-center justify-end sm:w-12">
             <a
                 href="{{ route('addon.show', [$addon->id, $addon->slug]) }}"
                 wire:navigate
@@ -23,7 +20,7 @@
                         class="size-10 rounded object-cover"
                     >
                 @else
-                    <div class="size-10 rounded bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                    <div class="flex size-10 items-center justify-center rounded bg-gray-800">
                         <flux:icon.puzzle-piece class="size-5 text-gray-400" />
                     </div>
                 @endif
@@ -31,26 +28,26 @@
         </div>
 
         <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2 min-w-0">
+            <div class="flex min-w-0 items-center gap-2">
                 <a
                     href="{{ route('addon.show', [$addon->id, $addon->slug]) }}"
                     wire:navigate
-                    class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:underline truncate"
+                    class="truncate text-sm font-medium text-gray-100 hover:underline"
                 >
                     {{ $addon->name }}
                 </a>
                 @if ($addon->latestVersion)
-                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                    <span class="text-xs text-gray-400">
                         {{ $addon->latestVersion->version }}
                     </span>
                 @endif
             </div>
-            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
+            <div class="truncate text-xs text-gray-400">
                 {{ __('by :owner', ['owner' => $addon->owner?->name ?? __('Unknown')]) }}
             </div>
         </div>
 
-        <div class="shrink-0 flex items-center gap-1">
+        <div class="flex shrink-0 items-center gap-1">
             {{ $slot }}
         </div>
     </div>

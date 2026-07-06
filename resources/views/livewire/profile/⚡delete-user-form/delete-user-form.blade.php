@@ -30,20 +30,20 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="mb-6 border-b border-gray-700 pb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="trash"
-                            class="w-8 h-8 text-red-600"
+                            class="h-8 w-8 text-red-600"
                         />
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Delete Account') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-red-600 dark:text-red-400 text-sm">
+                            <flux:text class="mt-1 text-sm text-red-400">
                                 {{ __('This action is irreversible') }}
                             </flux:text>
                         </div>
@@ -52,24 +52,24 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <div class="bg-red-50 dark:bg-red-950/30 border border-red-300 dark:border-red-700 rounded-lg p-4">
+                    <div class="rounded-lg border border-red-700 bg-red-950/30 p-4">
                         <div class="flex items-start gap-3">
                             <flux:icon
                                 name="exclamation-triangle"
-                                class="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0"
+                                class="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600"
                             />
                             <div>
-                                <flux:text class="text-red-900 dark:text-red-200 text-sm font-medium">
+                                <flux:text class="text-sm font-medium text-red-200">
                                     {{ __('Warning!') }}
                                 </flux:text>
-                                <flux:text class="text-red-800 dark:text-red-300 text-sm mt-1">
+                                <flux:text class="mt-1 text-sm text-red-300">
                                     {{ __('Are you sure you want to delete your account? Once your account is deleted, all of its resources and data will be permanently deleted.') }}
                                 </flux:text>
                             </div>
                         </div>
                     </div>
 
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-sm text-gray-300">
                         {{ __('Please enter your password to confirm you would like to permanently delete your account.') }}
                     </flux:text>
 
@@ -91,11 +91,11 @@
                 </div>
 
                 {{-- Footer Actions --}}
-                <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center text-xs text-red-600 dark:text-red-400">
+                <div class="mt-6 flex items-center justify-between border-t border-gray-700 pt-6">
+                    <div class="flex items-center text-xs text-red-400">
                         <flux:icon
                             name="shield-exclamation"
-                            class="w-4 h-4 mr-2 flex-shrink-0"
+                            class="mr-2 h-4 w-4 flex-shrink-0"
                         />
                         <span class="leading-tight">
                             {{ __('Permanent deletion') }}
@@ -117,7 +117,7 @@
                             variant="primary"
                             size="sm"
                             icon="trash"
-                            class="bg-red-600 hover:bg-red-700 text-white"
+                            class="bg-red-600 text-white hover:bg-red-700"
                         >
                             {{ __('Delete Account') }}
                         </flux:button>

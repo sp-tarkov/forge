@@ -4,7 +4,7 @@
     <flux:dropdown
         position="bottom"
         align="end"
-        class="absolute top-4 right-4 sm:top-6 sm:right-6"
+        class="absolute right-4 top-4 sm:right-6 sm:top-6"
     >
         <flux:button
             icon="cog-8-tooth"
@@ -88,20 +88,20 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="mb-6 border-b border-gray-700 pb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="eye"
-                        class="w-8 h-8 text-green-600"
+                        class="h-8 w-8 text-green-600"
                     />
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Enable Addon Version') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-sm text-gray-400">
                             {{ __('Make version available') }}
                         </flux:text>
                     </div>
@@ -110,11 +110,11 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-sm text-gray-300">
                     Are you sure you want to enable version "{{ $this->versionNumber }}" of the
                     "{{ $this->version->addon->name ?? 'Unknown' }}" addon?
                 </flux:text>
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-sm text-gray-300">
                     This will allow visitors to view and download the version.
                 </flux:text>
 
@@ -129,7 +129,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="mt-6 flex items-center justify-end gap-3 border-t border-gray-700 pt-6">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('addon-version-action-enable-{{ $this->versionId }}').close()"
                     variant="outline"
@@ -142,7 +142,7 @@
                     variant="primary"
                     size="sm"
                     icon="eye"
-                    class="bg-green-600 hover:bg-green-700 text-white"
+                    class="bg-green-600 text-white hover:bg-green-700"
                 >
                     {{ __('Enable') }}
                 </flux:button>
@@ -156,20 +156,20 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="mb-6 border-b border-gray-700 pb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="eye-slash"
-                        class="w-8 h-8 text-amber-600"
+                        class="h-8 w-8 text-amber-600"
                     />
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Disable Addon Version') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-sm text-gray-400">
                             {{ __('Hide version from visitors') }}
                         </flux:text>
                     </div>
@@ -178,11 +178,11 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-sm text-gray-300">
                     Are you sure you want to disable version "{{ $this->versionNumber }}" of the
                     "{{ $this->version->addon->name ?? 'Unknown' }}" addon?
                 </flux:text>
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-sm text-gray-300">
                     This will prevent visitors from viewing or downloading the version.
                 </flux:text>
 
@@ -197,7 +197,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="mt-6 flex items-center justify-end gap-3 border-t border-gray-700 pt-6">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('addon-version-action-disable-{{ $this->versionId }}').close()"
                     variant="outline"
@@ -210,7 +210,7 @@
                     variant="primary"
                     size="sm"
                     icon="eye-slash"
-                    class="bg-amber-600 hover:bg-amber-700 text-white"
+                    class="bg-amber-600 text-white hover:bg-amber-700"
                 >
                     {{ __('Disable') }}
                 </flux:button>
@@ -224,20 +224,20 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="mb-6 border-b border-gray-700 pb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="trash"
-                        class="w-8 h-8 text-red-600"
+                        class="h-8 w-8 text-red-600"
                     />
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Delete Addon Version') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-sm text-gray-400">
                             {{ __('Permanent deletion') }}
                         </flux:text>
                     </div>
@@ -246,23 +246,22 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-sm text-gray-300">
                     Are you sure you want to delete version "{{ $this->versionNumber }}" of the
                     "{{ $this->version->addon->name ?? 'Unknown' }}" addon?
                 </flux:text>
 
-                <div
-                    class="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 rounded-lg p-4">
+                <div class="rounded-lg border border-amber-700 bg-amber-950/30 p-4">
                     <div class="flex items-start gap-3">
                         <flux:icon
                             name="exclamation-triangle"
-                            class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0"
+                            class="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600"
                         />
                         <div>
-                            <flux:text class="text-amber-900 dark:text-amber-200 text-sm font-medium">
+                            <flux:text class="text-sm font-medium text-amber-200">
                                 {{ __('Attention!') }}
                             </flux:text>
-                            <flux:text class="text-amber-800 dark:text-amber-300 text-sm mt-1">
+                            <flux:text class="mt-1 text-sm text-amber-300">
                                 The addon version will be permanently deleted, along with all data tied directly to the
                                 version. If this isn't necessary you should simply disable the version instead.
                             </flux:text>
@@ -281,11 +280,11 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                <div class="flex items-center text-xs text-red-600 dark:text-red-400">
+            <div class="mt-6 flex items-center justify-between border-t border-gray-700 pt-6">
+                <div class="flex items-center text-xs text-red-400">
                     <flux:icon
                         name="shield-exclamation"
-                        class="w-4 h-4 mr-2 flex-shrink-0"
+                        class="mr-2 h-4 w-4 flex-shrink-0"
                     />
                     <span class="leading-tight">
                         {{ __('This action cannot be undone') }}
@@ -305,7 +304,7 @@
                         variant="primary"
                         size="sm"
                         icon="trash"
-                        class="bg-red-600 hover:bg-red-700 text-white"
+                        class="bg-red-600 text-white hover:bg-red-700"
                     >
                         {{ __('Delete') }}
                     </flux:button>
@@ -320,20 +319,20 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="mb-6 border-b border-gray-700 pb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="eye"
-                        class="w-8 h-8 text-green-600"
+                        class="h-8 w-8 text-green-600"
                     />
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Publish Addon Version') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-sm text-gray-400">
                             {{ __('Make version available') }}
                         </flux:text>
                     </div>
@@ -342,7 +341,7 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-sm text-gray-300">
                     Select the date and time version "{{ $this->versionNumber }}" of the
                     "{{ $this->version->addon->name ?? 'Unknown' }}" addon will be published.
                 </flux:text>
@@ -362,7 +361,7 @@
                                     You have not selected a timezone for your account. The published date will be
                                     interpreted as a UTC date. You can <a
                                         href="/user/profile"
-                                        class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                                        class="text-white underline transition-colors hover:text-cyan-200"
                                     >edit your profile</a> to set a specific timezone.
                                 </flux:callout.text>
                             </flux:callout>
@@ -370,9 +369,15 @@
                             {{ __('Your timezone is set to :timezone.', ['timezone' => auth()->user()?->timezone]) }}
                         @endif
                     </flux:description>
-                    <div class="flex gap-2 items-center">
-                        <flux:date-picker wire:model="publishedAtDate" clearable />
-                        <flux:time-picker wire:model="publishedAtTime" clearable />
+                    <div class="flex items-center gap-2">
+                        <flux:date-picker
+                            wire:model="publishedAtDate"
+                            clearable
+                        />
+                        <flux:time-picker
+                            wire:model="publishedAtTime"
+                            clearable
+                        />
                         @if (auth()->user()?->timezone !== null)
                             <flux:button
                                 size="sm"
@@ -394,7 +399,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="mt-6 flex items-center justify-end gap-3 border-t border-gray-700 pt-6">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('addon-version-action-publish-{{ $this->versionId }}').close()"
                     variant="outline"
@@ -407,7 +412,7 @@
                     variant="primary"
                     size="sm"
                     icon="eye"
-                    class="bg-green-600 hover:bg-green-700 text-white"
+                    class="bg-green-600 text-white hover:bg-green-700"
                 >
                     {{ __('Publish') }}
                 </flux:button>
@@ -421,20 +426,20 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="mb-6 border-b border-gray-700 pb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="eye-slash"
-                        class="w-8 h-8 text-amber-600"
+                        class="h-8 w-8 text-amber-600"
                     />
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Unpublish Addon Version') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-sm text-gray-400">
                             {{ __('Hide version from visitors') }}
                         </flux:text>
                     </div>
@@ -443,11 +448,11 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-sm text-gray-300">
                     Are you sure you want to unpublish version "{{ $this->versionNumber }}" of the
                     "{{ $this->version->addon->name ?? 'Unknown' }}" addon?
                 </flux:text>
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-sm text-gray-300">
                     This will remove the published date and prevent visitors from viewing or downloading the version.
                 </flux:text>
 
@@ -462,7 +467,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="mt-6 flex items-center justify-end gap-3 border-t border-gray-700 pt-6">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('addon-version-action-unpublish-{{ $this->versionId }}').close()"
                     variant="outline"
@@ -475,7 +480,7 @@
                     variant="primary"
                     size="sm"
                     icon="eye-slash"
-                    class="bg-amber-600 hover:bg-amber-700 text-white"
+                    class="bg-amber-600 text-white hover:bg-amber-700"
                 >
                     {{ __('Unpublish') }}
                 </flux:button>

@@ -27,7 +27,7 @@
     <flux:dropdown
         position="bottom"
         align="end"
-        class="absolute top-0 right-0"
+        class="absolute right-0 top-0"
     >
         <flux:button
             icon="cog-8-tooth"

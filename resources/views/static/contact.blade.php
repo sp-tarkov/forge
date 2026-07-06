@@ -20,10 +20,10 @@
 
     <h2 id="primary-contact">Primary Contact Method</h2>
 
-    <div class="bg-purple-900/30 border border-purple-700 rounded-lg px-6 py-6 my-4">
-        <h3 class="text-lg font-semibold text-purple-50 mt-0 mb-3 flex items-center">
+    <div class="my-4 rounded-lg border border-purple-700 bg-purple-900/30 px-6 py-6">
+        <h3 class="mb-3 mt-0 flex items-center text-lg font-semibold text-purple-50">
             <svg
-                class="w-6 h-6 mr-2"
+                class="mr-2 h-6 w-6"
                 viewBox="0 0 24 24"
                 fill="currentColor"
             >
@@ -34,25 +34,25 @@
             Discord Server (Recommended)
         </h3>
 
-        <p class="text-purple-100 mb-8">Our Discord server is the fastest and most effective way to get help, connect
+        <p class="mb-8 text-purple-100">Our Discord server is the fastest and most effective way to get help, connect
             with other community members, and stay updated on The Forge developments.</p>
 
-        <div class="text-center mb-6">
+        <div class="mb-6 text-center">
             <a
                 href="https://discord.com/invite/Xn9msqQZan"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="group relative inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-indigo-700 to-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-xl border border-indigo-600 hover:from-indigo-600 hover:to-indigo-500 hover:border-indigo-500 hover:shadow-2xl hover:shadow-indigo-500/25 active:scale-95 transition-all duration-300 backdrop-blur-sm transform hover:-translate-y-0.5"
+                class="group relative inline-flex transform items-center justify-center rounded-lg border border-indigo-600 bg-gradient-to-r from-indigo-700 to-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-xl backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-500 hover:from-indigo-600 hover:to-indigo-500 hover:shadow-2xl hover:shadow-indigo-500/25 active:scale-95"
             >
                 <!-- Animated background effect -->
                 <div
-                    class="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    class="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                 </div>
 
                 <!-- Button content -->
                 <div class="relative flex items-center">
                     <svg
-                        class="w-5 h-5 mr-2 transform group-hover:scale-110 transition-transform duration-200"
+                        class="mr-2 h-5 w-5 transform transition-transform duration-200 group-hover:scale-110"
                         viewBox="0 0 24 24"
                         fill="currentColor"
                     >
@@ -64,29 +64,29 @@
                 </div>
 
                 <!-- Shine effect -->
-                <div class="absolute inset-0 rounded-lg overflow-hidden opacity-0 group-hover:opacity-100">
+                <div class="absolute inset-0 overflow-hidden rounded-lg opacity-0 group-hover:opacity-100">
                     <div
-                        class="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-500 ease-out w-1/2">
+                        class="absolute inset-0 w-1/2 -translate-x-full -skew-x-12 transform bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-500 ease-out group-hover:translate-x-full">
                     </div>
                 </div>
             </a>
 
             <div class="mt-3">
                 <code
-                    class="px-4 py-2 bg-purple-800/40 text-purple-100 rounded text-sm">discord.com/invite/Xn9msqQZan</code>
+                    class="rounded bg-purple-800/40 px-4 py-2 text-sm text-purple-100">discord.com/invite/Xn9msqQZan</code>
             </div>
         </div>
 
         <div class="mt-6">
-            <p class="text-purple-100 font-medium mb-4">What you'll find on our Discord:</p>
+            <p class="mb-4 font-medium text-purple-100">What you'll find on our Discord:</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div
-                    class="bg-purple-800/30 border border-purple-600/50 rounded-lg px-4 py-1 hover:bg-purple-800/40 transition-colors duration-200">
+                    class="rounded-lg border border-purple-600/50 bg-purple-800/30 px-4 py-1 transition-colors duration-200 hover:bg-purple-800/40">
                     <div class="flex items-center space-x-4">
                         <div class="flex-shrink-0">
                             <svg
-                                class="w-5 h-5 text-green-400"
+                                class="h-5 w-5 text-green-400"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                             >
@@ -98,7 +98,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h4 class="text-sm font-semibold text-purple-50 mb-0">General Help</h4>
+                            <h4 class="mb-0 text-sm font-semibold text-purple-50">General Help</h4>
                             <p class="text-sm text-purple-200">Get assistance with mod installation, troubleshooting,
                                 and SPT setup.</p>
                         </div>
@@ -106,11 +106,11 @@
                 </div>
 
                 <div
-                    class="bg-purple-800/30 border border-purple-600/50 rounded-lg px-4 py-1 hover:bg-purple-800/40 transition-colors duration-200">
+                    class="rounded-lg border border-purple-600/50 bg-purple-800/30 px-4 py-1 transition-colors duration-200 hover:bg-purple-800/40">
                     <div class="flex items-center space-x-4">
                         <div class="flex-shrink-0">
                             <svg
-                                class="w-5 h-5 text-blue-400"
+                                class="h-5 w-5 text-blue-400"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                             >
@@ -120,7 +120,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h4 class="text-sm font-semibold text-purple-50 mb-0">Mod Development</h4>
+                            <h4 class="mb-0 text-sm font-semibold text-purple-50">Mod Development</h4>
                             <p class="text-sm text-purple-200">Connect with other modders and get development support.
                             </p>
                         </div>
@@ -128,11 +128,11 @@
                 </div>
 
                 <div
-                    class="bg-purple-800/30 border border-purple-600/50 rounded-lg px-4 py-1 hover:bg-purple-800/40 transition-colors duration-200">
+                    class="rounded-lg border border-purple-600/50 bg-purple-800/30 px-4 py-1 transition-colors duration-200 hover:bg-purple-800/40">
                     <div class="flex items-center space-x-4">
                         <div class="flex-shrink-0">
                             <svg
-                                class="w-5 h-5 text-purple-300"
+                                class="h-5 w-5 text-purple-300"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                             >
@@ -144,7 +144,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h4 class="text-sm font-semibold text-purple-50 mb-0">Community Chat</h4>
+                            <h4 class="mb-0 text-sm font-semibold text-purple-50">Community Chat</h4>
                             <p class="text-sm text-purple-200">Discuss SPT, share screenshots, and connect with other
                                 players.</p>
                         </div>
@@ -152,11 +152,11 @@
                 </div>
 
                 <div
-                    class="bg-purple-800/30 border border-purple-600/50 rounded-lg px-4 py-1 hover:bg-purple-800/40 transition-colors duration-200">
+                    class="rounded-lg border border-purple-600/50 bg-purple-800/30 px-4 py-1 transition-colors duration-200 hover:bg-purple-800/40">
                     <div class="flex items-center space-x-4">
                         <div class="flex-shrink-0">
                             <svg
-                                class="w-5 h-5 text-yellow-400"
+                                class="h-5 w-5 text-yellow-400"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                             >
@@ -169,7 +169,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h4 class="text-sm font-semibold text-purple-50 mb-0">Announcements</h4>
+                            <h4 class="mb-0 text-sm font-semibold text-purple-50">Announcements</h4>
                             <p class="text-sm text-purple-200">Stay updated on the latest news, updates, and community
                                 events.</p>
                         </div>
@@ -177,11 +177,11 @@
                 </div>
 
                 <div
-                    class="bg-purple-800/30 border border-purple-600/50 rounded-lg px-4 py-1 hover:bg-purple-800/40 transition-colors duration-200">
+                    class="rounded-lg border border-purple-600/50 bg-purple-800/30 px-4 py-1 transition-colors duration-200 hover:bg-purple-800/40">
                     <div class="flex items-center space-x-4">
                         <div class="flex-shrink-0">
                             <svg
-                                class="w-5 h-5 text-red-400"
+                                class="h-5 w-5 text-red-400"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                             >
@@ -193,7 +193,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h4 class="text-sm font-semibold text-purple-50 mb-0">Direct Staff Access</h4>
+                            <h4 class="mb-0 text-sm font-semibold text-purple-50">Direct Staff Access</h4>
                             <p class="text-sm text-purple-200">Staff members are regularly available for questions and
                                 support.</p>
                         </div>
@@ -201,11 +201,11 @@
                 </div>
 
                 <div
-                    class="bg-purple-800/30 border border-purple-600/50 rounded-lg px-4 py-1 hover:bg-purple-800/40 transition-colors duration-200">
+                    class="rounded-lg border border-purple-600/50 bg-purple-800/30 px-4 py-1 transition-colors duration-200 hover:bg-purple-800/40">
                     <div class="flex items-center space-x-4">
                         <div class="flex-shrink-0">
                             <svg
-                                class="w-5 h-5 text-cyan-400"
+                                class="h-5 w-5 text-cyan-400"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                             >
@@ -217,7 +217,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h4 class="text-sm font-semibold text-purple-50 mb-0">Community Feedback</h4>
+                            <h4 class="mb-0 text-sm font-semibold text-purple-50">Community Feedback</h4>
                             <p class="text-sm text-purple-200">Share suggestions and participate in community
                                 discussions.</p>
                         </div>
@@ -234,16 +234,16 @@
     <p class="mb-6">For formal inquiries, reports, or issues that require private discussion, you can reach our staff
         team directly:</p>
 
-    <div class="bg-gray-800/30 border border-slate-700 rounded-lg px-6 py-6 my-4">
-        <h3 class="text-lg font-semibold text-purple-50 mt-0 mb-4 flex items-center">
+    <div class="my-4 rounded-lg border border-slate-700 bg-gray-800/30 px-6 py-6">
+        <h3 class="mb-4 mt-0 flex items-center text-lg font-semibold text-purple-50">
             <flux:icon.envelope class="size-8 pr-2" />
             Email Address (Slow)
         </h3>
 
-        <p class="text-purple-100 mb-2">Our Discord server is the recommended method of communication, but for some
+        <p class="mb-2 text-purple-100">Our Discord server is the recommended method of communication, but for some
             things a more formal email is more appropriate. Here are some use cases for emailing us:</p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+        <div class="grid grid-cols-1 gap-x-6 gap-y-2 md:grid-cols-2">
             <div class="flex items-start">
                 <span class="text-sm text-gray-300">
                     <ul>
@@ -264,10 +264,10 @@
             </div>
         </div>
 
-        <div class="text-center mt-4 mb-2">
+        <div class="mb-2 mt-4 text-center">
             <div class="mt-3">
                 <code
-                    class="px-4 py-2 bg-gray-950/40 text-purple-100 rounded text-sm">singleplayertarkov@gmail.com</code>
+                    class="rounded bg-gray-950/40 px-4 py-2 text-sm text-purple-100">singleplayertarkov@gmail.com</code>
             </div>
             <small>If misused, you will be blocked from future communication.</small>
         </div>

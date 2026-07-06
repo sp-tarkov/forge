@@ -31,7 +31,6 @@ describe('Creation', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode()
             ->waitForText('Post Comment');
 
         // Minimum-length validation rejects a too-short body.
@@ -65,7 +64,6 @@ describe('Creation', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode()
             ->waitForText('Post Comment');
 
         $page->assertPresent('@new-comment-body')
@@ -89,7 +87,6 @@ describe('Creation', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode()
             ->waitForText('Post Comment');
 
         $page->assertPresent('@new-comment-body')
@@ -120,7 +117,6 @@ describe('Replies', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode()
             ->waitForText('This is a test comment to reply to.');
 
         // The reply form opens then cancels cleanly.
@@ -167,7 +163,6 @@ describe('Editing', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode()
             ->waitForText($originalText);
 
         // The edit form opens prefilled with the existing body.
@@ -218,7 +213,6 @@ describe('Deletion', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode()
             ->waitForText($commentText);
 
         // Cancelling the confirmation dialog leaves the comment in place.
@@ -254,7 +248,6 @@ describe('Reactions', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode()
             ->waitForText('0 Likes');
 
         $page->assertSee('0 Likes')
@@ -276,7 +269,6 @@ describe('Subscription', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode()
             ->waitForText('Subscribe');
 
         // Subscribing then unsubscribing flips the label back and forth.
@@ -324,7 +316,6 @@ describe('Reply threads', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode()
             ->waitForText($replyText);
 
         // Replies are shown by default; toggling collapses then re-expands them.
@@ -477,5 +468,30 @@ describe('Deep links', function (): void {
         $page->assertSee('TARGET REPLY on page two for deep link test.')
             ->assertSee('Root comment that holds the target reply.')
             ->assertNoJavaScriptErrors();
+    });
+});
+
+describe('Rendering', function (): void {
+    it('renders comment usernames in the inherited dark canvas colour', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
+        Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This comment checks the username colour.',
+        ]);
+
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->waitForText('This comment checks the username colour.');
+
+        // The username link has no text colour utility; it inherits the canvas text colour, which the
+        // color-scheme: dark rule in app.css resolves to white.
+        $page->assertScript(
+            'getComputedStyle(document.querySelector(\'#comments a[href*="/user/"]\')).color',
+            'rgb(255, 255, 255)',
+        )->assertNoJavaScriptErrors();
     });
 });

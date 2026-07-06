@@ -9,6 +9,11 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+    /* Dark browser defaults for inherited text colour, scrollbars, and form controls. */
+    color-scheme: dark;
+}
+
 /* Darker modal backdrop overlay */
 dialog[data-modal]::backdrop {
     background-color: rgba(0, 0, 0, 0.7);
@@ -65,122 +70,111 @@ button {
 }
 
 .badge-version {
-    @apply bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100;
+    @apply bg-gray-700 text-gray-100;
 
     &.red {
-        @apply bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100;
+        @apply bg-red-700 text-red-100;
     }
 
     &.orange {
-        @apply bg-orange-100 text-orange-700 dark:bg-orange-700 dark:text-orange-100;
+        @apply bg-orange-700 text-orange-100;
     }
 
     &.amber {
-        @apply bg-amber-100 text-amber-700 dark:bg-amber-700 dark:text-amber-100;
+        @apply bg-amber-700 text-amber-100;
     }
 
     &.yellow {
-        @apply bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100;
+        @apply bg-yellow-700 text-yellow-100;
     }
 
     &.lime {
-        @apply bg-lime-100 text-lime-700 dark:bg-lime-700 dark:text-lime-100;
+        @apply bg-lime-700 text-lime-100;
     }
 
     &.green {
-        @apply bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100;
+        @apply bg-green-700 text-green-100;
     }
 
     &.emerald {
-        @apply bg-emerald-100 text-emerald-700 dark:bg-emerald-700 dark:text-emerald-100;
+        @apply bg-emerald-700 text-emerald-100;
     }
 
     &.teal {
-        @apply bg-teal-100 text-teal-700 dark:bg-teal-700 dark:text-teal-100;
+        @apply bg-teal-700 text-teal-100;
     }
 
     &.cyan {
-        @apply bg-cyan-100 text-cyan-700 dark:bg-cyan-700 dark:text-cyan-100;
+        @apply bg-cyan-700 text-cyan-100;
     }
 
     &.sky {
-        @apply bg-sky-100 text-sky-700 dark:bg-sky-700 dark:text-sky-100;
+        @apply bg-sky-700 text-sky-100;
     }
 
     &.blue {
-        @apply bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100;
+        @apply bg-blue-700 text-blue-100;
     }
 
     &.indigo {
-        @apply bg-indigo-100 text-indigo-700 dark:bg-indigo-700 dark:text-indigo-100;
+        @apply bg-indigo-700 text-indigo-100;
     }
 
     &.violet {
-        @apply bg-violet-100 text-violet-700 dark:bg-violet-700 dark:text-violet-100;
+        @apply bg-violet-700 text-violet-100;
     }
 
     &.purple {
-        @apply bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-100;
+        @apply bg-purple-700 text-purple-100;
     }
 
     &.fuchsia {
-        @apply bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-700 dark:text-fuchsia-100;
+        @apply bg-fuchsia-700 text-fuchsia-100;
     }
 
     &.pink {
-        @apply bg-pink-100 text-pink-700 dark:bg-pink-700 dark:text-pink-100;
+        @apply bg-pink-700 text-pink-100;
     }
 
     &.rose {
-        @apply bg-rose-100 text-rose-700 dark:bg-rose-700 dark:text-rose-100;
+        @apply bg-rose-700 text-rose-100;
     }
 
     &.slate {
-        @apply bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-100;
+        @apply bg-slate-700 text-slate-100;
     }
 
     &.gray,
     &.grey {
-        @apply bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100;
+        @apply bg-gray-700 text-gray-100;
     }
 
     &.zinc {
-        @apply bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-100;
+        @apply bg-zinc-700 text-zinc-100;
     }
 
     &.neutral {
-        @apply bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-100;
+        @apply bg-neutral-700 text-neutral-100;
     }
 
     &.stone {
-        @apply bg-stone-100 text-stone-700 dark:bg-stone-700 dark:text-stone-100;
+        @apply bg-stone-700 text-stone-100;
     }
 }
 
 .user-markdown {
     &.deleted {
-        @apply mt-1 text-red-500 dark:text-red-400;
+        @apply mt-1 text-red-400;
     }
 
     .deleted {
-        @apply text-red-500 dark:text-red-400;
+        @apply text-red-400;
 
         & * {
-            color: var(--color-red-500) !important;
-        }
-
-        .dark & * {
             color: var(--color-red-400) !important;
         }
 
         & a {
-            color: var(--color-red-500) !important;
-            &:hover {
-                color: var(--color-red-500) !important;
-            }
-        }
-
-        .dark & a {
             color: var(--color-red-400) !important;
             &:hover {
                 color: var(--color-red-400) !important;
@@ -194,7 +188,7 @@ button {
     }
 
     a {
-        @apply break-all text-black underline transition-colors hover:text-cyan-800 dark:text-white hover:dark:text-cyan-200;
+        @apply break-all text-white underline transition-colors hover:text-cyan-200;
     }
 
     b,
@@ -213,7 +207,7 @@ button {
     h4,
     h5,
     h6 {
-        @apply mt-4 mb-2 font-bold text-black dark:text-white;
+        @apply mt-4 mb-2 font-bold text-white;
     }
 
     h1 {
@@ -241,7 +235,7 @@ button {
     }
 
     p {
-        @apply my-2 wrap-anywhere text-gray-800 dark:text-gray-300;
+        @apply my-2 wrap-anywhere text-gray-300;
     }
 
     hr {
@@ -260,11 +254,11 @@ button {
     }
 
     li {
-        @apply my-2 ml-7 text-gray-800 dark:text-gray-300;
+        @apply my-2 ml-7 text-gray-300;
     }
 
     blockquote {
-        @apply my-4 border-s-4 border-cyan-400 bg-gray-100 p-4 dark:border-cyan-600 dark:bg-gray-900;
+        @apply my-4 border-s-4 border-cyan-600 bg-gray-900 p-4;
 
         > :first-child {
             @apply mt-0;
@@ -275,44 +269,44 @@ button {
         }
 
         p {
-            @apply my-2 leading-relaxed text-gray-900 italic dark:text-white;
+            @apply my-2 leading-relaxed text-white italic;
         }
 
         &.is-info {
-            @apply border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950;
+            @apply border-blue-600 bg-blue-950;
 
             p {
-                @apply text-blue-900 dark:text-blue-100;
+                @apply text-blue-100;
             }
         }
 
         &.is-success {
-            @apply border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-950;
+            @apply border-green-600 bg-green-950;
 
             p {
-                @apply text-green-900 dark:text-green-100;
+                @apply text-green-100;
             }
         }
 
         &.is-warning {
-            @apply border-yellow-400 bg-yellow-50 dark:border-yellow-600 dark:bg-yellow-950;
+            @apply border-yellow-600 bg-yellow-950;
 
             p {
-                @apply text-yellow-900 dark:text-yellow-100;
+                @apply text-yellow-100;
             }
         }
 
         &.is-danger {
-            @apply border-red-400 bg-red-50 dark:border-red-600 dark:bg-red-950;
+            @apply border-red-600 bg-red-950;
 
             p {
-                @apply text-red-900 dark:text-red-100;
+                @apply text-red-100;
             }
         }
     }
 
     code {
-        @apply rounded bg-gray-200 px-1.5 py-0.5 font-mono text-[0.8em] text-gray-700 dark:bg-gray-700 dark:text-gray-300;
+        @apply rounded bg-gray-700 px-1.5 py-0.5 font-mono text-[0.8em] text-gray-300;
     }
 
     pre > code {
@@ -333,10 +327,10 @@ button {
         @apply flex flex-row flex-wrap gap-1;
 
         .tab-link {
-            @apply cursor-pointer rounded-t-sm border-b-2 border-transparent bg-slate-100 px-3 py-1 text-nowrap text-black uppercase transition-colors hover:border-b-cyan-400 hover:bg-slate-200 hover:text-cyan-800 dark:bg-slate-900 dark:text-white dark:hover:border-b-cyan-600 dark:hover:bg-slate-800 dark:hover:text-cyan-200;
+            @apply cursor-pointer rounded-t-sm border-b-2 border-transparent bg-slate-900 px-3 py-1 text-nowrap text-white uppercase transition-colors hover:border-b-cyan-600 hover:bg-slate-800 hover:text-cyan-200;
 
             &.active {
-                @apply border-b-cyan-400 bg-slate-200 font-bold text-cyan-700 transition-colors dark:border-b-cyan-600 dark:bg-slate-800 dark:text-cyan-300;
+                @apply border-b-cyan-600 bg-slate-800 font-bold text-cyan-300 transition-colors;
             }
         }
     }
@@ -344,7 +338,7 @@ button {
     /* Style first tab link as active until JS initializes */
     .tab-navigation:not([data-tabs-initialized]) {
         .tab-link:first-child {
-            @apply border-b-cyan-400 bg-slate-200 font-bold text-cyan-700 dark:border-b-cyan-600 dark:bg-slate-800 dark:text-cyan-300;
+            @apply border-b-cyan-600 bg-slate-800 font-bold text-cyan-300;
         }
     }
 
@@ -353,7 +347,7 @@ button {
     }
 
     .tab-content {
-        @apply mt-1 rounded-t-sm rounded-b-2xl bg-slate-100 p-4 dark:bg-gray-900;
+        @apply mt-1 rounded-t-sm rounded-b-2xl bg-gray-900 p-4;
     }
 
     /* Hide non-first tab content until JS initializes */
@@ -434,7 +428,7 @@ button {
     }
 
     code {
-        @apply rounded bg-black/10 px-1 py-0.5 font-mono text-xs dark:bg-white/10;
+        @apply rounded bg-white/10 px-1 py-0.5 font-mono text-xs;
     }
 
     pre > code {
@@ -474,30 +468,30 @@ button {
     );
     transform: translate(calc((cos(45deg) - 1) * 100%), -100%) rotate(-45deg);
     transform-origin: 100% 100%;
-    @apply bg-cyan-500 text-white dark:bg-cyan-700;
+    @apply bg-cyan-700 text-white;
 
     &.red {
-        @apply bg-red-500 text-white dark:bg-red-700;
+        @apply bg-red-700 text-white;
     }
 
     &.amber {
-        @apply bg-amber-500 text-white dark:bg-amber-700;
+        @apply bg-amber-700 text-white;
     }
 
     &.emerald {
-        @apply bg-emerald-500 text-white dark:bg-emerald-700;
+        @apply bg-emerald-700 text-white;
     }
 
     &.sky {
-        @apply bg-sky-500 text-white dark:bg-sky-700;
+        @apply bg-sky-700 text-white;
     }
 
     &.gray {
-        @apply bg-gray-500 text-white dark:bg-gray-700;
+        @apply bg-gray-700 text-white;
     }
 
     &.yellow {
-        @apply bg-yellow-400 text-black dark:bg-yellow-600;
+        @apply bg-yellow-600 text-black;
     }
 }
 
@@ -593,22 +587,9 @@ input:autofill:hover,
 input:autofill:focus,
 input:autofill:active {
     -webkit-background-clip: text;
-    -webkit-text-fill-color: rgb(226 232 240); /* slate-200 for dark mode */
+    -webkit-text-fill-color: rgb(226 232 240); /* slate-200 */
     transition: background-color 5000s ease-in-out 0s;
-    box-shadow: inset 0 0 20px 20px rgb(30 41 59); /* slate-800 - Match Flux dark input */
-}
-
-/* For light mode */
-.light input:-webkit-autofill,
-.light input:-webkit-autofill:hover,
-.light input:-webkit-autofill:focus,
-.light input:-webkit-autofill:active,
-.light input:autofill,
-.light input:autofill:hover,
-.light input:autofill:focus,
-.light input:autofill:active {
-    -webkit-text-fill-color: rgb(15 23 42); /* slate-900 for light mode */
-    box-shadow: inset 0 0 20px 20px rgb(255 255 255); /* white - Match Flux light input */
+    box-shadow: inset 0 0 20px 20px rgb(30 41 59); /* slate-800, matches the Flux input background */
 }
 
 /* Fix 1Password autofill background colors to match normal input backgrounds */
@@ -618,21 +599,9 @@ textarea[data-com-onepassword-filled],
 input[data-com-onepassword-filled='light'],
 select[data-com-onepassword-filled='light'],
 textarea[data-com-onepassword-filled='light'] {
-    /* Match Flux UI dark mode input background */
+    /* Match the Flux input background */
     background-color: rgb(30 41 59) !important; /* slate-800 */
     color: rgb(226 232 240) !important; /* slate-200 */
-}
-
-/* For light mode - 1Password */
-.light input[data-com-onepassword-filled],
-.light select[data-com-onepassword-filled],
-.light textarea[data-com-onepassword-filled],
-.light input[data-com-onepassword-filled='light'],
-.light select[data-com-onepassword-filled='light'],
-.light textarea[data-com-onepassword-filled='light'] {
-    /* Match Flux UI light mode input background */
-    background-color: rgb(255 255 255) !important; /* white */
-    color: rgb(15 23 42) !important; /* slate-900 */
 }
 
 /* Fix callout padding to be equal on all sides */

@@ -15,20 +15,20 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="mb-6 border-b border-gray-700 pb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="lock-closed"
-                        class="w-8 h-8 text-blue-600"
+                        class="h-8 w-8 text-blue-600"
                     />
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ $title }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-sm text-gray-400">
                             {{ __('Security verification required') }}
                         </flux:text>
                     </div>
@@ -37,7 +37,7 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-sm text-gray-300">
                     {{ $content }}
                 </flux:text>
 
@@ -59,7 +59,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="mt-6 flex items-center justify-end gap-3 border-t border-gray-700 pt-6">
                 <flux:button
                     wire:click="stopConfirmingPassword"
                     wire:loading.attr="disabled"

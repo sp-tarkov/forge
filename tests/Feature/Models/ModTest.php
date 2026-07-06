@@ -2192,7 +2192,7 @@ describe('Cheat Notice', function (): void {
             $response->assertStatus(200);
 
             // Check for the red warning box with cheat notice
-            $response->assertSee('bg-red-600');
+            $response->assertSee('bg-red-700');
             $response->assertSee('similar to traditional multiplayer');
             $response->assertSee('will not work and will result in an immediate and permanent ban');
         });

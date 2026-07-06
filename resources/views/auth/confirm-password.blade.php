@@ -12,7 +12,7 @@
             <x-authentication-card-logo />
         </x-slot>
 
-        <div class="mb-4 text-sm text-gray-600 dark:text-gray-300">
+        <div class="mb-4 text-sm text-gray-300">
             {{ __('Please confirm your password to continue.') }}
         </div>
 
@@ -37,8 +37,11 @@
 
             <x-honeypot />
 
-            <div class="flex justify-end mt-4">
-                <flux:button variant="primary" type="submit">
+            <div class="mt-4 flex justify-end">
+                <flux:button
+                    variant="primary"
+                    type="submit"
+                >
                     {{ __('Confirm') }}
                 </flux:button>
             </div>

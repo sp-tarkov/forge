@@ -1,8 +1,8 @@
 <div>
     <x-slot name="header">
-        <div class="flex items-center justify-between w-full">
+        <div class="flex w-full items-center justify-between">
             <div>
-                <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+                <h2 class="text-xl font-semibold leading-tight text-gray-200">
                     {{ __('Moderation Actions') }}
                 </h2>
             </div>
@@ -12,8 +12,8 @@
     <div class="px-6 lg:px-8">
         @if ($this->getActiveFilters())
             <div class="my-6">
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300 flex-shrink-0">Filtering:</span>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                    <span class="flex-shrink-0 text-sm font-medium text-gray-300">Filtering:</span>
                     <div class="min-w-0">
                         <flux:breadcrumbs class="inline-flex flex-wrap">
                             @foreach ($this->getActiveFilters() as $filter)
@@ -29,10 +29,10 @@
             {{-- Filters Section --}}
             <div
                 id="filters-container"
-                class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+                class="rounded-lg border border-gray-700 bg-gray-900 p-6 shadow-sm"
             >
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filters</h3>
+                <div class="mb-4 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-100">Filters</h3>
                     <flux:button
                         wire:click="resetFilters"
                         variant="outline"
@@ -43,7 +43,7 @@
                     </flux:button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                     {{-- Search Filter --}}
                     <div>
                         <flux:label
@@ -133,17 +133,16 @@
             </div>
 
             {{-- Actions Table --}}
-            <div
-                class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <div class="overflow-hidden rounded-lg border border-gray-700 bg-gray-900 shadow-sm">
+                <div class="border-b border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-100">
                         Actions ({{ number_format($this->actions->total()) }})
                     </h3>
                 </div>
 
                 {{-- Top Pagination --}}
                 @if ($this->actions->hasPages())
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                    <div class="border-b border-gray-700 bg-gray-800 px-6 py-4">
                         {{ $this->actions->links(data: ['scrollTo' => '#filters-container']) }}
                     </div>
                 @endif
@@ -153,43 +152,36 @@
                         class="w-full table-auto"
                         style="min-width: 1100px;"
                     >
-                        <thead class="bg-gray-100 dark:bg-gray-900">
+                        <thead class="bg-gray-900">
                             <tr>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-400">
                                     Action Type
                                 </th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-400">
                                     Target
                                 </th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-400">
                                     Reason
                                 </th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-400">
                                     Moderator
                                 </th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-400">
                                     Linked Reports
                                 </th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-400">
                                     Date
                                 </th>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                <th class="px-4 py-3 text-center text-xs font-medium tracking-wider text-gray-400">
                                     Actions
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="divide-y divide-gray-700 bg-gray-800">
                             @forelse($this->actions as $action)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <tr class="hover:bg-gray-700">
                                     {{-- Action Type --}}
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                    <td class="whitespace-nowrap px-4 py-4">
                                         <div class="flex items-center gap-2">
                                             <flux:badge
                                                 color="{{ $this->getActionBadgeColor($action->event_name) }}"
@@ -213,35 +205,35 @@
                                                         color:seed="{{ $action->visitable->id }}"
                                                         size="xs"
                                                     />
-                                                    <div class="flex flex-col min-w-0">
+                                                    <div class="flex min-w-0 flex-col">
                                                         <a
                                                             href="{{ $action->visitable->profile_url }}"
-                                                            class="text-sm font-medium text-gray-900 dark:text-gray-100 underline hover:text-gray-600 dark:hover:text-gray-300 truncate"
+                                                            class="truncate text-sm font-medium text-gray-100 underline hover:text-gray-300"
                                                             wire:navigate
                                                         >
                                                             {{ $action->visitable->name }}
                                                         </a>
-                                                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                                                        <span class="text-xs text-gray-400">
                                                             User ID: {{ $action->visitable->id }}
                                                         </span>
                                                     </div>
                                                 </div>
                                             @elseif ($action->visitable instanceof \App\Models\Mod)
                                                 {{-- Mod Target --}}
-                                                <div class="flex flex-col min-w-0">
+                                                <div class="flex min-w-0 flex-col">
                                                     <a
                                                         href="{{ route('mod.show', ['modId' => $action->visitable->id, 'slug' => $action->visitable->slug]) }}"
-                                                        class="text-sm font-medium text-gray-900 dark:text-gray-100 underline hover:text-gray-600 dark:hover:text-gray-300 truncate max-w-48"
+                                                        class="max-w-48 truncate text-sm font-medium text-gray-100 underline hover:text-gray-300"
                                                         wire:navigate
                                                     >
                                                         {{ $action->visitable->name }}
                                                     </a>
                                                     @if ($action->visitable->owner)
-                                                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                                                        <span class="text-xs text-gray-400">
                                                             by
                                                             <a
                                                                 href="{{ $action->visitable->owner->profile_url }}"
-                                                                class="underline hover:text-gray-600 dark:hover:text-gray-300"
+                                                                class="underline hover:text-gray-300"
                                                                 wire:navigate
                                                             >{{ $action->visitable->owner->name }}</a>
                                                         </span>
@@ -249,20 +241,20 @@
                                                 </div>
                                             @elseif ($action->visitable instanceof \App\Models\Addon)
                                                 {{-- Addon Target --}}
-                                                <div class="flex flex-col min-w-0">
+                                                <div class="flex min-w-0 flex-col">
                                                     <a
                                                         href="{{ route('addon.show', ['addonId' => $action->visitable->id, 'slug' => $action->visitable->slug]) }}"
-                                                        class="text-sm font-medium text-gray-900 dark:text-gray-100 underline hover:text-gray-600 dark:hover:text-gray-300 truncate max-w-48"
+                                                        class="max-w-48 truncate text-sm font-medium text-gray-100 underline hover:text-gray-300"
                                                         wire:navigate
                                                     >
                                                         {{ $action->visitable->name }}
                                                     </a>
                                                     @if ($action->visitable->owner)
-                                                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                                                        <span class="text-xs text-gray-400">
                                                             by
                                                             <a
                                                                 href="{{ $action->visitable->owner->profile_url }}"
-                                                                class="underline hover:text-gray-600 dark:hover:text-gray-300"
+                                                                class="underline hover:text-gray-300"
                                                                 wire:navigate
                                                             >{{ $action->visitable->owner->name }}</a>
                                                         </span>
@@ -270,24 +262,24 @@
                                                 </div>
                                             @elseif ($action->visitable instanceof \App\Models\ModVersion)
                                                 {{-- Mod Version Target --}}
-                                                <div class="flex flex-col min-w-0">
-                                                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                <div class="flex min-w-0 flex-col">
+                                                    <span class="text-sm font-medium text-gray-100">
                                                         v{{ $action->visitable->version }}
                                                     </span>
                                                     @if ($action->visitable->mod)
                                                         <a
                                                             href="{{ route('mod.show', ['modId' => $action->visitable->mod->id, 'slug' => $action->visitable->mod->slug]) }}"
-                                                            class="text-xs text-gray-500 dark:text-gray-400 underline hover:text-gray-600 dark:hover:text-gray-300 truncate max-w-48"
+                                                            class="max-w-48 truncate text-xs text-gray-400 underline hover:text-gray-300"
                                                             wire:navigate
                                                         >
                                                             {{ $action->visitable->mod->name }}
                                                         </a>
                                                         @if ($action->visitable->mod->owner)
-                                                            <span class="text-xs text-gray-400 dark:text-gray-500">
+                                                            <span class="text-xs text-gray-500">
                                                                 by
                                                                 <a
                                                                     href="{{ $action->visitable->mod->owner->profile_url }}"
-                                                                    class="underline hover:text-gray-500 dark:hover:text-gray-400"
+                                                                    class="underline hover:text-gray-400"
                                                                     wire:navigate
                                                                 >{{ $action->visitable->mod->owner->name }}</a>
                                                             </span>
@@ -296,24 +288,24 @@
                                                 </div>
                                             @elseif ($action->visitable instanceof \App\Models\AddonVersion)
                                                 {{-- Addon Version Target --}}
-                                                <div class="flex flex-col min-w-0">
-                                                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                <div class="flex min-w-0 flex-col">
+                                                    <span class="text-sm font-medium text-gray-100">
                                                         v{{ $action->visitable->version }}
                                                     </span>
                                                     @if ($action->visitable->addon)
                                                         <a
                                                             href="{{ route('addon.show', ['addonId' => $action->visitable->addon->id, 'slug' => $action->visitable->addon->slug]) }}"
-                                                            class="text-xs text-gray-500 dark:text-gray-400 underline hover:text-gray-600 dark:hover:text-gray-300 truncate max-w-48"
+                                                            class="max-w-48 truncate text-xs text-gray-400 underline hover:text-gray-300"
                                                             wire:navigate
                                                         >
                                                             {{ $action->visitable->addon->name }}
                                                         </a>
                                                         @if ($action->visitable->addon->owner)
-                                                            <span class="text-xs text-gray-400 dark:text-gray-500">
+                                                            <span class="text-xs text-gray-500">
                                                                 by
                                                                 <a
                                                                     href="{{ $action->visitable->addon->owner->profile_url }}"
-                                                                    class="underline hover:text-gray-500 dark:hover:text-gray-400"
+                                                                    class="underline hover:text-gray-400"
                                                                     wire:navigate
                                                                 >{{ $action->visitable->addon->owner->name }}</a>
                                                             </span>
@@ -322,27 +314,26 @@
                                                 </div>
                                             @elseif ($action->visitable instanceof \App\Models\Comment)
                                                 {{-- Comment Target --}}
-                                                <div class="flex flex-col min-w-0">
+                                                <div class="flex min-w-0 flex-col">
                                                     @if ($action->visitable->getUrl())
                                                         <a
                                                             href="{{ $action->visitable->getUrl() }}"
-                                                            class="text-sm font-medium text-gray-900 dark:text-gray-100 underline hover:text-gray-600 dark:hover:text-gray-300 truncate max-w-48"
+                                                            class="max-w-48 truncate text-sm font-medium text-gray-100 underline hover:text-gray-300"
                                                             wire:navigate
                                                         >
                                                             "{{ \Illuminate\Support\Str::limit(strip_tags($action->visitable->body), 50) }}"
                                                         </a>
                                                     @else
-                                                        <p
-                                                            class="text-sm text-gray-700 dark:text-gray-300 truncate max-w-48">
+                                                        <p class="max-w-48 truncate text-sm text-gray-300">
                                                             "{{ \Illuminate\Support\Str::limit(strip_tags($action->visitable->body), 50) }}"
                                                         </p>
                                                     @endif
                                                     @if ($action->visitable->user)
-                                                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                                                        <span class="text-xs text-gray-400">
                                                             by
                                                             <a
                                                                 href="{{ $action->visitable->user->profile_url }}"
-                                                                class="underline hover:text-gray-600 dark:hover:text-gray-300"
+                                                                class="underline hover:text-gray-300"
                                                                 wire:navigate
                                                             >{{ $action->visitable->user->name }}</a>
                                                         </span>
@@ -350,29 +341,28 @@
                                                 </div>
                                             @else
                                                 {{-- Unknown Target Type --}}
-                                                <span class="text-sm text-gray-500 dark:text-gray-400 italic">
+                                                <span class="text-sm italic text-gray-400">
                                                     {{ class_basename($action->visitable) }}
                                                 </span>
                                             @endif
                                         @else
-                                            <span
-                                                class="text-sm text-gray-400 dark:text-gray-500 italic">Removed</span>
+                                            <span class="text-sm italic text-gray-500">Removed</span>
                                         @endif
                                     </td>
 
                                     {{-- Reason --}}
                                     <td class="px-4 py-4">
                                         @if ($action->reason)
-                                            <p class="text-sm text-gray-700 dark:text-gray-300 max-w-xs">
+                                            <p class="max-w-xs text-sm text-gray-300">
                                                 {{ \Illuminate\Support\Str::limit($action->reason, 100) }}
                                             </p>
                                         @else
-                                            <span class="text-sm text-gray-400 dark:text-gray-500">-</span>
+                                            <span class="text-sm text-gray-500">-</span>
                                         @endif
                                     </td>
 
                                     {{-- Moderator --}}
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                    <td class="whitespace-nowrap px-4 py-4">
                                         @if ($action->user)
                                             <div class="flex items-center gap-2">
                                                 <flux:avatar
@@ -383,7 +373,7 @@
                                                 <div>
                                                     <a
                                                         href="{{ $action->user->profile_url }}"
-                                                        class="text-sm font-medium underline hover:text-gray-600 dark:hover:text-gray-300"
+                                                        class="text-sm font-medium underline hover:text-gray-300"
                                                         wire:navigate
                                                     >
                                                         {{ $action->user->name }}
@@ -391,7 +381,7 @@
                                                 </div>
                                             </div>
                                         @else
-                                            <span class="text-sm text-gray-400 dark:text-gray-500 italic">System</span>
+                                            <span class="text-sm italic text-gray-500">System</span>
                                         @endif
                                     </td>
 
@@ -426,25 +416,25 @@
                                                 @endif
                                             </div>
                                         @else
-                                            <span class="text-sm text-gray-400 dark:text-gray-500">-</span>
+                                            <span class="text-sm text-gray-500">-</span>
                                         @endif
                                     </td>
 
                                     {{-- Date --}}
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900 dark:text-gray-100">
+                                    <td class="whitespace-nowrap px-4 py-4">
+                                        <div class="text-sm text-gray-100">
                                             {{ $action->created_at->format('M j, Y') }}
                                         </div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        <div class="text-xs text-gray-400">
                                             {{ $action->created_at->format('g:i A') }}
                                         </div>
-                                        <div class="text-xs text-gray-400 dark:text-gray-500">
+                                        <div class="text-xs text-gray-500">
                                             {{ $action->created_at->diffForHumans() }}
                                         </div>
                                     </td>
 
                                     {{-- Actions --}}
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                    <td class="whitespace-nowrap px-4 py-4">
                                         <div class="flex items-center justify-center">
                                             @if ($action->reports->isNotEmpty())
                                                 <flux:dropdown position="bottom end">
@@ -467,11 +457,10 @@
                                                 </flux:dropdown>
                                             @else
                                                 <span
-                                                    class="inline-flex items-center justify-center p-2 text-gray-300 dark:text-gray-600"
-                                                >
+                                                    class="inline-flex items-center justify-center p-2 text-gray-600">
                                                     <flux:icon
                                                         name="minus"
-                                                        class="w-5 h-5"
+                                                        class="h-5 w-5"
                                                     />
                                                 </span>
                                             @endif
@@ -482,12 +471,10 @@
                                 <tr>
                                     <td
                                         colspan="7"
-                                        class="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
+                                        class="px-6 py-12 text-center text-gray-400"
                                     >
-                                        <flux:icon.shield-check
-                                            class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600"
-                                        />
-                                        <p class="text-gray-500 dark:text-gray-400">No moderation actions found.</p>
+                                        <flux:icon.shield-check class="mx-auto mb-4 h-12 w-12 text-gray-600" />
+                                        <p class="text-gray-400">No moderation actions found.</p>
                                     </td>
                                 </tr>
                             @endforelse
@@ -497,7 +484,7 @@
 
                 {{-- Bottom Pagination --}}
                 @if ($this->actions->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="border-t border-gray-700 px-6 py-4">
                         {{ $this->actions->links(data: ['scrollTo' => '#filters-container']) }}
                     </div>
                 @endif

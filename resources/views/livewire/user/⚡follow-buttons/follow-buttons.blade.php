@@ -12,7 +12,7 @@
             <div class="flex items-center">
                 <flux:icon.heart
                     variant="solid"
-                    class="text-red-500 {{ $size === 'xs' ? 'size-3' : 'size-4' }} mr-1.5"
+                    class="{{ $size === 'xs' ? 'size-3' : 'size-4' }} mr-1.5 text-red-500"
                 />
                 {{ __('Following') }}
             </div>
@@ -28,7 +28,7 @@
             <div class="flex items-center">
                 <flux:icon.heart
                     variant="outline"
-                    class="text-white {{ $size === 'xs' ? 'size-3' : 'size-4' }} mr-1.5"
+                    class="{{ $size === 'xs' ? 'size-3' : 'size-4' }} mr-1.5 text-white"
                 />
                 {{ __('Follow') }}
             </div>

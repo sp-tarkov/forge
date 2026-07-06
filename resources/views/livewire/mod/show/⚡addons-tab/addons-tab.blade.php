@@ -16,36 +16,35 @@
         {{-- Addon card skeletons --}}
         <div class="grid gap-4">
             @for ($i = 0; $i < 3; $i++)
-                <div
-                    class="bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden">
+                <div class="overflow-hidden rounded-xl bg-gray-950 shadow-md shadow-gray-950 drop-shadow-2xl">
                     <div class="p-4 sm:p-6">
                         <flux:skeleton.group animate="shimmer">
-                            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:gap-4">
                                 {{-- Thumbnail skeleton --}}
                                 <flux:skeleton
-                                    class="w-20 h-20 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-lg flex-shrink-0 mx-auto sm:mx-0"
+                                    class="mx-auto h-20 w-20 flex-shrink-0 rounded-lg sm:mx-0 sm:h-16 sm:w-16 md:h-20 md:w-20"
                                 />
 
                                 {{-- Content skeleton --}}
-                                <div class="flex-1 min-w-0">
+                                <div class="min-w-0 flex-1">
                                     {{-- Title --}}
-                                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
+                                    <div class="mb-2 flex flex-col sm:flex-row sm:items-start sm:justify-between">
                                         <flux:skeleton.line
                                             size="lg"
-                                            class="w-48 mb-2 sm:mb-0"
+                                            class="mb-2 w-48 sm:mb-0"
                                         />
                                     </div>
 
                                     {{-- Info row --}}
-                                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                                    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                         <div class="flex-1">
-                                            <flux:skeleton.line class="w-32 mb-1" />
+                                            <flux:skeleton.line class="mb-1 w-32" />
                                             <flux:skeleton.line class="w-24" />
                                         </div>
                                         {{-- Version badges --}}
                                         <div class="sm:text-right">
-                                            <flux:skeleton.line class="w-36 mb-1" />
-                                            <div class="flex flex-wrap gap-1 justify-center sm:justify-end">
+                                            <flux:skeleton.line class="mb-1 w-36" />
+                                            <div class="flex flex-wrap justify-center gap-1 sm:justify-end">
                                                 <flux:skeleton class="h-5 w-14 rounded" />
                                                 <flux:skeleton class="h-5 w-14 rounded" />
                                             </div>
@@ -55,7 +54,7 @@
                             </div>
 
                             {{-- Teaser skeleton --}}
-                            <div class="mt-4 pt-3 border-t-2 border-gray-300 dark:border-gray-800">
+                            <div class="mt-4 border-t-2 border-gray-800 pt-3">
                                 <flux:skeleton.line class="w-full" />
                                 <flux:skeleton.line class="w-3/4" />
                             </div>
@@ -72,7 +71,7 @@
         @if ($this->addonCount > 0)
             {{-- Version Filter --}}
             <div class="mb-4 flex items-center justify-between gap-4">
-                <div class="text-sm text-gray-600 dark:text-gray-400">
+                <div class="text-sm text-gray-400">
                     <span x-show="!$wire.selectedModVersionId">
                         Select a mod version to filter by on the right.
                     </span>
@@ -86,7 +85,7 @@
                 <div class="flex items-center gap-3">
                     <label
                         for="mod-version-filter"
-                        class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap"
+                        class="whitespace-nowrap text-sm font-medium text-gray-300"
                     >
                         Filter by mod version:
                     </label>
@@ -120,12 +119,12 @@
             </div>
             {{ $this->addons->links() }}
         @else
-            <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                <div class="text-center py-8">
+            <div class="rounded-xl bg-gray-950 p-4 shadow-md shadow-gray-950 drop-shadow-2xl sm:p-6">
+                <div class="py-8 text-center">
                     <flux:icon.puzzle-piece class="mx-auto size-12 text-gray-400" />
-                    <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <h3 class="mt-2 text-sm font-semibold text-gray-100">
                         {{ __('No Addons Yet') }}</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    <p class="mt-1 text-sm text-gray-400">
                         {{ __('This mod doesn\'t have any addons yet.') }}</p>
                     @cachedCan('create', [App\Models\Addon::class, $this->mod])
                         <div class="mt-6">
@@ -138,7 +137,7 @@
             </div>
         @endif
     @else
-        <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+        <div class="rounded-xl bg-gray-950 p-4 shadow-md shadow-gray-950 drop-shadow-2xl sm:p-6">
             <flux:callout
                 icon="information-circle"
                 color="zinc"

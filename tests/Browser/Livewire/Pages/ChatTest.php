@@ -5,14 +5,13 @@ declare(strict_types=1);
 use App\Models\User;
 
 describe('Chat page browser smoke tests', function (): void {
-    it('loads the chat page without JavaScript errors in desktop dark mode', function (): void {
+    it('loads the chat page without JavaScript errors on desktop', function (): void {
         $user = User::factory()->create();
 
         $this->actingAs($user);
 
         visit('/chat')
             ->on()->desktop()
-            ->inDarkMode()
             ->assertNoJavascriptErrors();
     });
 

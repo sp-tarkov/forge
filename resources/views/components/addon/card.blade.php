@@ -9,14 +9,13 @@
     />
 
     <div
-        class="bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden group hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black">
+        class="group overflow-hidden rounded-xl bg-gray-950 shadow-md shadow-gray-950 drop-shadow-2xl hover:bg-black hover:shadow-lg">
         {{-- Detached indicator if applicable --}}
         @if ($addon->isDetached() && auth()->user()?->isModOrAdmin())
-            <div
-                class="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800 px-3 sm:px-4 py-2">
+            <div class="border-b border-yellow-800 bg-yellow-900/20 px-3 py-2 sm:px-4">
                 <div class="flex items-center gap-2 text-sm">
-                    <flux:icon.exclamation-circle class="size-4 text-yellow-600 dark:text-yellow-400" />
-                    <span class="text-yellow-800 dark:text-yellow-300 font-medium">Detached Addon</span>
+                    <flux:icon.exclamation-circle class="size-4 text-yellow-400" />
+                    <span class="font-medium text-yellow-300">Detached Addon</span>
                 </div>
             </div>
         @endif
@@ -27,11 +26,11 @@
                 <div class="relative flex-shrink-0 rounded-lg">
                     {{-- Default stripe background --}}
                     <div
-                        class="absolute inset-0 rounded-lg bg-[repeating-linear-gradient(45deg,#f9fafb,#f9fafb_4px,#ffffff_4px,#ffffff_8px)] dark:bg-[repeating-linear-gradient(45deg,#020509,#020509_4px,#030712_4px,#030712_8px)] transition-opacity duration-200 group-hover:opacity-0">
+                        class="absolute inset-0 rounded-lg bg-[repeating-linear-gradient(45deg,#020509,#020509_4px,#030712_4px,#030712_8px)] transition-opacity duration-200 group-hover:opacity-0">
                     </div>
                     {{-- Hover stripe background --}}
                     <div
-                        class="absolute inset-0 rounded-lg bg-[repeating-linear-gradient(45deg,#f0f1f3,#f0f1f3_4px,#f9fafb_4px,#f9fafb_8px)] dark:bg-[repeating-linear-gradient(45deg,#000000,#000000_4px,#010203_4px,#010203_8px)] opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                        class="absolute inset-0 rounded-lg bg-[repeating-linear-gradient(45deg,#000000,#000000_4px,#010203_4px,#010203_8px)] opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                     </div>
                     {{-- Thumbnail content --}}
                     <a
@@ -43,30 +42,30 @@
                             <img
                                 src="{{ $addon->thumbnailUrl }}"
                                 alt="{{ $addon->name }}"
-                                class="size-20 object-cover transform group-hover:scale-105 transition-transform duration-200"
+                                class="size-20 transform object-cover transition-transform duration-200 group-hover:scale-105"
                             >
                         @else
-                            <div class="size-20 flex items-center justify-center">
-                                <flux:icon.puzzle-piece class="size-10 text-gray-400 dark:text-gray-600" />
+                            <div class="flex size-20 items-center justify-center">
+                                <flux:icon.puzzle-piece class="size-10 text-gray-600" />
                             </div>
                         @endif
                     </a>
                 </div>
 
                 {{-- Content - centered text on mobile, left-aligned on desktop --}}
-                <div class="flex-1 min-w-0">
+                <div class="min-w-0 flex-1">
                     {{-- Header with Title and Version --}}
-                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
-                        <div class="flex-1 min-w-0">
+                    <div class="mb-2 flex flex-col sm:flex-row sm:items-start sm:justify-between">
+                        <div class="min-w-0 flex-1">
                             <a
                                 href="{{ route('addon.show', [$addon->id, $addon->slug]) }}"
                                 wire:navigate
                                 class="block"
                             >
-                                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 inline">
-                                    <span class="group-hover:underline break-words">{{ $addon->name }}</span>
+                                <h3 class="inline text-base font-semibold text-gray-100 sm:text-lg">
+                                    <span class="break-words group-hover:underline">{{ $addon->name }}</span>
                                     @if ($addon->latestVersion)
-                                        <span class="font-light text-nowrap text-gray-600 dark:text-gray-400">
+                                        <span class="text-nowrap font-light text-gray-400">
                                             {{ $addon->latestVersion->version }}
                                         </span>
                                     @endif
@@ -88,17 +87,17 @@
                     </div>
 
                     {{-- Info and versions row --}}
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                         {{-- Left side: Created by and Downloads --}}
                         <div class="flex-1">
                             {{-- Created by info --}}
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                            <p class="text-sm text-gray-400">
                                 {{ __('Created by') }}
                                 <span class="[&>span:not(:last-child)]:after:content-[',_']">
                                     @if ($addon->owner)
                                         <span><a
                                                 href="{{ $addon->owner->profile_url }}"
-                                                class="hover:text-gray-900 dark:hover:text-gray-100 underline"
+                                                class="underline hover:text-gray-100"
                                             >{{ $addon->owner->name }}</a></span>
                                     @else
                                         Unknown
@@ -107,7 +106,7 @@
                                         @foreach ($addon->additionalAuthors as $author)
                                             <span><a
                                                     href="{{ $author->profile_url }}"
-                                                    class="hover:text-gray-900 dark:hover:text-gray-100 underline"
+                                                    class="underline hover:text-gray-100"
                                                 >{{ $author->name }}</a></span>
                                         @endforeach
                                     @endif
@@ -116,7 +115,7 @@
 
                             {{-- Download count --}}
                             <p
-                                class="text-sm text-gray-600 dark:text-gray-400 mt-1"
+                                class="mt-1 text-sm text-gray-400"
                                 title="{{ __('Exactly :downloads', ['downloads' => $addon->downloads]) }}"
                             >
                                 {{ Number::downloads($addon->downloads) }}
@@ -128,21 +127,21 @@
                         @if ($compatibleModVersionsToShow()->isNotEmpty() || $hasNoCompatibleVersions())
                             <div class="sm:text-right">
                                 @if ($compatibleModVersionsToShow()->isNotEmpty())
-                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    <p class="mb-1 text-sm text-gray-400">
                                         {{ __('Compatible Mod Versions') }}:
                                     </p>
                                     <div class="flex flex-wrap gap-1 sm:justify-end">
                                         @foreach ($compatibleModVersionsToShow()->take(3) as $modVersion)
                                             @if ($modVersion->id === $latestModVersionId())
                                                 <span
-                                                    class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300"
+                                                    class="inline-flex items-center rounded bg-green-800 px-1.5 py-0.5 text-xs font-medium text-green-300"
                                                     title="{{ __('This is the latest mod version') }}"
                                                 >
                                                     v{{ $modVersion->version }}
                                                 </span>
                                             @else
                                                 <span
-                                                    class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                                                    class="inline-flex items-center rounded bg-gray-800 px-1.5 py-0.5 text-xs font-medium text-gray-300"
                                                 >
                                                     v{{ $modVersion->version }}
                                                 </span>
@@ -155,26 +154,26 @@
                                                 class="!inline-flex !items-center"
                                             >
                                                 <span
-                                                    class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 cursor-help"
+                                                    class="inline-flex cursor-help items-center rounded bg-gray-800 px-1.5 py-0.5 text-xs font-medium text-gray-400"
                                                 >
                                                     +{{ $compatibleModVersionsToShow()->count() - 3 }} more
                                                 </span>
                                                 <flux:tooltip.content class="max-w-xs text-left">
                                                     <div class="text-xs">
-                                                        <div class="font-semibold mb-1 text-left">All Compatible Mod
+                                                        <div class="mb-1 text-left font-semibold">All Compatible Mod
                                                             Versions:</div>
-                                                        <div class="flex flex-wrap gap-1 justify-start">
+                                                        <div class="flex flex-wrap justify-start gap-1">
                                                             @foreach ($compatibleModVersionsToShow() as $modVersion)
                                                                 @if ($modVersion->id === $latestModVersionId())
                                                                     <span
-                                                                        class="inline-flex items-center rounded px-1 py-0.5 text-xs bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300"
+                                                                        class="inline-flex items-center rounded bg-green-800 px-1 py-0.5 text-xs text-green-300"
                                                                         title="{{ __('This is the latest mod version') }}"
                                                                     >
                                                                         v{{ $modVersion->version }}
                                                                     </span>
                                                                 @else
                                                                     <span
-                                                                        class="inline-flex items-center rounded px-1 py-0.5 text-xs bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                                                                        class="inline-flex items-center rounded bg-gray-800 px-1 py-0.5 text-xs text-gray-300"
                                                                     >
                                                                         v{{ $modVersion->version }}
                                                                     </span>
@@ -188,7 +187,7 @@
                                     </div>
                                 @elseif($hasNoCompatibleVersions())
                                     <span
-                                        class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                        class="inline-flex items-center rounded bg-yellow-900 px-1.5 py-0.5 text-xs font-medium text-yellow-200"
                                     >
                                         {{ __('No compatible mod versions found') }}
                                     </span>
@@ -201,8 +200,8 @@
 
             {{-- Addon Teaser/Description - Full width below image --}}
             @if ($addon->teaser)
-                <div class="mt-4 pt-3 border-t-2 border-gray-300 dark:border-gray-800">
-                    <p class="text-gray-900 dark:text-gray-200 text-sm">
+                <div class="mt-4 border-t-2 border-gray-800 pt-3">
+                    <p class="text-sm text-gray-200">
                         {{ $addon->teaser }}
                     </p>
                 </div>

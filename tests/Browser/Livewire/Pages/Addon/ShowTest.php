@@ -96,17 +96,3 @@ describe('responsive design', function (): void {
             ->assertNoJavascriptErrors();
     });
 });
-
-describe('dark mode', function (): void {
-    it('displays addon cards correctly in dark mode', function (): void {
-        $mod = createVisibleModForAddonShowBrowser();
-        $addon = Addon::factory()->for($mod)->published()->withVersions(1)->create();
-
-        $page = visit(route('addon.show', [$addon->id, $addon->slug]))
-            ->inDarkMode();
-
-        $page->assertSee($addon->name)
-            ->assertSee('ADDON')
-            ->assertNoJavascriptErrors();
-    });
-});

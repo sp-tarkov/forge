@@ -66,8 +66,11 @@
 
             <x-honeypot />
 
-            <div class="flex items-center justify-end mt-4">
-                <flux:button variant="primary" type="submit">
+            <div class="mt-4 flex items-center justify-end">
+                <flux:button
+                    variant="primary"
+                    type="submit"
+                >
                     {{ __('Reset Password') }}
                 </flux:button>
             </div>

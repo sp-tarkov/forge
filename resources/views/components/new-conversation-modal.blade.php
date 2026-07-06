@@ -16,20 +16,20 @@
         })"
     >
         {{-- Header Section --}}
-        <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+        <div class="mb-6 border-b border-gray-700 pb-6">
             <div class="flex items-center gap-3">
                 <flux:icon
                     name="chat-bubble-left-right"
-                    class="w-8 h-8 text-blue-600"
+                    class="h-8 w-8 text-blue-600"
                 />
                 <div>
                     <flux:heading
                         size="xl"
-                        class="text-gray-900 dark:text-gray-100"
+                        class="text-gray-100"
                     >
                         {{ __('Start New Conversation') }}
                     </flux:heading>
-                    <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                    <flux:text class="mt-1 text-sm text-gray-400">
                         {{ __('Search for users to start chatting with') }}
                     </flux:text>
                 </div>
@@ -54,10 +54,7 @@
                             <button
                                 wire:key="search-user-{{ $user->id }}"
                                 wire:click="startConversation({{ $user->id }})"
-                                class="w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200 text-left group
-                                       bg-white dark:bg-gray-900 hover:bg-blue-50 dark:hover:bg-blue-950
-                                       border border-transparent hover:border-blue-200 dark:hover:border-blue-800
-                                       hover:shadow-md"
+                                class="group flex w-full items-center gap-3 rounded-lg border border-transparent bg-gray-900 p-3 text-left transition-all duration-200 hover:border-blue-800 hover:bg-blue-950 hover:shadow-md"
                             >
                                 <flux:avatar
                                     src="{{ $user->profile_photo_url }}"
@@ -70,13 +67,13 @@
                                     <div class="font-medium">
                                         <x-user-name :user="$user" />
                                     </div>
-                                    <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                                    <div class="flex items-center gap-3 text-sm text-gray-400">
                                         <span>{{ __('Member since') }} {{ $user->created_at->format('M Y') }}</span>
                                         @if ($user->mods_count > 0)
                                             <span class="flex items-center gap-1">
                                                 <flux:icon
                                                     name="cube"
-                                                    class="w-3.5 h-3.5"
+                                                    class="h-3.5 w-3.5"
                                                 />
                                                 {{ $user->mods_count }} {{ Str::plural('mod', $user->mods_count) }}
                                             </span>
@@ -85,29 +82,29 @@
                                 </div>
                                 <flux:icon
                                     name="arrow-right"
-                                    class="w-5 h-5 text-gray-400 dark:text-gray-600 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                                    class="h-5 w-5 text-gray-600 transition-colors group-hover:text-blue-400"
                                 />
                             </button>
                         @endforeach
                     </div>
                 </div>
             @elseif(!empty($searchUser))
-                <div class="text-center py-8">
+                <div class="py-8 text-center">
                     <flux:icon
                         name="users"
-                        class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3"
+                        class="mx-auto mb-3 h-12 w-12 text-gray-600"
                     />
-                    <p class="text-gray-600 dark:text-gray-400">
+                    <p class="text-gray-400">
                         {{ __('No users found matching') }} "{{ $searchUser }}"
                     </p>
                 </div>
             @else
-                <div class="text-center py-8">
+                <div class="py-8 text-center">
                     <flux:icon
                         name="magnifying-glass"
-                        class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3"
+                        class="mx-auto mb-3 h-12 w-12 text-gray-600"
                     />
-                    <p class="text-gray-600 dark:text-gray-400">
+                    <p class="text-gray-400">
                         {{ __('Start typing to search for users') }}
                     </p>
                 </div>
@@ -115,7 +112,7 @@
         </div>
 
         {{-- Footer Actions --}}
-        <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
+        <div class="mt-6 flex items-center justify-end border-t border-gray-700 pt-6">
             <flux:button
                 wire:click="closeNewConversationModal"
                 variant="outline"
