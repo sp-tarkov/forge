@@ -15,7 +15,11 @@ frankenphp-worker.php
 /.idea
 /.nova
 /.rector
-/.scribe
+/.scribe/*
+!/.scribe/endpoints/
+/.scribe/endpoints/*
+!/.scribe/endpoints/custom.*.yaml
+/.scribe/endpoints/custom.0.yaml
 /.vscode
 /.zed
 Homestead.json
