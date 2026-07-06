@@ -84,5 +84,35 @@
         @endif
     </div>
 
+    @if (! $comment->isDeleted() && $comment->latestVersion?->isTranslated())
+        <div
+            class="mt-3 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40"
+            x-data="{ showTranslation: true }"
+        >
+            <button
+                type="button"
+                class="flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 cursor-pointer"
+                x-on:click="showTranslation = ! showTranslation"
+            >
+                <flux:icon.language
+                    variant="micro"
+                    class="size-4"
+                />
+                {{ __('Machine translated from :language', ['language' => $comment->latestVersion->detected_language_name ?? __('another language')]) }}
+                <flux:icon.chevron-down
+                    variant="micro"
+                    class="size-4 transition-transform"
+                    x-bind:class="{ '-rotate-90': ! showTranslation }"
+                />
+            </button>
+            <div
+                class="user-markdown px-3 pb-2 text-sm text-gray-900 dark:text-slate-200"
+                x-show="showTranslation"
+            >
+                {!! $comment->latestVersion->translated_body_html !!}
+            </div>
+        </div>
+    @endif
+
     {{ $slot }}
 </div>

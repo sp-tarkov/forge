@@ -131,6 +131,38 @@ describe('body length validation', function (): void {
     });
 });
 
+describe('translated comment factory', function (): void {
+    it('creates a comment with a translated version', function (): void {
+        $comment = Comment::factory()->translated('ru')->create();
+
+        $version = $comment->latestVersion;
+        expect($version)->not->toBeNull()
+            ->and($version?->isTranslated())->toBeTrue()
+            ->and($version?->detected_language)->toBe('ru')
+            ->and($version?->detected_language_name)->toBe('Russian')
+            ->and($version?->translated_body)->not->toBeNull()
+            ->and($version?->language_detected_at)->not->toBeNull()
+            ->and($version?->translated_at)->not->toBeNull()
+            ->and($version?->translated_body_html)->toContain('<p>');
+    });
+
+    it('picks a random sample language when none is given', function (): void {
+        $comment = Comment::factory()->translated()->create();
+
+        $version = $comment->latestVersion;
+        expect($version?->isTranslated())->toBeTrue()
+            ->and($version?->detected_language)->toBeIn(['ru', 'de', 'fr', 'zh']);
+    });
+
+    it('adds the translated version after an existing initial version', function (): void {
+        $comment = Comment::factory()->withVersion('Original English body.')->translated('de')->create();
+
+        expect($comment->versions()->count())->toBe(2)
+            ->and($comment->latestVersion?->detected_language)->toBe('de')
+            ->and($comment->latestVersion?->isTranslated())->toBeTrue();
+    });
+});
+
 describe('spam status helpers', function (): void {
     beforeEach(function (): void {
         Config::set('akismet.enabled', false);

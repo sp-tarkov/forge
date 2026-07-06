@@ -54,6 +54,11 @@ return [
         'license_key' => env('MAXMIND_LICENSE_KEY'),
     ],
 
+    'anthropic' => [
+        'api_key' => env('ANTHROPIC_API_KEY', ''),
+        'requests_per_minute' => (int) env('ANTHROPIC_REQUESTS_PER_MINUTE', 45),
+    ],
+
     'cloudflare' => [
         'analytics_token' => env('CF_ANALYTICS_TOKEN'),
         'zone_id' => env('CF_ZONE_ID'),

@@ -11,6 +11,7 @@ use App\Models\CommentReaction;
 use App\Models\Mod;
 use App\Models\ModList;
 use App\Models\User;
+use Database\Factories\CommentFactory;
 use Database\Seeders\Traits\SeederHelpers;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
@@ -194,11 +195,23 @@ final class CommentSeeder extends Seeder
             $commentData['deleted_at'] = now()->subDays(random_int(1, 30));
         }
 
-        return Comment::factory()
-            ->withVersion()
+        return $this->commentFactoryWithVersion()
             ->recycle([$commentable])
             ->recycle($allUsers)
-            ->create($commentData);
+            ->createOne($commentData);
+    }
+
+    /**
+     * Build a comment factory with an initial version, roughly ten percent of which are non-English comments that
+     * carry a stored English translation.
+     */
+    private function commentFactoryWithVersion(): CommentFactory
+    {
+        if (random_int(0, 99) < 10) {
+            return Comment::factory()->translated();
+        }
+
+        return Comment::factory()->withVersion();
     }
 
     /**
@@ -239,11 +252,10 @@ final class CommentSeeder extends Seeder
             $replyData['deleted_at'] = now()->subDays(random_int(1, 15));
         }
 
-        return Comment::factory()
-            ->withVersion()
+        return $this->commentFactoryWithVersion()
             ->reply($parentComment)
             ->recycle($allUsers)
-            ->create($replyData);
+            ->createOne($replyData);
     }
 
     /**

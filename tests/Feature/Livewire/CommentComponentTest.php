@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\SpamStatus;
 use App\Jobs\CheckCommentForSpam;
+use App\Jobs\TranslateComment;
 use App\Models\Comment;
 use App\Models\CommentVersion;
 use App\Models\License;
@@ -14,6 +15,8 @@ use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
 use App\Services\CommentSpamService;
+use App\Support\DataTransferObjects\CommentTranslationResult;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
@@ -4209,5 +4212,62 @@ describe('Disabled', function (): void {
                 ->assertDontSee('Enable Comments')
                 ->assertDontSee('Disable Comments');
         });
+    });
+});
+
+describe('Translation', function (): void {
+    it('shows the translation block for a translated comment', function (): void {
+        $mod = createPublishedMod();
+        $comment = Comment::factory()->for($mod, 'commentable')->create([
+            'body' => 'Привет, отличный мод! Спасибо за вашу работу.',
+        ]);
+        $comment->latestVersion?->applyTranslationResult(new CommentTranslationResult(
+            detectedLanguage: 'ru',
+            translatedBody: 'Hello, great mod! Thank you for your work.',
+            metadata: ['provider' => 'anthropic'],
+        ));
+
+        Livewire::test('comment-component', ['commentable' => $mod])
+            ->assertSee('Machine translated from Russian')
+            ->assertSee('Hello, great mod! Thank you for your work.');
+    });
+
+    it('does not show a translation block for untranslated comments', function (): void {
+        $mod = createPublishedMod();
+        Comment::factory()->for($mod, 'commentable')->create([
+            'body' => 'This is a regular English comment for the test.',
+        ]);
+
+        Livewire::test('comment-component', ['commentable' => $mod])
+            ->assertSee('This is a regular English comment for the test.')
+            ->assertDontSee('Machine translated from');
+    });
+
+    it('queues a translation when a comment is edited', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $comment = Comment::factory()->create([
+            'user_id' => $user->id,
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $comment->versions()->create([
+            'body' => 'Original comment.',
+            'version_number' => 1,
+            'created_at' => now(),
+        ]);
+
+        Config::set('comments.translation.enabled', true);
+        Bus::fake([TranslateComment::class]);
+
+        Livewire::actingAs($user)
+            ->test('comment-component', ['commentable' => $mod])
+            ->set('formStates.edit-'.$comment->id.'.body', 'Ce mod est vraiment excellent, merci beaucoup pour votre travail!')
+            ->call('updateComment', $comment->id)
+            ->assertHasNoErrors();
+
+        Bus::assertDispatched(TranslateComment::class, fn (TranslateComment $job): bool => $job->comment->id === $comment->id);
     });
 });

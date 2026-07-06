@@ -7,6 +7,7 @@ namespace App\Observers;
 use App\Facades\CachedGate;
 use App\Jobs\CheckCommentForSpam;
 use App\Jobs\ProcessCommentNotification;
+use App\Jobs\TranslateComment;
 use App\Models\Comment;
 
 final class CommentObserver
@@ -27,6 +28,11 @@ final class CommentObserver
             dispatch(new CheckCommentForSpam($comment));
         } elseif (! $comment->isSpam() && ! $comment->isSpamClean()) {
             $comment->markAsClean(metadata: ['reason' => 'akismet_disabled'], quiet: true);
+        }
+
+        // Detect the comment's language and translate it into English when needed.
+        if (config()->boolean('comments.translation.enabled', false)) {
+            dispatch(new TranslateComment($comment));
         }
 
         // Dispatch the comment notification job.

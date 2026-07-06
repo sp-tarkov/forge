@@ -63,4 +63,24 @@ return [
     'editing' => [
         'edit_time_limit_minutes' => (int) env('COMMENT_EDIT_TIME_LIMIT_MINUTES', 5),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Translation
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for detecting non-English comments and translating them
+    | into English. Detection runs locally first; only uncertain or
+    | non-English comments are sent to the Anthropic API.
+    |
+    */
+    'translation' => [
+        'enabled' => (bool) env('COMMENT_TRANSLATION_ENABLED', false),
+        'model' => env('COMMENT_TRANSLATION_MODEL', 'claude-haiku-4-5'),
+        'target_language' => 'en',
+        'max_tokens' => (int) env('COMMENT_TRANSLATION_MAX_TOKENS', 8192),
+        'min_length' => (int) env('COMMENT_TRANSLATION_MIN_LENGTH', 15),
+        'batch_size' => (int) env('COMMENT_TRANSLATION_BATCH_SIZE', 100),
+        'scan_chunk' => (int) env('COMMENT_TRANSLATION_SCAN_CHUNK', 2500),
+    ],
 ];

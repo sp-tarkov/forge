@@ -8,6 +8,7 @@ use App\Enums\TrackingEventType;
 use App\Facades\CachedGate;
 use App\Facades\Track;
 use App\Jobs\CheckCommentForSpam;
+use App\Jobs\TranslateComment;
 use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\Comment;
 use App\Models\CommentReaction;
@@ -375,6 +376,11 @@ new class extends Component
 
         if (config()->boolean('akismet.enabled', false)) {
             dispatch(new CheckCommentForSpam($comment));
+        }
+
+        // The edit created a new version, so detect its language and translate it again when needed.
+        if (config()->boolean('comments.translation.enabled', false)) {
+            dispatch(new TranslateComment($comment));
         }
 
         Track::event(TrackingEventType::COMMENT_EDIT, $comment);
