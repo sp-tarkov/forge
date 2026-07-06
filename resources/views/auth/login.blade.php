@@ -66,24 +66,24 @@
                         type="checkbox"
                         id="remember_me"
                         name="remember"
-                        class="rounded border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                        class="rounded border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500"
                     />
                     <label
                         for="remember_me"
-                        class="ms-2 text-sm text-gray-400 dark:text-gray-500"
+                        class="ms-2 text-sm text-gray-500"
                     >
                         {{ __('Remember me') }}
                     </label>
                 </div>
                 <div class="flex items-center space-x-3">
                     <a
-                        class="text-sm text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 underline rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                        class="text-sm text-gray-500 hover:text-gray-300 underline rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                         href="{{ route('register') }}"
                     >
                         {{ __('Register') }}
                     </a>
                     <a
-                        class="text-sm text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 underline rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                        class="text-sm text-gray-500 hover:text-gray-300 underline rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                         href="{{ route('password.request') }}"
                     >
                         {{ __('Forgot password?') }}
@@ -110,7 +110,7 @@
             <div class="mt-6">
                 <flux:separator
                     variant="subtle"
-                    class="text-gray-400 dark:text-gray-500"
+                    class="text-gray-500"
                 >
                     {{ __('Or continue with') }}
                 </flux:separator>

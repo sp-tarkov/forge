@@ -19,7 +19,7 @@
 
 <x-slot:header>
     <div class="flex items-center justify-between w-full">
-        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+        <h2 class="font-semibold text-xl text-gray-200 leading-tight flex items-center gap-2">
             <flux:icon.cube-transparent class="w-5 h-5" />
             {{ __('Mod Listings') }}
         </h2>
@@ -45,9 +45,9 @@
 
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
     <div
-        class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mods') }}</h1>
-        <p class="mt-4 text-base text-gray-800 dark:text-gray-300">{!! __(
+        class="px-4 py-8 sm:px-6 lg:px-8 bg-gray-900 overflow-hidden shadow-xl shadow-gray-900 rounded-none sm:rounded-lg">
+        <h1 class="text-4xl font-bold tracking-tight text-gray-200">{{ __('Mods') }}</h1>
+        <p class="mt-4 text-base text-gray-300">{!! __(
             'Explore an enhanced <abbr title="Single Player Tarkov">SPT</abbr> experience with the mods available below. Not sure where to start? Check out the featured mods; they are hand-picked by our team and a solid choice to get you started.',
         ) !!}</p>
         <search class="lg:hidden relative group mt-6">
@@ -67,7 +67,7 @@
             </div>
             <input
                 wire:model.live.debounce.300ms="query"
-                class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6"
+                class="w-full rounded-md border-0 bg-gray-700 py-1.5 pl-10 pr-3 text-gray-300 ring-1 ring-inset ring-gray-700 placeholder:text-gray-400 focus:ring-inset focus:ring-gray-700 focus:bg-gray-200 focus:text-black focus:ring-0 sm:text-sm sm:leading-6"
                 placeholder="{{ __('Search Mods') }}"
             />
         </search>
@@ -76,27 +76,27 @@
             x-data="{ isFilterOpen: false }"
             x-on:click.away="isFilterOpen = false"
             aria-labelledby="filter-heading"
-            class="my-8 grid items-center border-t border-gray-400 dark:border-gray-700"
+            class="my-8 grid items-center border-t border-gray-700"
         >
             <h2
                 id="filter-heading"
                 class="sr-only"
             >{{ __('Filters') }}</h2>
-            <div class="relative col-start-1 row-start-1 py-4 border-b border-gray-400 dark:border-gray-700">
+            <div class="relative col-start-1 row-start-1 py-4 border-b border-gray-700">
                 <div
                     class="mx-auto flex flex-wrap items-center justify-center sm:justify-start gap-2 lg:gap-0 lg:flex-nowrap max-w-7xl text-sm">
                     {{-- Filters button --}}
                     <div
-                        class="flex items-center border-r border-gray-400 dark:border-gray-700 flex-shrink-0 order-1 self-stretch">
+                        class="flex items-center border-r border-gray-700 flex-shrink-0 order-1 self-stretch">
                         <button
                             type="button"
                             x-on:click="isFilterOpen = !isFilterOpen"
-                            class="group flex items-center font-medium text-gray-800 dark:text-gray-300 pr-3 sm:pr-4 lg:pr-4 xl:pr-6 whitespace-nowrap"
+                            class="group flex items-center font-medium text-gray-300 pr-3 sm:pr-4 lg:pr-4 xl:pr-6 whitespace-nowrap"
                             aria-controls="disclosure-1"
                             aria-expanded="false"
                         >
                             <svg
-                                class="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-none text-gray-500 group-hover:text-gray-600 dark:text-gray-600"
+                                class="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-none group-hover:text-gray-600 text-gray-600"
                                 aria-hidden="true"
                                 viewBox="0 0 20 20"
                                 fill="currentColor"
@@ -114,7 +114,7 @@
 
                     {{-- Search bar (only on large screens and up) --}}
                     <div
-                        class="hidden lg:flex items-center border-r border-gray-400 dark:border-gray-700 flex-1 min-w-[280px] max-w-md order-2 self-stretch">
+                        class="hidden lg:flex items-center border-r border-gray-700 flex-1 min-w-[280px] max-w-md order-2 self-stretch">
                         <search class="flex relative group px-3 sm:px-4 lg:px-4 xl:px-6 w-full">
                             <div
                                 class="pointer-events-none absolute inset-y-0 left-5 sm:left-6 lg:left-8 flex items-center">
@@ -133,7 +133,7 @@
                             </div>
                             <input
                                 wire:model.live.debounce.300ms="query"
-                                class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-8 sm:pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 text-sm sm:leading-6"
+                                class="w-full rounded-md border-0 bg-gray-700 py-1.5 pl-8 sm:pl-10 pr-3 text-gray-300 ring-1 ring-inset ring-gray-700 placeholder:text-gray-400 focus:ring-inset focus:ring-gray-700 focus:bg-gray-200 focus:text-black focus:ring-0 text-sm sm:leading-6"
                                 placeholder="{{ __('Search Mods') }}"
                             />
                         </search>
@@ -141,7 +141,7 @@
 
                     {{-- Results Per Page Dropdown --}}
                     <div
-                        class="flex items-center border-r border-gray-400 dark:border-gray-700 flex-shrink-0 order-2 md:order-3 self-stretch">
+                        class="flex items-center border-r border-gray-700 flex-shrink-0 order-2 md:order-3 self-stretch">
                         <div
                             class="relative inline-block px-3 sm:px-3 lg:px-3 xl:px-4"
                             x-data="{ isResultsPerPageOpen: false }"
@@ -151,7 +151,7 @@
                                 <button
                                     type="button"
                                     x-on:click="isResultsPerPageOpen = !isResultsPerPageOpen"
-                                    class="group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                                    class="group inline-flex justify-center text-sm font-medium text-gray-300 hover:text-gray-100"
                                     id="menu-button-per-page"
                                     :aria-expanded="isResultsPerPageOpen.toString()"
                                     aria-haspopup="true"
@@ -181,7 +181,7 @@
                                 x-transition:leave="transition ease-in duration-75"
                                 x-transition:leave-start="transform opacity-100 scale-100"
                                 x-transition:leave-end="transform opacity-0 scale-95"
-                                class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-400 bg-gray-200 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+                                class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y overflow-hidden rounded-xl border divide-gray-700 border-gray-700 bg-gray-800"
                                 role="menu"
                                 aria-orientation="vertical"
                                 aria-labelledby="menu-button-per-page"
@@ -211,7 +211,7 @@
                                 <button
                                     type="button"
                                     x-on:click="isSortOpen = !isSortOpen"
-                                    class="group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                                    class="group inline-flex justify-center text-sm font-medium text-gray-300 hover:text-gray-100"
                                     id="menu-button-sort"
                                     :aria-expanded="isSortOpen.toString()"
                                     aria-haspopup="true"
@@ -240,7 +240,7 @@
                                 x-transition:leave="transition ease-in duration-75"
                                 x-transition:leave-start="transform opacity-100 scale-100"
                                 x-transition:leave-end="transform opacity-0 scale-95"
-                                class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-400 bg-gray-200 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+                                class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y overflow-hidden rounded-xl border divide-gray-700 border-gray-700 bg-gray-800"
                                 role="menu"
                                 aria-orientation="vertical"
                                 aria-labelledby="menu-button-sort"
@@ -270,18 +270,18 @@
                     {{-- Loading indicator - displays at all breakpoints with reserved space --}}
                     <div
                         class="hidden sm:flex items-center flex-shrink-0 order-4 md:order-5 self-stretch"
-                        wire:loading.class="!flex border-l border-gray-400 dark:border-gray-700"
+                        wire:loading.class="!flex border-l border-gray-700"
                     >
                         <div class="px-3 sm:px-4 lg:px-4 xl:px-6 min-w-[2.5rem] lg:min-w-[5rem] xl:min-w-[7rem]">
                             <p
-                                class="flex items-center font-medium text-gray-800 dark:text-gray-300"
+                                class="flex items-center font-medium text-gray-300"
                                 wire:loading.flex
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
                                     aria-hidden="true"
-                                    class="w-4 h-4 fill-cyan-600 dark:fill-cyan-600 motion-safe:animate-spin"
+                                    class="w-4 h-4 fill-cyan-600 motion-safe:animate-spin"
                                 >
                                     <path
                                         d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
@@ -307,7 +307,7 @@
                         <button
                             x-on:click="$wire.call('resetFilters')"
                             type="button"
-                            class="px-3 sm:px-4 lg:px-4 xl:px-6 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 whitespace-nowrap text-sm"
+                            class="px-3 sm:px-4 lg:px-4 xl:px-6 text-gray-300 hover:text-gray-200 whitespace-nowrap text-sm"
                         >
                             {{ __('Reset Filters') }}
                         </button>
@@ -315,7 +315,7 @@
 
                     {{-- RSS Feed Link --}}
                     <div
-                        class="flex items-center sm:border-l border-gray-400 dark:border-gray-700 flex-shrink-0 order-7 sm:order-7 md:order-8 self-stretch">
+                        class="flex items-center sm:border-l border-gray-700 flex-shrink-0 order-7 sm:order-7 md:order-8 self-stretch">
                         <a
                             href="{{ route('mods.rss') }}?{{ http_build_query([
                                 'query' => $query,
@@ -325,7 +325,7 @@
                                 'category' => $category,
                             ]) }}"
                             target="_blank"
-                            class="flex items-center px-3 sm:px-4 lg:px-4 xl:px-6 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 whitespace-nowrap text-sm"
+                            class="flex items-center px-3 sm:px-4 lg:px-4 xl:px-6 text-gray-300 hover:text-gray-200 whitespace-nowrap text-sm"
                             title="{{ __('RSS Feed for Current Filters') }}"
                         >
                             <svg
@@ -357,7 +357,7 @@
                 x-transition:leave-start="opacity-100 transform translate-y-0"
                 x-transition:leave-end="opacity-0 transform -translate-y-10"
                 id="disclosure-1"
-                class="py-10 border-b border-gray-400 dark:border-gray-700"
+                class="py-10 border-b border-gray-700"
             >
                 <div
                     class="mx-auto grid max-w-7xl grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 sm:gap-y-8 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
@@ -365,7 +365,7 @@
                         class="col-span-1 sm:col-span-2 grid auto-rows-min grid-cols-1 gap-y-2 sm:gap-y-0 sm:grid-cols-2 sm:gap-x-6">
                         <!-- SPT Versions fieldset spanning both columns -->
                         <fieldset class="col-span-1 sm:col-span-2">
-                            <legend class="block font-semibold text-gray-800 dark:text-gray-100">
+                            <legend class="block font-semibold text-gray-100">
                                 {{ __('SPT Versions') }}</legend>
                             <div class="pt-6 sm:pt-4 pb-2 sm:pb-2 md:pb-1">
                                 <div class="flex items-center text-base sm:text-sm">
@@ -380,7 +380,7 @@
                                     >
                                     <label
                                         for="sptVersions-all"
-                                        class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300"
+                                        class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-300"
                                         wire:loading.class="opacity-50"
                                     >{{ __('All Versions') }}</label>
                                 </div>
@@ -403,10 +403,10 @@
                                         >
                                         <label
                                             for="sptVersions-{{ $version->version }}"
-                                            @if (auth()->user()?->isModOrAdmin() && (!$version->publish_date || $version->publish_date->isFuture())) class="cursor-pointer ml-3 min-w-0 inline-flex text-orange-600 dark:text-orange-400"
+                                            @if (auth()->user()?->isModOrAdmin() && (!$version->publish_date || $version->publish_date->isFuture())) class="cursor-pointer ml-3 min-w-0 inline-flex text-orange-400"
                                                 title="Unpublished - Not publicly visible"
                                             @else
-                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300" @endif
+                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-300" @endif
                                             wire:loading.class="opacity-50"
                                         >
                                             {{ $version->version }}
@@ -432,10 +432,10 @@
                                         >
                                         <label
                                             for="sptVersions-{{ $version->version }}"
-                                            @if (auth()->user()?->isModOrAdmin() && (!$version->publish_date || $version->publish_date->isFuture())) class="cursor-pointer ml-3 min-w-0 inline-flex text-orange-600 dark:text-orange-400"
+                                            @if (auth()->user()?->isModOrAdmin() && (!$version->publish_date || $version->publish_date->isFuture())) class="cursor-pointer ml-3 min-w-0 inline-flex text-orange-400"
                                                 title="Unpublished - Not publicly visible"
                                             @else
-                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300" @endif
+                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-300" @endif
                                             wire:loading.class="opacity-50"
                                         >
                                             {{ $version->version }}
@@ -462,7 +462,7 @@
                                     >
                                     <label
                                         for="sptVersions-legacy"
-                                        class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300"
+                                        class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-300"
                                         wire:loading.class="opacity-50"
                                     >{{ __('Legacy Versions') }}</label>
                                 </div>
@@ -471,7 +471,7 @@
                     </div>
                     <div class="col-span-1 md:col-span-1 mt-6 sm:mt-0 space-y-8">
                         <fieldset>
-                            <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Featured') }}
+                            <legend class="block font-semibold text-gray-100">{{ __('Featured') }}
                             </legend>
                             <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
                                 <x-filter-radio
@@ -492,7 +492,7 @@
                             </div>
                         </fieldset>
                         <fieldset>
-                            <legend class="block font-semibold text-gray-800 dark:text-gray-100">
+                            <legend class="block font-semibold text-gray-100">
                                 {{ __('Fika Compatibility') }}</legend>
                             <div class="pt-6 sm:pt-4">
                                 <div class="flex items-center text-base sm:text-sm">
@@ -505,7 +505,7 @@
                                     >
                                     <label
                                         for="fikaCompatibility"
-                                        class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300"
+                                        class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-300"
                                         wire:loading.class="opacity-50"
                                     >{{ __('Compatible Only') }}</label>
                                 </div>
@@ -513,7 +513,7 @@
                         </fieldset>
                     </div>
                     <fieldset class="col-span-1 md:col-span-1 mt-6 sm:mt-0">
-                        <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Category') }}
+                        <legend class="block font-semibold text-gray-100">{{ __('Category') }}
                         </legend>
                         <div class="pt-6 sm:pt-4">
                             <flux:select
@@ -549,7 +549,7 @@
                 @endforeach
             </div>
         @else
-            <div class="text-center text-gray-900 dark:text-gray-300">
+            <div class="text-center text-gray-300">
                 <p>{{ __('There were no mods found with those filters applied. ') }}</p>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"

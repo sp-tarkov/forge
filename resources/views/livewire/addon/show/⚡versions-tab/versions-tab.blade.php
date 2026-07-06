@@ -2,7 +2,7 @@
     <div class="space-y-4">
         {{-- Version card placeholders --}}
         @for ($i = 0; $i < 3; $i++)
-            <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+            <div class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
                 <flux:skeleton.group class="space-y-4">
                     {{-- Version header --}}
                     <div class="flex items-center justify-between">
@@ -35,12 +35,12 @@
             :addon="$this->addon"
         />
     @empty
-        <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+        <div class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
             <div class="text-center py-8">
                 <flux:icon.archive-box class="mx-auto h-12 w-12 text-gray-400" />
-                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <h3 class="mt-2 text-sm font-semibold text-gray-100">
                     {{ __('No Versions Yet') }}</h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <p class="mt-1 text-sm text-gray-400">
                     {{ __('This addon doesn\'t have any versions yet.') }}</p>
                 @cachedCan('create', [App\Models\AddonVersion::class, $this->addon])
                     <div class="mt-6">

@@ -129,13 +129,13 @@ new #[Lazy] class extends Component
             {{-- Stats Cards Skeleton --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                 @for ($i = 0; $i < 5; $i++)
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
                     <div class="flex items-center justify-between">
                         <div class="space-y-2">
                             <flux:skeleton class="h-3 w-20 rounded" />
                             <flux:skeleton class="h-8 w-24 rounded" />
                         </div>
-                        <div class="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                        <div class="p-3 bg-gray-800 rounded-lg">
                             <flux:skeleton class="size-6 rounded" />
                         </div>
                     </div>
@@ -146,7 +146,7 @@ new #[Lazy] class extends Component
             {{-- Top Stats Skeleton --}}
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 @for ($i = 0; $i < 4; $i++)
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
                     <flux:skeleton class="h-5 w-24 rounded mb-4" />
                     <div class="space-y-3">
                         @for ($j = 0; $j < 5; $j++)

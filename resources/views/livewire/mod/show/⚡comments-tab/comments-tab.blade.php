@@ -4,7 +4,7 @@
         class="space-y-6"
     >
         {{-- Comment form placeholder --}}
-        <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+        <div class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
             <flux:skeleton.group class="space-y-4">
                 <flux:skeleton class="h-24 w-full rounded" />
                 <div class="flex justify-end">
@@ -15,7 +15,7 @@
 
         {{-- Comment placeholders --}}
         @for ($i = 0; $i < 3; $i++)
-            <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+            <div class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
                 <flux:skeleton.group class="space-y-3">
                     {{-- Comment header --}}
                     <div class="flex items-center gap-3">

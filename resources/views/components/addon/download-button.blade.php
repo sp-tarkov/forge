@@ -12,7 +12,7 @@
 <div class="{{ $name === 'download-show-mobile' ? 'lg:hidden block' : 'hidden lg:block' }}">
     <flux:modal.trigger name="{{ $name }}">
         <button
-            class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20"
+            class="text-lg font-extrabold hover:bg-cyan-600 shadow-md shadow-gray-950 drop-shadow-2xl bg-cyan-700 rounded-xl w-full h-20"
         >
             <div class="flex flex-col justify-center items-center">
                 <div>{{ __('Download Latest Version') }} ({{ $versionString }})</div>
@@ -30,23 +30,23 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Latest Version') }} {{ $versionString }}
                         </flux:heading>
 
                         <div class="flex items-center gap-3 mt-3 flex-wrap">
-                            <flux:text class="text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="text-gray-400 text-sm">
                                 {{ __('Updated') }} {{ $versionUpdatedAt->dynamicFormat() }}
                             </flux:text>
 
                             @if ($fileSize)
-                                <flux:text class="text-gray-600 dark:text-gray-400 text-sm">
+                                <flux:text class="text-gray-400 text-sm">
                                     {{ $fileSize }}
                                 </flux:text>
                             @endif
@@ -60,19 +60,19 @@
                 <div class="flex items-center gap-2">
                     <flux:icon
                         name="document-text"
-                        class="w-5 h-5 text-gray-500 dark:text-gray-400"
+                        class="w-5 h-5 text-gray-400"
                     />
                     <flux:heading
                         size="md"
-                        class="text-gray-900 dark:text-gray-100"
+                        class="text-gray-100"
                     >
                         {{ __('Version Notes') }}
                     </flux:heading>
                 </div>
 
-                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+                <div class="bg-gray-900 border border-gray-700 rounded-lg shadow-sm">
                     <div
-                        class="p-6 prose prose-sm dark:prose-invert max-w-none overflow-y-auto max-h-80 text-gray-700 dark:text-gray-300">
+                        class="p-6 prose prose-sm prose-invert max-w-none overflow-y-auto max-h-80 text-gray-300">
                         {{--
                             !DANGER ZONE!
 
@@ -85,8 +85,8 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                <div class="flex items-center text-xs text-amber-600 dark:text-amber-400 max-w-sm">
+            <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-700">
+                <div class="flex items-center text-xs text-amber-400 max-w-sm">
                     <flux:icon
                         name="exclamation-triangle"
                         class="w-4 h-4 mr-2 flex-shrink-0"

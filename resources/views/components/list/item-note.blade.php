@@ -49,12 +49,12 @@
                 <flux:icon.chat-bubble-left class="size-3 text-gray-400" />
             </div>
             <div class="flex-1 min-w-0 flex items-start gap-1.5">
-                <div class="flex-1 text-xs italic text-gray-600 dark:text-gray-400 whitespace-pre-line break-words">{{ $note }}</div>
+                <div class="flex-1 text-xs italic text-gray-400 whitespace-pre-line break-words">{{ $note }}</div>
                 @if ($canManage)
                     <button
                         type="button"
                         wire:click="startEditingNote({{ $itemId }})"
-                        class="shrink-0 p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+                        class="shrink-0 p-1 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 cursor-pointer"
                         aria-label="{{ __('Edit note') }}"
                     >
                         <flux:icon.pencil class="size-3" />
@@ -71,7 +71,7 @@
             <button
                 type="button"
                 wire:click="startEditingNote({{ $itemId }})"
-                class="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
+                class="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-200 cursor-pointer"
             >
                 <flux:icon.plus class="size-3" />
                 {{ __('Add note') }}

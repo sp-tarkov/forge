@@ -88,7 +88,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="eye"
@@ -97,11 +97,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Enable Mod Version') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Make version available') }}
                         </flux:text>
                     </div>
@@ -110,11 +110,11 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     Are you sure you want to enable version "{{ $this->versionNumber }}" of the
                     "{{ $this->version->mod->name ?? 'Unknown' }}" mod?
                 </flux:text>
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     This will allow visitors to view and download the version.
                 </flux:text>
 
@@ -129,7 +129,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('mod-version-action-enable-{{ $this->versionId }}').close()"
                     variant="outline"
@@ -156,7 +156,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="eye-slash"
@@ -165,11 +165,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Disable Mod Version') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Hide version from visitors') }}
                         </flux:text>
                     </div>
@@ -178,11 +178,11 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     Are you sure you want to disable version "{{ $this->versionNumber }}" of the
                     "{{ $this->version->mod->name ?? 'Unknown' }}" mod?
                 </flux:text>
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     This will prevent visitors from viewing or downloading the version.
                 </flux:text>
 
@@ -197,7 +197,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('mod-version-action-disable-{{ $this->versionId }}').close()"
                     variant="outline"
@@ -224,7 +224,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="trash"
@@ -233,11 +233,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Delete Mod Version') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Permanent deletion') }}
                         </flux:text>
                     </div>
@@ -246,23 +246,23 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     Are you sure you want to delete version "{{ $this->versionNumber }}" of the
                     "{{ $this->version->mod->name ?? 'Unknown' }}" mod?
                 </flux:text>
 
                 <div
-                    class="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 rounded-lg p-4">
+                    class="bg-amber-950/30 border border-amber-700 rounded-lg p-4">
                     <div class="flex items-start gap-3">
                         <flux:icon
                             name="exclamation-triangle"
                             class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0"
                         />
                         <div>
-                            <flux:text class="text-amber-900 dark:text-amber-200 text-sm font-medium">
+                            <flux:text class="text-amber-200 text-sm font-medium">
                                 {{ __('Attention!') }}
                             </flux:text>
-                            <flux:text class="text-amber-800 dark:text-amber-300 text-sm mt-1">
+                            <flux:text class="text-amber-300 text-sm mt-1">
                                 The mod version will be permanently deleted, along with all data tied directly to the
                                 version. If this isn't necessary you should simply disable the version instead.
                             </flux:text>
@@ -281,8 +281,8 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                <div class="flex items-center text-xs text-red-600 dark:text-red-400">
+            <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-700">
+                <div class="flex items-center text-xs text-red-400">
                     <flux:icon
                         name="shield-exclamation"
                         class="w-4 h-4 mr-2 flex-shrink-0"
@@ -320,7 +320,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="eye"
@@ -329,11 +329,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Publish Mod Version') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Make version available') }}
                         </flux:text>
                     </div>
@@ -342,7 +342,7 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     Select the date and time version "{{ $this->versionNumber }}" of the
                     "{{ $this->version->mod->name ?? 'Unknown' }}" mod will be published.
                 </flux:text>
@@ -362,7 +362,7 @@
                                     You have not selected a timezone for your account. The published date will be
                                     interpreted as a UTC date. You can <a
                                         href="/user/profile"
-                                        class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                                        class="underline text-white hover:text-cyan-200 transition-colors"
                                     >edit your profile</a> to set a specific timezone.
                                 </flux:callout.text>
                             </flux:callout>
@@ -394,7 +394,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('mod-version-action-publish-{{ $this->versionId }}').close()"
                     variant="outline"
@@ -421,7 +421,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="eye-slash"
@@ -430,11 +430,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Unpublish Mod Version') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Hide version from visitors') }}
                         </flux:text>
                     </div>
@@ -443,11 +443,11 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     Are you sure you want to unpublish version "{{ $this->versionNumber }}" of the
                     "{{ $this->version->mod->name ?? 'Unknown' }}" mod?
                 </flux:text>
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     This will remove the published date and prevent visitors from viewing or downloading the version.
                 </flux:text>
 
@@ -462,7 +462,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('mod-version-action-unpublish-{{ $this->versionId }}').close()"
                     variant="outline"

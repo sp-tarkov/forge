@@ -25,7 +25,7 @@
             >
                 <div class="space-y-0">
                     {{-- Header Section --}}
-                    <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                    <div class="border-b border-gray-700 pb-6 mb-6">
                         <div class="flex items-center gap-3">
                             <flux:icon
                                 name="{{ $isBlocked ? 'x-mark' : 'no-symbol' }}"
@@ -34,11 +34,11 @@
                             <div>
                                 <flux:heading
                                     size="xl"
-                                    class="text-gray-900 dark:text-gray-100"
+                                    class="text-gray-100"
                                 >
                                     {{ $isBlocked ? __('Unblock User') : __('Block User') }}
                                 </flux:heading>
-                                <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                                <flux:text class="mt-1 text-gray-400 text-sm">
                                     {{ $user->name }}
                                 </flux:text>
                             </div>
@@ -48,15 +48,15 @@
                     {{-- Content Section --}}
                     <div class="space-y-4">
                         @if ($isBlocked)
-                            <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                            <flux:text class="text-gray-300 text-sm">
                                 {{ __('Are you sure you want to unblock this user? You will be able to see their content and they will be able to interact with you again.') }}
                             </flux:text>
                         @else
                             <div class="space-y-2">
-                                <flux:text class="text-gray-900 dark:text-gray-100 text-sm font-medium">
+                                <flux:text class="text-gray-100 text-sm font-medium">
                                     {{ __('What happens when you block someone:') }}
                                 </flux:text>
-                                <ul class="text-gray-700 dark:text-gray-300 text-sm list-disc list-inside space-y-1 ml-2">
+                                <ul class="text-gray-300 text-sm list-disc list-inside space-y-1 ml-2">
                                     <li>{{ __('You won\'t see their comments or messages') }}</li>
                                     <li>{{ __('They can\'t send you messages or comment on your content') }}</li>
                                     <li>{{ __('Any existing conversations will be archived') }}</li>
@@ -64,7 +64,7 @@
                                 </ul>
                             </div>
 
-                            <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                            <flux:text class="text-gray-300 text-sm">
                                 {{ __('You can optionally provide a reason for blocking (only visible to moderators):') }}
                             </flux:text>
 
@@ -78,7 +78,7 @@
                     </div>
 
                     {{-- Footer Section --}}
-                    <div class="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6 flex justify-end gap-3">
+                    <div class="border-t border-gray-700 pt-6 mt-6 flex justify-end gap-3">
                         <flux:button
                             wire:click="toggleBlockModal"
                             variant="outline"

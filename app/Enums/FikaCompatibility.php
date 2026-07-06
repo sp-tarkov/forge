@@ -78,9 +78,9 @@ enum FikaCompatibility: string
     public function colorClass(): string
     {
         return match ($this) {
-            self::Compatible => 'text-green-600 dark:text-green-500',
-            self::Incompatible => 'text-red-600 dark:text-red-500',
-            self::Unknown => 'text-gray-600 dark:text-gray-400',
+            self::Compatible => 'text-green-500',
+            self::Incompatible => 'text-red-500',
+            self::Unknown => 'text-gray-400',
         };
     }
 

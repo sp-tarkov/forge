@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between w-full">
             <div>
-                <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+                <h2 class="font-semibold text-xl text-gray-200 leading-tight">
                     {{ __('User Management') }}
                 </h2>
             </div>
@@ -13,7 +13,7 @@
         @if ($this->getActiveFilters())
             <div class="my-6">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300 flex-shrink-0">Filtering:</span>
+                    <span class="text-sm font-medium text-gray-300 flex-shrink-0">Filtering:</span>
                     <div class="min-w-0">
                         <flux:breadcrumbs class="inline-flex flex-wrap">
                             @foreach ($this->getActiveFilters() as $index => $filter)
@@ -28,19 +28,19 @@
         {{-- Flash Messages --}}
         @if (session()->has('success'))
             <div
-                class="mb-6 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                class="mb-6 p-4 rounded-lg bg-green-900/20 border border-green-800">
                 <div class="flex items-center">
-                    <flux:icon.check-circle class="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
-                    <p class="text-green-800 dark:text-green-200 text-sm">{{ session('success') }}</p>
+                    <flux:icon.check-circle class="w-5 h-5 text-green-400 mr-2" />
+                    <p class="text-green-200 text-sm">{{ session('success') }}</p>
                 </div>
             </div>
         @endif
 
         @if (session()->has('error'))
-            <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <div class="mb-6 p-4 rounded-lg bg-red-900/20 border border-red-800">
                 <div class="flex items-center">
-                    <flux:icon.x-circle class="w-5 h-5 text-red-600 dark:text-red-400 mr-2" />
-                    <p class="text-red-800 dark:text-red-200 text-sm">{{ session('error') }}</p>
+                    <flux:icon.x-circle class="w-5 h-5 text-red-400 mr-2" />
+                    <p class="text-red-200 text-sm">{{ session('error') }}</p>
                 </div>
             </div>
         @endif
@@ -49,7 +49,7 @@
             {{-- Filters Section --}}
             <div
                 id="filters-container"
-                class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+                class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6"
                 x-data="{
                     search: $wire.entangle('search').live,
                     clearSearch() {
@@ -58,7 +58,7 @@
                 }"
             >
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filters</h3>
+                    <h3 class="text-lg font-semibold text-gray-100">Filters</h3>
                     <flux:button
                         wire:click="resetFilters"
                         x-on:click="clearSearch()"
@@ -146,15 +146,15 @@
 
             {{-- Users Table --}}
             <div
-                class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Users
+                class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 overflow-hidden">
+                <div class="p-6 border-b border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-100">Users
                         ({{ number_format($this->users->total()) }})</h3>
                 </div>
 
                 {{-- Top Pagination --}}
                 @if ($this->users->hasPages())
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                    <div class="px-6 py-4 border-b border-gray-700 bg-gray-800">
                         {{ $this->users->links(data: ['scrollTo' => '#filters-container']) }}
                     </div>
                 @endif
@@ -164,14 +164,14 @@
                         class="w-full table-auto"
                         style="min-width: 1000px;"
                     >
-                        <thead class="bg-gray-100 dark:bg-gray-900">
+                        <thead class="bg-gray-900">
                             <tr>
                                 <th
-                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-400 tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('name')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
+                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
                                     >
                                         <span>User</span>
                                         @if ($sortBy === 'name')
@@ -182,11 +182,11 @@
                                     </button>
                                 </th>
                                 <th
-                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-400 tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('user_role_id')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
+                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
                                     >
                                         <span>Role</span>
                                         @if ($sortBy === 'user_role_id')
@@ -197,14 +197,14 @@
                                     </button>
                                 </th>
                                 <th
-                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-400 tracking-wider">
                                     Ban Status</th>
                                 <th
-                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-400 tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('email_verified_at')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
+                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
                                     >
                                         <span>Email</span>
                                         @if ($sortBy === 'email_verified_at')
@@ -215,17 +215,17 @@
                                     </button>
                                 </th>
                                 <th
-                                    class="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                    class="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-400 tracking-wider">
                                     MFA</th>
                                 <th
-                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-400 tracking-wider">
                                     Content</th>
                                 <th
-                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('created_at')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
+                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
                                     >
                                         <span>Joined</span>
                                         @if ($sortBy === 'created_at')
@@ -236,13 +236,13 @@
                                     </button>
                                 </th>
                                 <th
-                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                    class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-400 tracking-wider">
                                     Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="bg-gray-800 divide-y divide-gray-700">
                             @forelse($this->users as $user)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <tr class="hover:bg-gray-700">
                                     {{-- User Column --}}
                                     <td class="px-2 sm:px-3 py-2 whitespace-nowrap">
                                         <div class="flex items-center space-x-2">
@@ -256,13 +256,13 @@
                                             <div class="min-w-0">
                                                 <a
                                                     href="{{ $user->profile_url }}"
-                                                    class="text-sm font-medium underline hover:text-gray-600 dark:hover:text-gray-300 truncate block max-w-32 lg:max-w-48"
+                                                    class="text-sm font-medium underline hover:text-gray-300 truncate block max-w-32 lg:max-w-48"
                                                 >
                                                     <x-user-name :user="$user" />
                                                 </a>
-                                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                <p class="text-xs text-gray-400">
                                                     {{ $user->email }}</p>
-                                                <p class="text-xs text-gray-400 dark:text-gray-500">ID:
+                                                <p class="text-xs text-gray-500">ID:
                                                     {{ $user->id }}</p>
                                             </div>
                                         </div>
@@ -295,7 +295,7 @@
                                                 >Banned</flux:badge>
                                                 <flux:tooltip>
                                                     <flux:icon.information-circle
-                                                        class="w-4 h-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-help"
+                                                        class="w-4 h-4 text-gray-500 hover:text-gray-300 cursor-help"
                                                     />
                                                     <flux:tooltip.content>
                                                         <div class="text-sm">
@@ -337,7 +337,7 @@
                                             @if ($user->hasDisposableEmail())
                                                 <flux:tooltip>
                                                     <flux:icon.exclamation-triangle
-                                                        class="w-4 h-4 text-amber-600 dark:text-amber-400"
+                                                        class="w-4 h-4 text-amber-400"
                                                     />
                                                     <flux:tooltip.content>
                                                         <div class="text-sm">
@@ -353,18 +353,18 @@
                                     <td class="px-2 sm:px-3 py-2 whitespace-nowrap text-center">
                                         @if ($user->hasMfaEnabled())
                                             <flux:icon.shield-check
-                                                class="w-4 h-4 text-green-600 dark:text-green-400 mx-auto"
+                                                class="w-4 h-4 text-green-400 mx-auto"
                                             />
                                         @else
                                             <flux:icon.shield-exclamation
-                                                class="w-4 h-4 text-red-600 dark:text-red-400 mx-auto"
+                                                class="w-4 h-4 text-red-400 mx-auto"
                                             />
                                         @endif
                                     </td>
 
                                     {{-- Content Column --}}
                                     <td class="px-2 sm:px-3 py-2 whitespace-nowrap">
-                                        <div class="text-xs text-gray-900 dark:text-gray-100">
+                                        <div class="text-xs text-gray-100">
                                             <div>Mods: {{ number_format($user->mods_count) }}</div>
                                             <div>Comments: {{ number_format($user->comments_count) }}</div>
                                         </div>
@@ -372,9 +372,9 @@
 
                                     {{-- Joined Column --}}
                                     <td
-                                        class="px-2 sm:px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-gray-100">
+                                        class="px-2 sm:px-3 py-2 whitespace-nowrap text-xs text-gray-100">
                                         <div>{{ $user->created_at->format('M j, Y') }}</div>
-                                        <div class="text-gray-500 dark:text-gray-400">
+                                        <div class="text-gray-400">
                                             {{ $user->created_at->diffForHumans() }}</div>
                                     </td>
 
@@ -428,12 +428,12 @@
                                 <tr>
                                     <td
                                         colspan="8"
-                                        class="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
+                                        class="px-6 py-12 text-center text-gray-400"
                                     >
                                         <flux:icon.users
-                                            class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600"
+                                            class="w-12 h-12 mx-auto mb-4 text-gray-600"
                                         />
-                                        <p class="text-gray-500 dark:text-gray-400">No users found for the selected
+                                        <p class="text-gray-400">No users found for the selected
                                             filters.</p>
                                     </td>
                                 </tr>
@@ -444,7 +444,7 @@
 
                 {{-- Bottom Pagination --}}
                 @if ($this->users->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-t border-gray-700">
                         {{ $this->users->links(data: ['scrollTo' => '#filters-container']) }}
                     </div>
                 @endif
@@ -459,7 +459,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="shield-exclamation"
@@ -468,11 +468,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Ban User') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Restrict user access to the platform') }}
                         </flux:text>
                     </div>
@@ -481,17 +481,17 @@
 
             {{-- Content Section --}}
             <div class="space-y-6">
-                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <div class="bg-red-900/20 border border-red-800 rounded-lg p-4">
                     <div class="flex items-start gap-3">
                         <flux:icon
                             name="exclamation-triangle"
                             class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0"
                         />
                         <div>
-                            <flux:text class="text-red-800 dark:text-red-200 text-sm font-medium">
+                            <flux:text class="text-red-200 text-sm font-medium">
                                 {{ __('Warning') }}
                             </flux:text>
-                            <flux:text class="text-red-700 dark:text-red-300 text-sm mt-1">
+                            <flux:text class="text-red-300 text-sm mt-1">
                                 {{ __('Banned users cannot access the platform when logged in, but may still access content when logged out.') }}
                             </flux:text>
                         </div>
@@ -538,8 +538,8 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
+            <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-700">
+                <div class="flex items-center text-xs text-gray-400">
                     <flux:icon
                         name="information-circle"
                         class="w-4 h-4 mr-2 flex-shrink-0"
@@ -577,7 +577,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="shield-check"
@@ -586,11 +586,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Unban User') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Restore user access to the platform') }}
                         </flux:text>
                     </div>
@@ -599,13 +599,13 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300">
+                <flux:text class="text-gray-300">
                     {{ __('Are you sure you want to unban this user? They will regain full access to the platform.') }}
                 </flux:text>
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-gray-700">
                 <flux:button
                     wire:click="closeUnbanModal"
                     variant="outline"
@@ -631,7 +631,7 @@
         variant="flyout"
     >
         <div class="space-y-6">
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6">
+            <div class="border-b border-gray-700 pb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="computer-desktop"
@@ -640,11 +640,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             IP Addresses
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             @if ($this->selectedUser)
                                 IP addresses used by {{ $this->selectedUser->name }}
                             @endif
@@ -671,11 +671,11 @@
 
                 @forelse($userIpAddresses as $ipData)
                     <div
-                        class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                        class="flex items-center justify-between p-4 border border-gray-700 rounded-lg">
                         <div class="flex-1">
                             <div class="flex items-center gap-2">
                                 <span
-                                    class="font-mono text-sm text-gray-900 dark:text-gray-100">{{ $ipData->ip }}</span>
+                                    class="font-mono text-sm text-gray-100">{{ $ipData->ip }}</span>
                                 @if ($ipData->is_banned)
                                     <flux:badge
                                         color="red"
@@ -683,7 +683,7 @@
                                     >Banned</flux:badge>
                                 @endif
                             </div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <div class="text-xs text-gray-400 mt-1">
                                 <div>First seen:
                                     {{ \Carbon\Carbon::parse($ipData->first_seen)->format('M j, Y g:i A') }}</div>
                                 <div>Last seen: {{ \Carbon\Carbon::parse($ipData->last_seen)->format('M j, Y g:i A') }}
@@ -724,13 +724,13 @@
                     </div>
                 @empty
                     <div class="text-center py-8">
-                        <flux:icon.computer-desktop class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-                        <p class="text-gray-500 dark:text-gray-400">No IP addresses found for this user.</p>
+                        <flux:icon.computer-desktop class="w-12 h-12 mx-auto mb-4 text-gray-600" />
+                        <p class="text-gray-400">No IP addresses found for this user.</p>
                     </div>
                 @endforelse
             </div>
 
-            <div class="flex justify-end items-center pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex justify-end items-center pt-6 border-t border-gray-700">
                 <flux:button
                     wire:click="closeIpModal"
                     variant="outline"

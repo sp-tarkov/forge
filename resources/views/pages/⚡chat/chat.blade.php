@@ -7,7 +7,7 @@
 </x-slot>
 
 <x-slot:header>
-    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+    <h2 class="font-semibold text-xl text-gray-200 leading-tight">
         {{ __('Forge Conversations') }}
     </h2>
 </x-slot>
@@ -33,11 +33,11 @@
         {{-- Left Column: Conversations List --}}
         <div
             :class="mobileView === 'list' ? 'flex' : 'hidden lg:flex'"
-            class="w-full lg:w-80 h-full lg:h-auto bg-gray-100 dark:bg-gray-900 rounded-lg border border-gray-300 dark:border-gray-800 shadow-sm overflow-hidden min-h-0 lg:min-h-[400px] lg:max-h-[600px] flex-col"
+            class="w-full lg:w-80 h-full lg:h-auto bg-gray-900 rounded-lg border border-gray-800 shadow-sm overflow-hidden min-h-0 lg:min-h-[400px] lg:max-h-[600px] flex-col"
             wire:key="conversations-list"
         >
             {{-- Mobile-only New Conversation header (desktop uses the absolutely-positioned button above the panel) --}}
-            <div class="lg:hidden p-3 border-b border-gray-300 dark:border-gray-800">
+            <div class="lg:hidden p-3 border-b border-gray-800">
                 <flux:button
                     variant="primary"
                     icon="plus"
@@ -59,8 +59,8 @@
                             x-on:click="mobileView = 'thread'"
                             class="w-full flex items-center gap-3 p-4 transition-all duration-200 text-left
                                     {{ $selectedConversation?->id === $conversation->id
-                                        ? 'bg-gray-50 dark:bg-gray-950 border-l-4 border-blue-500 shadow-sm'
-                                        : 'hover:bg-blue-100 dark:hover:bg-blue-950 hover:shadow-sm' }}"
+                                        ? 'bg-gray-950 border-l-4 border-blue-500 shadow-sm'
+                                        : 'hover:bg-blue-950 hover:shadow-sm' }}"
                         >
                             <div class="relative inline-block">
                                 <flux:avatar
@@ -72,7 +72,7 @@
                                 />
                                 @if ($this->isUserOnline($conversation->other_user))
                                     <span
-                                        class="absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white dark:ring-gray-900 bg-green-400"
+                                        class="absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-gray-900 bg-green-400"
                                     ></span>
                                 @endif
                             </div>
@@ -91,17 +91,17 @@
                                         @endif
                                     </div>
                                     @if ($conversation->lastMessage)
-                                        <div class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+                                        <div class="text-xs text-gray-400 flex-shrink-0">
                                             {{ $conversation->lastMessage->created_at->dynamicFormat(includeTime: false) }}
                                         </div>
                                     @endif
                                 </div>
                                 @if ($conversation->lastMessage)
-                                    <div class="text-sm text-gray-600 dark:text-gray-400 truncate">
+                                    <div class="text-sm text-gray-400 truncate">
                                         {{ Str::limit($conversation->lastMessage->content, 50) }}
                                     </div>
                                 @else
-                                    <div class="text-sm text-gray-500 dark:text-gray-500 italic">
+                                    <div class="text-sm text-gray-500 italic">
                                         No messages yet
                                     </div>
                                 @endif
@@ -112,12 +112,12 @@
                     <div class="flex flex-col items-center justify-center h-full p-8 text-center">
                         <flux:icon
                             name="chat-bubble-left-right"
-                            class="w-16 h-16 text-gray-400 dark:text-gray-600 mb-4"
+                            class="w-16 h-16 text-gray-600 mb-4"
                         />
-                        <p class="text-gray-600 dark:text-gray-400">
+                        <p class="text-gray-400">
                             {{ __('No conversations yet') }}
                         </p>
-                        <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">
+                        <p class="text-sm text-gray-500 mt-2">
                             {{ __('Click "New Conversation" above to start') }}
                         </p>
                     </div>
@@ -128,13 +128,13 @@
         {{-- Right Column: Selected Conversation --}}
         <div
             :class="mobileView === 'thread' ? 'flex' : 'hidden lg:flex'"
-            class="w-full lg:flex-1 h-full lg:h-auto flex-col bg-gray-50 dark:bg-gray-950 rounded-lg border border-gray-300 dark:border-gray-800 shadow-sm overflow-hidden min-h-0 lg:min-h-[400px] lg:max-h-[600px]"
+            class="w-full lg:flex-1 h-full lg:h-auto flex-col bg-gray-950 rounded-lg border border-gray-800 shadow-sm overflow-hidden min-h-0 lg:min-h-[400px] lg:max-h-[600px]"
             wire:key="conversation-{{ $selectedConversation?->id ?? 'none' }}"
         >
             @if ($selectedConversation)
                 {{-- Conversation Header --}}
                 <div
-                    class="p-4 border-b border-gray-300 dark:border-gray-800 flex items-center justify-between bg-gray-100 dark:bg-gray-900">
+                    class="p-4 border-b border-gray-800 flex items-center justify-between bg-gray-900">
                     @if ($selectedConversation->other_user)
                         <div class="flex items-center gap-3">
                             <flux:button
@@ -162,10 +162,10 @@
                                 </div>
                                 <div class="text-xs">
                                     @if ($this->isUserOnline($selectedConversation->other_user))
-                                        <span class="text-green-500 dark:text-green-400">{{ __('Online') }}</span>
+                                        <span class="text-green-400">{{ __('Online') }}</span>
                                     @else
                                         <span
-                                            class="text-gray-500 dark:text-gray-400">{{ $this->getUserLastSeen($selectedConversation->other_user) }}</span>
+                                            class="text-gray-400">{{ $this->getUserLastSeen($selectedConversation->other_user) }}</span>
                                     @endif
                                 </div>
                             </div>
@@ -182,7 +182,7 @@
                             >
                                 <flux:icon.arrow-left class="h-5 w-5" />
                             </flux:button>
-                            <div class="font-medium text-gray-900 dark:text-gray-100">{{ __('Loading...') }}</div>
+                            <div class="font-medium text-gray-100">{{ __('Loading...') }}</div>
                         </div>
                     @endif
 
@@ -239,7 +239,7 @@
 
                 {{-- Messages Area --}}
                 <div
-                    class="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-100/50 to-gray-50 dark:from-gray-950/50 dark:to-gray-950"
+                    class="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-950/50 to-gray-950"
                     wire:key="messages-area"
                     id="messages-container"
                     x-data="{
@@ -313,9 +313,9 @@
                                 wire:target="loadMoreMessages"
                             >
                                 <div
-                                    class="px-4 py-2 bg-cyan-50 dark:bg-cyan-950 border border-cyan-200 dark:border-cyan-800 rounded-lg">
+                                    class="px-4 py-2 bg-cyan-950 border border-cyan-800 rounded-lg">
                                     <svg
-                                        class="inline-block animate-spin h-4 w-4 text-cyan-600 dark:text-cyan-400 mr-2"
+                                        class="inline-block animate-spin h-4 w-4 text-cyan-400 mr-2"
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
@@ -335,7 +335,7 @@
                                         ></path>
                                     </svg>
                                     <span
-                                        class="text-sm font-medium text-cyan-700 dark:text-cyan-300">{{ __('Loading earlier messages...') }}</span>
+                                        class="text-sm font-medium text-cyan-300">{{ __('Loading earlier messages...') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -345,9 +345,9 @@
                     @if (!$hasMoreMessages && count($messages) > 0)
                         <div class="flex justify-center py-4">
                             <div
-                                class="px-4 py-2 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg">
+                                class="px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg">
                                 <span
-                                    class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('Beginning of conversation') }}</span>
+                                    class="text-sm font-medium text-gray-400">{{ __('Beginning of conversation') }}</span>
                             </div>
                         </div>
                     @endif
@@ -361,10 +361,10 @@
                                     class="flex items-center gap-3 py-2 mb-4"
                                     wire:key="separator-current"
                                 >
-                                    <div class="flex-1 h-px bg-gray-300 dark:bg-gray-700"></div>
-                                    <span class="text-xs text-gray-500 dark:text-gray-400 px-2">Recently loaded
+                                    <div class="flex-1 h-px bg-gray-700"></div>
+                                    <span class="text-xs text-gray-400 px-2">Recently loaded
                                         above</span>
-                                    <div class="flex-1 h-px bg-gray-300 dark:bg-gray-700"></div>
+                                    <div class="flex-1 h-px bg-gray-700"></div>
                                 </div>
                             @endif
 
@@ -385,7 +385,7 @@
                                                 <div class="text-sm user-markdown-message max-w-none">
                                                     {!! $message->content_html !!}</div>
                                             </div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 px-2">
+                                            <div class="text-xs text-gray-400 mt-1 px-2">
                                                 {{ $message->created_at->dynamicFormat() }}
                                                 @if ($message->is_read)
                                                     {{-- Double check for read --}}
@@ -416,11 +416,11 @@
                                         </div>
                                         <div class="flex flex-col items-start">
                                             <div
-                                                class="px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm">
+                                                class="px-3 py-1.5 rounded-lg bg-gray-900 text-gray-100 shadow-sm">
                                                 <div class="text-sm user-markdown-message max-w-none">
                                                     {!! $message->content_html !!}</div>
                                             </div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 px-2">
+                                            <div class="text-xs text-gray-400 mt-1 px-2">
                                                 {{ $message->created_at->dynamicFormat() }}
                                             </div>
                                         </div>
@@ -432,9 +432,9 @@
                         <div class="flex flex-col items-center justify-center h-full text-center">
                             <flux:icon
                                 name="chat-bubble-left-right"
-                                class="w-12 h-12 text-gray-400 dark:text-gray-600 mb-3"
+                                class="w-12 h-12 text-gray-600 mb-3"
                             />
-                            <p class="text-gray-600 dark:text-gray-400">
+                            <p class="text-gray-400">
                                 {{ __('No messages yet. Start the conversation!') }}
                             </p>
                         </div>
@@ -505,7 +505,7 @@
                     x-transition:leave="transition ease-in duration-200"
                     x-transition:leave-start="opacity-100"
                     x-transition:leave-end="opacity-0"
-                    class="px-4 pb-2 text-sm text-gray-500 dark:text-gray-400 italic"
+                    class="px-4 pb-2 text-sm text-gray-400 italic"
                 >
                     <div class="flex items-center gap-1">
                         <span x-text="message"></span>
@@ -521,8 +521,8 @@
                 {{-- Message Input Area or Blocked Message --}}
                 @if ($this->isConversationBlocked)
                     <div
-                        class="p-4 border-t border-gray-300 dark:border-gray-800 bg-gray-100 dark:bg-gray-900 text-center">
-                        <div class="text-gray-500 dark:text-gray-400">
+                        class="p-4 border-t border-gray-800 bg-gray-900 text-center">
+                        <div class="text-gray-400">
                             <flux:icon
                                 name="shield-exclamation"
                                 class="w-8 h-8 mx-auto mb-2"
@@ -534,7 +534,7 @@
                     </div>
                 @else
                     <div
-                        class="p-4 border-t border-gray-300 dark:border-gray-800 bg-gray-100 dark:bg-gray-900"
+                        class="p-4 border-t border-gray-800 bg-gray-900"
                         wire:key="message-input-area"
                         x-data="{
                             message: $wire.entangle('messageText'),
@@ -548,7 +548,7 @@
                             get counterColor() {
                                 if (this.remaining <= 10) return 'text-red-500';
                                 if (this.remaining <= 75) return 'text-amber-500';
-                                return 'text-gray-500 dark:text-gray-400';
+                                return 'text-gray-400';
                             },
                             handleTyping() {
                                 if (this.typingTimer) {
@@ -658,12 +658,12 @@
                 <div class="flex flex-col items-center justify-center h-full text-center p-8">
                     <flux:icon
                         name="chat-bubble-left-right"
-                        class="w-20 h-20 text-gray-400 dark:text-gray-600 mb-4"
+                        class="w-20 h-20 text-gray-600 mb-4"
                     />
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    <h3 class="text-lg font-medium text-gray-100 mb-2">
                         {{ __('Select a conversation') }}
                     </h3>
-                    <p class="text-gray-600 dark:text-gray-400">
+                    <p class="text-gray-400">
                         {{ __('Choose a conversation from the list or click "New Conversation" above to start a new one') }}
                     </p>
                 </div>
@@ -678,7 +678,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="archive-box"
@@ -687,11 +687,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Archive Conversation') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Remove this conversation from your list') }}
                         </flux:text>
                     </div>
@@ -700,23 +700,23 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     {{ __('Are you sure you want to archive this conversation?') }}
                 </flux:text>
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     {{ __('The conversation will be hidden from your conversation list. It will automatically reappear when:') }}
                 </flux:text>
-                <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 text-sm space-y-1 ml-4">
+                <ul class="list-disc list-inside text-gray-300 text-sm space-y-1 ml-4">
                     <li>{{ __('The other user sends you a new message') }}</li>
                     <li>{{ __('You start a new conversation with this user') }}</li>
                 </ul>
-                <flux:text class="text-gray-600 dark:text-gray-400 text-sm italic">
+                <flux:text class="text-gray-400 text-sm italic">
                     {{ __('Note: Messages are not deleted. The other user can still see this conversation.') }}
                 </flux:text>
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                 <flux:button
                     wire:click="closeArchiveModal"
                     variant="outline"
@@ -744,7 +744,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     @if ($this->isUserBlocked)
                         <flux:icon
@@ -754,11 +754,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Unblock User') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('Allow messages and interactions again') }}
                             </flux:text>
                         </div>
@@ -770,11 +770,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Block User') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('Prevent messages and interactions') }}
                             </flux:text>
                         </div>
@@ -785,19 +785,19 @@
             {{-- Content Section --}}
             <div class="space-y-4">
                 @if ($this->isUserBlocked())
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ __('Are you sure you want to unblock this user? You will be able to send and receive messages again.') }}
                     </flux:text>
                 @else
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ __('Are you sure you want to block this user?') }}
                     </flux:text>
 
                     <div class="space-y-2">
-                        <flux:text class="text-gray-900 dark:text-gray-100 text-sm font-medium">
+                        <flux:text class="text-gray-100 text-sm font-medium">
                             {{ __('What happens when you block someone:') }}
                         </flux:text>
-                        <ul class="text-gray-700 dark:text-gray-300 text-sm list-disc list-inside space-y-1 ml-2">
+                        <ul class="text-gray-300 text-sm list-disc list-inside space-y-1 ml-2">
                             <li>{{ __('You won\'t be able to send messages to each other') }}</li>
                             <li>{{ __('They won\'t be able to see your profile') }}</li>
                             <li>{{ __('They can\'t comment on your mods') }}</li>
@@ -817,7 +817,7 @@
             </div>
 
             {{-- Footer Section --}}
-            <div class="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+            <div class="border-t border-gray-700 pt-6 mt-6">
                 <div class="flex justify-end gap-3">
                     <flux:button
                         variant="ghost"

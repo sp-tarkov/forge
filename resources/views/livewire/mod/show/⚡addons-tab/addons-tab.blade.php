@@ -17,7 +17,7 @@
         <div class="grid gap-4">
             @for ($i = 0; $i < 3; $i++)
                 <div
-                    class="bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden">
+                    class="bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl overflow-hidden">
                     <div class="p-4 sm:p-6">
                         <flux:skeleton.group animate="shimmer">
                             <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -55,7 +55,7 @@
                             </div>
 
                             {{-- Teaser skeleton --}}
-                            <div class="mt-4 pt-3 border-t-2 border-gray-300 dark:border-gray-800">
+                            <div class="mt-4 pt-3 border-t-2 border-gray-800">
                                 <flux:skeleton.line class="w-full" />
                                 <flux:skeleton.line class="w-3/4" />
                             </div>
@@ -72,7 +72,7 @@
         @if ($this->addonCount > 0)
             {{-- Version Filter --}}
             <div class="mb-4 flex items-center justify-between gap-4">
-                <div class="text-sm text-gray-600 dark:text-gray-400">
+                <div class="text-sm text-gray-400">
                     <span x-show="!$wire.selectedModVersionId">
                         Select a mod version to filter by on the right.
                     </span>
@@ -86,7 +86,7 @@
                 <div class="flex items-center gap-3">
                     <label
                         for="mod-version-filter"
-                        class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap"
+                        class="text-sm font-medium text-gray-300 whitespace-nowrap"
                     >
                         Filter by mod version:
                     </label>
@@ -120,12 +120,12 @@
             </div>
             {{ $this->addons->links() }}
         @else
-            <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+            <div class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
                 <div class="text-center py-8">
                     <flux:icon.puzzle-piece class="mx-auto size-12 text-gray-400" />
-                    <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <h3 class="mt-2 text-sm font-semibold text-gray-100">
                         {{ __('No Addons Yet') }}</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    <p class="mt-1 text-sm text-gray-400">
                         {{ __('This mod doesn\'t have any addons yet.') }}</p>
                     @cachedCan('create', [App\Models\Addon::class, $this->mod])
                         <div class="mt-6">
@@ -138,7 +138,7 @@
             </div>
         @endif
     @else
-        <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+        <div class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
             <flux:callout
                 icon="information-circle"
                 color="zinc"

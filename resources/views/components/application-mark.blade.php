@@ -5,5 +5,5 @@
         alt="Single Player Tarkov Logo"
         class="w-[32px] h-[17px] pt-[1px]"
     />
-    <h1 class="text-[1.15rem] font-extrabold text-black dark:text-white">Forge</h1>
+    <h1 class="text-[1.15rem] font-extrabold text-white">Forge</h1>
 </div>

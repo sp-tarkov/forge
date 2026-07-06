@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between w-full">
             <div>
-                <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+                <h2 class="font-semibold text-xl text-gray-200 leading-tight">
                     {{ __('SPT Version Management') }}
                 </h2>
             </div>
@@ -43,10 +43,10 @@
             {{-- Filters Section --}}
             <div
                 id="filters-container"
-                class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+                class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6"
             >
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filters</h3>
+                    <h3 class="text-lg font-semibold text-gray-100">Filters</h3>
                     <flux:button
                         wire:click="resetFilters"
                         variant="outline"
@@ -96,14 +96,14 @@
 
             {{-- Table Section --}}
             <div
-                class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-gray-800">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-800">
                             <tr>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700"
                                     wire:click="sortByColumn('version_major')"
                                 >
                                     <div class="flex items-center gap-2">
@@ -117,13 +117,13 @@
                                 </th>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"
                                 >
                                     Color
                                 </th>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700"
                                     wire:click="sortByColumn('mod_count')"
                                 >
                                     <div class="flex items-center gap-2">
@@ -137,13 +137,13 @@
                                 </th>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"
                                 >
                                     Link
                                 </th>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700"
                                     wire:click="sortByColumn('publish_date')"
                                 >
                                     <div class="flex items-center gap-2">
@@ -157,7 +157,7 @@
                                 </th>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700"
                                     wire:click="sortByColumn('created_at')"
                                 >
                                     <div class="flex items-center gap-2">
@@ -171,17 +171,17 @@
                                 </th>
                                 <th
                                     scope="col"
-                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                    class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider"
                                 >
                                     Actions
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="bg-gray-900 divide-y divide-gray-700">
                             @forelse($this->versions as $version)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                                <tr class="hover:bg-gray-800">
                                     <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
                                         {{ $version->version }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -192,21 +192,21 @@
                                             {{ ucfirst($version->color_class) }}
                                         </flux:badge>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                                         {{ number_format($version->mod_count) }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                                         @if ($version->link)
                                             <a
                                                 href="{{ $version->link }}"
                                                 target="_blank"
-                                                class="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+                                                class="text-blue-400 hover:underline inline-flex items-center gap-1"
                                             >
                                                 {{ parse_url($version->link, PHP_URL_HOST) }}
                                                 <flux:icon.arrow-top-right-on-square variant="micro" />
                                             </a>
                                         @else
-                                            <span class="text-gray-400 dark:text-gray-600">—</span>
+                                            <span class="text-gray-600">—</span>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -218,7 +218,7 @@
                                                         class="text-amber-500"
                                                     />
                                                     <span
-                                                        class="text-amber-600 dark:text-amber-400"
+                                                        class="text-amber-400"
                                                         title="{{ $this->toUserTimezone($version->publish_date)->format('F j, Y \a\t g:i A T') }}"
                                                     >
                                                         {{ $this->toUserTimezone($version->publish_date)->format('M j, Y H:i') }}
@@ -226,7 +226,7 @@
                                                 </div>
                                             @else
                                                 <span
-                                                    class="text-green-600 dark:text-green-400"
+                                                    class="text-green-400"
                                                     title="{{ $this->toUserTimezone($version->publish_date)->format('F j, Y \a\t g:i A T') }}"
                                                 >
                                                     {{ $this->toUserTimezone($version->publish_date)->format('M j, Y') }}
@@ -239,7 +239,7 @@
                                             >Unpublished</flux:badge>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                                         {{ $version->created_at->format('M j, Y') }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -269,8 +269,8 @@
                                         class="px-6 py-12 text-center"
                                     >
                                         <div class="flex flex-col items-center justify-center gap-2">
-                                            <flux:icon.inbox class="w-12 h-12 text-gray-400 dark:text-gray-600" />
-                                            <p class="text-gray-500 dark:text-gray-400">No SPT versions found</p>
+                                            <flux:icon.inbox class="w-12 h-12 text-gray-600" />
+                                            <p class="text-gray-400">No SPT versions found</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -281,7 +281,7 @@
 
                 {{-- Pagination --}}
                 @if ($this->versions->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-t border-gray-700">
                         {{ $this->versions->links() }}
                     </div>
                 @endif

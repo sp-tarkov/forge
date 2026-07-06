@@ -2,7 +2,7 @@
 
 <div
     wire:key="notification-{{ $notification->id }}"
-    class="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
+    class="relative bg-gray-800 border border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
 >
     @if (!$notification->read_at)
         <div class="absolute inset-y-0 left-0 w-1 bg-blue-500"></div>
@@ -33,7 +33,7 @@
                             <button
                                 type="button"
                                 wire:click.stop="markAsRead('{{ $notification->id }}')"
-                                class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                                class="text-xs text-blue-400 hover:text-blue-300 transition-colors"
                             >
                                 {{ __('Mark read') }}
                             </button>
@@ -42,12 +42,12 @@
                             type="button"
                             wire:click.stop="deleteNotification('{{ $notification->id }}')"
                             wire:confirm="{{ __('Are you sure you want to delete this notification?') }}"
-                            class="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors"
+                            class="text-xs text-red-400 hover:text-red-300 transition-colors"
                         >
                             {{ __('Delete') }}
                         </button>
                         <span
-                            class="text-xs text-gray-400 dark:text-gray-500"
+                            class="text-xs text-gray-500"
                             title="{{ $tooltipTimestamp() }}"
                         >
                             {{ $relativeTimestamp() }}
@@ -55,7 +55,7 @@
                     </div>
                 </div>
                 @if ($presentation->preview !== null)
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 {{ $presentation->previewQuoted ? 'italic' : '' }} line-clamp-2">
+                    <p class="text-sm text-gray-400 mt-2 {{ $presentation->previewQuoted ? 'italic' : '' }} line-clamp-2">
                         @if ($presentation->previewQuoted)
                             "{{ $presentation->preview }}"
                         @else
@@ -68,7 +68,7 @@
     </div>
 
     @if ($presentation->details !== [])
-        <div class="border-t border-gray-100 dark:border-gray-700 px-4 py-3 {{ !$notification->read_at ? 'pl-5' : '' }}">
+        <div class="border-t border-gray-700 px-4 py-3 {{ !$notification->read_at ? 'pl-5' : '' }}">
             <ul class="space-y-2">
                 @foreach ($presentation->details as $detail)
                     <li class="text-sm">
@@ -76,13 +76,13 @@
                             <a
                                 href="{{ $detail->url }}"
                                 wire:navigate
-                                class="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                                class="font-medium text-blue-400 hover:underline"
                             >{{ $detail->label }}</a>
                         @else
-                            <span class="font-medium text-gray-900 dark:text-white">{{ $detail->label }}</span>
+                            <span class="font-medium text-white">{{ $detail->label }}</span>
                         @endif
                         @if ($detail->note !== null)
-                            <span class="mt-0.5 block text-gray-500 dark:text-gray-400">{{ $detail->note }}</span>
+                            <span class="mt-0.5 block text-gray-400">{{ $detail->note }}</span>
                         @endif
                     </li>
                 @endforeach

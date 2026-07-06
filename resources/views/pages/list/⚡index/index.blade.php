@@ -8,7 +8,7 @@
 
 <x-slot:header>
     <div class="flex items-center justify-between w-full">
-        <div class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+        <div class="font-semibold text-xl text-gray-200 leading-tight flex items-center gap-2">
             <flux:icon.list-bullet class="w-5 h-5" />
             {{ __('Mod Lists') }}
         </div>
@@ -25,10 +25,10 @@
 </x-slot>
 
 <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
-    <div class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg space-y-6">
+    <div class="px-4 py-8 sm:px-6 lg:px-8 bg-gray-900 overflow-hidden shadow-xl shadow-gray-900 rounded-none sm:rounded-lg space-y-6">
         <div>
-            <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mod Lists') }}</h1>
-            <p class="mt-4 text-base text-gray-800 dark:text-gray-300">
+            <h1 class="text-4xl font-bold tracking-tight text-gray-200">{{ __('Mod Lists') }}</h1>
+            <p class="mt-4 text-base text-gray-300">
                 {{ __('Collections of mods grouped together by other community members.') }}
             </p>
         </div>
@@ -97,12 +97,12 @@
             {{ $this->lists->links() }}
         </div>
     @else
-        <div class="mx-4 sm:mx-0 p-8 bg-white dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-900 drop-shadow-2xl text-center">
+        <div class="mx-4 sm:mx-0 p-8 bg-gray-900 rounded-xl shadow-md shadow-gray-900 drop-shadow-2xl text-center">
             <flux:icon.list-bullet class="mx-auto size-12 text-gray-400" />
-            <h2 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+            <h2 class="mt-2 text-sm font-semibold text-gray-100">
                 {{ __('No lists match your filters') }}
             </h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p class="mt-1 text-sm text-gray-400">
                 {{ __('Try broadening your search or clearing filters.') }}
             </p>
         </div>

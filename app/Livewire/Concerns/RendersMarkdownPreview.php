@@ -18,7 +18,7 @@ trait RendersMarkdownPreview
     public function previewMarkdown(string $content, string $purifyConfig = 'description'): string
     {
         if (mb_trim($content) === '') {
-            return '<p class="text-slate-400 dark:text-slate-500 italic">'.__('Nothing to preview.').'</p>';
+            return '<p class="text-slate-500 italic">'.__('Nothing to preview.').'</p>';
         }
 
         $html = Markdown::convert($content)->getContent();

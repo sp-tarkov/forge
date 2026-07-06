@@ -1,7 +1,7 @@
 <x-slot:title>{{ __('Create List - The Forge') }}</x-slot>
 
 <x-slot:header>
-    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+    <h2 class="font-semibold text-xl text-gray-200 leading-tight flex items-center gap-2">
         <flux:icon.list-bullet class="w-5 h-5" />
         {{ __('Create a new list') }}
     </h2>
@@ -12,10 +12,10 @@
         <div class="md:grid md:grid-cols-3 md:gap-6">
             <div class="md:col-span-1 flex justify-between">
                 <div class="px-4 sm:px-0">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    <h3 class="text-lg font-medium text-gray-100">
                         {{ __('List Details') }}
                     </h3>
-                    <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
+                    <p class="my-2 text-sm/6 text-sm text-gray-400">
                         {{ __('Group mods together by theme, compatibility, or personal taste. You can change any of these details later.') }}
                     </p>
                     <x-list.config-guidance class="mt-4" />
@@ -24,7 +24,7 @@
             </div>
             <div class="mt-5 md:mt-0 md:col-span-2">
                 <form wire:submit="save">
-                    <div class="px-4 py-5 bg-white dark:bg-gray-900 sm:p-6 shadow-sm sm:rounded-tl-md sm:rounded-tr-md">
+                    <div class="px-4 py-5 bg-gray-900 sm:p-6 shadow-sm sm:rounded-tl-md sm:rounded-tr-md">
                         <div class="grid grid-cols-6 gap-8">
                             <flux:field class="col-span-6">
                                 <flux:label badge="Optional">{{ __('Thumbnail') }}</flux:label>
@@ -33,15 +33,15 @@
                                 </flux:description>
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     @if ($thumbnail)
-                                        <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                                        <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
                                             <img
                                                 src="{{ $thumbnail->temporaryUrl() }}"
                                                 class="size-20 shrink-0 rounded-lg object-cover"
                                                 alt="{{ __('Thumbnail preview') }}"
                                             >
                                             <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">{{ $thumbnail->getClientOriginalName() }}</p>
-                                                <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ Number::fileSize($thumbnail->getSize(), 1) }}</p>
+                                                <p class="text-sm font-medium text-zinc-300 truncate">{{ $thumbnail->getClientOriginalName() }}</p>
+                                                <p class="mt-0.5 text-xs text-zinc-400">{{ Number::fileSize($thumbnail->getSize(), 1) }}</p>
                                             </div>
                                             <flux:button
                                                 size="sm"
@@ -134,7 +134,7 @@
                             </flux:field>
                         </div>
                     </div>
-                    <div class="flex items-center justify-end px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t-2 border-transparent dark:border-t-gray-700 sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-3">
+                    <div class="flex items-center justify-end px-4 py-3 bg-gray-900 border-t-2 border-transparent border-t-gray-700 sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-3">
                         <flux:button
                             size="sm"
                             variant="ghost"
@@ -147,7 +147,7 @@
                             type="submit"
                             size="sm"
                             variant="primary"
-                            class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+                            class="my-1.5 text-white hover:bg-cyan-600 bg-cyan-700"
                         >
                             {{ __('Create List') }}
                         </flux:button>

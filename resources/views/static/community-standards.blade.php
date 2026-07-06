@@ -449,7 +449,7 @@
 
     <p><strong>Need help or have questions?</strong> Visit our <a
             href="{{ route('static.contact') }}"
-            class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors"
+            class="underline text-cyan-400 hover:text-cyan-200 transition-colors"
         >Contact page</a> for detailed information on how to reach our staff and community.</p>
 
     <h3>10.1 Questions About Standards</h3>
@@ -458,13 +458,13 @@
     <ul>
         <li>Ask <a
                 href="{{ route('static.contact') }}"
-                class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors"
+                class="underline text-cyan-400 hover:text-cyan-200 transition-colors"
             >staff</a> for clarification before posting</li>
         <li>Review similar content to see how rules apply</li>
         <li>When in doubt, err on the side of caution</li>
         <li>Contact us through our <a
                 href="{{ route('static.contact') }}"
-                class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors"
+                class="underline text-cyan-400 hover:text-cyan-200 transition-colors"
             >Discord server or email</a></li>
     </ul>
 
@@ -477,7 +477,7 @@
         <li>Focus on finding solutions rather than being "right"</li>
         <li>Involve <a
                 href="{{ route('static.contact') }}"
-                class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors"
+                class="underline text-cyan-400 hover:text-cyan-200 transition-colors"
             >staff</a> if you cannot reach a resolution</li>
     </ul>
 
@@ -519,7 +519,7 @@
 
     <p><strong>Questions?</strong> Visit our <a
             href="{{ route('static.contact') }}"
-            class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors"
+            class="underline text-cyan-400 hover:text-cyan-200 transition-colors"
         >Contact page</a> for all the ways to reach us.</p>
 
     <hr>

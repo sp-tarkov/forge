@@ -7,7 +7,7 @@
 </x-slot>
 
 <x-slot:header>
-    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+    <h2 class="font-semibold text-xl text-gray-200 leading-tight flex items-center gap-2">
         <flux:icon.cube-transparent class="w-5 h-5" />
         {{ __('Edit Mod') }}: {{ $mod->name }}
     </h2>
@@ -18,19 +18,19 @@
         <div class="md:grid md:grid-cols-3 md:gap-6">
             <div class="md:col-span-1 flex justify-between">
                 <div class="px-4 sm:px-0">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Mod Information</h3>
-                    <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">You may update your mod details
+                    <h3 class="text-lg font-medium text-gray-100">Mod Information</h3>
+                    <p class="my-2 text-sm/6 text-sm text-gray-400">You may update your mod details
                         using this form. Changes will be visible immediately after saving.</p>
-                    <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
+                    <p class="my-2 text-sm/6 text-sm text-gray-400">
                         Please ensure you follow the <a
                             href="{{ route('static.community-standards') }}"
                             target="_blank"
-                            class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                            class="underline text-white hover:text-cyan-200 transition-colors"
                         >Community Standards</a>
                         and the <a
                             href="{{ route('static.content-guidelines') }}"
                             target="_blank"
-                            class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                            class="underline text-white hover:text-cyan-200 transition-colors"
                         >Content Guidelines</a>.
                     </p>
                 </div>
@@ -38,7 +38,7 @@
             </div>
             <div class="mt-5 md:mt-0 md:col-span-2">
                 <form wire:submit="save">
-                    <div class="px-4 py-5 bg-white dark:bg-gray-900 sm:p-6 shadow-sm sm:rounded-tl-md sm:rounded-tr-md">
+                    <div class="px-4 py-5 bg-gray-900 sm:p-6 shadow-sm sm:rounded-tl-md sm:rounded-tr-md">
                         <div class="grid grid-cols-6 gap-8">
                             @csrf
 
@@ -49,7 +49,7 @@
                                 </flux:description>
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     @if ($thumbnail)
-                                        <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                                        <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
                                             @if ($thumbnail->isPreviewable())
                                                 <img
                                                     src="{{ $thumbnail->temporaryUrl() }}"
@@ -58,8 +58,8 @@
                                                 >
                                             @endif
                                             <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">{{ $thumbnail->getClientOriginalName() }}</p>
-                                                <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ Number::fileSize($thumbnail->getSize(), 1) }}</p>
+                                                <p class="text-sm font-medium text-zinc-300 truncate">{{ $thumbnail->getClientOriginalName() }}</p>
+                                                <p class="mt-0.5 text-xs text-zinc-400">{{ Number::fileSize($thumbnail->getSize(), 1) }}</p>
                                             </div>
                                             <flux:button
                                                 size="sm"
@@ -70,15 +70,15 @@
                                             />
                                         </div>
                                     @elseif ($mod->thumbnail)
-                                        <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                                        <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
                                             <img
                                                 src="{{ asset($mod->thumbnail) }}"
                                                 class="size-20 shrink-0 rounded-lg object-cover"
                                                 alt="{{ __('Current thumbnail') }}"
                                             >
                                             <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('Current Thumbnail') }}</p>
-                                                <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Upload a new image to replace, or delete the current one.') }}</p>
+                                                <p class="text-sm font-medium text-zinc-300">{{ __('Current Thumbnail') }}</p>
+                                                <p class="mt-0.5 text-xs text-zinc-400">{{ __('Upload a new image to replace, or delete the current one.') }}</p>
                                             </div>
                                             <flux:button
                                                 size="sm"
@@ -119,7 +119,7 @@
                                     @input="count = text.length"
                                 />
                                 <div
-                                    class="mt-1 text-sm text-gray-500 dark:text-gray-400"
+                                    class="mt-1 text-sm text-gray-400"
                                     x-text="`Max Length: ${count}/75`"
                                 ></div>
                                 <flux:error name="name" />
@@ -144,7 +144,7 @@
                                     placeholder="com.username.modname"
                                 />
                                 <div
-                                    class="mt-1 text-sm text-gray-500 dark:text-gray-400"
+                                    class="mt-1 text-sm text-gray-400"
                                     x-text="`Max Length: ${count}/255`"
                                 ></div>
                                 <flux:error name="guid" />
@@ -166,7 +166,7 @@
                                     @input="count = text.length"
                                 />
                                 <div
-                                    class="mt-1 text-sm text-gray-500 dark:text-gray-400"
+                                    class="mt-1 text-sm text-gray-400"
                                     x-text="`Max Length: ${count}/255`"
                                 ></div>
                                 <flux:error name="teaser" />
@@ -239,7 +239,7 @@
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('Source Code Links') }}</flux:label>
                                 <flux:description>{!! __(
-                                    'Provide links to the source code for your mod. The source code for mods is required to be publicly available. You can add up to 4 links (e.g., main repository, mirror, documentation). We recommend using services like <a href="https://github.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitHub</a> or <a href="https://gitlab.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitLab</a>.',
+                                    'Provide links to the source code for your mod. The source code for mods is required to be publicly available. You can add up to 4 links (e.g., main repository, mirror, documentation). We recommend using services like <a href="https://github.com" target="_blank" class="underline text-white hover:text-cyan-200 transition-colors">GitHub</a> or <a href="https://gitlab.com" target="_blank" class="underline text-white hover:text-cyan-200 transition-colors">GitLab</a>.',
                                 ) !!}</flux:description>
 
                                 <div
@@ -271,7 +271,7 @@
                                                         type="url"
                                                         x-model.lazy="link.url"
                                                         placeholder="https://github.com/username/mod-name"
-                                                        class="w-full border rounded-lg appearance-none text-base sm:text-sm py-2 h-10 leading-[1.375rem] ps-3 pe-3 bg-white dark:bg-white/10 text-zinc-700 placeholder-zinc-400 dark:text-zinc-300 dark:placeholder-zinc-400 shadow-xs border-zinc-200 border-b-zinc-300/80 dark:border-white/10"
+                                                        class="w-full border rounded-lg appearance-none text-base sm:text-sm py-2 h-10 leading-[1.375rem] ps-3 pe-3 bg-white/10 text-zinc-300 placeholder-zinc-400 shadow-xs border-b-zinc-300/80 border-white/10"
                                                     />
                                                 </div>
                                                 <div class="w-40">
@@ -279,14 +279,14 @@
                                                         type="text"
                                                         x-model.lazy="link.label"
                                                         placeholder="Label (optional)"
-                                                        class="w-full border rounded-lg appearance-none text-base sm:text-sm py-2 h-10 leading-[1.375rem] ps-3 pe-3 bg-white dark:bg-white/10 text-zinc-700 placeholder-zinc-400 dark:text-zinc-300 dark:placeholder-zinc-400 shadow-xs border-zinc-200 border-b-zinc-300/80 dark:border-white/10"
+                                                        class="w-full border rounded-lg appearance-none text-base sm:text-sm py-2 h-10 leading-[1.375rem] ps-3 pe-3 bg-white/10 text-zinc-300 placeholder-zinc-400 shadow-xs border-b-zinc-300/80 border-white/10"
                                                     />
                                                 </div>
                                                 <button
                                                     x-show="links.length > 1"
                                                     x-on:click="removeLink(index)"
                                                     type="button"
-                                                    class="inline-flex items-center justify-center p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                                                    class="inline-flex items-center justify-center p-1.5 text-zinc-400 hover:text-zinc-200 transition-colors"
                                                 >
                                                     <flux:icon.x-mark class="size-5" />
                                                 </button>
@@ -298,7 +298,7 @@
                                         x-show="links.length < 4"
                                         x-on:click="addLink()"
                                         type="button"
-                                        class="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
+                                        class="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
                                     >
                                         <flux:icon.plus class="size-4" />
                                         {{ __('Add another link') }}
@@ -336,7 +336,7 @@
                                                 the published date will be interpreted as a UTC date. Alternatively, you
                                                 can <a
                                                     href="/user/profile"
-                                                    class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                                                    class="underline text-white hover:text-cyan-200 transition-colors"
                                                 >edit your profile</a> to set a specific timezone.
                                             </flux:callout.text>
                                         </flux:callout>
@@ -412,7 +412,7 @@
                                                 />
                                             </div>
                                             <flux:tooltip content="This setting is locked and may not be changed.">
-                                                <flux:icon.lock-closed class="size-4 mt-0.5 text-zinc-500 dark:text-zinc-400" />
+                                                <flux:icon.lock-closed class="size-4 mt-0.5 text-zinc-400" />
                                             </flux:tooltip>
                                         </div>
                                     @elseif ($this->canLockAiContent)
@@ -425,7 +425,7 @@
                                                 description="This mod contains content or code that was partially or wholly generated by AI."
                                             />
                                             <div class="flex items-start gap-2">
-                                                <flux:icon.arrow-turn-down-right class="size-4 mt-1 text-zinc-400 dark:text-zinc-500" />
+                                                <flux:icon.arrow-turn-down-right class="size-4 mt-1 text-zinc-500" />
                                                 <div class="flex-1">
                                                     <flux:field variant="inline">
                                                         <flux:checkbox value="true" x-model="aiLocked" />
@@ -503,11 +503,11 @@
                         </div>
                     </div>
                     <div
-                        class="flex items-center justify-end px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t-2 border-transparent dark:border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-4">
+                        class="flex items-center justify-end px-4 py-3 bg-gray-900 border-t-2 border-transparent border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-4">
                         <flux:button
                             variant="primary"
                             size="sm"
-                            class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+                            class="my-1.5 text-white hover:bg-cyan-600 bg-cyan-700"
                             type="submit"
                         >{{ __('Update Mod') }}</flux:button>
                     </div>

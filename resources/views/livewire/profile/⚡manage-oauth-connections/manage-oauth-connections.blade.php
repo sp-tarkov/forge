@@ -27,8 +27,8 @@
 
         <div class="mt-5 space-y-3">
             @forelse ($user->oauthConnections as $connection)
-                <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
-                    <div class="shrink-0 text-zinc-600 dark:text-zinc-300">
+                <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                    <div class="shrink-0 text-zinc-300">
                         @switch ($connection->provider)
                             @case ('discord')
                                 <svg
@@ -85,7 +85,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="link-slash"
@@ -94,11 +94,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Remove Connected Account') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('This action cannot be undone') }}
                             </flux:text>
                         </div>
@@ -107,13 +107,13 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ __('You will not be able to sign in using this connected account after it has been removed. Are you sure you want to remove this connected account?') }}
                     </flux:text>
                 </div>
 
                 {{-- Footer Actions --}}
-                <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                     <flux:button
                         wire:click="$toggle('confirmingConnectionDeletion')"
                         wire:loading.attr="disabled"

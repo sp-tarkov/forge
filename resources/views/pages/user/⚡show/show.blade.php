@@ -17,7 +17,7 @@
 @endif
 
 <div>
-    <div class="sm:-mt-12 mb-6 dark:bg-gray-800 dark:text-gray-100">
+    <div class="sm:-mt-12 mb-6 bg-gray-800 text-gray-100">
         <div>
             @if ($user->cover_photo_url)
                 <img
@@ -40,7 +40,7 @@
                     <img
                         src="{{ $user->profile_photo_url }}"
                         alt="{{ __(':name\'s Profile Picture', ['name' => $user->name]) }}"
-                        class="h-32 w-32 rounded-full ring-4 ring-white dark:ring-gray-800 bg-white dark:bg-gray-800"
+                        class="h-32 w-32 rounded-full ring-4 ring-gray-800 bg-gray-800"
                     />
                 </div>
                 <div
@@ -49,7 +49,7 @@
                         <h1 class="truncate text-lg md:text-2xl font-bold">
                             <x-user-name :user="$user" />
                         </h1>
-                        <div class="text-xs md:text-base text-gray-600 dark:text-gray-400 mt-0.5">
+                        <div class="text-xs md:text-base text-gray-400 mt-0.5">
                             {{ __('Member since') }}
                             <x-time :datetime="$user->created_at" />
                         </div>
@@ -191,7 +191,7 @@
                 {{-- About --}}
                 @if ($user->about)
                     <div
-                        class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 text-gray-800 dark:text-gray-200 drop-shadow-2xl">
+                        class="user-markdown p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 text-gray-200 drop-shadow-2xl">
                         {!! $user->about_html !!}
                     </div>
                 @endif
@@ -216,7 +216,7 @@
                     {{-- Desktop Tabs --}}
                     <div class="hidden sm:block">
                         <nav
-                            class="isolate flex divide-x divide-gray-200 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl"
+                            class="isolate flex divide-x divide-gray-800 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl"
                             aria-label="Tabs"
                         >
                             <x-tab-button

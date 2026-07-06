@@ -21,12 +21,12 @@
 
     <a
         href="{{ $link }}"
-        class="flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:shadow-xl hover:bg-gray-50 dark:hover:bg-gray-900 hover:shadow-blue-200/20 dark:hover:shadow-blue-900/20 transition-[shadow,border] ease-out duration-300 border border-transparent hover:border-blue-200 dark:hover:border-blue-800"
+        class="flex flex-col group h-full w-full bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl overflow-hidden hover:shadow-xl hover:bg-gray-900 hover:shadow-blue-900/20 transition-[shadow,border] ease-out duration-300 border border-transparent hover:border-blue-800"
     >
         <div class="h-auto md:h-full md:flex">
             <!-- Icon section -->
             <div
-                class="relative h-32 md:h-full md:w-32 md:shrink-0 overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 dark:from-blue-600 dark:to-blue-800 flex items-center justify-center">
+                class="relative h-32 md:h-full md:w-32 md:shrink-0 overflow-hidden bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
                 @if ($name === 'Releases')
                     <svg
                         class="w-12 h-12 text-white drop-shadow-lg"
@@ -84,9 +84,9 @@
             <div class="flex flex-col w-full justify-between p-6">
                 <div class="pb-3">
                     <h3
-                        class="my-1 text-xl leading-tight font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                        class="my-1 text-xl leading-tight font-semibold text-white group-hover:text-blue-400">
                         {{ $name }}</h3>
-                    <p class="no-underline mb-3 text-sm font-medium text-blue-600 dark:text-blue-400 flex items-center">
+                    <p class="no-underline mb-3 text-sm font-medium text-blue-400 flex items-center">
                         <svg
                             class="w-4 h-4 mr-1"
                             fill="currentColor"
@@ -100,15 +100,15 @@
                         </svg>
                         Created by SPT Team
                     </p>
-                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    <p class="text-gray-300 leading-relaxed">
                         {{ $desc }}
                     </p>
                 </div>
 
                 <!-- Call to action footer -->
-                <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="pt-4 border-t border-gray-700">
                     <div
-                        class="flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300">
+                        class="flex items-center text-sm font-medium text-blue-400 group-hover:text-blue-300">
                         <span>Get started</span>
                         <svg
                             class="ml-1 w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200"

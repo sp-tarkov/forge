@@ -1,7 +1,7 @@
 @props(['version', 'addon', 'showActions' => null])
 
 <div
-    {{ $attributes->merge(['class' => 'relative p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none group hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black']) }}>
+    {{ $attributes->merge(['class' => 'relative p-4 mb-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl filter-none group hover:shadow-lg hover:bg-black']) }}>
 
     <livewire:ribbon.addon-version
         wire:key="addon-version-show-ribbon-{{ $version->id }}"
@@ -10,7 +10,7 @@
         :published-at="$version->published_at?->toISOString()"
     />
 
-    <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
+    <div class="pb-6 border-b-2 border-gray-800">
         @cachedCan('update', $version)
             <livewire:addon.version-action
                 wire:key="addon-version-show-action-{{ $version->id }}"
@@ -26,7 +26,7 @@
             <div class="flex flex-col">
                 <a
                     href="{{ route('addon.version.download', [$addon->id, $addon->slug, $version->version]) }}"
-                    class="inline-flex items-center text-3xl font-extrabold text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white hover:underline"
+                    class="inline-flex items-center text-3xl font-extrabold text-gray-200 hover:text-white hover:underline"
                     rel="nofollow"
                 >
                     <span>{{ __('Version') }} {{ $version->version }}</span>
@@ -43,12 +43,12 @@
                 <div class="mt-3 flex flex-row flex-wrap justify-start items-center gap-2.5">
                     <div class="flex items-center gap-2.5">
                         @if ($version->formatted_file_size)
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                            <p class="text-sm text-gray-400">
                                 {{ $version->formatted_file_size }}
                             </p>
                         @endif
                         <p
-                            class="text-sm text-gray-800 dark:text-gray-300"
+                            class="text-sm text-gray-300"
                             title="{{ __('Exactly') }} {{ $version->downloads }}"
                         >
                             {{ Number::downloads($version->downloads) }}
@@ -58,7 +58,7 @@
                 </div>
             </div>
             <div @class([
-                'flex flex-col items-start text-gray-700 dark:text-gray-400 sm:items-end mt-4 sm:mt-0',
+                'flex flex-col items-start text-gray-400 sm:items-end mt-4 sm:mt-0',
                 'sm:pr-10' => $showActions ?? Gate::check('update', $version),
             ])>
                 <p class="text-left sm:text-right text-nowrap">{{ __('Released') }}
@@ -75,7 +75,7 @@
                             gap="0"
                             x-show="isMobile"
                         >
-                            <span class="underline text-gray-800 dark:text-gray-200 cursor-help">
+                            <span class="underline text-gray-200 cursor-help">
                                 {{ __('VirusTotal Results') }}
                             </span>
                             <flux:tooltip.content class="max-w-xs text-left">
@@ -86,12 +86,12 @@
                                             <p class="truncate">
                                                 @if ($virusTotalLink->label !== '')
                                                     <span
-                                                        class="text-gray-800 dark:text-gray-200">{{ $virusTotalLink->label }}:</span>
+                                                        class="text-gray-200">{{ $virusTotalLink->label }}:</span>
                                                     <a
                                                         href="{{ $virusTotalLink->url }}"
                                                         title="{{ $virusTotalLink->url }}"
                                                         target="_blank"
-                                                        class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                                        class="underline text-gray-200 hover:text-white"
                                                     >
                                                         {{ $virusTotalLink->url }}
                                                     </a>
@@ -100,7 +100,7 @@
                                                         href="{{ $virusTotalLink->url }}"
                                                         title="{{ $virusTotalLink->url }}"
                                                         target="_blank"
-                                                        class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                                        class="underline text-gray-200 hover:text-white"
                                                     >
                                                         {{ $virusTotalLink->url }}
                                                     </a>
@@ -117,7 +117,7 @@
                             gap="0"
                             x-show="!isMobile"
                         >
-                            <span class="underline text-gray-800 dark:text-gray-200 cursor-help">
+                            <span class="underline text-gray-200 cursor-help">
                                 {{ __('VirusTotal Results') }}
                             </span>
                             <flux:tooltip.content class="max-w-xs text-left">
@@ -128,12 +128,12 @@
                                             <p class="truncate">
                                                 @if ($virusTotalLink->label !== '')
                                                     <span
-                                                        class="text-gray-800 dark:text-gray-200">{{ $virusTotalLink->label }}:</span>
+                                                        class="text-gray-200">{{ $virusTotalLink->label }}:</span>
                                                     <a
                                                         href="{{ $virusTotalLink->url }}"
                                                         title="{{ $virusTotalLink->url }}"
                                                         target="_blank"
-                                                        class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                                        class="underline text-gray-200 hover:text-white"
                                                     >
                                                         {{ $virusTotalLink->url }}
                                                     </a>
@@ -142,7 +142,7 @@
                                                         href="{{ $virusTotalLink->url }}"
                                                         title="{{ $virusTotalLink->url }}"
                                                         target="_blank"
-                                                        class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                                        class="underline text-gray-200 hover:text-white"
                                                     >
                                                         {{ $virusTotalLink->url }}
                                                     </a>
@@ -161,21 +161,21 @@
         {{-- Display compatible mod versions --}}
         @if ($version->compatibleModVersions->isNotEmpty())
             <div class="mt-4">
-                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                <p class="text-sm font-semibold text-gray-100 mb-2">
                     {{ __('Compatible with mod versions:') }}
                 </p>
                 <div class="flex flex-wrap gap-1">
                     @foreach ($version->getSortedCompatibleModVersions() as $modVersion)
                         @if ($modVersion->id === ($addon->mod->latestVersion->id ?? null))
                             <span
-                                class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300"
+                                class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-green-800 text-green-300"
                                 title="{{ __('This is the latest mod version') }}"
                             >
                                 v{{ $modVersion->version }}
                             </span>
                         @else
                             <span
-                                class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                                class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-gray-800 text-gray-300"
                             >
                                 v{{ $modVersion->version }}
                             </span>
@@ -187,7 +187,7 @@
 
         {{-- Display mod dependencies --}}
         @if ($version->latestDependenciesResolved->isNotEmpty())
-            <p class="mt-3 text-gray-700 dark:text-gray-400">
+            <p class="mt-3 text-gray-400">
                 {{ __('Dependencies:') }}
             </p>
             <ul>
@@ -196,7 +196,7 @@
                     <li>
                         <a
                             href="{{ $resolvedDependency->mod->detail_url }}"
-                            class="hover:underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                            class="hover:underline text-gray-200 hover:text-white"
                         >
                             {{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})
                         </a>
@@ -205,7 +205,7 @@
             </ul>
         @endif
     </div>
-    <div class="pt-3 user-markdown text-gray-700 dark:text-gray-400">
+    <div class="pt-3 user-markdown text-gray-400">
         {{--
         !DANGER ZONE!
 

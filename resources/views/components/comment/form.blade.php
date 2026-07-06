@@ -23,7 +23,7 @@
                 <flux:button
                     variant="primary"
                     size="sm"
-                    class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+                    class="text-white hover:bg-cyan-600 bg-cyan-700"
                     type="submit"
                     :loading="false"
                     ::disabled="hasLogFile"
@@ -63,7 +63,7 @@
             <flux:button
                 variant="primary"
                 size="sm"
-                class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+                class="text-white hover:bg-cyan-600 bg-cyan-700"
                 type="submit"
                 :loading="false"
                 ::disabled="hasLogFile"

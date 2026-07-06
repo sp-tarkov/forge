@@ -17,8 +17,8 @@
                     class="size-14 sm:size-16 rounded-md object-cover"
                 >
             @else
-                <div class="size-14 sm:size-16 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                    <flux:icon.cube-transparent class="size-7 text-gray-400 dark:text-gray-600" />
+                <div class="size-14 sm:size-16 rounded-md bg-gray-800 flex items-center justify-center">
+                    <flux:icon.cube-transparent class="size-7 text-gray-600" />
                 </div>
             @endif
         </a>
@@ -28,18 +28,18 @@
             <a
                 href="{{ $mod->detail_url }}"
                 wire:navigate
-                class="font-medium text-gray-900 dark:text-gray-100 hover:underline truncate"
+                class="font-medium text-gray-100 hover:underline truncate"
             >
                 {{ $mod->name }}
             </a>
             @if ($version)
-                <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                <span class="text-xs text-gray-400 shrink-0">
                     {{ $version->version }}
                 </span>
             @endif
         </div>
 
-        <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
+        <div class="text-xs text-gray-400 truncate">
             {{ __('by :owner', ['owner' => $mod->owner?->name ?? __('Unknown')]) }}
             <span aria-hidden="true">·</span>
             <span title="{{ Number::format($mod->downloads) }} {{ __(Str::plural('Download', $mod->downloads)) }}">

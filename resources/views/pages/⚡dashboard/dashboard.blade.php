@@ -7,7 +7,7 @@
 </x-slot>
 
 <x-slot:header>
-    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
+    <h2 class="font-semibold text-xl text-gray-100 leading-tight">
         {{ __('Dashboard') }}
     </h2>
 </x-slot>
@@ -26,7 +26,7 @@
             </flux:callout>
         @endsession
 
-        <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
+        <div class="bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
             <x-welcome />
         </div>
     </div>

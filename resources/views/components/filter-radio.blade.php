@@ -10,6 +10,6 @@
     >
     <label
         for="{{ $id }}"
-        class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300"
+        class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-300"
     >{{ $slot }}</label>
 </div>

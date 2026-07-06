@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between w-full">
             <div>
-                <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+                <h2 class="font-semibold text-xl text-gray-200 leading-tight">
                     {{ __('Visitor Analytics') }}
                 </h2>
             </div>
@@ -13,7 +13,7 @@
         @if ($this->getActiveFilters())
             <div class="my-6">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300 flex-shrink-0">Filtering:</span>
+                    <span class="text-sm font-medium text-gray-300 flex-shrink-0">Filtering:</span>
                     <div class="min-w-0">
                         <flux:breadcrumbs class="inline-flex flex-wrap">
                             @foreach ($this->getActiveFilters() as $index => $filter)
@@ -59,10 +59,10 @@
             {{-- Filters Section --}}
             <div
                 id="filters-container"
-                class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+                class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6"
             >
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filters</h3>
+                    <h3 class="text-lg font-semibold text-gray-100">Filters</h3>
                     <flux:button
                         wire:click="resetFilters"
                         variant="outline"
@@ -285,13 +285,13 @@
 
             {{-- Visits Table --}}
             <div
-                class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Visits</h3>
+                class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 overflow-hidden">
+                <div class="p-6 border-b border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-100">Recent Visits</h3>
                 </div>
 
                 @if ($this->listTimedOut)
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-b border-gray-700">
                         <flux:callout
                             icon="clock"
                             color="amber"
@@ -304,7 +304,7 @@
 
                 {{-- Top Pagination --}}
                 @if ($this->events->hasPages())
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                    <div class="px-6 py-4 border-b border-gray-700 bg-gray-800">
                         {{ $this->events->links(data: ['scrollTo' => '#filters-container']) }}
                     </div>
                 @endif
@@ -314,14 +314,14 @@
                         class="w-full table-auto"
                         style="min-width: 800px;"
                     >
-                        <thead class="bg-gray-100 dark:bg-gray-900">
+                        <thead class="bg-gray-900">
                             <tr>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('created_at')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
+                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
                                     >
                                         <span>Time</span>
                                         @if ($sortBy === 'created_at')
@@ -332,11 +332,11 @@
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('event_name')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
+                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
                                     >
                                         <span>Event</span>
                                         @if ($sortBy === 'event_name')
@@ -347,11 +347,11 @@
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('visitor_id')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
+                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
                                     >
                                         <span>User</span>
                                         @if ($sortBy === 'visitor_id')
@@ -362,11 +362,11 @@
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('ip')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
+                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
                                     >
                                         <span>IP</span>
                                         @if ($sortBy === 'ip')
@@ -377,11 +377,11 @@
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('browser')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
+                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
                                     >
                                         <span>Browser</span>
                                         @if ($sortBy === 'browser')
@@ -392,11 +392,11 @@
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('platform')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
+                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
                                     >
                                         <span>Platform</span>
                                         @if ($sortBy === 'platform')
@@ -407,11 +407,11 @@
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('device')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
+                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
                                     >
                                         <span>Device</span>
                                         @if ($sortBy === 'device')
@@ -422,11 +422,11 @@
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('country_name')"
-                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
+                                        class="flex items-center space-x-1 cursor-pointer hover:text-gray-300 select-none w-full text-left"
                                     >
                                         <span>Location</span>
                                         @if ($sortBy === 'country_name')
@@ -437,22 +437,22 @@
                                     </button>
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     &nbsp;</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="bg-gray-800 divide-y divide-gray-700">
                             @forelse($this->events as $event)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                <tr class="hover:bg-gray-700">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-100">
                                         <div class="text-xs">
                                             <div>{{ \Carbon\Carbon::parse($event->created_at)->format('M j, Y') }}
                                             </div>
-                                            <div class="text-gray-500 dark:text-gray-400">
+                                            <div class="text-gray-400">
                                                 {{ \Carbon\Carbon::parse($event->created_at)->format('g:i A') }}</div>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
+                                    <td class="px-4 py-4 text-sm text-gray-100">
                                         <div class="max-w-xs">
                                             <flux:badge
                                                 size="sm"
@@ -466,11 +466,11 @@
                                             </flux:badge>
 
                                             @if ($displayText = $this->getEventDisplayText($event))
-                                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                <div class="text-xs text-gray-400 mt-1">
                                                     @if ($eventUrl = $this->getEventUrl($event))
                                                         <a
                                                             href="{{ $eventUrl }}"
-                                                            class="hover:text-gray-700 dark:hover:text-gray-300 underline hover:no-underline"
+                                                            class="hover:text-gray-300 underline hover:no-underline"
                                                             target="_blank"
                                                         >
                                                             {{ Str::limit($displayText, 40) }}
@@ -495,11 +495,11 @@
                                                 <div class="flex flex-col">
                                                     <a
                                                         href="{{ route('user.show', ['userId' => $this->getEventUserId($event), 'slug' => Str::slug($this->getEventDisplayUser($event)->name)]) }}"
-                                                        class="text-xs font-medium text-gray-900 dark:text-gray-100 underline hover:text-gray-600 dark:hover:text-gray-300 truncate max-w-24"
+                                                        class="text-xs font-medium text-gray-100 underline hover:text-gray-300 truncate max-w-24"
                                                     >
                                                         {{ $this->getEventDisplayUser($event)->name }}
                                                     </a>
-                                                    <span class="text-xs text-gray-500 dark:text-gray-400">ID:
+                                                    <span class="text-xs text-gray-400">ID:
                                                         {{ $this->getEventUserId($event) }}</span>
                                                 </div>
                                             </div>
@@ -512,15 +512,15 @@
                                                     size="xs"
                                                 />
                                                 <div class="flex flex-col">
-                                                    <span class="text-xs text-gray-900 dark:text-gray-100">
+                                                    <span class="text-xs text-gray-100">
                                                         {{ $this->getEventDisplayName($event) ?? 'Unknown User' }}
                                                     </span>
-                                                    <span class="text-xs text-gray-500 dark:text-gray-400">ID:
+                                                    <span class="text-xs text-gray-400">ID:
                                                         {{ $this->getEventUserId($event) }}</span>
                                                 </div>
                                             </div>
                                         @else
-                                            <span class="text-gray-400 dark:text-gray-500 text-xs">Anonymous</span>
+                                            <span class="text-gray-500 text-xs">Anonymous</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-xs font-mono">
@@ -528,48 +528,48 @@
                                             <a
                                                 href="https://whatismyipaddress.com/ip/{{ $event->ip }}"
                                                 target="_blank"
-                                                class="text-gray-900 dark:text-gray-100 underline hover:text-gray-600 dark:hover:text-gray-300"
+                                                class="text-gray-100 underline hover:text-gray-300"
                                             >
                                                 {{ $event->ip }}
                                             </a>
                                         @else
-                                            <span class="text-gray-900 dark:text-gray-100">Unknown</span>
+                                            <span class="text-gray-100">Unknown</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-xs">
                                         @if ($event->browser)
                                             <button
                                                 wire:click="$set('browserFilter', '{{ $event->browser }}')"
-                                                class="text-gray-900 dark:text-gray-100 underline hover:text-gray-600 dark:hover:text-gray-300"
+                                                class="text-gray-100 underline hover:text-gray-300"
                                             >
                                                 {{ $event->browser }}
                                             </button>
                                         @else
-                                            <span class="text-gray-900 dark:text-gray-100">Unknown</span>
+                                            <span class="text-gray-100">Unknown</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-xs">
                                         @if ($event->platform)
                                             <button
                                                 wire:click="$set('platformFilter', '{{ $event->platform }}')"
-                                                class="text-gray-900 dark:text-gray-100 underline hover:text-gray-600 dark:hover:text-gray-300"
+                                                class="text-gray-100 underline hover:text-gray-300"
                                             >
                                                 {{ $event->platform }}
                                             </button>
                                         @else
-                                            <span class="text-gray-900 dark:text-gray-100">Unknown</span>
+                                            <span class="text-gray-100">Unknown</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-xs">
                                         @if ($event->device)
                                             <button
                                                 wire:click="$set('deviceFilter', '{{ $event->device }}')"
-                                                class="text-gray-900 dark:text-gray-100 underline hover:text-gray-600 dark:hover:text-gray-300"
+                                                class="text-gray-100 underline hover:text-gray-300"
                                             >
                                                 {{ $event->device }}
                                             </button>
                                         @else
-                                            <span class="text-gray-900 dark:text-gray-100">Unknown</span>
+                                            <span class="text-gray-100">Unknown</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-xs">
@@ -577,39 +577,39 @@
                                             <div class="flex items-center space-x-2">
                                                 <span
                                                     class="text-sm">{{ \App\Services\GeolocationService::getCountryFlag($event->country_code) }}</span>
-                                                <div class="text-gray-900 dark:text-gray-100">
+                                                <div class="text-gray-100">
                                                     <button
                                                         wire:click="setGeographicFilter('country', '{{ $event->country_name }}')"
-                                                        class="font-medium underline hover:text-gray-600 dark:hover:text-gray-300 text-left"
+                                                        class="font-medium underline hover:text-gray-300 text-left"
                                                     >
                                                         {{ $event->country_name }}
                                                     </button>
                                                     @if ($event->region_name || $event->city_name)
-                                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                        <div class="text-xs text-gray-400">
                                                             @if ($event->city_name && $event->region_name)
                                                                 <button
                                                                     wire:click="setGeographicFilter('city', '{{ $event->city_name }}')"
-                                                                    class="underline hover:text-gray-600 dark:hover:text-gray-300"
+                                                                    class="underline hover:text-gray-300"
                                                                 >
                                                                     {{ $event->city_name }}
                                                                 </button>,
                                                                 <button
                                                                     wire:click="setGeographicFilter('region', '{{ $event->region_name }}')"
-                                                                    class="underline hover:text-gray-600 dark:hover:text-gray-300"
+                                                                    class="underline hover:text-gray-300"
                                                                 >
                                                                     {{ $event->region_name }}
                                                                 </button>
                                                             @elseif($event->city_name)
                                                                 <button
                                                                     wire:click="setGeographicFilter('city', '{{ $event->city_name }}')"
-                                                                    class="underline hover:text-gray-600 dark:hover:text-gray-300"
+                                                                    class="underline hover:text-gray-300"
                                                                 >
                                                                     {{ $event->city_name }}
                                                                 </button>
                                                             @elseif($event->region_name)
                                                                 <button
                                                                     wire:click="setGeographicFilter('region', '{{ $event->region_name }}')"
-                                                                    class="underline hover:text-gray-600 dark:hover:text-gray-300"
+                                                                    class="underline hover:text-gray-300"
                                                                 >
                                                                     {{ $event->region_name }}
                                                                 </button>
@@ -619,7 +619,7 @@
                                                 </div>
                                             </div>
                                         @else
-                                            <span class="text-gray-400 dark:text-gray-500">Unknown</span>
+                                            <span class="text-gray-500">Unknown</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-xs">
@@ -637,12 +637,12 @@
                                 <tr>
                                     <td
                                         colspan="10"
-                                        class="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
+                                        class="px-6 py-12 text-center text-gray-400"
                                     >
                                         <flux:icon.chart-bar-square
-                                            class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600"
+                                            class="w-12 h-12 mx-auto mb-4 text-gray-600"
                                         />
-                                        <p class="text-gray-500 dark:text-gray-400">No events found for the selected
+                                        <p class="text-gray-400">No events found for the selected
                                             filters.</p>
                                     </td>
                                 </tr>
@@ -652,7 +652,7 @@
                 </div>
 
                 @if ($this->events->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-t border-gray-700">
                         {{ $this->events->links(data: ['scrollTo' => '#filters-container']) }}
                     </div>
                 @endif
@@ -666,7 +666,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="eye"
@@ -675,11 +675,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 Event Details
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 Complete event data in JSON format
                             </flux:text>
                         </div>
@@ -689,15 +689,15 @@
                 {{-- Content Section --}}
                 <div class="space-y-4">
                     @if ($selectedEvent)
-                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 overflow-auto max-h-96">
-                            <pre class="text-xs text-gray-900 dark:text-gray-100 whitespace-pre-wrap font-mono">{{ json_encode($selectedEvent, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</pre>
+                        <div class="bg-gray-800 rounded-lg p-4 overflow-auto max-h-96">
+                            <pre class="text-xs text-gray-100 whitespace-pre-wrap font-mono">{{ json_encode($selectedEvent, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</pre>
                         </div>
                     @endif
                 </div>
 
                 {{-- Footer Actions --}}
                 <div
-                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                     <flux:button
                         x-on:click="$wire.showEventModal = false"
                         variant="outline"

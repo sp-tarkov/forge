@@ -28,7 +28,7 @@ final class UserName extends Component
         $role = $this->user->role ?? null;
 
         if ($role && $role->color_class) {
-            return sprintf('text-%s-500 dark:text-%s-400', $role->color_class, $role->color_class);
+            return sprintf('text-%s-400', $role->color_class);
         }
 
         return '';

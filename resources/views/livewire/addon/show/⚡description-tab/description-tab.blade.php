@@ -1,6 +1,6 @@
 @placeholder
     <div
-        class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+        class="user-markdown p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
         <flux:skeleton.group class="space-y-4">
             {{-- Title --}}
             <flux:skeleton class="h-8 w-1/3 rounded" />
@@ -33,7 +33,7 @@
 @endplaceholder
 
 <div
-    class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+    class="user-markdown p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
     {{--
         !DANGER ZONE!
 

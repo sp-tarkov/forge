@@ -1,10 +1,10 @@
 <x-layouts::base title="Page Not Found - {{ config('app.name') }}">
     <div class="min-h-[60vh] flex items-center justify-center px-4">
         <div class="max-w-2xl w-full">
-            <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-8 md:p-12">
+            <div class="bg-gray-900 rounded-lg shadow-lg p-8 md:p-12">
                 <div class="text-center">
                     <div
-                        class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 dark:bg-yellow-900/20 mb-6">
+                        class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-900/20 mb-6">
                         <svg
                             class="w-8 h-8 text-gray-900"
                             fill="none"
@@ -20,11 +20,11 @@
                         </svg>
                     </div>
 
-                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">
                         Page Not Found
                     </h1>
 
-                    <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">
+                    <p class="text-lg text-gray-400 mb-8">
                         The page you're looking for doesn't exist or has been moved.
                     </p>
 

@@ -30,7 +30,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="clock"
@@ -39,11 +39,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Auto-detect Timezone') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('We can automatically detect your timezone using your browser settings.') }}
                             </flux:text>
                         </div>
@@ -56,11 +56,11 @@
                     <div>
                         <flux:field>
                             <div
-                                class="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                class="mt-2 p-3 bg-gray-800 rounded-lg border border-gray-700">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <div
-                                            class="text-sm font-medium text-gray-900 dark:text-white"
+                                            class="text-sm font-medium text-white"
                                             id="detected-timezone-display"
                                         >
                                             <span x-show="!$wire.detectedTimezone">Detecting...</span>
@@ -70,7 +70,7 @@
                                             ></span>
                                         </div>
                                         @if ($fallbackTimezone && $fallbackTimezone !== 'UTC')
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            <div class="text-xs text-gray-400 mt-1">
                                                 {{ __('Fallback from your activity: :timezone', ['timezone' => $fallbackTimezone]) }}
                                             </div>
                                         @endif
@@ -89,8 +89,8 @@
                 </div>
 
                 {{-- Footer Actions --}}
-                <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-700">
+                    <div class="flex items-center text-xs text-gray-400">
                         <flux:icon
                             name="shield-check"
                             class="w-4 h-4 mr-2 flex-shrink-0"

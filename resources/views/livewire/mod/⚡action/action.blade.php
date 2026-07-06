@@ -107,7 +107,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="arrow-trending-down"
@@ -116,11 +116,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Unfeature Mod') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Remove from featured section') }}
                         </flux:text>
                     </div>
@@ -129,10 +129,10 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     Are you sure you want to unfeature the "{{ $this->modName }}" mod?
                 </flux:text>
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     This will remove the mod from the homepage featured section and remove the "featured" ribbon on its
                     listing card.
                 </flux:text>
@@ -148,7 +148,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('mod-action-unfeature-{{ $this->modId }}').close()"
                     variant="outline"
@@ -176,7 +176,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="sparkles"
@@ -185,11 +185,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Feature Mod') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Highlight this mod') }}
                         </flux:text>
                     </div>
@@ -198,10 +198,10 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     Are you sure you want to feature the "{{ $this->modName }}" mod?
                 </flux:text>
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     This will add the mod to the homepage featured section and add the "featured" ribbon on its listing
                     card.
                 </flux:text>
@@ -217,7 +217,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('mod-action-feature-{{ $this->modId }}').close()"
                     variant="outline"
@@ -244,7 +244,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="eye-slash"
@@ -253,11 +253,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Disable Mod') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Hide from visitors') }}
                         </flux:text>
                     </div>
@@ -266,10 +266,10 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     Are you sure you want to disable the "{{ $this->modName }}" mod?
                 </flux:text>
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     This will prevent visitors on the site from seeing the mod.
                 </flux:text>
 
@@ -284,7 +284,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('mod-action-disable-{{ $this->modId }}').close()"
                     variant="outline"
@@ -311,7 +311,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="eye"
@@ -320,11 +320,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Enable Mod') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Make visible to visitors') }}
                         </flux:text>
                     </div>
@@ -333,10 +333,10 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     Are you sure you want to enable the "{{ $this->modName }}" mod?
                 </flux:text>
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     This will allow visitors on the site to see the mod.
                 </flux:text>
 
@@ -351,7 +351,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('mod-action-enable-{{ $this->modId }}').close()"
                     variant="outline"
@@ -378,7 +378,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="trash"
@@ -387,11 +387,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Delete Mod') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Permanent deletion') }}
                         </flux:text>
                     </div>
@@ -400,22 +400,22 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     Are you sure you want to delete the "{{ $this->modName }}" mod?
                 </flux:text>
 
                 <div
-                    class="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 rounded-lg p-4">
+                    class="bg-amber-950/30 border border-amber-700 rounded-lg p-4">
                     <div class="flex items-start gap-3">
                         <flux:icon
                             name="exclamation-triangle"
                             class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0"
                         />
                         <div>
-                            <flux:text class="text-amber-900 dark:text-amber-200 text-sm font-medium">
+                            <flux:text class="text-amber-200 text-sm font-medium">
                                 {{ __('Attention!') }}
                             </flux:text>
-                            <flux:text class="text-amber-800 dark:text-amber-300 text-sm mt-1">
+                            <flux:text class="text-amber-300 text-sm mt-1">
                                 The mod will be permanently deleted, along with all mod versions, mod comments, and any
                                 other data tied directly to the mod. If this isn't necessary, you should simply disable
                                 the mod instead.
@@ -435,8 +435,8 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                <div class="flex items-center text-xs text-red-600 dark:text-red-400">
+            <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-700">
+                <div class="flex items-center text-xs text-red-400">
                     <flux:icon
                         name="shield-exclamation"
                         class="w-4 h-4 mr-2 flex-shrink-0"
@@ -474,7 +474,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="eye"
@@ -483,11 +483,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Publish Mod') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Make visible to visitors') }}
                         </flux:text>
                     </div>
@@ -496,7 +496,7 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     Select the date and time the mod "{{ $this->modName }}" will be published. If the mod is not
                     published, it will not be discoverable by other users.
                 </flux:text>
@@ -516,7 +516,7 @@
                                     You have not selected a timezone for your account. The published date will be
                                     interpreted as a UTC date. You can <a
                                         href="/user/profile"
-                                        class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                                        class="underline text-white hover:text-cyan-200 transition-colors"
                                     >edit your profile</a> to set a specific timezone.
                                 </flux:callout.text>
                             </flux:callout>
@@ -548,7 +548,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('mod-action-publish-{{ $this->modId }}').close()"
                     variant="outline"
@@ -575,7 +575,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+            <div class="border-b border-gray-700 pb-6 mb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="eye-slash"
@@ -584,11 +584,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __('Unpublish Mod') }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('Hide from visitors') }}
                         </flux:text>
                     </div>
@@ -597,10 +597,10 @@
 
             {{-- Content Section --}}
             <div class="space-y-4">
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     Are you sure you want to unpublish the "{{ $this->modName }}" mod?
                 </flux:text>
-                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                <flux:text class="text-gray-300 text-sm">
                     This will remove the published date and prevent visitors on the site from discovering the mod.
                 </flux:text>
 
@@ -615,7 +615,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                 <flux:button
                     x-on:click="$wire.moderationReason = ''; $flux.modal('mod-action-unpublish-{{ $this->modId }}').close()"
                     variant="outline"

@@ -16,7 +16,7 @@
             </flux:description>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 @if ($photo)
-                    <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                    <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
                         @if ($photo->isPreviewable())
                             <img
                                 src="{{ $photo->temporaryUrl() }}"
@@ -25,8 +25,8 @@
                             >
                         @endif
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">{{ $photo->getClientOriginalName() }}</p>
-                            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ Number::fileSize($photo->getSize(), 1) }}</p>
+                            <p class="text-sm font-medium text-zinc-300 truncate">{{ $photo->getClientOriginalName() }}</p>
+                            <p class="mt-0.5 text-xs text-zinc-400">{{ Number::fileSize($photo->getSize(), 1) }}</p>
                         </div>
                         <flux:button
                             size="sm"
@@ -37,15 +37,15 @@
                         />
                     </div>
                 @elseif ($this->user->profile_photo_path)
-                    <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                    <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
                         <img
                             src="{{ $this->user->profile_photo_url }}"
                             class="size-20 shrink-0 rounded-lg object-cover"
                             alt="{{ __('Current profile picture') }}"
                         >
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('Current Picture') }}</p>
-                            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Upload a new image to replace, or delete the current one.') }}</p>
+                            <p class="text-sm font-medium text-zinc-300">{{ __('Current Picture') }}</p>
+                            <p class="mt-0.5 text-xs text-zinc-400">{{ __('Upload a new image to replace, or delete the current one.') }}</p>
                         </div>
                         <flux:button
                             size="sm"
@@ -81,7 +81,7 @@
             </flux:description>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 @if ($cover)
-                    <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                    <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
                         @if ($cover->isPreviewable())
                             <img
                                 src="{{ $cover->temporaryUrl() }}"
@@ -90,8 +90,8 @@
                             >
                         @endif
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">{{ $cover->getClientOriginalName() }}</p>
-                            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ Number::fileSize($cover->getSize(), 1) }}</p>
+                            <p class="text-sm font-medium text-zinc-300 truncate">{{ $cover->getClientOriginalName() }}</p>
+                            <p class="mt-0.5 text-xs text-zinc-400">{{ Number::fileSize($cover->getSize(), 1) }}</p>
                         </div>
                         <flux:button
                             size="sm"
@@ -102,15 +102,15 @@
                         />
                     </div>
                 @elseif ($this->user->cover_photo_path)
-                    <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                    <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
                         <img
                             src="{{ $this->user->cover_photo_url }}"
                             class="size-20 shrink-0 rounded-lg object-cover"
                             alt="{{ __('Current cover picture') }}"
                         >
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('Current Cover') }}</p>
-                            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Upload a new image to replace, or delete the current one.') }}</p>
+                            <p class="text-sm font-medium text-zinc-300">{{ __('Current Cover') }}</p>
+                            <p class="mt-0.5 text-xs text-zinc-400">{{ __('Upload a new image to replace, or delete the current one.') }}</p>
                         </div>
                         <flux:button
                             size="sm"
@@ -158,7 +158,7 @@
                 @input="count = text.length"
             />
             <div
-                class="mt-1 text-sm text-gray-500 dark:text-gray-400"
+                class="mt-1 text-sm text-gray-400"
                 x-text="`Max Length: ${count}/255`"
             ></div>
             <flux:error name="name" />
@@ -192,7 +192,7 @@
                         {{ __('Your email address is unverified.') }}
                         <button
                             type="button"
-                            class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                            class="underline text-white hover:text-cyan-200 transition-colors"
                             wire:click.prevent="sendEmailVerification"
                         >
                             {{ __('Click here to re-send the verification email.') }}
@@ -264,7 +264,7 @@
             type="submit"
             variant="primary"
             size="sm"
-            class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+            class="my-1.5 text-white hover:bg-cyan-600 bg-cyan-700"
             wire:loading.attr="disabled"
             wire:target="photo,cover"
         >

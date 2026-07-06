@@ -20,7 +20,7 @@
                 if (element) {
                     element.scrollIntoView({ block: 'start' });
                     const highlightTarget = element.parentElement?.parentElement ?? element;
-                    const colorClasses = ['bg-yellow-100', 'dark:bg-sky-700'];
+                    const colorClasses = ['bg-yellow-100', 'bg-sky-700'];
                     const transitionClasses = ['transition-colors', 'duration-1000'];
                     highlightTarget.classList.add(...transitionClasses, ...colorClasses);
                     setTimeout(() => highlightTarget.classList.remove(...colorClasses), 1500);
@@ -45,7 +45,7 @@
 
     @auth
         @if (CachedGate::allows('create', [App\Models\Comment::class, $commentable]))
-            <div class="p-6 mb-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+            <div class="p-6 mb-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-bold text-white">
                         {{ __('Discussion') }}
@@ -82,15 +82,15 @@
                 </div>
             </div>
         @else
-            <div class="p-6 mb-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+            <div class="p-6 mb-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
+                <div class="text-center text-gray-400 py-8">
                     <flux:icon.chat-bubble-left-ellipsis class="w-12 h-12 mx-auto mb-4 opacity-50" />
                     @if (!$commentable->canReceiveComments())
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('Comments Disabled') }}
+                        <h3 class="text-lg font-medium text-gray-100 mb-2">{{ __('Comments Disabled') }}
                         </h3>
                         <p>{{ __('Comments are disabled.') }}</p>
                     @elseif (!auth()->user()->hasVerifiedEmail())
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                        <h3 class="text-lg font-medium text-gray-100 mb-2">
                             {{ __('Email Verification Required') }}</h3>
                         <p class="mb-4">{{ __('Please verify your email address to participate in discussions.') }}</p>
                         <flux:button
@@ -98,7 +98,7 @@
                             size="sm"
                         >{{ __('Verify Email') }}</flux:button>
                     @else
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('Cannot Comment') }}
+                        <h3 class="text-lg font-medium text-gray-100 mb-2">{{ __('Cannot Comment') }}
                         </h3>
                         <p>{{ __('You do not have permission to comment on this content.') }}</p>
                     @endif
@@ -142,7 +142,7 @@
             />
             <div
                 wire:key="comment-{{ $comment->id }}"
-                class="p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none"
+                class="p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl filter-none"
             >
                 <x-comment.display
                     :comment="$comment"
@@ -171,7 +171,7 @@
                                     <div
                                         id="reply-container-{{ $reply->id }}"
                                         wire:key="reply-{{ $reply->id }}"
-                                        class="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none"
+                                        class="p-6 bg-gray-900 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl filter-none"
                                     >
                                         <x-comment.display
                                             :comment="$reply"
@@ -204,7 +204,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="trash"
@@ -213,11 +213,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Remove Comment') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('This action cannot be undone') }}
                             </flux:text>
                         </div>
@@ -226,14 +226,14 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ $deleteModalMessage }}
                     </flux:text>
                 </div>
 
                 {{-- Footer Actions --}}
                 <div
-                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                     <flux:button
                         x-on:click="$wire.showDeleteModal = false"
                         data-test="cancel-delete-comment"
@@ -265,7 +265,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="eye-slash"
@@ -274,11 +274,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Soft-delete Comment') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('Comment will be hidden but can be restored') }}
                             </flux:text>
                         </div>
@@ -287,7 +287,7 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ __('This comment will be hidden from regular users but can be restored later by moderators.') }}
                     </flux:text>
 
@@ -301,7 +301,7 @@
 
                 {{-- Footer Actions --}}
                 <div
-                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                     <flux:button
                         x-on:click="$wire.showSoftDeleteModal = false; $wire.moderationReason = ''"
                         variant="outline"
@@ -331,7 +331,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="eye-slash"
@@ -340,11 +340,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Soft-delete Comment') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('Hide comment from public view') }}
                             </flux:text>
                         </div>
@@ -353,14 +353,14 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ __('Are you sure you want to soft-delete this comment? The comment will be hidden from public view but can be restored by moderators.') }}
                     </flux:text>
                 </div>
 
                 {{-- Footer Actions --}}
                 <div
-                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                     <flux:button
                         x-on:click="$wire.showModOwnerSoftDeleteModal = false"
                         variant="outline"
@@ -390,7 +390,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="arrow-path"
@@ -399,11 +399,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Restore Comment') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('Make comment visible again') }}
                             </flux:text>
                         </div>
@@ -412,14 +412,14 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ __('Are you sure you want to restore this comment? The comment will become visible to all users again.') }}
                     </flux:text>
                 </div>
 
                 {{-- Footer Actions --}}
                 <div
-                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                     <flux:button
                         x-on:click="$wire.showModOwnerRestoreModal = false"
                         variant="outline"
@@ -449,7 +449,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="trash"
@@ -458,11 +458,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Permanently Remove Comment') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('This action is irreversible') }}
                             </flux:text>
                         </div>
@@ -471,7 +471,7 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         @if ($hardDeleteDescendantCount > 0)
                             {{ __('You are about to permanently remove this comment. This action cannot be undone.') }}
                         @else
@@ -481,17 +481,17 @@
 
                     @if ($hardDeleteDescendantCount > 0)
                         <div
-                            class="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 rounded-lg p-4">
+                            class="bg-amber-950/30 border border-amber-700 rounded-lg p-4">
                             <div class="flex items-start gap-3">
                                 <flux:icon
                                     name="exclamation-triangle"
                                     class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0"
                                 />
                                 <div>
-                                    <flux:text class="text-amber-900 dark:text-amber-200 text-sm font-medium">
+                                    <flux:text class="text-amber-200 text-sm font-medium">
                                         {{ __('Attention!') }}
                                     </flux:text>
-                                    <flux:text class="text-amber-800 dark:text-amber-300 text-sm mt-1">
+                                    <flux:text class="text-amber-300 text-sm mt-1">
                                         {{ __('This will also permanently delete :count replies in this comment thread. Consider using soft-delete instead if you want to preserve the replies.', ['count' => $hardDeleteDescendantCount]) }}
                                     </flux:text>
                                 </div>
@@ -508,8 +508,8 @@
                 </div>
 
                 {{-- Footer Actions --}}
-                <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center text-xs text-red-600 dark:text-red-400">
+                <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-700">
+                    <div class="flex items-center text-xs text-red-400">
                         <flux:icon
                             name="shield-exclamation"
                             class="w-4 h-4 mr-2 flex-shrink-0"
@@ -550,7 +550,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="bookmark"
@@ -559,11 +559,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Pin Comment') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('Highlight important comment') }}
                             </flux:text>
                         </div>
@@ -572,7 +572,7 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ __('Are you sure you want to pin this comment? Pinned comments appear at the top of the comment section.') }}
                     </flux:text>
 
@@ -586,7 +586,7 @@
 
                 {{-- Footer Actions --}}
                 <div
-                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                     <flux:button
                         x-on:click="$wire.showPinModal = false; $wire.moderationReason = ''"
                         variant="outline"
@@ -617,7 +617,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="bookmark-slash"
@@ -626,11 +626,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Unpin Comment') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('Remove from pinned section') }}
                             </flux:text>
                         </div>
@@ -639,7 +639,7 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ __('Are you sure you want to unpin this comment? It will no longer appear at the top of the comment section.') }}
                     </flux:text>
 
@@ -653,7 +653,7 @@
 
                 {{-- Footer Actions --}}
                 <div
-                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                     <flux:button
                         x-on:click="$wire.showUnpinModal = false; $wire.moderationReason = ''"
                         variant="outline"
@@ -684,7 +684,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="shield-exclamation"
@@ -693,11 +693,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Mark as Spam') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('Flag content as spam') }}
                             </flux:text>
                         </div>
@@ -706,7 +706,7 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ __('This comment will be marked as spam and hidden from regular users.') }}
                     </flux:text>
 
@@ -720,7 +720,7 @@
 
                 {{-- Footer Actions --}}
                 <div
-                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                     <flux:button
                         x-on:click="$wire.showMarkAsSpamModal = false; $wire.moderationReason = ''"
                         variant="outline"
@@ -750,7 +750,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="shield-check"
@@ -759,11 +759,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Mark as Clean') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('Confirm content is not spam') }}
                             </flux:text>
                         </div>
@@ -772,7 +772,7 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ __('Are you sure you want to mark this comment as clean? This will remove any spam flags and make it visible to all users.') }}
                     </flux:text>
 
@@ -786,7 +786,7 @@
 
                 {{-- Footer Actions --}}
                 <div
-                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                     <flux:button
                         x-on:click="$wire.showMarkAsCleanModal = false; $wire.moderationReason = ''"
                         variant="outline"
@@ -816,7 +816,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="magnifying-glass"
@@ -825,11 +825,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Check for Spam') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('Analyze comment for spam content') }}
                             </flux:text>
                         </div>
@@ -838,14 +838,14 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ __('This will send the comment to the spam detection service for analysis. The system will automatically flag it if spam is detected.') }}
                     </flux:text>
                 </div>
 
                 {{-- Footer Actions --}}
                 <div
-                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                     <flux:button
                         x-on:click="$wire.showCheckForSpamModal = false"
                         variant="outline"
@@ -875,7 +875,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="arrow-path"
@@ -884,11 +884,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Restore Comment') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('Make comment visible again') }}
                             </flux:text>
                         </div>
@@ -897,7 +897,7 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ __('Are you sure you want to restore this comment? It will become visible to users again.') }}
                     </flux:text>
 
@@ -911,7 +911,7 @@
 
                 {{-- Footer Actions --}}
                 <div
-                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                     <flux:button
                         x-on:click="$wire.showRestoreModal = false; $wire.moderationReason = ''"
                         variant="outline"
@@ -944,14 +944,14 @@
                     {{ __('Version :number', ['number' => $this->viewingVersion->version_number]) }}
                 </flux:heading>
 
-                <div class="text-sm text-gray-500 dark:text-gray-400">
+                <div class="text-sm text-gray-400">
                     {{ __('By') }} {{ $this->viewingVersionComment->user->name }}
                     {{ __('on') }} {{ $this->viewingVersion->created_at->format('F j, Y \a\t g:i A') }}
                 </div>
 
                 <flux:separator />
 
-                <div class="user-markdown text-gray-900 dark:text-slate-200">
+                <div class="user-markdown text-slate-200">
                     {!! $this->viewingVersion->body_html !!}
                 </div>
             </div>

@@ -15,8 +15,8 @@
         @if (count($this->sessions) > 0)
             <div class="mt-5 space-y-3">
                 @foreach ($this->sessions as $session)
-                    <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
-                        <div class="shrink-0 text-zinc-500 dark:text-zinc-400">
+                    <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                        <div class="shrink-0 text-zinc-400">
                             @if ($session->is_desktop)
                                 <flux:icon.computer-desktop class="size-8" />
                             @else
@@ -31,7 +31,7 @@
                             <flux:text size="xs">
                                 {{ $session->ip_address }},
                                 @if ($session->is_current_device)
-                                    <span class="text-green-600 dark:text-green-500 font-semibold">{{ __('This device') }}</span>
+                                    <span class="text-green-500 font-semibold">{{ __('This device') }}</span>
                                 @else
                                     {{ __('Last active') }} {{ $session->last_active }}
                                 @endif
@@ -46,7 +46,7 @@
             <flux:button
                 variant="primary"
                 size="sm"
-                class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+                class="my-1.5 text-white hover:bg-cyan-600 bg-cyan-700"
                 wire:click="confirmLogout"
                 wire:loading.attr="disabled"
             >
@@ -61,7 +61,7 @@
         >
             <div class="space-y-0">
                 {{-- Header Section --}}
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="border-b border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
                         <flux:icon
                             name="arrow-right-start-on-rectangle"
@@ -70,11 +70,11 @@
                         <div>
                             <flux:heading
                                 size="xl"
-                                class="text-gray-900 dark:text-gray-100"
+                                class="text-gray-100"
                             >
                                 {{ __('Log Out Other Browser Sessions') }}
                             </flux:heading>
-                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            <flux:text class="mt-1 text-gray-400 text-sm">
                                 {{ __('Confirm your password to proceed') }}
                             </flux:text>
                         </div>
@@ -83,7 +83,7 @@
 
                 {{-- Content Section --}}
                 <div class="space-y-4">
-                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    <flux:text class="text-gray-300 text-sm">
                         {{ __('Please enter your password to confirm you would like to log out of your other browser sessions across all of your devices.') }}
                     </flux:text>
 
@@ -105,7 +105,7 @@
                 </div>
 
                 {{-- Footer Actions --}}
-                <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700 gap-3">
                     <flux:button
                         wire:click="$toggle('confirmingLogout')"
                         wire:loading.attr="disabled"

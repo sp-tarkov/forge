@@ -15,7 +15,7 @@
     >
         <flux:icon.bell
             variant="mini"
-            class="text-zinc-500 dark:text-white"
+            class="text-white"
         />
         @if ($unreadCount > 0)
             <span
@@ -31,12 +31,12 @@
         x-show="notificationDropdownOpen"
         x-transition
         x-on:click.outside="notificationDropdownOpen = false"
-        class="absolute top-11 right-0 z-[100] flex w-full min-w-[22rem] flex-col overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
+        class="absolute top-11 right-0 z-[100] flex w-full min-w-[22rem] flex-col overflow-hidden rounded-xl border border-gray-700 bg-gray-800"
         role="menu"
     >
         {{-- Header --}}
-        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-300 dark:border-gray-700">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-700">
+            <h3 class="text-sm font-semibold text-white">
                 {{ __('Unread Notifications') }}
             </h3>
             <div class="flex items-center gap-2">
@@ -45,7 +45,7 @@
                         type="button"
                         wire:click="markAllAsRead"
                         wire:loading.attr="disabled"
-                        class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 disabled:opacity-50"
+                        class="text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50"
                     >
                         <span
                             wire:loading.remove
@@ -63,7 +63,7 @@
                         wire:click="deleteAll"
                         wire:loading.attr="disabled"
                         wire:confirm="{{ __('Are you sure you want to delete all notifications?') }}"
-                        class="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 disabled:opacity-50"
+                        class="text-xs text-red-400 hover:text-red-300 disabled:opacity-50"
                     >
                         <span
                             wire:loading.remove
@@ -80,7 +80,7 @@
 
         {{-- Notification List --}}
         @if ($this->notifications->count() > 0)
-            <div class="flex flex-col divide-y divide-gray-200 dark:divide-gray-700 max-h-96 overflow-y-auto">
+            <div class="flex flex-col divide-y divide-gray-700 max-h-96 overflow-y-auto">
                 @foreach ($this->notifications as $notification)
                     <x-notification-row.nav
                         :notification="$notification"
@@ -90,12 +90,12 @@
             </div>
 
             {{-- Footer --}}
-            <div class="flex flex-col py-1.5 border-t border-slate-300 dark:border-gray-700">
+            <div class="flex flex-col py-1.5 border-t border-gray-700">
                 <a
                     href="{{ route('dashboard') }}"
                     wire:navigate
                     x-on:click="notificationDropdownOpen = false"
-                    class="flex items-center gap-2 bg-gray-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-gray-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white"
+                    class="flex items-center gap-2 px-4 py-2 text-sm focus-visible:outline-hidden bg-gray-800 text-slate-300 hover:bg-slate-100/5 hover:text-white focus-visible:bg-slate-100/10 focus-visible:text-white"
                     role="menuitem"
                 >
                     <flux:icon.arrow-right class="w-4 h-4" />
@@ -105,8 +105,8 @@
         @else
             {{-- Empty State --}}
             <div class="px-4 py-8 text-center">
-                <flux:icon.bell class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3" />
-                <p class="text-sm text-gray-600 dark:text-gray-400">
+                <flux:icon.bell class="w-12 h-12 mx-auto text-gray-600 mb-3" />
+                <p class="text-sm text-gray-400">
                     {{ __('No new notifications') }}
                 </p>
             </div>

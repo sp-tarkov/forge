@@ -1,5 +1,5 @@
 <div
-    class="w-full text-gray-600 bg-white shadow-md dark:shadow-gray-950 drop-shadow-xl dark:text-gray-200 dark:bg-gray-900 rounded-xl py-4">
+    class="w-full shadow-md shadow-gray-950 drop-shadow-xl text-gray-200 bg-gray-900 rounded-xl py-4">
 
     <div class="flex justify-center items-center">
         <h2 class="text-2xl">{{ $title }}</h2>
@@ -16,7 +16,7 @@
                 <div class="relative group">
                     <a
                         href="{{ $user->profile_url }}"
-                        class="rounded-full -ml-7 z-20 bg-white dark:bg-gray-900 h-16 w-16 flex justify-center items-center ring-2 ring-white dark:ring-gray-900"
+                        class="rounded-full -ml-7 z-20 bg-gray-900 h-16 w-16 flex justify-center items-center ring-2 ring-gray-900"
                     >
                         <img
                             src="{{ $user->profile_photo_url }}"
@@ -39,7 +39,7 @@
                 <div class="relative group">
                     <button
                         wire:click="toggleFollowDialog"
-                        class="rounded-full -ml-6 z-20 bg-cyan-500 dark:bg-cyan-700 h-16 w-16 flex justify-center items-center ring-2 ring-white dark:ring-gray-900 text-white"
+                        class="rounded-full -ml-6 z-20 bg-cyan-700 h-16 w-16 flex justify-center items-center ring-2 ring-gray-900 text-white"
                     >+{{ $this->followUsersCount - $limit }}</button>
                     <div
                         class="absolute bottom-full -ml-3 left-1/2 transform -translate-x-1/2 mb-2 w-max px-2 py-1 text-sm text-white bg-gray-700 rounded-sm shadow-lg opacity-0 group-hover:opacity-100">
@@ -55,7 +55,7 @@
         <div class="flex justify-center items-center">
             <button
                 wire:click="toggleFollowDialog"
-                class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                class="underline text-gray-200 hover:text-white"
             >View All</button>
         </div>
     @endif
@@ -67,7 +67,7 @@
     >
         <div class="space-y-0">
             {{-- Header Section --}}
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-6">
+            <div class="border-b border-gray-700 pb-6">
                 <div class="flex items-center gap-3">
                     <flux:icon
                         name="users"
@@ -76,11 +76,11 @@
                     <div>
                         <flux:heading
                             size="xl"
-                            class="text-gray-900 dark:text-gray-100"
+                            class="text-gray-100"
                         >
                             {{ __($dialogTitle, ['name' => $profileUser->name]) }}
                         </flux:heading>
-                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <flux:text class="mt-1 text-gray-400 text-sm">
                             {{ __('View all connections') }}
                         </flux:text>
                     </div>
@@ -93,7 +93,7 @@
                     @foreach ($this->followUsers as $user)
                         <div
                             wire:key="follow-user-{{ $user->id }}"
-                            class="flex group/item dark:hover:bg-gray-950 items-center p-2 pr-3 rounded-md"
+                            class="flex group/item hover:bg-gray-950 items-center p-2 pr-3 rounded-md"
                         >
                             <a
                                 href="{{ $user->profile_url }}"
@@ -112,7 +112,7 @@
                                 >
                                     <x-user-name :user="$user" />
                                 </a>
-                                <span class="text-sm text-gray-600 dark:text-gray-400">
+                                <span class="text-sm text-gray-400">
                                     {{ __('Member Since') }}
                                     <x-time :datetime="$user->created_at" />
                                 </span>
@@ -158,7 +158,7 @@
             </div>
 
             {{-- Footer Actions --}}
-            <div class="flex justify-end items-center pt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+            <div class="flex justify-end items-center pt-6 border-t border-gray-700 gap-3">
                 <flux:button
                     x-on:click="$wire.showFollowDialog = false"
                     variant="primary"

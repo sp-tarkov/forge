@@ -9,14 +9,14 @@
     />
 
     <div
-        class="bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden group hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black">
+        class="bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl overflow-hidden group hover:shadow-lg hover:bg-black">
         {{-- Detached indicator if applicable --}}
         @if ($addon->isDetached() && auth()->user()?->isModOrAdmin())
             <div
-                class="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800 px-3 sm:px-4 py-2">
+                class="bg-yellow-900/20 border-b border-yellow-800 px-3 sm:px-4 py-2">
                 <div class="flex items-center gap-2 text-sm">
-                    <flux:icon.exclamation-circle class="size-4 text-yellow-600 dark:text-yellow-400" />
-                    <span class="text-yellow-800 dark:text-yellow-300 font-medium">Detached Addon</span>
+                    <flux:icon.exclamation-circle class="size-4 text-yellow-400" />
+                    <span class="text-yellow-300 font-medium">Detached Addon</span>
                 </div>
             </div>
         @endif
@@ -27,11 +27,11 @@
                 <div class="relative flex-shrink-0 rounded-lg">
                     {{-- Default stripe background --}}
                     <div
-                        class="absolute inset-0 rounded-lg bg-[repeating-linear-gradient(45deg,#f9fafb,#f9fafb_4px,#ffffff_4px,#ffffff_8px)] dark:bg-[repeating-linear-gradient(45deg,#020509,#020509_4px,#030712_4px,#030712_8px)] transition-opacity duration-200 group-hover:opacity-0">
+                        class="absolute inset-0 rounded-lg bg-[repeating-linear-gradient(45deg,#020509,#020509_4px,#030712_4px,#030712_8px)] transition-opacity duration-200 group-hover:opacity-0">
                     </div>
                     {{-- Hover stripe background --}}
                     <div
-                        class="absolute inset-0 rounded-lg bg-[repeating-linear-gradient(45deg,#f0f1f3,#f0f1f3_4px,#f9fafb_4px,#f9fafb_8px)] dark:bg-[repeating-linear-gradient(45deg,#000000,#000000_4px,#010203_4px,#010203_8px)] opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                        class="absolute inset-0 rounded-lg bg-[repeating-linear-gradient(45deg,#000000,#000000_4px,#010203_4px,#010203_8px)] opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                     </div>
                     {{-- Thumbnail content --}}
                     <a
@@ -47,7 +47,7 @@
                             >
                         @else
                             <div class="size-20 flex items-center justify-center">
-                                <flux:icon.puzzle-piece class="size-10 text-gray-400 dark:text-gray-600" />
+                                <flux:icon.puzzle-piece class="size-10 text-gray-600" />
                             </div>
                         @endif
                     </a>
@@ -63,10 +63,10 @@
                                 wire:navigate
                                 class="block"
                             >
-                                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 inline">
+                                <h3 class="text-base sm:text-lg font-semibold text-gray-100 inline">
                                     <span class="group-hover:underline break-words">{{ $addon->name }}</span>
                                     @if ($addon->latestVersion)
-                                        <span class="font-light text-nowrap text-gray-600 dark:text-gray-400">
+                                        <span class="font-light text-nowrap text-gray-400">
                                             {{ $addon->latestVersion->version }}
                                         </span>
                                     @endif
@@ -92,13 +92,13 @@
                         {{-- Left side: Created by and Downloads --}}
                         <div class="flex-1">
                             {{-- Created by info --}}
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                            <p class="text-sm text-gray-400">
                                 {{ __('Created by') }}
                                 <span class="[&>span:not(:last-child)]:after:content-[',_']">
                                     @if ($addon->owner)
                                         <span><a
                                                 href="{{ $addon->owner->profile_url }}"
-                                                class="hover:text-gray-900 dark:hover:text-gray-100 underline"
+                                                class="hover:text-gray-100 underline"
                                             >{{ $addon->owner->name }}</a></span>
                                     @else
                                         Unknown
@@ -107,7 +107,7 @@
                                         @foreach ($addon->additionalAuthors as $author)
                                             <span><a
                                                     href="{{ $author->profile_url }}"
-                                                    class="hover:text-gray-900 dark:hover:text-gray-100 underline"
+                                                    class="hover:text-gray-100 underline"
                                                 >{{ $author->name }}</a></span>
                                         @endforeach
                                     @endif
@@ -116,7 +116,7 @@
 
                             {{-- Download count --}}
                             <p
-                                class="text-sm text-gray-600 dark:text-gray-400 mt-1"
+                                class="text-sm text-gray-400 mt-1"
                                 title="{{ __('Exactly :downloads', ['downloads' => $addon->downloads]) }}"
                             >
                                 {{ Number::downloads($addon->downloads) }}
@@ -128,21 +128,21 @@
                         @if ($compatibleModVersionsToShow()->isNotEmpty() || $hasNoCompatibleVersions())
                             <div class="sm:text-right">
                                 @if ($compatibleModVersionsToShow()->isNotEmpty())
-                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    <p class="text-sm text-gray-400 mb-1">
                                         {{ __('Compatible Mod Versions') }}:
                                     </p>
                                     <div class="flex flex-wrap gap-1 sm:justify-end">
                                         @foreach ($compatibleModVersionsToShow()->take(3) as $modVersion)
                                             @if ($modVersion->id === $latestModVersionId())
                                                 <span
-                                                    class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300"
+                                                    class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-green-800 text-green-300"
                                                     title="{{ __('This is the latest mod version') }}"
                                                 >
                                                     v{{ $modVersion->version }}
                                                 </span>
                                             @else
                                                 <span
-                                                    class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                                                    class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-gray-800 text-gray-300"
                                                 >
                                                     v{{ $modVersion->version }}
                                                 </span>
@@ -155,7 +155,7 @@
                                                 class="!inline-flex !items-center"
                                             >
                                                 <span
-                                                    class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 cursor-help"
+                                                    class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-gray-800 text-gray-400 cursor-help"
                                                 >
                                                     +{{ $compatibleModVersionsToShow()->count() - 3 }} more
                                                 </span>
@@ -167,14 +167,14 @@
                                                             @foreach ($compatibleModVersionsToShow() as $modVersion)
                                                                 @if ($modVersion->id === $latestModVersionId())
                                                                     <span
-                                                                        class="inline-flex items-center rounded px-1 py-0.5 text-xs bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300"
+                                                                        class="inline-flex items-center rounded px-1 py-0.5 text-xs bg-green-800 text-green-300"
                                                                         title="{{ __('This is the latest mod version') }}"
                                                                     >
                                                                         v{{ $modVersion->version }}
                                                                     </span>
                                                                 @else
                                                                     <span
-                                                                        class="inline-flex items-center rounded px-1 py-0.5 text-xs bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                                                                        class="inline-flex items-center rounded px-1 py-0.5 text-xs bg-gray-800 text-gray-300"
                                                                     >
                                                                         v{{ $modVersion->version }}
                                                                     </span>
@@ -188,7 +188,7 @@
                                     </div>
                                 @elseif($hasNoCompatibleVersions())
                                     <span
-                                        class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                        class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-yellow-900 text-yellow-200"
                                     >
                                         {{ __('No compatible mod versions found') }}
                                     </span>
@@ -201,8 +201,8 @@
 
             {{-- Addon Teaser/Description - Full width below image --}}
             @if ($addon->teaser)
-                <div class="mt-4 pt-3 border-t-2 border-gray-300 dark:border-gray-800">
-                    <p class="text-gray-900 dark:text-gray-200 text-sm">
+                <div class="mt-4 pt-3 border-t-2 border-gray-800">
+                    <p class="text-gray-200 text-sm">
                         {{ $addon->teaser }}
                     </p>
                 </div>

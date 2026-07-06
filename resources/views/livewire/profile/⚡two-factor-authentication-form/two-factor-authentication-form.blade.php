@@ -34,7 +34,7 @@
                     @endif
                 </flux:text>
 
-                <div class="mt-4 inline-block rounded-xl border border-zinc-200 dark:border-white/10 bg-white p-4">
+                <div class="mt-4 inline-block rounded-xl border border-white/10 bg-white p-4">
                     {!! $this->user->twoFactorQrCodeSvg() !!}
                 </div>
 
@@ -64,7 +64,7 @@
                     {{ __('Store these recovery codes in a secure password manager. They can be used to recover access to your account if your two factor authentication device is lost.') }}
                 </flux:text>
 
-                <div class="mt-4 grid gap-1 max-w-xl rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 font-mono text-sm text-zinc-700 dark:text-zinc-300">
+                <div class="mt-4 grid gap-1 max-w-xl rounded-xl border border-white/10 bg-white/5 p-4 font-mono text-sm text-zinc-300">
                     @foreach (json_decode(decrypt($this->user->two_factor_recovery_codes), true) as $code)
                         <div>{{ $code }}</div>
                     @endforeach
@@ -79,7 +79,7 @@
                         variant="primary"
                         size="sm"
                         type="button"
-                        class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+                        class="my-1.5 text-white hover:bg-cyan-600 bg-cyan-700"
                         wire:loading.attr="disabled"
                     >
                         {{ __('Enable') }}
@@ -101,7 +101,7 @@
                             variant="primary"
                             size="sm"
                             type="button"
-                            class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+                            class="my-1.5 text-white hover:bg-cyan-600 bg-cyan-700"
                             wire:loading.attr="disabled"
                         >
                             {{ __('Confirm') }}

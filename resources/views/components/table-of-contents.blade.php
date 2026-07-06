@@ -2,12 +2,12 @@
 
 <div class="hidden lg:block lg:w-64 lg:flex-shrink-0">
     <div
-        class="sticky top-12 bg-gray-50 dark:bg-gray-800 rounded-lg mt-8 overflow-y-auto"
+        class="sticky top-12 bg-gray-800 rounded-lg mt-8 overflow-y-auto"
         style="max-height: calc(100vh - 5rem);"
     >
         <h3
             id="toc-heading"
-            class="font-semibold text-gray-900 dark:text-gray-100 mb-4 py-4 px-2"
+            class="font-semibold text-gray-100 mb-4 py-4 px-2"
         >{{ $title }}</h3>
         <nav
             aria-labelledby="toc-heading"

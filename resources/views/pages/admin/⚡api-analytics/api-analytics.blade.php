@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between w-full">
             <div>
-                <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+                <h2 class="font-semibold text-xl text-gray-200 leading-tight">
                     {{ __('API Analytics') }}
                 </h2>
             </div>
@@ -20,7 +20,7 @@
 
             {{-- Range selector --}}
             <div class="flex items-center justify-between gap-4">
-                <p class="text-sm text-gray-500 dark:text-gray-400">
+                <p class="text-sm text-gray-400">
                     {{ __('Usage of the open v0 API, aggregated from per-request counters.') }}
                 </p>
                 <div class="w-48">
@@ -33,10 +33,10 @@
             </div>
 
             @if (! $this->hasData)
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-12 text-center">
                     <flux:icon.presentation-chart-line class="mx-auto h-10 w-10 text-gray-400" />
-                    <h3 class="mt-3 text-lg font-semibold text-gray-900 dark:text-gray-100">{{ __('No usage recorded') }}</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    <h3 class="mt-3 text-lg font-semibold text-gray-100">{{ __('No usage recorded') }}</h3>
+                    <p class="mt-1 text-sm text-gray-400">
                         {{ __('There is no API usage data for this range yet.') }}
                     </p>
                 </div>
@@ -64,25 +64,25 @@
 
                 {{-- Volume trend --}}
                 <div
-                    class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+                    class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6"
                     x-data="{ hovered: null }"
                 >
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ __('Request volume') }}</h3>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                        <h3 class="text-lg font-semibold text-gray-100">{{ __('Request volume') }}</h3>
+                        <div class="text-sm text-gray-400">
                             <span x-show="! hovered">{{ __('Peak') }}: {{ number_format($this->peakRequests) }} {{ __('req') }}</span>
                             <span x-show="hovered" x-text="hovered"></span>
                         </div>
                     </div>
                     <div class="flex gap-3">
                         {{-- Vertical scale --}}
-                        <div class="flex flex-col justify-between h-40 w-14 shrink-0 text-right text-xs text-gray-400 dark:text-gray-500">
+                        <div class="flex flex-col justify-between h-40 w-14 shrink-0 text-right text-xs text-gray-500">
                             <span>{{ number_format($this->peakRequests) }}</span>
                             <span>{{ number_format((int) round($this->peakRequests / 2)) }}</span>
                             <span>0</span>
                         </div>
                         <div class="flex-1">
-                            <div class="flex items-end gap-px h-40 border-l border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-end gap-px h-40 border-l border-b border-gray-700">
                                 @foreach ($this->timeSeries as $point)
                                     <div
                                         class="flex-1 h-full flex items-end cursor-default"
@@ -106,8 +106,8 @@
                 </div>
 
                 {{-- Endpoints --}}
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 p-6 pb-3">{{ __('Endpoints') }}</h3>
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 overflow-hidden">
+                    <h3 class="text-lg font-semibold text-gray-100 p-6 pb-3">{{ __('Endpoints') }}</h3>
                     <div class="px-6 pb-4 overflow-x-auto">
                     <flux:table>
                         <flux:table.columns>
@@ -141,16 +141,16 @@
                 </div>
 
                 {{-- Unmatched requests --}}
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 overflow-hidden">
                     <div class="flex items-baseline justify-between p-6 pb-3">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ __('Unmatched requests') }}</h3>
-                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ number_format($this->unmatchedTotal) }} {{ __('requests') }}</span>
+                        <h3 class="text-lg font-semibold text-gray-100">{{ __('Unmatched requests') }}</h3>
+                        <span class="text-sm text-gray-400">{{ number_format($this->unmatchedTotal) }} {{ __('requests') }}</span>
                     </div>
-                    <p class="px-6 pb-3 text-sm text-gray-500 dark:text-gray-400">
+                    <p class="px-6 pb-3 text-sm text-gray-400">
                         {{ __('Requests under the v0 API surface that matched no registered endpoint. These are excluded from the stats above.') }}
                     </p>
                     @if ($this->unmatchedRequests === [])
-                        <p class="px-6 pb-6 text-sm text-gray-500 dark:text-gray-400">{{ __('No unmatched paths recorded for this range.') }}</p>
+                        <p class="px-6 pb-6 text-sm text-gray-400">{{ __('No unmatched paths recorded for this range.') }}</p>
                     @else
                         <div class="px-6 pb-4 overflow-x-auto">
                         <flux:table>
@@ -184,10 +184,10 @@
                 </div>
 
                 {{-- Top clients --}}
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 p-6 pb-3">{{ __('Top clients') }}</h3>
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 overflow-hidden">
+                    <h3 class="text-lg font-semibold text-gray-100 p-6 pb-3">{{ __('Top clients') }}</h3>
                     @if ($this->topClients === [])
-                        <p class="px-6 pb-6 text-sm text-gray-500 dark:text-gray-400">{{ __('No client data for this range.') }}</p>
+                        <p class="px-6 pb-6 text-sm text-gray-400">{{ __('No client data for this range.') }}</p>
                     @else
                         <div class="px-6 pb-4 overflow-x-auto">
                         <flux:table>
@@ -207,7 +207,7 @@
                                             @if ($client['country_name'] !== null)
                                                 <span class="mr-1">{{ $client['flag'] }}</span>{{ $client['city_name'] !== null ? $client['city_name'].', ' : '' }}{{ $client['country_name'] }}
                                             @else
-                                                <span class="text-gray-400 dark:text-gray-500">{{ __('Unknown') }}</span>
+                                                <span class="text-gray-500">{{ __('Unknown') }}</span>
                                             @endif
                                         </flux:table.cell>
                                         <flux:table.cell align="end">{{ number_format($client['requests']) }}</flux:table.cell>

@@ -13,7 +13,7 @@
         @else
             <div class="space-y-3">
                 @foreach ($this->blockedUsers as $block)
-                    <div class="flex items-center justify-between gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                    <div class="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 p-4">
                         <div class="flex items-center gap-4 min-w-0">
                             <img
                                 class="size-12 shrink-0 rounded-full object-cover"

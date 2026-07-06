@@ -12,7 +12,7 @@
             <x-authentication-card-logo />
         </x-slot>
 
-        <div class="mb-4 text-sm text-gray-600 dark:text-gray-300">
+        <div class="mb-4 text-sm text-gray-300">
             {{ __('Please confirm your password to continue.') }}
         </div>
 

@@ -3,72 +3,72 @@
         <div class="space-y-6">
             {{-- Stats Cards --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                            <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
                                 Total Events</p>
-                            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                            <p class="text-3xl font-bold text-gray-100 mt-1">
                                 {{ number_format($this->stats->totalEvents) }}</p>
                         </div>
-                        <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <flux:icon.chart-bar-square class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                        <div class="p-3 bg-blue-900/20 rounded-lg">
+                            <flux:icon.chart-bar-square class="w-6 h-6 text-blue-400" />
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                            <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
                                 Unique Users</p>
-                            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                            <p class="text-3xl font-bold text-gray-100 mt-1">
                                 {{ number_format($this->stats->uniqueUsers) }}</p>
                         </div>
-                        <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                            <flux:icon.users class="w-6 h-6 text-green-600 dark:text-green-400" />
+                        <div class="p-3 bg-green-900/20 rounded-lg">
+                            <flux:icon.users class="w-6 h-6 text-green-400" />
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                            <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
                                 Authenticated</p>
-                            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                            <p class="text-3xl font-bold text-gray-100 mt-1">
                                 {{ number_format($this->stats->authenticatedEvents) }}</p>
                         </div>
-                        <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                            <flux:icon.user class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                        <div class="p-3 bg-purple-900/20 rounded-lg">
+                            <flux:icon.user class="w-6 h-6 text-purple-400" />
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                            <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
                                 Anonymous</p>
-                            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                            <p class="text-3xl font-bold text-gray-100 mt-1">
                                 {{ number_format($this->stats->anonymousEvents) }}</p>
                         </div>
-                        <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                            <flux:icon.user class="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                        <div class="p-3 bg-orange-900/20 rounded-lg">
+                            <flux:icon.user class="w-6 h-6 text-orange-400" />
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                            <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
                                 Countries</p>
-                            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                            <p class="text-3xl font-bold text-gray-100 mt-1">
                                 {{ number_format($this->stats->uniqueCountries) }}</p>
                         </div>
-                        <div class="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-                            <flux:icon.globe-alt class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                        <div class="p-3 bg-indigo-900/20 rounded-lg">
+                            <flux:icon.globe-alt class="w-6 h-6 text-indigo-400" />
                         </div>
                     </div>
                 </div>
@@ -76,12 +76,12 @@
 
             {{-- Daily Events Chart --}}
             @if (!empty($this->stats->dailyEvents))
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Daily Events</h3>
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-100 mb-4">Daily Events</h3>
                     <flux:chart :value="$this->stats->dailyEvents" class="aspect-3/1">
                         <flux:chart.svg>
                             <flux:chart.line field="events" class="text-blue-500" />
-                            <flux:chart.area field="events" class="text-blue-100/50 dark:text-blue-900/30" />
+                            <flux:chart.area field="events" class="text-blue-900/30" />
                             <flux:chart.point field="events" class="text-blue-400" />
                             <flux:chart.axis axis="x" field="date" :format="['month' => 'short', 'day' => 'numeric']">
                                 <flux:chart.axis.line />
@@ -104,8 +104,8 @@
             {{-- Top Stats --}}
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {{-- Top Events --}}
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Top Events</h3>
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-100 mb-4">Top Events</h3>
                     <div class="space-y-3">
                         @forelse($this->stats->topEvents as $event)
                             <div class="flex justify-between items-center">
@@ -116,7 +116,7 @@
                                         color="{{ \App\Enums\TrackingEventType::from($event['event_name'])->getColor() }}"
                                     />
                                     <span
-                                        class="text-sm text-gray-700 dark:text-gray-300 truncate">{{ \App\Enums\TrackingEventType::from($event['event_name'])->getName() }}</span>
+                                        class="text-sm text-gray-300 truncate">{{ \App\Enums\TrackingEventType::from($event['event_name'])->getName() }}</span>
                                 </div>
                                 <flux:badge
                                     size="sm"
@@ -124,59 +124,59 @@
                                 >{{ number_format($event['count']) }}</flux:badge>
                             </div>
                         @empty
-                            <p class="text-gray-500 dark:text-gray-400">No data available</p>
+                            <p class="text-gray-400">No data available</p>
                         @endforelse
                     </div>
                 </div>
 
                 {{-- Top Browsers --}}
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Top Browsers</h3>
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-100 mb-4">Top Browsers</h3>
                     <div class="space-y-3">
                         @forelse($this->stats->topBrowsers as $browser)
                             <div class="flex justify-between items-center">
                                 <span
-                                    class="text-sm text-gray-700 dark:text-gray-300">{{ $browser['browser'] ?: 'Unknown' }}</span>
+                                    class="text-sm text-gray-300">{{ $browser['browser'] ?: 'Unknown' }}</span>
                                 <flux:badge
                                     size="sm"
                                     color="green"
                                 >{{ number_format($browser['count']) }}</flux:badge>
                             </div>
                         @empty
-                            <p class="text-gray-500 dark:text-gray-400">No data available</p>
+                            <p class="text-gray-400">No data available</p>
                         @endforelse
                     </div>
                 </div>
 
                 {{-- Top Platforms --}}
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Top Platforms</h3>
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-100 mb-4">Top Platforms</h3>
                     <div class="space-y-3">
                         @forelse($this->stats->topPlatforms as $platform)
                             <div class="flex justify-between items-center">
                                 <span
-                                    class="text-sm text-gray-700 dark:text-gray-300">{{ $platform['platform'] ?: 'Unknown' }}</span>
+                                    class="text-sm text-gray-300">{{ $platform['platform'] ?: 'Unknown' }}</span>
                                 <flux:badge
                                     size="sm"
                                     color="purple"
                                 >{{ number_format($platform['count']) }}</flux:badge>
                             </div>
                         @empty
-                            <p class="text-gray-500 dark:text-gray-400">No data available</p>
+                            <p class="text-gray-400">No data available</p>
                         @endforelse
                     </div>
                 </div>
 
                 {{-- Top Countries --}}
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Top Countries</h3>
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-100 mb-4">Top Countries</h3>
                     <div class="space-y-3">
                         @forelse($this->stats->topCountries as $country)
                             <div class="flex justify-between items-center">
                                 <div class="flex items-center space-x-2">
                                     <span
                                         class="text-lg">{{ $country['country_code'] ? \App\Services\GeolocationService::getCountryFlag($country['country_code']) : '' }}</span>
-                                    <span class="text-sm text-gray-700 dark:text-gray-300">
+                                    <span class="text-sm text-gray-300">
                                         {{ $country['country_name'] ?: 'Unknown' }}
                                     </span>
                                 </div>
@@ -186,19 +186,19 @@
                                 >{{ number_format($country['count']) }}</flux:badge>
                             </div>
                         @empty
-                            <p class="text-gray-500 dark:text-gray-400">No data available</p>
+                            <p class="text-gray-400">No data available</p>
                         @endforelse
                     </div>
                 </div>
             </div>
         </div>
     @elseif ($this->hasFailed())
-        <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center space-y-4">
+        <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-12 text-center space-y-4">
             <flux:icon.exclamation-triangle class="w-12 h-12 mx-auto text-amber-500" />
             <div>
-                <p class="text-gray-900 dark:text-gray-100 font-medium">The analytics computation failed.</p>
+                <p class="text-gray-100 font-medium">The analytics computation failed.</p>
                 @if ($this->failureMessage())
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ $this->failureMessage() }}</p>
+                    <p class="text-sm text-gray-400 mt-1">{{ $this->failureMessage() }}</p>
                 @endif
             </div>
             <flux:button
@@ -214,7 +214,7 @@
             role="status"
             class="space-y-4"
         >
-            <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <div class="flex items-center gap-2 text-sm text-gray-400">
                 <flux:icon.loading class="w-4 h-4" />
                 @if ($this->isProcessing())
                     Computing analytics...
@@ -227,13 +227,13 @@
                 {{-- Stats Cards Skeleton --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                     @for ($i = 0; $i < 5; $i++)
-                        <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                        <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
                             <div class="flex items-center justify-between">
                                 <div class="space-y-2">
                                     <flux:skeleton class="h-3 w-20 rounded" />
                                     <flux:skeleton class="h-8 w-24 rounded" />
                                 </div>
-                                <div class="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                                <div class="p-3 bg-gray-800 rounded-lg">
                                     <flux:skeleton class="size-6 rounded" />
                                 </div>
                             </div>
@@ -244,7 +244,7 @@
                 {{-- Top Stats Skeleton --}}
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     @for ($i = 0; $i < 4; $i++)
-                        <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                        <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
                             <flux:skeleton class="h-5 w-24 rounded mb-4" />
                             <div class="space-y-3">
                                 @for ($j = 0; $j < 5; $j++)

@@ -10,7 +10,7 @@
 
 <x-slot:header>
     <div class="flex items-center justify-between w-full">
-        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+        <h2 class="font-semibold text-xl text-gray-200 leading-tight flex items-center gap-2">
             <flux:icon.arrow-path class="w-5 h-5" />
             {{ __('Recently Updated Mods') }}
         </h2>
@@ -33,9 +33,9 @@
 
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
     <div
-        class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Recently Updated') }}</h1>
-        <p class="mt-4 text-base text-gray-800 dark:text-gray-300">
+        class="px-4 py-8 sm:px-6 lg:px-8 bg-gray-900 overflow-hidden shadow-xl shadow-gray-900 rounded-none sm:rounded-lg">
+        <h1 class="text-4xl font-bold tracking-tight text-gray-200">{{ __('Recently Updated') }}</h1>
+        <p class="mt-4 text-base text-gray-300">
             @if ($previousViewedAt)
                 {!! __(
                     'Mods that have been updated since your last visit. Check back regularly to stay up to date with the latest improvements.',
@@ -49,18 +49,18 @@
 
         <section
             aria-labelledby="options-heading"
-            class="my-8 grid items-center border-t border-gray-400 dark:border-gray-700"
+            class="my-8 grid items-center border-t border-gray-700"
         >
             <h2
                 id="options-heading"
                 class="sr-only"
             >{{ __('Options') }}</h2>
-            <div class="relative col-start-1 row-start-1 py-4 border-b border-gray-400 dark:border-gray-700">
+            <div class="relative col-start-1 row-start-1 py-4 border-b border-gray-700">
                 <div
                     class="mx-auto flex flex-wrap items-center justify-center sm:justify-start gap-2 lg:gap-0 lg:flex-nowrap max-w-7xl text-sm">
                     {{-- Results Per Page Dropdown --}}
                     <div
-                        class="flex items-center border-r border-gray-400 dark:border-gray-700 flex-shrink-0 order-1 self-stretch">
+                        class="flex items-center border-r border-gray-700 flex-shrink-0 order-1 self-stretch">
                         <div
                             class="relative inline-block px-3 sm:px-3 lg:px-3 xl:px-4"
                             x-data="{ isResultsPerPageOpen: false }"
@@ -70,7 +70,7 @@
                                 <button
                                     type="button"
                                     x-on:click="isResultsPerPageOpen = !isResultsPerPageOpen"
-                                    class="group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                                    class="group inline-flex justify-center text-sm font-medium text-gray-300 hover:text-gray-100"
                                     id="menu-button-per-page"
                                     :aria-expanded="isResultsPerPageOpen.toString()"
                                     aria-haspopup="true"
@@ -100,7 +100,7 @@
                                 x-transition:leave="transition ease-in duration-75"
                                 x-transition:leave-start="transform opacity-100 scale-100"
                                 x-transition:leave-end="transform opacity-0 scale-95"
-                                class="absolute top-7 left-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-400 bg-gray-200 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+                                class="absolute top-7 left-0 z-10 flex w-full min-w-[12rem] flex-col divide-y overflow-hidden rounded-xl border divide-gray-700 border-gray-700 bg-gray-800"
                                 role="menu"
                                 aria-orientation="vertical"
                                 aria-labelledby="menu-button-per-page"
@@ -122,18 +122,18 @@
                     {{-- Loading indicator --}}
                     <div
                         class="hidden sm:flex items-center flex-shrink-0 order-2 self-stretch"
-                        wire:loading.class="!flex border-l border-gray-400 dark:border-gray-700"
+                        wire:loading.class="!flex border-l border-gray-700"
                     >
                         <div class="px-3 sm:px-4 lg:px-4 xl:px-6 min-w-[2.5rem] lg:min-w-[5rem] xl:min-w-[7rem]">
                             <p
-                                class="flex items-center font-medium text-gray-800 dark:text-gray-300"
+                                class="flex items-center font-medium text-gray-300"
                                 wire:loading.flex
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
                                     aria-hidden="true"
-                                    class="w-4 h-4 fill-cyan-600 dark:fill-cyan-600 motion-safe:animate-spin"
+                                    class="w-4 h-4 fill-cyan-600 motion-safe:animate-spin"
                                 >
                                     <path
                                         d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
@@ -166,10 +166,10 @@
                 @endforeach
             </div>
         @else
-            <div class="my-8 text-center text-gray-900 dark:text-gray-300">
+            <div class="my-8 text-center text-gray-300">
                 <flux:icon.check-circle class="w-12 h-12 mx-auto mb-4 text-green-500" />
                 <p class="text-lg font-medium">{{ __('You\'re all caught up!') }}</p>
-                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                <p class="mt-2 text-sm text-gray-400">
                     {{ __('No mods have been updated since your last visit.') }}</p>
                 <flux:button
                     href="{{ route('mods') }}"

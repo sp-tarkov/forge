@@ -22,11 +22,11 @@ enum NotificationColorRole: string
     public function tailwindBgTint(): string
     {
         return match ($this) {
-            self::Red => 'bg-red-100 dark:bg-red-900/30',
-            self::Purple => 'bg-purple-100 dark:bg-purple-900/30',
-            self::Amber => 'bg-amber-100 dark:bg-amber-900/30',
-            self::Blue => 'bg-blue-100 dark:bg-blue-900/30',
-            self::Gray => 'bg-gray-100 dark:bg-gray-800',
+            self::Red => 'bg-red-900/30',
+            self::Purple => 'bg-purple-900/30',
+            self::Amber => 'bg-amber-900/30',
+            self::Blue => 'bg-blue-900/30',
+            self::Gray => 'bg-gray-800',
         };
     }
 
@@ -50,11 +50,11 @@ enum NotificationColorRole: string
     public function tailwindAccentText(): string
     {
         return match ($this) {
-            self::Red => 'text-red-600 dark:text-red-400',
-            self::Purple => 'text-purple-600 dark:text-purple-400',
-            self::Amber => 'text-amber-600 dark:text-amber-400',
-            self::Blue => 'text-blue-600 dark:text-blue-400',
-            self::Gray => 'text-gray-600 dark:text-gray-400',
+            self::Red => 'text-red-400',
+            self::Purple => 'text-purple-400',
+            self::Amber => 'text-amber-400',
+            self::Blue => 'text-blue-400',
+            self::Gray => 'text-gray-400',
         };
     }
 }

@@ -7,7 +7,7 @@
     'robots' => null,
 ])
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -40,14 +40,13 @@
     {{ $rssFeeds ?? '' }}
 
     @livewireStyles
-    @fluxAppearance
     @vite(['resources/css/app.css'])
 </head>
 
 <body class="font-sans antialiased flex flex-col min-h-screen">
     <a
         href="#main-content"
-        class="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-white focus:text-gray-900 focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:bg-gray-900 dark:focus:text-gray-100"
+        class="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-900 focus:text-gray-100"
     >{{ __('Skip to main content') }}</a>
 
     @persist('toast')
@@ -56,13 +55,13 @@
         </flux:toast.group>
     @endpersist
 
-    <div class="flex-grow bg-gray-100 dark:bg-gray-800">
+    <div class="flex-grow bg-gray-800">
         @if ($variant !== 'simple')
             <x-navigation-menu />
         @endif
 
         @if (filled($header) && $variant !== 'simple')
-            <header class="bg-gray-50 dark:bg-gray-900 shadow-sm dark:shadow-gray-950">
+            <header class="bg-gray-900 shadow-sm shadow-gray-950">
                 <div class="max-w-7xl min-h-[80px] flex items-center mx-auto py-6 px-4 sm:px-6 lg:px-8">
                     {{ $header }}
                 </div>

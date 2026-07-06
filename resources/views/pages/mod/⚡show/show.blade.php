@@ -8,7 +8,7 @@
 
 <x-slot:header>
     <div class="flex items-center justify-between w-full">
-        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+        <h2 class="font-semibold text-xl text-gray-200 leading-tight flex items-center gap-2">
             <flux:icon.cube-transparent class="w-5 h-5" />
             {{ __('Mod Details') }}
         </h2>
@@ -100,7 +100,7 @@
 
             {{-- Main Mod Details Card --}}
             <div
-                class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none">
+                class="relative p-4 sm:p-6 text-center sm:text-left bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl filter-none">
                 @cachedCan('update', $mod)
                     <livewire:mod.action
                         wire:key="mod-action-show-{{ $mod->id }}"
@@ -131,21 +131,21 @@
                             >
                         @else
                             <div
-                                class="w-36 h-36 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                                <flux:icon.cube-transparent class="w-20 h-20 text-gray-400 dark:text-gray-600" />
+                                class="w-36 h-36 bg-gray-800 rounded-lg flex items-center justify-center">
+                                <flux:icon.cube-transparent class="w-20 h-20 text-gray-600" />
                             </div>
                         @endif
                     </div>
                     <div
-                        class="grow flex flex-col justify-center items-center sm:items-start text-gray-900 dark:text-gray-200">
+                        class="grow flex flex-col justify-center items-center sm:items-start text-gray-200">
                         <div class="flex justify-between items-center space-x-3">
                             <h2 @class([
-                                'pb-1 sm:pb-2 text-3xl font-bold text-gray-900 dark:text-white',
+                                'pb-1 sm:pb-2 text-3xl font-bold text-white',
                                 'sm:pr-12' => Gate::check('update', $mod),
                             ])>
                                 {{ $mod->name }}
                                 @if ($displayVersion)
-                                    <span class="font-light text-nowrap text-gray-600 dark:text-gray-400">
+                                    <span class="font-light text-nowrap text-gray-400">
                                         {{ $displayVersion->version }}
                                     </span>
                                 @endif
@@ -156,7 +156,7 @@
                                 {{ __('Created by') }}
                                 <a
                                     href="{{ $mod->owner->profile_url }}"
-                                    class="hover:text-black dark:hover:text-white"
+                                    class="hover:text-white"
                                 ><x-user-name
                                         :user="$mod->owner"
                                         class="underline"
@@ -193,7 +193,7 @@
                 {{-- Mod Teaser --}}
                 @if ($mod->teaser)
                     <p
-                        class="mt-6 pt-3 border-t-2 border-gray-300 dark:border-gray-800 text-gray-900 dark:text-gray-200">
+                        class="mt-6 pt-3 border-t-2 border-gray-800 text-gray-200">
                         {{ $mod->teaser }}</p>
                 @endif
             </div>
@@ -218,7 +218,7 @@
             {{-- Mobile Cheat Notice Warning --}}
             @if ($requiresCheatNotice)
                 <div
-                    class="lg:hidden p-3 sm:p-4 bg-red-600 dark:bg-red-700 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    class="lg:hidden p-3 sm:p-4 bg-red-700 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
                     <div class="flex gap-3 items-start">
                         <div class="flex-shrink-0 pt-0.5">
                             <flux:icon.exclamation-triangle
@@ -277,7 +277,7 @@
                     {{-- Desktop Tabs --}}
                     <div class="hidden sm:block">
                         <nav
-                            class="isolate flex divide-x divide-gray-300 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl"
+                            class="isolate flex divide-x divide-gray-800 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl"
                             aria-label="Tabs"
                         >
                             <x-tab-button name="Description" />
@@ -371,18 +371,18 @@
             {{-- Required Dependencies --}}
             @if ($displayVersion?->latestDependenciesResolved->isNotEmpty())
                 <div
-                    class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
+                    <h2 class="text-2xl font-bold text-gray-100">
                         {{ $displayVersion->latestDependenciesResolved->count() === 1 ? __('Required Dependency') : __('Required Dependencies') }}
                     </h2>
-                    <p class="mt-2 mb-4 text-sm text-gray-600 dark:text-gray-400">
+                    <p class="mt-2 mb-4 text-sm text-gray-400">
                         {{ $displayVersion->latestDependenciesResolved->count() === 1
                             ? __('The latest version of this mod requires the following mod to be installed as well.')
                             : __('The latest version of this mod requires the following mods to be installed as well.') }}
                     </p>
                     <ul
                         role="list"
-                        class="divide-y divide-gray-200 dark:divide-gray-800"
+                        class="divide-y divide-gray-800"
                     >
                         @foreach ($displayVersion->latestDependenciesResolved as $dependency)
                             @continue($dependency->mod === null)
@@ -401,9 +401,9 @@
                                         >
                                     @else
                                         <div
-                                            class="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            class="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
                                             <flux:icon.cube-transparent
-                                                class="w-6 h-6 text-gray-400 dark:text-gray-600"
+                                                class="w-6 h-6 text-gray-600"
                                             />
                                         </div>
                                     @endif
@@ -411,10 +411,10 @@
                                     {{-- Mod Info --}}
                                     <div class="flex-1 min-w-0">
                                         <p
-                                            class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400">
+                                            class="text-sm font-semibold text-gray-100 truncate group-hover:text-cyan-400">
                                             {{ $dependency->mod->name }}
                                         </p>
-                                        <p class="text-xs text-gray-600 dark:text-gray-400">
+                                        <p class="text-xs text-gray-400">
                                             {{ __('Requires') }} v{{ $dependency->version }}
                                             @if ($dependency->mod->owner)
                                                 &middot;
@@ -432,20 +432,20 @@
             {{-- Profile Binding Notice --}}
             @if ($requiresProfileBindingNotice)
                 <div
-                    class="p-3 sm:p-4 bg-amber-500 dark:bg-amber-600 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    class="p-3 sm:p-4 bg-amber-600 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
                     <div class="flex gap-3 items-center">
                         <div class="flex-shrink-0">
                             <flux:icon.exclamation-triangle
                                 variant="mini"
-                                class="size-5 text-black dark:text-white"
+                                class="size-5 text-white"
                             />
                         </div>
-                        <div class="text-sm font-medium text-black dark:text-white">
+                        <div class="text-sm font-medium text-white">
                             <strong>Notice:</strong> This mod <em>may</em> make permanent changes to your profile, and
                             <em>may</em> not be removable without starting a new profile. <a
                                 href="https://wiki.sp-tarkov.com/Profiles#mods"
                                 target="_blank"
-                                class="underline text-black hover:text-orange-800 dark:text-white dark:hover:text-white"
+                                class="underline text-white hover:text-white"
                             >More information.</a>
                         </div>
                     </div>
@@ -455,7 +455,7 @@
             {{-- Desktop Cheat Notice Warning --}}
             @if ($requiresCheatNotice)
                 <div
-                    class="hidden lg:block p-3 sm:p-4 bg-red-600 dark:bg-red-700 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    class="hidden lg:block p-3 sm:p-4 bg-red-700 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
                     <div class="flex gap-3 items-start">
                         <div class="flex-shrink-0 pt-0.5">
                             <flux:icon.exclamation-triangle
@@ -479,11 +479,11 @@
 
             {{-- Additional Mod Details --}}
             <div
-                class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ __('Details') }}</h2>
+                class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
+                <h2 class="text-2xl font-bold text-gray-100">{{ __('Details') }}</h2>
                 <ul
                     role="list"
-                    class="divide-y divide-gray-200 dark:divide-gray-800 text-gray-900 dark:text-gray-100 "
+                    class="divide-y divide-gray-800 text-gray-100 "
                 >
                     <li class="px-4 py-4 last:pb-0 sm:px-0">
                         <h3 class="font-bold">{{ __('GUID') }}</h3>
@@ -496,7 +496,7 @@
                                 <button
                                     x-data="{ copied: false }"
                                     @click="navigator.clipboard.writeText('{{ $mod->guid }}'); copied = true; setTimeout(() => copied = false, 2000)"
-                                    class="inline-flex items-center justify-center w-4 h-4 flex-shrink-0 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                    class="inline-flex items-center justify-center w-4 h-4 flex-shrink-0 text-gray-400 hover:text-gray-200"
                                     title="Copy GUID"
                                 >
                                     <flux:icon.clipboard-document
@@ -510,7 +510,7 @@
                                     />
                                 </button>
                             @else
-                                <span class="text-gray-500 dark:text-gray-400 italic">{{ __('Not Available') }}</span>
+                                <span class="text-gray-400 italic">{{ __('Not Available') }}</span>
                             @endif
                         </p>
                     </li>
@@ -521,7 +521,7 @@
                                 @foreach ($mod->additionalAuthors->sortDesc() as $user)
                                     <span><a
                                             href="{{ $user->profile_url }}"
-                                            class="hover:text-black dark:hover:text-white"
+                                            class="hover:text-white"
                                         ><x-user-name
                                                 :user="$user"
                                                 class="underline"
@@ -536,7 +536,7 @@
                             <p class="truncate">
                                 <a
                                     href="{{ route('mods', ['category' => $mod->category->slug]) }}"
-                                    class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                    class="underline text-gray-200 hover:text-white"
                                 >
                                     {{ $mod->category->title }}
                                 </a>
@@ -551,7 +551,7 @@
                                     href="{{ $mod->license->link }}"
                                     title="{{ $mod->license->name }}"
                                     target="_blank"
-                                    class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                    class="underline text-gray-200 hover:text-white"
                                 >
                                     {{ $mod->license->name }}
                                 </a>
@@ -564,12 +564,12 @@
                             @foreach ($mod->sourceCodeLinks as $link)
                                 <p class="truncate">
                                     @if ($link->label !== '')
-                                        <span class="text-gray-800 dark:text-gray-200">{{ $link->label }}:</span>
+                                        <span class="text-gray-200">{{ $link->label }}:</span>
                                         <a
                                             href="{{ $link->url }}"
                                             title="{{ $link->url }}"
                                             target="_blank"
-                                            class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                            class="underline text-gray-200 hover:text-white"
                                         >
                                             {{ $link->url }}
                                         </a>
@@ -578,7 +578,7 @@
                                             href="{{ $link->url }}"
                                             title="{{ $link->url }}"
                                             target="_blank"
-                                            class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                            class="underline text-gray-200 hover:text-white"
                                         >
                                             {{ $link->url }}
                                         </a>
@@ -594,12 +594,12 @@
                                 <p class="truncate">
                                     @if ($virusTotalLink->label !== '')
                                         <span
-                                            class="text-gray-800 dark:text-gray-200">{{ $virusTotalLink->label }}:</span>
+                                            class="text-gray-200">{{ $virusTotalLink->label }}:</span>
                                         <a
                                             href="{{ $virusTotalLink->url }}"
                                             title="{{ $virusTotalLink->url }}"
                                             target="_blank"
-                                            class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                            class="underline text-gray-200 hover:text-white"
                                         >
                                             {{ $virusTotalLink->url }}
                                         </a>
@@ -608,7 +608,7 @@
                                             href="{{ $virusTotalLink->url }}"
                                             title="{{ $virusTotalLink->url }}"
                                             target="_blank"
-                                            class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                            class="underline text-gray-200 hover:text-white"
                                         >
                                             {{ $virusTotalLink->url }}
                                         </a>
@@ -623,7 +623,7 @@
                             variant="micro"
                             class="grow-0 size-4 {{ $fikaStatus->colorClass() }}"
                         />
-                        <h3 class="grow text-gray-900 dark:text-gray-100">
+                        <h3 class="grow text-gray-100">
                             {{ $fikaStatus->modLabel() }}
                         </h3>
                     </li>
@@ -631,9 +631,9 @@
                         <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
                             <flux:icon.check-circle
                                 variant="micro"
-                                class="grow-0 size-4 text-green-600 dark:text-green-500"
+                                class="grow-0 size-4 text-green-500"
                             />
-                            <h3 class="grow text-gray-900 dark:text-gray-100">
+                            <h3 class="grow text-gray-100">
                                 {{ __('Includes Advertising') }}
                             </h3>
                         </li>
@@ -652,30 +652,30 @@
                                 >
                                     <flux:icon.check-circle
                                         variant="micro"
-                                        class="grow-0 size-4 text-green-600 dark:text-green-500"
+                                        class="grow-0 size-4 text-green-500"
                                     />
-                                    <h3 class="grow text-gray-900 dark:text-gray-100">
+                                    <h3 class="grow text-gray-100">
                                         {{ __('Includes AI Generated Content') }}
                                     </h3>
                                     <flux:icon.chevron-up
                                         variant="micro"
-                                        class="grow-0 size-4 text-gray-500 dark:text-gray-400 transition-transform"
+                                        class="grow-0 size-4 text-gray-400 transition-transform"
                                         x-bind:class="expanded ? 'rotate-180' : ''"
                                     />
                                 </button>
                                 <div
                                     x-show="expanded"
                                     x-collapse
-                                    class="user-markdown mt-2 ms-6 text-sm text-gray-700 dark:text-gray-300"
+                                    class="user-markdown mt-2 ms-6 text-sm text-gray-300"
                                 >{!! $mod->custom_ai_disclosure_html !!}</div>
                             </li>
                         @else
                             <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
                                 <flux:icon.check-circle
                                     variant="micro"
-                                    class="grow-0 size-4 text-green-600 dark:text-green-500"
+                                    class="grow-0 size-4 text-green-500"
                                 />
-                                <h3 class="grow text-gray-900 dark:text-gray-100">
+                                <h3 class="grow text-gray-100">
                                     {{ __('Includes AI Generated Content') }}
                                 </h3>
                             </li>
@@ -687,10 +687,10 @@
             {{-- List & Favourite Presence --}}
             @if ($presenceSummary)
                 <div
-                    class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                    class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
+                    <p class="text-sm text-gray-400">
                         {{ $presenceSummary['sentence'] }}
-                        <span class="italic text-gray-500 dark:text-gray-500">{{ $presenceSummary['flavour'] }}</span>
+                        <span class="italic text-gray-500">{{ $presenceSummary['flavour'] }}</span>
                     </p>
                 </div>
             @endif

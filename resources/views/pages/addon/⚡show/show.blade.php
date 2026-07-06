@@ -11,7 +11,7 @@
 
 <x-slot:header>
     <div class="flex items-center justify-between w-full">
-        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+        <h2 class="font-semibold text-xl text-gray-200 leading-tight flex items-center gap-2">
             <flux:icon.puzzle-piece class="w-5 h-5" />
             {{ __('Addon Details') }}
         </h2>
@@ -94,7 +94,7 @@
 
             {{-- Main Addon Details Card --}}
             <div
-                class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none">
+                class="relative p-4 sm:p-6 text-center sm:text-left bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl filter-none">
                 @cachedCan('update', $addon)
                     <livewire:addon.action
                         wire:key="addon-action-show-{{ $addon->id }}"
@@ -124,21 +124,21 @@
                             >
                         @else
                             <div
-                                class="w-36 h-36 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                                <flux:icon.puzzle-piece class="w-20 h-20 text-gray-400 dark:text-gray-600" />
+                                class="w-36 h-36 bg-gray-800 rounded-lg flex items-center justify-center">
+                                <flux:icon.puzzle-piece class="w-20 h-20 text-gray-600" />
                             </div>
                         @endif
                     </div>
                     <div
-                        class="grow flex flex-col justify-center items-center sm:items-start text-gray-900 dark:text-gray-200">
+                        class="grow flex flex-col justify-center items-center sm:items-start text-gray-200">
                         <div class="flex justify-between items-center space-x-3">
                             <h2 @class([
-                                'pb-1 sm:pb-2 text-3xl font-bold text-gray-900 dark:text-white',
+                                'pb-1 sm:pb-2 text-3xl font-bold text-white',
                                 'sm:pr-12' => Gate::check('update', $addon),
                             ])>
                                 {{ $addon->name }}
                                 @if ($addon->latestVersion)
-                                    <span class="font-light text-nowrap text-gray-600 dark:text-gray-400">
+                                    <span class="font-light text-nowrap text-gray-400">
                                         {{ $addon->latestVersion->version }}
                                     </span>
                                 @endif
@@ -149,7 +149,7 @@
                                 {{ __('Created by') }}
                                 <a
                                     href="{{ $addon->owner->profile_url }}"
-                                    class="hover:text-black dark:hover:text-white"
+                                    class="hover:text-white"
                                 ><x-user-name
                                         :user="$addon->owner"
                                         class="underline"
@@ -161,11 +161,11 @@
                             {{ __(Str::plural('Download', $addon->downloads)) }}</p>
                         @if ($addon->mod)
                             <p class="mt-2">
-                                <span class="text-sm text-gray-600 dark:text-gray-400">
+                                <span class="text-sm text-gray-400">
                                     {{ __('Addon for:') }}
                                     <a
                                         href="{{ route('mod.show', [$addon->mod->id, $addon->mod->slug]) }}"
-                                        class="underline hover:text-black dark:hover:text-white"
+                                        class="underline hover:text-white"
                                     >{{ $addon->mod->name }}</a>
                                 </span>
                             </p>
@@ -176,7 +176,7 @@
                 {{-- Addon Teaser --}}
                 @if ($addon->teaser)
                     <p
-                        class="mt-6 pt-3 border-t-2 border-gray-300 dark:border-gray-800 text-gray-900 dark:text-gray-200">
+                        class="mt-6 pt-3 border-t-2 border-gray-800 text-gray-200">
                         {{ $addon->teaser }}</p>
                 @endif
             </div>
@@ -233,7 +233,7 @@
                     {{-- Desktop Tabs --}}
                     <div class="hidden sm:block">
                         <nav
-                            class="isolate flex divide-x divide-gray-300 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl"
+                            class="isolate flex divide-x divide-gray-800 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl"
                             aria-label="Tabs"
                         >
                             <x-tab-button name="Description" />
@@ -306,11 +306,11 @@
             @endif
 
             {{-- Additional Addon Details --}}
-            <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ __('Details') }}</h2>
+            <div class="p-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl">
+                <h2 class="text-2xl font-bold text-gray-100">{{ __('Details') }}</h2>
                 <ul
                     role="list"
-                    class="divide-y divide-gray-200 dark:divide-gray-800 text-gray-900 dark:text-gray-100 "
+                    class="divide-y divide-gray-800 text-gray-100 "
                 >
                     @if ($addon->mod)
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
@@ -318,7 +318,7 @@
                                 <span>{{ __('Parent Mod') }}</span>
                                 @if ($addon->isDetached() && auth()->user()?->isModOrAdmin())
                                     <span
-                                        class="inline-block bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide"
+                                        class="inline-block bg-yellow-900/30 text-yellow-200 text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide"
                                     >
                                         Detached
                                     </span>
@@ -327,7 +327,7 @@
                             <p class="truncate">
                                 <a
                                     href="{{ route('mod.show', [$addon->mod->id, $addon->mod->slug]) }}"
-                                    class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                    class="underline text-gray-200 hover:text-white"
                                 >
                                     {{ $addon->mod->name }}
                                 </a>
@@ -341,7 +341,7 @@
                                 @foreach ($addon->additionalAuthors->sortDesc() as $user)
                                     <a
                                         href="{{ $user->profile_url }}"
-                                        class="underline hover:text-black dark:hover:text-white"
+                                        class="underline hover:text-white"
                                     ><x-user-name :user="$user" /></a>{{ $loop->last ? '' : ',' }}
                                 @endforeach
                             </p>
@@ -355,7 +355,7 @@
                                     href="{{ $addon->license->link }}"
                                     title="{{ $addon->license->name }}"
                                     target="_blank"
-                                    class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                    class="underline text-gray-200 hover:text-white"
                                 >
                                     {{ $addon->license->name }}
                                 </a>
@@ -368,12 +368,12 @@
                             @foreach ($addon->sourceCodeLinks as $link)
                                 <p class="truncate">
                                     @if ($link->label !== '')
-                                        <span class="text-gray-800 dark:text-gray-200">{{ $link->label }}:</span>
+                                        <span class="text-gray-200">{{ $link->label }}:</span>
                                         <a
                                             href="{{ $link->url }}"
                                             title="{{ $link->url }}"
                                             target="_blank"
-                                            class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                            class="underline text-gray-200 hover:text-white"
                                         >
                                             {{ $link->url }}
                                         </a>
@@ -382,7 +382,7 @@
                                             href="{{ $link->url }}"
                                             title="{{ $link->url }}"
                                             target="_blank"
-                                            class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                            class="underline text-gray-200 hover:text-white"
                                         >
                                             {{ $link->url }}
                                         </a>
@@ -398,12 +398,12 @@
                                 <p class="truncate">
                                     @if ($virusTotalLink->label !== '')
                                         <span
-                                            class="text-gray-800 dark:text-gray-200">{{ $virusTotalLink->label }}:</span>
+                                            class="text-gray-200">{{ $virusTotalLink->label }}:</span>
                                         <a
                                             href="{{ $virusTotalLink->url }}"
                                             title="{{ $virusTotalLink->url }}"
                                             target="_blank"
-                                            class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                            class="underline text-gray-200 hover:text-white"
                                         >
                                             {{ $virusTotalLink->url }}
                                         </a>
@@ -412,7 +412,7 @@
                                             href="{{ $virusTotalLink->url }}"
                                             title="{{ $virusTotalLink->url }}"
                                             target="_blank"
-                                            class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                            class="underline text-gray-200 hover:text-white"
                                         >
                                             {{ $virusTotalLink->url }}
                                         </a>
@@ -435,7 +435,7 @@
                                     clip-rule="evenodd"
                                 />
                             </svg>
-                            <h3 class="grow text-gray-900 dark:text-gray-100">
+                            <h3 class="grow text-gray-100">
                                 {{ __('Includes Advertising') }}
                             </h3>
                         </li>
@@ -464,19 +464,19 @@
                                             clip-rule="evenodd"
                                         />
                                     </svg>
-                                    <h3 class="grow text-gray-900 dark:text-gray-100">
+                                    <h3 class="grow text-gray-100">
                                         {{ __('Includes AI Generated Content') }}
                                     </h3>
                                     <flux:icon.chevron-up
                                         variant="micro"
-                                        class="grow-0 size-4 text-gray-500 dark:text-gray-400 transition-transform"
+                                        class="grow-0 size-4 text-gray-400 transition-transform"
                                         x-bind:class="expanded ? 'rotate-180' : ''"
                                     />
                                 </button>
                                 <div
                                     x-show="expanded"
                                     x-collapse
-                                    class="user-markdown mt-2 ms-6 text-sm text-gray-700 dark:text-gray-300"
+                                    class="user-markdown mt-2 ms-6 text-sm text-gray-300"
                                 >{!! $addon->custom_ai_disclosure_html !!}</div>
                             </li>
                         @else
@@ -493,7 +493,7 @@
                                         clip-rule="evenodd"
                                     />
                                 </svg>
-                                <h3 class="grow text-gray-900 dark:text-gray-100">
+                                <h3 class="grow text-gray-100">
                                     {{ __('Includes AI Generated Content') }}
                                 </h3>
                             </li>

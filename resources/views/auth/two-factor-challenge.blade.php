@@ -14,14 +14,14 @@
 
         <div x-data="{ recovery: {{ $errors->has('recovery_code') ? 'true' : 'false' }} }">
             <div
-                class="mb-4 text-sm text-gray-600 dark:text-gray-400"
+                class="mb-4 text-sm text-gray-400"
                 x-show="! recovery"
             >
                 {{ __('Please confirm access to your account by entering the authentication code provided by your authenticator application.') }}
             </div>
 
             <div
-                class="mb-4 text-sm text-gray-600 dark:text-gray-400"
+                class="mb-4 text-sm text-gray-400"
                 x-cloak
                 x-show="recovery"
             >
@@ -68,7 +68,7 @@
                 <div class="flex items-center justify-end mt-4">
                     <button
                         type="button"
-                        class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 underline cursor-pointer"
+                        class="text-sm text-gray-400 hover:text-gray-100 underline cursor-pointer"
                         x-show="! recovery"
                         x-on:click="
                                         recovery = true;
@@ -80,7 +80,7 @@
 
                     <button
                         type="button"
-                        class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 underline cursor-pointer"
+                        class="text-sm text-gray-400 hover:text-gray-100 underline cursor-pointer"
                         x-cloak
                         x-show="recovery"
                         x-on:click="

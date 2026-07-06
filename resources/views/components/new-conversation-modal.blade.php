@@ -16,7 +16,7 @@
         })"
     >
         {{-- Header Section --}}
-        <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+        <div class="border-b border-gray-700 pb-6 mb-6">
             <div class="flex items-center gap-3">
                 <flux:icon
                     name="chat-bubble-left-right"
@@ -25,11 +25,11 @@
                 <div>
                     <flux:heading
                         size="xl"
-                        class="text-gray-900 dark:text-gray-100"
+                        class="text-gray-100"
                     >
                         {{ __('Start New Conversation') }}
                     </flux:heading>
-                    <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                    <flux:text class="mt-1 text-gray-400 text-sm">
                         {{ __('Search for users to start chatting with') }}
                     </flux:text>
                 </div>
@@ -55,8 +55,8 @@
                                 wire:key="search-user-{{ $user->id }}"
                                 wire:click="startConversation({{ $user->id }})"
                                 class="w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200 text-left group
-                                       bg-white dark:bg-gray-900 hover:bg-blue-50 dark:hover:bg-blue-950
-                                       border border-transparent hover:border-blue-200 dark:hover:border-blue-800
+                                       bg-gray-900 hover:bg-blue-950
+                                       border border-transparent hover:border-blue-800
                                        hover:shadow-md"
                             >
                                 <flux:avatar
@@ -70,7 +70,7 @@
                                     <div class="font-medium">
                                         <x-user-name :user="$user" />
                                     </div>
-                                    <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                                    <div class="flex items-center gap-3 text-sm text-gray-400">
                                         <span>{{ __('Member since') }} {{ $user->created_at->format('M Y') }}</span>
                                         @if ($user->mods_count > 0)
                                             <span class="flex items-center gap-1">
@@ -85,7 +85,7 @@
                                 </div>
                                 <flux:icon
                                     name="arrow-right"
-                                    class="w-5 h-5 text-gray-400 dark:text-gray-600 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                                    class="w-5 h-5 text-gray-600 group-hover:text-blue-400 transition-colors"
                                 />
                             </button>
                         @endforeach
@@ -95,9 +95,9 @@
                 <div class="text-center py-8">
                     <flux:icon
                         name="users"
-                        class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3"
+                        class="w-12 h-12 mx-auto text-gray-600 mb-3"
                     />
-                    <p class="text-gray-600 dark:text-gray-400">
+                    <p class="text-gray-400">
                         {{ __('No users found matching') }} "{{ $searchUser }}"
                     </p>
                 </div>
@@ -105,9 +105,9 @@
                 <div class="text-center py-8">
                     <flux:icon
                         name="magnifying-glass"
-                        class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3"
+                        class="w-12 h-12 mx-auto text-gray-600 mb-3"
                     />
-                    <p class="text-gray-600 dark:text-gray-400">
+                    <p class="text-gray-400">
                         {{ __('Start typing to search for users') }}
                     </p>
                 </div>
@@ -115,7 +115,7 @@
         </div>
 
         {{-- Footer Actions --}}
-        <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
+        <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-700">
             <flux:button
                 wire:click="closeNewConversationModal"
                 variant="outline"

@@ -11,9 +11,9 @@
 
 <div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
+        <div class="bg-gray-900 overflow-hidden shadow-xl shadow-gray-900 rounded-none sm:rounded-lg">
             <div
-                class="relative isolate overflow-hidden bg-gray-900 dark:bg-gray-800 px-6 py-24 sm:py-32 lg:px-8 rounded-none sm:rounded-md">
+                class="relative isolate overflow-hidden bg-gray-800 px-6 py-24 sm:py-32 lg:px-8 rounded-none sm:rounded-md">
                 <video
                     autoplay
                     muted
@@ -62,36 +62,36 @@
                 <div class="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
                     <!-- Large Installer Callout -->
                     <div
-                        class="relative overflow-hidden bg-gradient-to-br from-gray-100 via-white to-gray-50 dark:from-gray-900 dark:via-black dark:to-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl shadow-2xl mb-10">
+                        class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-950 border border-gray-800 rounded-xl shadow-2xl mb-10">
                         <!-- Light/Dark gritty texture overlays -->
                         <div
-                            class="absolute inset-0 bg-gradient-to-br from-gray-200/30 via-transparent to-gray-300/20 dark:from-gray-800/20 dark:via-transparent dark:to-black/30">
+                            class="absolute inset-0 bg-gradient-to-br from-gray-800/20 via-transparent to-black/30">
                         </div>
                         <div
-                            class="absolute inset-0 bg-gradient-to-tl from-gray-300/15 to-transparent dark:from-gray-700/10 dark:to-transparent">
+                            class="absolute inset-0 bg-gradient-to-tl from-gray-700/10 to-transparent">
                         </div>
 
                         <!-- Noise/grain pattern for texture -->
                         <div
-                            class="absolute inset-0 opacity-20 dark:opacity-25"
+                            class="absolute inset-0 opacity-25"
                             style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.08) 1px, transparent 0); background-size: 4px 4px;"
                         ></div>
                         <div
-                            class="absolute inset-0 opacity-0 dark:opacity-25"
+                            class="absolute inset-0 opacity-25"
                             style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0); background-size: 4px 4px;"
                         ></div>
 
                         <!-- Industrial wear patterns -->
                         <div
-                            class="absolute top-0 left-1/4 w-32 h-px bg-gray-400/25 dark:bg-gray-600/20 transform rotate-2">
+                            class="absolute top-0 left-1/4 w-32 h-px bg-gray-600/20 transform rotate-2">
                         </div>
                         <div
-                            class="absolute bottom-0 right-1/3 w-24 h-px bg-gray-400/20 dark:bg-gray-500/15 transform -rotate-1">
+                            class="absolute bottom-0 right-1/3 w-24 h-px bg-gray-500/15 transform -rotate-1">
                         </div>
-                        <div class="absolute top-1/3 right-0 w-px h-16 bg-gray-400/15 dark:bg-gray-600/10"></div>
+                        <div class="absolute top-1/3 right-0 w-px h-16 bg-gray-600/10"></div>
 
                         <!-- Subtle inner shadow for depth -->
-                        <div class="absolute inset-0 rounded-xl shadow-inner shadow-gray-400/30 dark:shadow-black/40">
+                        <div class="absolute inset-0 rounded-xl shadow-inner shadow-black/40">
                         </div>
 
                         <div class="relative px-6 py-8 sm:px-8 sm:py-10">
@@ -100,58 +100,58 @@
                                     <!-- Left side - Large colored icon -->
                                     <div class="flex-shrink-0">
                                         <div
-                                            class="relative mx-auto lg:mx-0 flex h-30 w-30 items-center justify-center rounded-lg bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 dark:from-gray-800 dark:via-gray-900 dark:to-black shadow-2xl overflow-hidden border border-gray-300 dark:border-gray-700">
+                                            class="relative mx-auto lg:mx-0 flex h-30 w-30 items-center justify-center rounded-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black shadow-2xl overflow-hidden border border-gray-700">
                                             <!-- Light/Dark gritty texture overlays -->
                                             <div
-                                                class="absolute inset-0 bg-gradient-to-br from-gray-400/20 via-transparent to-gray-500/30 dark:from-gray-700/30 dark:via-transparent dark:to-gray-900/40">
+                                                class="absolute inset-0 bg-gradient-to-br from-gray-700/30 via-transparent to-gray-900/40">
                                             </div>
                                             <div
-                                                class="absolute inset-0 bg-gradient-to-tl from-gray-500/15 to-transparent dark:from-gray-600/20 dark:to-transparent">
+                                                class="absolute inset-0 bg-gradient-to-tl from-gray-600/20 to-transparent">
                                             </div>
 
                                             <!-- Noise/grain effect -->
                                             <div
-                                                class="absolute inset-0 opacity-30 dark:opacity-40"
+                                                class="absolute inset-0 opacity-40"
                                                 style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0); background-size: 3px 3px;"
                                             ></div>
                                             <div
-                                                class="absolute inset-0 opacity-0 dark:opacity-40"
+                                                class="absolute inset-0 opacity-40"
                                                 style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0); background-size: 3px 3px;"
                                             ></div>
 
                                             <!-- Industrial accent elements -->
                                             <div
-                                                class="absolute top-1 left-1 w-4 h-0.5 bg-gray-500/50 dark:bg-gray-600/60">
+                                                class="absolute top-1 left-1 w-4 h-0.5 bg-gray-600/60">
                                             </div>
                                             <div
-                                                class="absolute top-1 left-1 w-0.5 h-4 bg-gray-500/50 dark:bg-gray-600/60">
+                                                class="absolute top-1 left-1 w-0.5 h-4 bg-gray-600/60">
                                             </div>
                                             <div
-                                                class="absolute bottom-1 right-1 w-4 h-0.5 bg-gray-500/50 dark:bg-gray-600/60">
+                                                class="absolute bottom-1 right-1 w-4 h-0.5 bg-gray-600/60">
                                             </div>
                                             <div
-                                                class="absolute bottom-1 right-1 w-0.5 h-4 bg-gray-500/50 dark:bg-gray-600/60">
+                                                class="absolute bottom-1 right-1 w-0.5 h-4 bg-gray-600/60">
                                             </div>
 
                                             <!-- Scratched/worn effect lines -->
                                             <div
-                                                class="absolute top-3 right-2 w-8 h-px bg-gray-600/40 dark:bg-gray-500/30 transform rotate-12">
+                                                class="absolute top-3 right-2 w-8 h-px bg-gray-500/30 transform rotate-12">
                                             </div>
                                             <div
-                                                class="absolute bottom-4 left-3 w-6 h-px bg-gray-600/50 dark:bg-gray-500/40 transform -rotate-45">
+                                                class="absolute bottom-4 left-3 w-6 h-px bg-gray-500/40 transform -rotate-45">
                                             </div>
                                             <div
-                                                class="absolute top-1/2 right-3 w-3 h-px bg-gray-500/30 dark:bg-gray-400/20 transform rotate-75">
+                                                class="absolute top-1/2 right-3 w-3 h-px bg-gray-400/20 transform rotate-75">
                                             </div>
 
                                             <!-- Subtle inner shadow -->
                                             <div
-                                                class="absolute inset-1 rounded-md shadow-inner shadow-gray-600/40 dark:shadow-black/50">
+                                                class="absolute inset-1 rounded-md shadow-inner shadow-black/50">
                                             </div>
 
                                             <flux:icon
                                                 name="cloud-arrow-down"
-                                                class="relative z-10 size-20 text-gray-700 dark:text-gray-200 drop-shadow-2xl"
+                                                class="relative z-10 size-20 text-gray-200 drop-shadow-2xl"
                                             />
                                         </div>
                                     </div>
@@ -160,7 +160,7 @@
                                     <div class="flex-1 text-center lg:text-left">
                                         <div class="flex flex-col lg:flex-row lg:items-center lg:gap-3 mb-2">
                                             <h2
-                                                class="text-2xl font-bold tracking-tight text-gray-800 dark:text-gray-100 sm:text-3xl">
+                                                class="text-2xl font-bold tracking-tight text-gray-100 sm:text-3xl">
                                                 SPT Installer
                                             </h2>
                                             <!-- Official badge moved next to title -->
@@ -173,14 +173,14 @@
                                             </flux:badge>
                                         </div>
 
-                                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                        <p class="text-gray-300 mb-4">
                                             The easiest way to get started with Single Player Tarkov. Our fully
                                             automated installer handles everything for you.
                                         </p>
 
                                         <!-- Compact features -->
                                         <div
-                                            class="flex flex-wrap justify-center lg:justify-start gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                            class="flex flex-wrap justify-center lg:justify-start gap-4 text-sm text-gray-400">
                                             <span class="flex items-center">
                                                 <flux:icon.check-circle
                                                     variant="mini"
@@ -300,9 +300,9 @@
                         <x-page-content-title :title="__('Recent Comment Activity')" />
 
                         <div class="mb-8 -mt-2">
-                            <flux:timeline size="lg" align="center" class="[&_[data-flux-timeline-line-leading]>div]:!bg-gray-200 dark:[&_[data-flux-timeline-line-leading]>div]:!bg-gray-800 [&_[data-flux-timeline-line-trailing]>div]:!bg-gray-200 dark:[&_[data-flux-timeline-line-trailing]>div]:!bg-gray-800">
+                            <flux:timeline size="lg" align="center" class="[&_[data-flux-timeline-line-leading]>div]:!bg-gray-800 [&_[data-flux-timeline-line-trailing]>div]:!bg-gray-800">
                                 @foreach ($recentComments as $comment)
-                                    <flux:timeline.item wire:key="homepage-comment-{{ $comment->id }}" class="rounded-lg px-2 -mx-2 transition-colors duration-150 hover:bg-gray-200 dark:hover:bg-black/40">
+                                    <flux:timeline.item wire:key="homepage-comment-{{ $comment->id }}" class="rounded-lg px-2 -mx-2 transition-colors duration-150 hover:bg-black/40">
                                         <flux:timeline.indicator variant="bare" @class(['pt-4' => $loop->first, 'pb-4' => $loop->last])>
                                             <a href="{{ route('user.show', ['userId' => $comment->user->id, 'slug' => $comment->user->slug]) }}">
                                                 <flux:avatar
@@ -319,14 +319,14 @@
                                             <div class="flex flex-wrap items-center gap-x-1 text-sm">
                                                 <a
                                                     href="{{ route('user.show', ['userId' => $comment->user->id, 'slug' => $comment->user->slug]) }}"
-                                                    class="font-semibold text-gray-900 dark:text-gray-100 hover:underline"
+                                                    class="font-semibold text-gray-100 hover:underline"
                                                 >
                                                     <x-user-name :user="$comment->user" />
                                                 </a>
-                                                <span class="text-gray-500 dark:text-gray-400">{{ __('commented on') }}</span>
+                                                <span class="text-gray-400">{{ __('commented on') }}</span>
                                                 <a
                                                     href="{{ $comment->commentable->getCommentableUrl() }}"
-                                                    class="font-medium text-cyan-600 dark:text-cyan-400 hover:underline truncate max-w-48 sm:max-w-xs"
+                                                    class="font-medium text-cyan-400 hover:underline truncate max-w-48 sm:max-w-xs"
                                                 >
                                                     {{ $comment->commentable->name }}
                                                 </a>
@@ -336,12 +336,12 @@
                                                 href="{{ $comment->getUrl() }}"
                                                 class="block mt-1"
                                             >
-                                                <div class="user-markdown text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                                                <div class="user-markdown text-sm text-gray-400 line-clamp-2">
                                                     {!! strip_tags($comment->body_html, '<b><code><em><i><mark><s><small><span><strong><sub><sup><u>') !!}
                                                 </div>
                                             </a>
 
-                                            <div class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                                            <div class="mt-1 text-xs text-gray-500">
                                                 <x-time :datetime="$comment->created_at" />
                                             </div>
                                         </flux:timeline.content>

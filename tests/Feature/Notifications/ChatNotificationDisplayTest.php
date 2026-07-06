@@ -33,7 +33,7 @@ it('displays chat message notifications with correct details', function (): void
         ->assertSee('sent you a')
         ->assertSee('new message')
         ->assertSee('Hello! This is a test message that should appear in notifications.')
-        ->assertSeeHtml('bg-purple-100'); // Chat notification icon background color
+        ->assertSeeHtml('bg-purple-900/30'); // Chat notification icon background color
 });
 
 it('displays multiple message count correctly', function (): void {
@@ -139,5 +139,5 @@ it('correctly handles notifications when sender name is provided', function (): 
         ->assertSee('sent you a')
         ->assertSee('new message')
         ->assertSee('Message from John Smith')
-        ->assertSeeHtml('bg-purple-100'); // Chat notification icon background
+        ->assertSeeHtml('bg-purple-900/30'); // Chat notification icon background
 });

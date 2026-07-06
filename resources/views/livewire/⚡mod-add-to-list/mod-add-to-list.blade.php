@@ -127,13 +127,13 @@
                         <div
                             wire:key="add-to-list-row-{{ $list->id }}"
                             @class([
-                                'flex items-center justify-between gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-900',
-                                'border-t border-gray-200 dark:border-gray-700' => ! $loop->first,
+                                'flex items-center justify-between gap-2 p-2 hover:bg-gray-900',
+                                'border-t border-gray-700' => ! $loop->first,
                             ])
                         >
                             <div class="flex items-center gap-2 min-w-0">
                                 @if ($list->isFavourites())
-                                    <div class="shrink-0 size-8 rounded bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center">
+                                    <div class="shrink-0 size-8 rounded bg-rose-950/30 flex items-center justify-center">
                                         <flux:icon.heart class="size-4 text-rose-500" />
                                     </div>
                                 @elseif ($list->thumbnail)
@@ -143,7 +143,7 @@
                                         class="shrink-0 size-8 rounded object-cover"
                                     >
                                 @else
-                                    <div class="shrink-0 size-8 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                    <div class="shrink-0 size-8 rounded bg-gray-800 flex items-center justify-center">
                                         <flux:icon
                                             :name="$list->visibility->icon()"
                                             class="size-4 text-gray-500"
@@ -154,7 +154,7 @@
                                     <div class="text-sm font-medium truncate">
                                         {{ $list->title }}
                                     </div>
-                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                    <div class="text-xs text-gray-400">
                                         {{ $list->items_count }} {{ __(Str::plural('item', $list->items_count)) }}
                                     </div>
                                 </div>
@@ -179,7 +179,7 @@
                             @endif
                         </div>
                     @empty
-                        <div class="text-sm text-center text-gray-500 dark:text-gray-400 p-4">
+                        <div class="text-sm text-center text-gray-400 p-4">
                             {{ __('No matching lists.') }}
                         </div>
                     @endforelse

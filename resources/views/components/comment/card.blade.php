@@ -38,7 +38,7 @@
                             <x-comment.version-history :comment="$comment" />
                         @else
                             <span
-                                class="ml-1 italic text-gray-500 dark:text-gray-400"
+                                class="ml-1 italic text-gray-400"
                                 title="{{ $comment->edited_at->format('Y-m-d H:i:s') }}"
                             >{{ __('edited') }}</span>
                         @endcan
@@ -63,11 +63,11 @@
         @endisset
     </div>
 
-    <div class="user-markdown text-gray-900 dark:text-slate-200 mt-3">
+    <div class="user-markdown text-slate-200 mt-3">
         @if ($comment->isDeleted())
             @if (auth()->check() && auth()->user()->isModOrAdmin())
                 <div>
-                    <span class="text-gray-500 dark:text-gray-400 italic">
+                    <span class="text-gray-400 italic">
                         {{ __('Comment was deleted on') }} {{ $comment->deleted_at->format('Y-m-d H:i:s') }}:
                     </span>
                     <div class="deleted">
@@ -75,7 +75,7 @@
                     </div>
                 </div>
             @else
-                <span class="text-gray-500 dark:text-gray-400 italic">
+                <span class="text-gray-400 italic">
                     [{{ __('deleted at') }} {{ $comment->deleted_at->format('Y-m-d H:i:s') }}]
                 </span>
             @endif
@@ -86,12 +86,12 @@
 
     @if (! $comment->isDeleted() && $comment->latestVersion?->isTranslated())
         <div
-            class="mt-3 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40"
+            class="mt-3 rounded-md border border-gray-700 bg-gray-900/40"
             x-data="{ showTranslation: true }"
         >
             <button
                 type="button"
-                class="flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 cursor-pointer"
+                class="flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-gray-400 cursor-pointer"
                 x-on:click="showTranslation = ! showTranslation"
             >
                 <flux:icon.language
@@ -106,7 +106,7 @@
                 />
             </button>
             <div
-                class="user-markdown px-3 pb-2 text-sm text-gray-900 dark:text-slate-200"
+                class="user-markdown px-3 pb-2 text-sm text-slate-200"
                 x-show="showTranslation"
             >
                 {!! $comment->latestVersion->translated_body_html !!}

@@ -7,7 +7,7 @@
 </x-slot>
 
 <x-slot:header>
-    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+    <h2 class="font-semibold text-xl text-gray-200 leading-tight flex items-center gap-2">
         <flux:icon.cube-transparent class="w-5 h-5" />
         {{ __('Create Mod Version') }}: {{ $mod->name }}
     </h2>
@@ -18,19 +18,19 @@
         <div class="md:grid md:grid-cols-3 md:gap-6">
             <div class="md:col-span-1 flex justify-between">
                 <div class="px-4 sm:px-0">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Version Information</h3>
-                    <p class="my-2 text-sm/6 text-gray-600 dark:text-gray-400">Add a new version to your mod by filling
+                    <h3 class="text-lg font-medium text-gray-100">Version Information</h3>
+                    <p class="my-2 text-sm/6 text-gray-400">Add a new version to your mod by filling
                         out this form. It will be unpublished by default.</p>
-                    <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
+                    <p class="my-2 text-sm/6 text-sm text-gray-400">
                         Please ensure you follow the <a
                             href="{{ route('static.community-standards') }}"
                             target="_blank"
-                            class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                            class="underline text-white hover:text-cyan-200 transition-colors"
                         >Community Standards</a>
                         and the <a
                             href="{{ route('static.content-guidelines') }}"
                             target="_blank"
-                            class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                            class="underline text-white hover:text-cyan-200 transition-colors"
                         >Content Guidelines</a>.
                         Failing to do so will result in your mod being removed from the Forge and possible action being
                         taken against your account.
@@ -40,7 +40,7 @@
             </div>
             <div class="mt-5 md:mt-0 md:col-span-2">
                 <form wire:submit="save">
-                    <div class="px-4 py-5 bg-white dark:bg-gray-900 sm:p-6 shadow-sm sm:rounded-tl-md sm:rounded-tr-md">
+                    <div class="px-4 py-5 bg-gray-900 sm:p-6 shadow-sm sm:rounded-tl-md sm:rounded-tr-md">
                         <div class="grid grid-cols-6 gap-6">
                             @csrf
 
@@ -150,7 +150,7 @@
                                 <flux:error name="sptVersionConstraint" />
                                 @if (count($matchingSptVersions) > 0)
                                     <div class="mt-2 space-y-1">
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                                        <p class="text-sm text-gray-400">
                                             {{ __('Current Matching SPT Versions:') }}</p>
                                         <div class="flex flex-wrap gap-2">
                                             @foreach ($matchingSptVersions as $version)
@@ -197,7 +197,7 @@
                                                             placeholder="com.username.modname"
                                                         />
                                                         <div
-                                                            class="mt-1 text-xs text-gray-500 dark:text-gray-400"
+                                                            class="mt-1 text-xs text-gray-400"
                                                             x-text="`Max Length: ${count}/255`"
                                                         ></div>
                                                     </div>
@@ -229,7 +229,7 @@
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('VirusTotal Links') }}</flux:label>
                                 <flux:description>{!! __(
-                                    'Provide links to the <a href="https://www.virustotal.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">VirusTotal</a> scan results for your mod files. This helps users verify the safety of your mod. At least one link is required.',
+                                    'Provide links to the <a href="https://www.virustotal.com" target="_blank" class="underline text-white hover:text-cyan-200 transition-colors">VirusTotal</a> scan results for your mod files. This helps users verify the safety of your mod. At least one link is required.',
                                 ) !!}</flux:description>
 
                                 <div class="space-y-3">
@@ -302,11 +302,11 @@
                                     @foreach ($dependencies as $index => $dependency)
                                         <div
                                             wire:key="dependency-{{ $dependency['id'] ?? $index }}"
-                                            class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                                            class="p-4 border border-gray-700 rounded-lg"
                                         >
                                             <div class="flex justify-between items-start mb-3">
                                                 <span
-                                                    class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Dependency #:num', ['num' => $index + 1]) }}</span>
+                                                    class="text-sm font-medium text-gray-300">{{ __('Dependency #:num', ['num' => $index + 1]) }}</span>
                                                 <flux:button
                                                     size="xs"
                                                     variant="outline"
@@ -344,12 +344,12 @@
 
                                             @if (isset($matchingDependencyVersions[$index]) && count($matchingDependencyVersions[$index]) > 0)
                                                 <div class="mt-3">
-                                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                                    <p class="text-sm text-gray-400 mb-2">
                                                         {{ __('Matching Versions:') }}</p>
                                                     <div class="flex flex-wrap gap-1">
                                                         @foreach ($matchingDependencyVersions[$index] as $version)
                                                             <span
-                                                                class="inline-flex items-center rounded-md bg-gray-100 dark:bg-gray-800 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400"
+                                                                class="inline-flex items-center rounded-md bg-gray-800 px-2 py-1 text-xs font-medium text-gray-400"
                                                             >
                                                                 {{ $version['mod_name'] }} v{{ $version['version'] }}
                                                             </span>
@@ -358,7 +358,7 @@
                                                 </div>
                                             @elseif(!empty($dependencies[$index]['modId']) && !empty($dependencies[$index]['constraint']))
                                                 <div class="mt-3">
-                                                    <p class="text-sm text-yellow-600 dark:text-yellow-400">
+                                                    <p class="text-sm text-yellow-400">
                                                         {{ __('No matching versions found for this constraint.') }}</p>
                                                 </div>
                                             @endif
@@ -415,7 +415,7 @@
                                             />
                                             <div class="flex-1">
                                                 <div class="flex items-center flex-wrap gap-x-2 gap-y-1">
-                                                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                    <span class="text-sm font-medium text-gray-100">
                                                         {{ __('Pin to unpublished SPT version publish dates:') }}
                                                     </span>
 
@@ -430,10 +430,10 @@
                                                         @endforeach
                                                     @endif
                                                 </div>
-                                                <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                <div class="text-sm text-gray-400 mt-1">
                                                     {{ __('When enabled, this mod version will automatically publish when the unpublished SPT versions it supports are released.') }}
                                                     <span
-                                                        class="text-orange-600 dark:text-amber-400 font-medium">{{ __('Note: SPT versions can be released at any time, so only use this option if your mod version is fully ready for release.') }}</span>
+                                                        class="text-amber-400 font-medium">{{ __('Note: SPT versions can be released at any time, so only use this option if your mod version is fully ready for release.') }}</span>
                                                 </div>
                                             </div>
                                         </label>
@@ -468,12 +468,12 @@
                                                     but the published date will be interpreted as a UTC date.
                                                     Alternatively, you can <a
                                                         href="/user/profile"
-                                                        class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                                                        class="underline text-white hover:text-cyan-200 transition-colors"
                                                     >edit your profile</a> to set a specific timezone.
                                                 </flux:callout.text>
                                             </flux:callout>
                                         @else
-                                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                            <p class="text-sm text-gray-400">
                                                 {{ __('Your timezone is set to :timezone.', ['timezone' => auth()->user()->timezone]) }}
                                             </p>
                                         @endif
@@ -506,11 +506,11 @@
                         </div>
                     </div>
                     <div
-                        class="flex items-center justify-end px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t-2 border-transparent dark:border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-4">
+                        class="flex items-center justify-end px-4 py-3 bg-gray-900 border-t-2 border-transparent border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-4">
                         <flux:button
                             variant="primary"
                             size="sm"
-                            class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+                            class="my-1.5 text-white hover:bg-cyan-600 bg-cyan-700"
                             type="submit"
                         >{{ __('Create Version') }}</flux:button>
                     </div>
