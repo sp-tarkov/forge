@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Contracts\CommentTranslator;
-use App\Enums\SpamStatus;
 use App\Models\Comment;
 use App\Services\LanguageDetectionService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -180,8 +179,6 @@ final class BackfillCommentTranslations implements ShouldQueue
      */
     private function translatableComments(): Builder
     {
-        return Comment::query()
-            ->whereNull('deleted_at')
-            ->where('spam_status', '!=', SpamStatus::SPAM->value);
+        return Comment::query()->whereNull('deleted_at');
     }
 }

@@ -48,12 +48,12 @@ describe('Backfill', function (): void {
         ));
 
         $deleted = createBackfillComment('Удалённый комментарий, который не нужно переводить.', ['deleted_at' => now()]);
-        $spam = createBackfillComment('Спам-комментарий, который не нужно переводить.', ['spam_status' => SpamStatus::SPAM]);
+        $spam = createBackfillComment('Спам-комментарий, который нужно перевести для проверки администраторами.', ['spam_status' => SpamStatus::SPAM]);
 
         Config::set('comments.translation.enabled', true);
         Bus::fake([FetchCommentTranslationBatch::class]);
 
-        $expectedVersionIds = collect([$russian, $detectedPending])
+        $expectedVersionIds = collect([$russian, $detectedPending, $spam])
             ->map(fn (Comment $comment): int => (int) $comment->latestVersion?->id)
             ->sort()
             ->values()
@@ -81,6 +81,24 @@ describe('Backfill', function (): void {
             ->and($russian->latestVersion?->refresh()->language_detected_at)->toBeNull()
             ->and($deleted->latestVersion?->refresh()->language_detected_at)->toBeNull()
             ->and($spam->latestVersion?->refresh()->language_detected_at)->toBeNull();
+    });
+
+    test('includes spam comments so administrators can review them in English', function (): void {
+        $spam = createBackfillComment('Спам-комментарий на русском языке, который администраторы должны проверить.', ['spam_status' => SpamStatus::SPAM]);
+
+        Config::set('comments.translation.enabled', true);
+        Bus::fake([FetchCommentTranslationBatch::class]);
+
+        $translator = Mockery::mock(CommentTranslator::class);
+        $translator->shouldReceive('isConfigured')->andReturn(true);
+        $translator->shouldReceive('submitBatch')
+            ->once()
+            ->withArgs(fn (array $bodies): bool => array_keys($bodies) === [(int) $spam->latestVersion?->id])
+            ->andReturn('msgbatch_spam');
+
+        (new BackfillCommentTranslations)->handle(resolve(LanguageDetectionService::class), $translator);
+
+        Bus::assertDispatched(FetchCommentTranslationBatch::class, fn (FetchCommentTranslationBatch $job): bool => $job->batchId === 'msgbatch_spam');
     });
 
     test('splits submissions into batches of the configured size', function (): void {
