@@ -54,6 +54,11 @@ if (document.readyState === 'loading') {
     highlightCodeBlocks();
 }
 
+// Highlight code blocks on every wire:navigate page swap, where DOMContentLoaded does not fire again
+document.addEventListener('livewire:navigated', () => {
+    highlightCodeBlocks();
+});
+
 // Function to register Livewire hooks
 function registerLivewireHooks() {
     // Fires when elements are added during DOM morphing (e.g., lazy-loaded content)
