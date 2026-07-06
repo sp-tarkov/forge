@@ -15,8 +15,7 @@
                 <span class="font-medium text-gray-300">{{ $onlineCount }}</span>
                 {{ $onlineCount === 1 ? 'user currently online' : 'users currently online' }}
                 @if ($memberCount > 0)
-                    <span class="text-gray-500">({{ $memberCount }}
-                        {{ $memberCount === 1 ? 'member' : 'members' }})</span>
+                    <span class="text-gray-500">({{ $memberCount }} {{ Str::plural('member', $memberCount) }})</span>
                 @endif
             </div>
         </div>

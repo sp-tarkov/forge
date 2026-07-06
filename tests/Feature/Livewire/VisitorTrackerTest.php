@@ -218,8 +218,8 @@ it('left-aligns counts on mobile and right-aligns them once the footer expands t
     ]);
 
     Livewire::test('visitor-tracker')
-        ->assertSeeHtml('flex items-center justify-start sm:justify-end space-x-2')
-        ->assertSeeHtml('text-left sm:text-right mt-1');
+        ->assertSeeHtml('flex items-center justify-start space-x-2 sm:justify-end')
+        ->assertSeeHtml('mt-1 text-left sm:text-right');
 });
 
 it('prevents client-side modification of locked properties', function (): void {

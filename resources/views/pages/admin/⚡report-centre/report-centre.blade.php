@@ -640,8 +640,8 @@
                                                     <div class="space-y-2">
                                                         <div class="flex items-center space-x-2">
                                                             <flux:icon.list-bullet class="size-4 text-amber-500" />
-                                                            <span class="text-sm font-medium text-white">Mod
-                                                                List</span>
+                                                            <span
+                                                                class="text-sm font-medium text-white">{{ __('Mod List') }}</span>
                                                         </div>
                                                         <p class="text-sm font-medium text-white">
                                                             {{ $report->reportable->getReportableTitle() }}</p>
