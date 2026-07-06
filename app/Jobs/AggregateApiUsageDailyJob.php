@@ -7,6 +7,7 @@ namespace App\Jobs;
 use App\Enums\Api\V0\ApiUsagePeriod;
 use App\Models\ApiUsageClient;
 use App\Models\ApiUsageMetric;
+use App\Models\ApiUsageUnmatchedRequest;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -41,6 +42,7 @@ final class AggregateApiUsageDailyJob implements ShouldBeUnique, ShouldQueue
 
         $this->rollUpMetrics($dayStart);
         $this->rollUpClients($dayStart);
+        $this->rollUpUnmatched($dayStart);
         $this->prune();
     }
 
@@ -113,6 +115,36 @@ final class AggregateApiUsageDailyJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
+     * Sum the previous day's minute unmatched-path rows into the top-N daily rows per dimension.
+     */
+    private function rollUpUnmatched(CarbonImmutable $dayStart): void
+    {
+        $aggregated = ApiUsageUnmatchedRequest::query()
+            ->where('period', ApiUsagePeriod::Minute->value)
+            ->whereBetween('period_start', [$dayStart, $dayStart->endOfDay()])
+            ->groupBy('path', 'method', 'status_code')
+            ->selectRaw('path, method, status_code, SUM(request_count) as request_count')
+            ->orderByDesc('request_count')
+            ->limit(config()->integer('api.usage.top_unmatched'))
+            ->get();
+
+        if ($aggregated->isEmpty()) {
+            return;
+        }
+
+        $rows = $aggregated->map(static fn (ApiUsageUnmatchedRequest $row): array => [
+            'period' => ApiUsagePeriod::Day->value,
+            'period_start' => $dayStart,
+            'path' => $row->path,
+            'method' => $row->method,
+            'status_code' => $row->status_code,
+            'request_count' => $row->request_count,
+        ])->all();
+
+        ApiUsageUnmatchedRequest::query()->upsert($rows, ['period', 'period_start', 'path', 'method', 'status_code']);
+    }
+
+    /**
      * Delete rows older than their configured retention window.
      */
     private function prune(): void
@@ -121,7 +153,7 @@ final class AggregateApiUsageDailyJob implements ShouldBeUnique, ShouldQueue
         $minuteCutoff = $now->subDays(config()->integer('api.usage.retention.minute_days'))->startOfDay();
         $dayCutoff = $now->subDays(config()->integer('api.usage.retention.day_days'))->startOfDay();
 
-        foreach ([ApiUsageMetric::class, ApiUsageClient::class] as $model) {
+        foreach ([ApiUsageMetric::class, ApiUsageClient::class, ApiUsageUnmatchedRequest::class] as $model) {
             $this->pruneRows($model, ApiUsagePeriod::Minute, $minuteCutoff);
             $this->pruneRows($model, ApiUsagePeriod::Day, $dayCutoff);
         }

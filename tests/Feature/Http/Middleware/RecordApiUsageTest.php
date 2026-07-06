@@ -18,7 +18,14 @@ it('records unmatched API paths under a sentinel route name', function (): void 
 
     $data = resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'));
 
-    expect(array_keys($data['requests']))->toContain('api.v0.unmatched|GET|404');
+    expect(array_keys($data['requests']))->toContain('api.v0.unmatched|GET|404')
+        ->and(array_keys($data['unmatched']))->toContain('GET|404|api/v0/this-route-does-not-exist');
+});
+
+it('does not record matched routes into the unmatched map', function (): void {
+    $this->getJson('/api/v0/ping')->assertOk();
+
+    expect(resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'))['unmatched'])->toBe([]);
 });
 
 it('does not record when tracking is disabled', function (): void {

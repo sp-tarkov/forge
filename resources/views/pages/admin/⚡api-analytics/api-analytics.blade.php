@@ -140,6 +140,49 @@
                     </div>
                 </div>
 
+                {{-- Unmatched requests --}}
+                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="flex items-baseline justify-between p-6 pb-3">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ __('Unmatched requests') }}</h3>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ number_format($this->unmatchedTotal) }} {{ __('requests') }}</span>
+                    </div>
+                    <p class="px-6 pb-3 text-sm text-gray-500 dark:text-gray-400">
+                        {{ __('Requests under the v0 API surface that matched no registered endpoint. These are excluded from the stats above.') }}
+                    </p>
+                    @if ($this->unmatchedRequests === [])
+                        <p class="px-6 pb-6 text-sm text-gray-500 dark:text-gray-400">{{ __('No unmatched paths recorded for this range.') }}</p>
+                    @else
+                        <div class="px-6 pb-4 overflow-x-auto">
+                        <flux:table>
+                            <flux:table.columns>
+                                <flux:table.column>{{ __('Path') }}</flux:table.column>
+                                <flux:table.column>{{ __('Method') }}</flux:table.column>
+                                <flux:table.column align="end">{{ __('Status') }}</flux:table.column>
+                                <flux:table.column align="end">{{ __('Requests') }}</flux:table.column>
+                                <flux:table.column align="end">{{ __('Last seen') }}</flux:table.column>
+                            </flux:table.columns>
+                            <flux:table.rows>
+                                @foreach ($this->unmatchedRequests as $unmatched)
+                                    <flux:table.row :key="$unmatched['method'].' '.$unmatched['status_code'].' '.$unmatched['path']">
+                                        <flux:table.cell class="font-mono text-xs">{{ $unmatched['path'] }}</flux:table.cell>
+                                        <flux:table.cell>
+                                            <flux:badge size="sm" color="zinc">{{ $unmatched['method'] }}</flux:badge>
+                                        </flux:table.cell>
+                                        <flux:table.cell align="end">
+                                            <flux:badge size="sm" :color="$unmatched['status_code'] >= 500 ? 'red' : 'amber'">
+                                                {{ $unmatched['status_code'] }}
+                                            </flux:badge>
+                                        </flux:table.cell>
+                                        <flux:table.cell align="end">{{ number_format($unmatched['requests']) }}</flux:table.cell>
+                                        <flux:table.cell align="end" class="whitespace-nowrap">{{ $unmatched['last_seen']->diffForHumans() }}</flux:table.cell>
+                                    </flux:table.row>
+                                @endforeach
+                            </flux:table.rows>
+                        </flux:table>
+                        </div>
+                    @endif
+                </div>
+
                 {{-- Top clients --}}
                 <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 p-6 pb-3">{{ __('Top clients') }}</h3>
@@ -150,13 +193,27 @@
                         <flux:table>
                             <flux:table.columns>
                                 <flux:table.column>{{ __('IP address') }}</flux:table.column>
+                                <flux:table.column>{{ __('Location') }}</flux:table.column>
                                 <flux:table.column align="end">{{ __('Requests') }}</flux:table.column>
+                                <flux:table.column align="end">{{ __('Share') }}</flux:table.column>
+                                <flux:table.column align="end">{{ $this->range === '24h' ? __('Active minutes') : __('Active days') }}</flux:table.column>
+                                <flux:table.column align="end">{{ __('Last seen') }}</flux:table.column>
                             </flux:table.columns>
                             <flux:table.rows>
                                 @foreach ($this->topClients as $client)
                                     <flux:table.row :key="$client['ip']">
                                         <flux:table.cell class="font-mono text-xs">{{ $client['ip'] }}</flux:table.cell>
+                                        <flux:table.cell>
+                                            @if ($client['country_name'] !== null)
+                                                <span class="mr-1">{{ $client['flag'] }}</span>{{ $client['city_name'] !== null ? $client['city_name'].', ' : '' }}{{ $client['country_name'] }}
+                                            @else
+                                                <span class="text-gray-400 dark:text-gray-500">{{ __('Unknown') }}</span>
+                                            @endif
+                                        </flux:table.cell>
                                         <flux:table.cell align="end">{{ number_format($client['requests']) }}</flux:table.cell>
+                                        <flux:table.cell align="end">{{ number_format($client['share'], 1) }}%</flux:table.cell>
+                                        <flux:table.cell align="end">{{ number_format($client['active_periods']) }}</flux:table.cell>
+                                        <flux:table.cell align="end" class="whitespace-nowrap">{{ $client['last_seen']->diffForHumans() }}</flux:table.cell>
                                     </flux:table.row>
                                 @endforeach
                             </flux:table.rows>

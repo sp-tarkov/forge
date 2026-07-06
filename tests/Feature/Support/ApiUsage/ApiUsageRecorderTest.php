@@ -30,10 +30,32 @@ it('skips the client map when the ip is null', function (): void {
     expect(resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'))['clients'])->toBe([]);
 });
 
+it('records an unmatched path with the path segment last', function (): void {
+    resolve(ApiUsageRecorder::class)->record('api.v0.unmatched', 'GET', 404, 5.0, '203.0.113.5', 'api/v0/does-not-exist');
+
+    expect(resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'))['unmatched'])
+        ->toBe(['GET|404|api/v0/does-not-exist' => 1]);
+});
+
+it('skips the unmatched map when no path is given', function (): void {
+    resolve(ApiUsageRecorder::class)->record('api.v0.ping', 'GET', 200, 1.0, '203.0.113.5');
+
+    expect(resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'))['unmatched'])->toBe([]);
+});
+
+it('truncates overlong unmatched paths to the stored column width', function (): void {
+    resolve(ApiUsageRecorder::class)->record('api.v0.unmatched', 'GET', 404, 5.0, null, 'api/v0/'.str_repeat('a', 300));
+
+    $keys = array_keys(resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'))['unmatched']);
+
+    expect($keys)->toHaveCount(1)
+        ->and(mb_strlen(explode('|', $keys[0], 3)[2]))->toBe(191);
+});
+
 it('swallows and logs store failures', function (): void {
     app()->instance(ApiUsageStore::class, new class implements ApiUsageStore
     {
-        public function record(string $bucket, string $dimension, int $latencyMs, string $latencyColumn, ?string $ip): void
+        public function record(string $bucket, string $dimension, int $latencyMs, string $latencyColumn, ?string $ip, ?string $unmatchedDimension = null): void
         {
             throw new RuntimeException('redis is down');
         }
@@ -45,7 +67,7 @@ it('swallows and logs store failures', function (): void {
 
         public function readBucket(string $bucket): array
         {
-            return ['requests' => [], 'latency' => [], 'histogram' => [], 'clients' => []];
+            return ['requests' => [], 'latency' => [], 'histogram' => [], 'clients' => [], 'unmatched' => []];
         }
 
         public function forgetBucket(string $bucket): void {}

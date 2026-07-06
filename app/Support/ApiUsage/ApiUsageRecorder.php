@@ -18,12 +18,18 @@ use Throwable;
  */
 final readonly class ApiUsageRecorder
 {
+    /**
+     * The maximum stored length of an unmatched request path, matching the rollup table's column width.
+     */
+    private const int MAX_UNMATCHED_PATH_LENGTH = 191;
+
     public function __construct(private ApiUsageStore $store) {}
 
     /**
-     * Record one API request.
+     * Record one API request. When the request matched no route, the caller passes the raw path so the store can
+     * additionally count it under the unmatched map.
      */
-    public function record(string $routeName, string $method, int $status, float $latencyMs, ?string $ip): void
+    public function record(string $routeName, string $method, int $status, float $latencyMs, ?string $ip, ?string $unmatchedPath = null): void
     {
         try {
             $bucket = now()->utc()->format('YmdHi');
@@ -31,7 +37,11 @@ final readonly class ApiUsageRecorder
             $roundedLatencyMs = (int) round(max(0.0, $latencyMs));
             $latencyColumn = ApiLatencyBucket::forLatency($latencyMs)->column();
 
-            $this->store->record($bucket, $dimension, $roundedLatencyMs, $latencyColumn, $ip);
+            $unmatchedDimension = $unmatchedPath === null
+                ? null
+                : sprintf('%s|%d|%s', $method, $status, mb_substr($unmatchedPath, 0, self::MAX_UNMATCHED_PATH_LENGTH));
+
+            $this->store->record($bucket, $dimension, $roundedLatencyMs, $latencyColumn, $ip, $unmatchedDimension);
         } catch (Throwable $throwable) {
             Log::warning('Failed to record API usage', [
                 'route' => $routeName,

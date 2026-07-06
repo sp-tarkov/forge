@@ -16,14 +16,14 @@ use App\Contracts\ApiUsageStore;
 final class ArrayApiUsageStore implements ApiUsageStore
 {
     /**
-     * @var array<string, array{requests: array<string, int>, latency: array<string, int>, histogram: array<string, int>, clients: array<string, int>}>
+     * @var array<string, array{requests: array<string, int>, latency: array<string, int>, histogram: array<string, int>, clients: array<string, int>, unmatched: array<string, int>}>
      */
     private array $buckets = [];
 
-    public function record(string $bucket, string $dimension, int $latencyMs, string $latencyColumn, ?string $ip): void
+    public function record(string $bucket, string $dimension, int $latencyMs, string $latencyColumn, ?string $ip, ?string $unmatchedDimension = null): void
     {
         if (! isset($this->buckets[$bucket])) {
-            $this->buckets[$bucket] = ['requests' => [], 'latency' => [], 'histogram' => [], 'clients' => []];
+            $this->buckets[$bucket] = $this->emptyBucket();
         }
 
         $this->buckets[$bucket]['requests'][$dimension] = ($this->buckets[$bucket]['requests'][$dimension] ?? 0) + 1;
@@ -35,6 +35,10 @@ final class ArrayApiUsageStore implements ApiUsageStore
         if ($ip !== null) {
             $this->buckets[$bucket]['clients'][$ip] = ($this->buckets[$bucket]['clients'][$ip] ?? 0) + 1;
         }
+
+        if ($unmatchedDimension !== null) {
+            $this->buckets[$bucket]['unmatched'][$unmatchedDimension] = ($this->buckets[$bucket]['unmatched'][$unmatchedDimension] ?? 0) + 1;
+        }
     }
 
     public function pendingBuckets(): array
@@ -45,11 +49,21 @@ final class ArrayApiUsageStore implements ApiUsageStore
 
     public function readBucket(string $bucket): array
     {
-        return $this->buckets[$bucket] ?? ['requests' => [], 'latency' => [], 'histogram' => [], 'clients' => []];
+        return $this->buckets[$bucket] ?? $this->emptyBucket();
     }
 
     public function forgetBucket(string $bucket): void
     {
         unset($this->buckets[$bucket]);
+    }
+
+    /**
+     * An empty counter set covering every map the contract exposes.
+     *
+     * @return array{requests: array<string, int>, latency: array<string, int>, histogram: array<string, int>, clients: array<string, int>, unmatched: array<string, int>}
+     */
+    private function emptyBucket(): array
+    {
+        return ['requests' => [], 'latency' => [], 'histogram' => [], 'clients' => [], 'unmatched' => []];
     }
 }
