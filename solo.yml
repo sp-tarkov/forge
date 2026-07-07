@@ -1,59 +1,6 @@
 name: forge
 icon: null
 processes:
-  Scheduler:
-    command: php artisan schedule:work
-    working_dir: null
-    auto_start: false
-    auto_restart: true
-    restart_when_changed:
-    - app/**/*.php
-    - config/**/*.php
-    - routes/**/*.php
-    - database/**/*.php
-    env: {}
-  Update Dependencies:
-    command: npm update && composer update
-    working_dir: null
-    auto_start: false
-    auto_restart: false
-    restart_when_changed: []
-    env: {}
-  Run Tests:
-    command: composer test
-    working_dir: null
-    auto_start: false
-    auto_restart: false
-    restart_when_changed: []
-    env: {}
-  Logs:
-    command: php artisan pail -v
-    working_dir: null
-    auto_start: true
-    auto_restart: true
-    restart_when_changed: []
-    env: {}
-  Download R2 Assets:
-    command: php artisan app:download-r2-assets
-    working_dir: null
-    auto_start: true
-    auto_restart: false
-    restart_when_changed: []
-    env: {}
-  Auto Build Front-end:
-    command: npm run dev
-    working_dir: null
-    auto_start: true
-    auto_restart: true
-    restart_when_changed: []
-    env: {}
-  Sync Meilisearch:
-    command: php artisan app:search-sync
-    working_dir: null
-    auto_start: false
-    auto_restart: false
-    restart_when_changed: []
-    env: {}
   Build Front-end:
     command: npm run build
     working_dir: null
@@ -66,6 +13,38 @@ processes:
     working_dir: null
     auto_start: false
     auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Download R2 Assets:
+    command: php artisan app:download-r2-assets
+    working_dir: null
+    auto_start: true
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Renerate API Documentation:
+    command: php artisan scribe:generate
+    working_dir: null
+    auto_start: false
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Queue Worker:
+    command: php artisan queue:work redis --queue=default,verification-detection,verification,alt-detection,visitor-analytics,long --memory=512
+    working_dir: null
+    auto_start: true
+    auto_restart: true
+    restart_when_changed:
+    - app/**/*.php
+    - config/**/*.php
+    - routes/**/*.php
+    - database/**/*.php
+    env: {}
+  Logs:
+    command: php artisan pail -v
+    working_dir: null
+    auto_start: true
+    auto_restart: true
     restart_when_changed: []
     env: {}
   Linting:
@@ -82,15 +61,36 @@ processes:
     auto_restart: false
     restart_when_changed: []
     env: {}
-  Renerate API Documentation:
-    command: php artisan scribe:generate
+  Run Tests:
+    command: composer test
     working_dir: null
     auto_start: false
     auto_restart: false
     restart_when_changed: []
     env: {}
-  Queue Worker:
-    command: php artisan queue:work redis --queue=default,verification-detection,verification,alt-detection,visitor-analytics,long --memory=512
+  Sync Meilisearch:
+    command: php artisan app:search-sync
+    working_dir: null
+    auto_start: false
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Update Dependencies:
+    command: npm update && composer update
+    working_dir: null
+    auto_start: false
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Auto Build Front-end:
+    command: npm run dev
+    working_dir: null
+    auto_start: true
+    auto_restart: true
+    restart_when_changed: []
+    env: {}
+  Scheduler:
+    command: php artisan schedule:work
     working_dir: null
     auto_start: true
     auto_restart: true
