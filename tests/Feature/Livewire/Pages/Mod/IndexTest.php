@@ -31,6 +31,39 @@ describe('Index', function (): void {
                 ->assertOk()
                 ->assertSee('Test Mod 1');
         });
+
+        it('renders card thumbnails with a srcset when variants exist', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+            $mod = Mod::factory()->create([
+                'name' => 'Variant Mod',
+                'thumbnail' => 'mods/variant-mod.png',
+                'thumbnail_variants' => [192 => 'mods/variant-mod_192w.webp', 384 => 'mods/variant-mod_384w.webp'],
+            ]);
+            ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->assertOk()
+                ->assertSeeHtml('srcset=')
+                ->assertSeeHtml('mods/variant-mod_192w.webp 192w')
+                ->assertSeeHtml('mods/variant-mod_384w.webp 384w')
+                ->assertSeeHtml('decoding="async"');
+        });
+
+        it('lazy loads card thumbnails beyond the first four', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+            foreach (range(1, 5) as $index) {
+                $mod = Mod::factory()->create([
+                    'name' => sprintf('Lazy Mod %d', $index),
+                    'thumbnail' => sprintf('mods/lazy-mod-%d.png', $index),
+                ]);
+                ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+            }
+
+            $html = Livewire::test('pages::mod.index')->html();
+
+            expect(mb_substr_count($html, 'loading="eager"'))->toBe(4)
+                ->and(mb_substr_count($html, 'loading="lazy"'))->toBe(1);
+        });
     });
 
     describe('version filter toggling', function (): void {

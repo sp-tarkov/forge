@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Jobs\GenerateThumbnailVariants;
 use App\Models\Addon;
 use App\Models\License;
 use App\Models\SourceCodeLink;
+use App\Services\ThumbnailService;
 use Flux\Flux;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Collection;
@@ -290,6 +292,11 @@ new #[Layout('layouts::base')] class extends Component
         // Save the addon.
         $this->addon->save();
 
+        // Generate resized thumbnail variants in the background.
+        if ($this->thumbnail instanceof UploadedFile) {
+            dispatch(new GenerateThumbnailVariants($this->addon));
+        }
+
         // Sync authors (this will remove old ones and add new ones)
         $this->addon->additionalAuthors()->sync($this->authorIds);
 
@@ -344,8 +351,10 @@ new #[Layout('layouts::base')] class extends Component
             /** @var string $diskName */
             $diskName = config('filesystems.asset_upload', 'public');
             Storage::disk($diskName)->delete($this->addon->thumbnail);
+            resolve(ThumbnailService::class)->deleteVariants($diskName, $this->addon->thumbnail_variants);
             $this->addon->thumbnail = null;
             $this->addon->thumbnail_hash = null;
+            $this->addon->thumbnail_variants = null;
             $this->addon->save();
 
             Flux::toast(heading: 'Thumbnail Deleted', text: 'The addon thumbnail has been deleted.', variant: 'success');

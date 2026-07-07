@@ -392,7 +392,13 @@
                                     @if ($dependency->mod->thumbnail)
                                         <img
                                             src="{{ $dependency->mod->thumbnailUrl }}"
+                                            @if ($dependency->mod->thumbnailSrcset) srcset="{{ $dependency->mod->thumbnailSrcset }}"
+                                                sizes="3rem" @endif
                                             alt="{{ $dependency->mod->name }}"
+                                            width="192"
+                                            height="192"
+                                            loading="lazy"
+                                            decoding="async"
                                             class="h-12 w-12 flex-shrink-0 rounded-lg object-cover"
                                         >
                                     @else

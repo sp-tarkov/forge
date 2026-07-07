@@ -46,6 +46,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string|null $description
  * @property string|null $thumbnail
  * @property string|null $thumbnail_hash
+ * @property array<int|string, string>|null $thumbnail_variants
  * @property int|null $license_id
  * @property int $downloads
  * @property bool $disabled
@@ -64,6 +65,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read string $description_html
  * @property-read string $custom_ai_disclosure_html
  * @property-read string|null $thumbnailUrl
+ * @property-read string $thumbnailSrcset
  * @property-read Mod|null $mod
  * @property-read User|null $owner
  * @property-read User|null $detachedBy
@@ -570,6 +572,20 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
+     * Build the srcset attribute value for the addon's thumbnail variants.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function thumbnailSrcset(): Attribute
+    {
+        $disk = config()->string('filesystems.asset_upload', 'public');
+
+        return Attribute::get(fn (): string => collect($this->thumbnail_variants ?? [])
+            ->map(fn (string $path, int|string $width): string => sprintf('%s %dw', Storage::disk($disk)->url($path), $width))
+            ->implode(', '));
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -578,6 +594,7 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
     protected function casts(): array
     {
         return [
+            'thumbnail_variants' => 'array',
             'disabled' => 'boolean',
             'contains_ai_content' => 'boolean',
             'contains_ai_content_locked' => 'boolean',

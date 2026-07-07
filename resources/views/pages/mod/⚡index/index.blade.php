@@ -544,6 +544,7 @@
                         <x-mod.card
                             :mod="$mod"
                             :version="$this->getDisplayVersion($mod, $includeLegacy)"
+                            :eager="$loop->index < 4"
                         />
                     </div>
                 @endforeach

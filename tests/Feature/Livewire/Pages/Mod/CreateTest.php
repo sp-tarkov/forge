@@ -2,11 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Jobs\GenerateThumbnailVariants;
 use App\Models\CommentSubscription;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 it('renders the mod guidelines page', function (): void {
@@ -424,5 +428,72 @@ describe('Mod Create Form', function (): void {
                 ->call('save')
                 ->assertHasErrors(['customAiDisclosure']);
         });
+    });
+});
+
+describe('Thumbnail Variants', function (): void {
+
+    beforeEach(function (): void {
+        config()->set('honeypot.enabled', false);
+        Storage::fake(config('filesystems.asset_upload', 'public'));
+    });
+
+    it('dispatches thumbnail variant generation when a thumbnail is uploaded', function (): void {
+        Queue::fake();
+        $license = License::factory()->create();
+        $category = ModCategory::factory()->create();
+        $user = User::factory()->withMfa()->create();
+
+        $this->actingAs($user);
+
+        Livewire::test('pages::mod.create')
+            ->set('honeypotData.nameFieldName', 'name')
+            ->set('honeypotData.validFromFieldName', 'valid_from')
+            ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+            ->set('name', 'Thumbnail Variant Mod')
+            ->set('guid', 'com.example.thumbnailvariant')
+            ->set('teaser', 'Test teaser')
+            ->set('description', 'Test description')
+            ->set('license', (string) $license->id)
+            ->set('category', (string) $category->id)
+            ->set('sourceCodeLinks.0.url', 'https://github.com/test/repo')
+            ->set('sourceCodeLinks.0.label', '')
+            ->set('containsAiContent', false)
+            ->set('containsAds', false)
+            ->set('thumbnail', UploadedFile::fake()->image('thumbnail.png', 512, 512))
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertRedirect();
+
+        $mod = Mod::query()->where('name', 'Thumbnail Variant Mod')->firstOrFail();
+        Queue::assertPushed(fn (GenerateThumbnailVariants $job): bool => $job->model->is($mod));
+    });
+
+    it('does not dispatch thumbnail variant generation without a thumbnail', function (): void {
+        Queue::fake();
+        $license = License::factory()->create();
+        $category = ModCategory::factory()->create();
+        $user = User::factory()->withMfa()->create();
+
+        $this->actingAs($user);
+
+        Livewire::test('pages::mod.create')
+            ->set('honeypotData.nameFieldName', 'name')
+            ->set('honeypotData.validFromFieldName', 'valid_from')
+            ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+            ->set('name', 'No Thumbnail Mod')
+            ->set('teaser', 'Test teaser')
+            ->set('description', 'Test description')
+            ->set('license', (string) $license->id)
+            ->set('category', (string) $category->id)
+            ->set('sourceCodeLinks.0.url', 'https://github.com/test/repo')
+            ->set('sourceCodeLinks.0.label', '')
+            ->set('containsAiContent', false)
+            ->set('containsAds', false)
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertRedirect();
+
+        Queue::assertNotPushed(GenerateThumbnailVariants::class);
     });
 });

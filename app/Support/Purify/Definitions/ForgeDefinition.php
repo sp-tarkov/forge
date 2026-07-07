@@ -79,5 +79,9 @@ final class ForgeDefinition implements Definition
         // YouTube lite embed support
         $definition->addAttribute('div', 'data-video-id', 'Text');
         $definition->addAttribute('div', 'data-embed-url', 'URI');
+
+        // Native image lazy-loading support
+        $definition->addAttribute('img', 'loading', 'Enum#lazy,eager');
+        $definition->addAttribute('img', 'decoding', 'Enum#async,sync,auto');
     }
 }

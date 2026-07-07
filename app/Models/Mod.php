@@ -47,6 +47,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $teaser
  * @property string $description
  * @property string $thumbnail
+ * @property array<int|string, string>|null $thumbnail_variants
  * @property int|null $license_id
  * @property int|null $category_id
  * @property int $downloads
@@ -68,6 +69,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property CarbonImmutable|null $updated_at
  * @property CarbonImmutable|null $published_at
  * @property-read string $detail_url
+ * @property-read string $thumbnailSrcset
  * @property-read string $description_html
  * @property-read string $custom_ai_disclosure_html
  * @property-read bool $addons_enabled
@@ -719,6 +721,21 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
+     * Build the srcset attribute value for the mod's thumbnail variants.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function thumbnailSrcset(): Attribute
+    {
+        /** @var string $disk */
+        $disk = config()->string('filesystems.asset_upload', 'public');
+
+        return Attribute::get(fn (): string => collect($this->thumbnail_variants ?? [])
+            ->map(fn (string $path, int|string $width): string => sprintf('%s %dw', Storage::disk($disk)->url($path), $width))
+            ->implode(', '));
+    }
+
+    /**
      * Get the URL to the mod's detail page.
      *
      * @return Attribute<string, never>
@@ -739,6 +756,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
         return [
             'owner_id' => 'integer',
             'category_id' => 'integer',
+            'thumbnail_variants' => 'array',
             'featured' => 'boolean',
             'contains_ai_content' => 'boolean',
             'contains_ai_content_locked' => 'boolean',

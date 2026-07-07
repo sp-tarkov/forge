@@ -41,7 +41,13 @@
                         @if ($addon->thumbnail)
                             <img
                                 src="{{ $addon->thumbnailUrl }}"
+                                @if ($addon->thumbnailSrcset) srcset="{{ $addon->thumbnailSrcset }}"
+                                    sizes="5rem" @endif
                                 alt="{{ $addon->name }}"
+                                width="192"
+                                height="192"
+                                loading="lazy"
+                                decoding="async"
                                 class="size-20 transform object-cover transition-transform duration-200 group-hover:scale-105"
                             >
                         @else
