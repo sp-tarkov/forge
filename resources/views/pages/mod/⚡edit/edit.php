@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Jobs\GenerateThumbnailVariants;
 use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
 use App\Models\SourceCodeLink;
 use App\Models\SptVersion;
+use App\Services\ThumbnailService;
 use App\Support\VersionMatcher;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
@@ -365,6 +367,11 @@ new #[Layout('layouts::base')] class extends Component
 
         $this->mod->save();
 
+        // Generate resized thumbnail variants in the background.
+        if ($this->thumbnail instanceof UploadedFile) {
+            dispatch(new GenerateThumbnailVariants($this->mod));
+        }
+
         // Update source code links
         $this->mod->sourceCodeLinks()->delete();
         foreach ($this->sourceCodeLinks as $link) {
@@ -406,8 +413,10 @@ new #[Layout('layouts::base')] class extends Component
             /** @var string $diskName */
             $diskName = config('filesystems.asset_upload', 'public');
             Storage::disk($diskName)->delete($this->mod->thumbnail);
+            resolve(ThumbnailService::class)->deleteVariants($diskName, $this->mod->thumbnail_variants);
             $this->mod->thumbnail = '';
             $this->mod->thumbnail_hash = '';
+            $this->mod->thumbnail_variants = null;
             $this->mod->save();
 
             Flux::toast(heading: 'Thumbnail Deleted', text: 'The mod thumbnail has been deleted.', variant: 'success');

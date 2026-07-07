@@ -7,11 +7,15 @@ namespace App\Observers;
 use App\Models\Addon;
 use App\Models\ModListItem;
 use App\Services\AddonVersionService;
+use App\Services\ThumbnailService;
 use Illuminate\Support\Facades\Storage;
 
 final readonly class AddonObserver
 {
-    public function __construct(private AddonVersionService $addonVersionService) {}
+    public function __construct(
+        private AddonVersionService $addonVersionService,
+        private ThumbnailService $thumbnailService,
+    ) {}
 
     /**
      * Handle the Addon "updated" event.
@@ -31,13 +35,13 @@ final readonly class AddonObserver
      */
     public function deleting(Addon $addon): void
     {
-        // Remove the addon's thumbnail image from storage if it exists.
-        if ($addon->thumbnail) {
-            $disk = config()->string('filesystems.asset_upload', 'public');
-            if (Storage::disk($disk)->exists($addon->thumbnail)) {
-                Storage::disk($disk)->delete($addon->thumbnail);
-            }
+        // Remove the addon's thumbnail image and its variants from storage if they exist.
+        $disk = config()->string('filesystems.asset_upload', 'public');
+        if ($addon->thumbnail && Storage::disk($disk)->exists($addon->thumbnail)) {
+            Storage::disk($disk)->delete($addon->thumbnail);
         }
+
+        $this->thumbnailService->deleteVariants($disk, $addon->thumbnail_variants);
 
         // Polymorphic relations are not cascaded by the DB; remove list references here.
         ModListItem::query()

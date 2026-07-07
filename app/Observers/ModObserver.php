@@ -9,12 +9,16 @@ use App\Jobs\TombstoneModInListsJob;
 use App\Models\Mod;
 use App\Models\ModListItem;
 use App\Models\SptVersion;
+use App\Services\ThumbnailService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 final readonly class ModObserver
 {
-    public function __construct(private DependencyResolver $dependencyVersionService) {}
+    public function __construct(
+        private DependencyResolver $dependencyVersionService,
+        private ThumbnailService $thumbnailService,
+    ) {}
 
     /**
      * Handle the Mod "saved" event.
@@ -47,13 +51,13 @@ final readonly class ModObserver
      */
     public function deleting(Mod $mod): void
     {
-        // Remove the mod's thumbnail image from storage if it exists.
-        if ($mod->thumbnail) {
-            $disk = config()->string('filesystems.asset_upload', 'public');
-            if (Storage::disk($disk)->exists($mod->thumbnail)) {
-                Storage::disk($disk)->delete($mod->thumbnail);
-            }
+        // Remove the mod's thumbnail image and its variants from storage if they exist.
+        $disk = config()->string('filesystems.asset_upload', 'public');
+        if ($mod->thumbnail && Storage::disk($disk)->exists($mod->thumbnail)) {
+            Storage::disk($disk)->delete($mod->thumbnail);
         }
+
+        $this->thumbnailService->deleteVariants($disk, $mod->thumbnail_variants);
 
         // Polymorphic relations are not cascaded by the DB; remove list references here.
         ModListItem::query()

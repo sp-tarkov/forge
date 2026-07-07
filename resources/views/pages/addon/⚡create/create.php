@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Jobs\GenerateThumbnailVariants;
 use App\Models\Addon;
 use App\Models\License;
 use App\Models\Mod;
@@ -204,6 +205,11 @@ new #[Layout('layouts::base')] class extends Component
 
         // Save the addon.
         $addon->save();
+
+        // Generate resized thumbnail variants in the background.
+        if ($this->thumbnail instanceof UploadedFile) {
+            dispatch(new GenerateThumbnailVariants($addon));
+        }
 
         // Add authors
         if ($this->authorIds !== []) {

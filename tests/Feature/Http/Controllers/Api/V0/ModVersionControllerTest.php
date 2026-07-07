@@ -45,6 +45,42 @@ describe('index', function (): void {
             ->assertJsonPath('meta.total', 24);
     });
 
+    it('returns the forge download link for each version instead of the raw file link', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+        $modVersion = $mod->versions->first();
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%s/versions', $mod->id));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.0.link', route('mod.version.download', [$mod->id, $mod->slug, $modVersion->version]));
+
+        expect($response->json('data.0.link'))->not->toBe($modVersion->link);
+    });
+
+    it('returns not found when the parent mod is unpublished', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->unpublished()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%s/versions', $mod->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('success', false);
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+
+    it('returns not found when the parent mod is disabled', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->disabled()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%s/versions', $mod->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('success', false);
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+
     it('returns a paginated list of mod versions with per_page parameter', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
         $mod = Mod::factory()->hasVersions(25, ['spt_version_constraint' => '3.8.0'])->create();

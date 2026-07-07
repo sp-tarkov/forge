@@ -2,10 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Jobs\GenerateThumbnailVariants;
 use App\Models\Addon;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -206,5 +210,61 @@ describe('custom AI disclosure', function (): void {
             ->set('customAiDisclosure', str_repeat('a', 1001))
             ->call('save')
             ->assertHasErrors(['customAiDisclosure']);
+    });
+});
+
+describe('thumbnail variants', function (): void {
+    beforeEach(function (): void {
+        Storage::fake(config('filesystems.asset_upload', 'public'));
+        $this->user = User::factory()->withMfa()->create();
+        $this->license = License::factory()->create();
+        $this->mod = Mod::factory()->addonsEnabled()->create();
+        $this->actingAs($this->user);
+    });
+
+    it('dispatches thumbnail variant generation when a thumbnail is uploaded', function (): void {
+        Queue::fake();
+
+        Livewire::test('pages::addon.create', ['mod' => $this->mod])
+            ->set('honeypotData.nameFieldName', 'name')
+            ->set('honeypotData.validFromFieldName', 'valid_from')
+            ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+            ->set('name', 'Thumbnail Variant Addon')
+            ->set('teaser', 'Test teaser')
+            ->set('description', 'Test description')
+            ->set('license', (string) $this->license->id)
+            ->set('sourceCodeLinks.0.url', 'https://github.com/test/repo')
+            ->set('sourceCodeLinks.0.label', '')
+            ->set('containsAiContent', false)
+            ->set('containsAds', false)
+            ->set('thumbnail', UploadedFile::fake()->image('thumbnail.png', 512, 512))
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertRedirect();
+
+        $addon = Addon::query()->where('name', 'Thumbnail Variant Addon')->firstOrFail();
+        Queue::assertPushed(fn (GenerateThumbnailVariants $job): bool => $job->model->is($addon));
+    });
+
+    it('does not dispatch thumbnail variant generation without a thumbnail', function (): void {
+        Queue::fake();
+
+        Livewire::test('pages::addon.create', ['mod' => $this->mod])
+            ->set('honeypotData.nameFieldName', 'name')
+            ->set('honeypotData.validFromFieldName', 'valid_from')
+            ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+            ->set('name', 'No Thumbnail Addon')
+            ->set('teaser', 'Test teaser')
+            ->set('description', 'Test description')
+            ->set('license', (string) $this->license->id)
+            ->set('sourceCodeLinks.0.url', 'https://github.com/test/repo')
+            ->set('sourceCodeLinks.0.label', '')
+            ->set('containsAiContent', false)
+            ->set('containsAds', false)
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertRedirect();
+
+        Queue::assertNotPushed(GenerateThumbnailVariants::class);
     });
 });

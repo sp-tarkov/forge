@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Jobs\GenerateThumbnailVariants;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
@@ -523,6 +526,68 @@ describe('Thumbnail Management', function (): void {
 
         Livewire::test('pages::mod.edit', ['modId' => $mod->id])
             ->assertForbidden();
+    });
+
+    it('deletes thumbnail variant files when the thumbnail is deleted', function (): void {
+        $disk = config('filesystems.asset_upload', 'public');
+        $user = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->recycle($user)->create([
+            'thumbnail' => 'mods/test-thumbnail.png',
+            'thumbnail_hash' => 'abc123',
+            'thumbnail_variants' => [192 => 'mods/test-thumbnail_192w.webp'],
+        ]);
+
+        Storage::disk($disk)->put('mods/test-thumbnail.png', 'fake-image-content');
+        Storage::disk($disk)->put('mods/test-thumbnail_192w.webp', 'fake-variant-content');
+
+        $this->actingAs($user);
+
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
+            ->call('deleteExistingThumbnail');
+
+        expect($mod->refresh()->thumbnail_variants)->toBeNull();
+        Storage::disk($disk)->assertMissing('mods/test-thumbnail_192w.webp');
+    });
+
+    it('dispatches thumbnail variant generation when a new thumbnail is uploaded', function (): void {
+        Queue::fake();
+        $license = License::factory()->create();
+        $owner = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->recycle($owner)->create();
+
+        $this->actingAs($owner);
+
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
+            ->set('name', 'Updated Mod Name')
+            ->set('guid', 'com.test.updatedmod')
+            ->set('teaser', 'Updated mod teaser')
+            ->set('description', 'Updated mod description with more details')
+            ->set('license', (string) $license->id)
+            ->set('thumbnail', UploadedFile::fake()->image('thumbnail.png', 512, 512))
+            ->call('save')
+            ->assertHasNoErrors();
+
+        Queue::assertPushed(fn (GenerateThumbnailVariants $job): bool => $job->model->is($mod));
+    });
+
+    it('does not dispatch thumbnail variant generation when no thumbnail is uploaded', function (): void {
+        Queue::fake();
+        $license = License::factory()->create();
+        $owner = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->recycle($owner)->create();
+
+        $this->actingAs($owner);
+
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
+            ->set('name', 'Updated Mod Name')
+            ->set('guid', 'com.test.updatedmod')
+            ->set('teaser', 'Updated mod teaser')
+            ->set('description', 'Updated mod description with more details')
+            ->set('license', (string) $license->id)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        Queue::assertNotPushed(GenerateThumbnailVariants::class);
     });
 });
 

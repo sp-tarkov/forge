@@ -51,7 +51,7 @@ return [
                 'p,br,hr,strong,b,em,i,del,s,'.
                 'a[href|title|rel|target|class|id|role|rev],'.
                 'ul,ol[start],li[class|id|role],'.
-                'img[src|alt|title|width|height],'.
+                'img[src|alt|title|width|height|loading|decoding],'.
                 'blockquote[class],'.
                 'pre[class],code[class],'.
                 'table,thead,tbody,tr,th[align],td[align],'.
@@ -111,7 +111,7 @@ return [
                 'p,br,hr,strong,b,em,i,del,s,'.
                 'a[href|title|rel|target|role|rev],'.
                 'ul,ol[start],li[role],'.
-                'img[src|alt|title|width|height],'.
+                'img[src|alt|title|width|height|loading|decoding],'.
                 'blockquote[class],'.
                 'pre[class],code[class],'.
                 'table,thead,tbody,tr,th[align],td[align],'.

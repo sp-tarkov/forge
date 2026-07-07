@@ -36,7 +36,7 @@ final class AddonVersionController extends Controller
      *              "id": 1,
      *              "version": "1.2.0",
      *              "description": "Added 10 new tracks",
-     *              "link": "https://example.com/download/v1.2.0.zip",
+     *              "link": "https://forge.sp-tarkov.com/addon/download/1/example-addon/1.2.0",
      *              "content_length": 52428800,
      *              "mod_version_constraint": "^2.0.0",
      *              "downloads": 523,
@@ -48,7 +48,7 @@ final class AddonVersionController extends Controller
      *              "id": 2,
      *              "version": "1.1.0",
      *              "description": "Fixed audio glitches",
-     *              "link": "https://example.com/download/v1.1.0.zip",
+     *              "link": "https://forge.sp-tarkov.com/addon/download/1/example-addon/1.1.0",
      *              "content_length": 51200000,
      *              "mod_version_constraint": "^2.0.0",
      *              "downloads": 1000,
@@ -101,7 +101,6 @@ final class AddonVersionController extends Controller
     #[QueryParam('filter[id]', description: 'Filter by addon version ID. Comma-separated.', required: false, example: '234,432')]
     #[QueryParam('filter[version]', description: 'Filter addon versions by using a SemVer constraint.', required: false, example: '^1.0.0')]
     #[QueryParam('filter[description]', description: 'Fuzzy-filter by addon version description.', required: false, example: 'This is a description')]
-    #[QueryParam('filter[link]', description: 'Filter by addon version link.', required: false, example: 'example.com')]
     #[QueryParam('filter[published_between]', description: 'Filter by addon version published between.', required: false, example: '2025-01-01,2025-03-31')]
     #[QueryParam('filter[created_between]', description: 'Filter by addon version created between.', required: false, example: '2025-01-01,2025-03-31')]
     #[QueryParam('filter[updated_between]', description: 'Filter by addon version updated between.', required: false, example: '2025-01-01,2025-03-31')]

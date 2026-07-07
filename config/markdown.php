@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Markdown\Extension\LazyImage\LazyImageExtension;
 use App\Markdown\Extension\StyledBlockquote\StyledBlockquoteExtension;
 use App\Markdown\Extension\Tabset\TabsetExtension;
 use App\Markdown\Extension\YouTube\YouTubeExtension;
@@ -54,6 +55,7 @@ return [
         DisallowedRawHtmlExtension::class,
         TabsetExtension::class,
         StyledBlockquoteExtension::class,
+        LazyImageExtension::class,
         DescriptionListExtension::class,
         YouTubeExtension::class,
         AutolinkExtension::class,

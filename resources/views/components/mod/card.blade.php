@@ -5,6 +5,7 @@
     'homepageFeatured' => false,
     'placeholderBg' => 'bg-gray-800',
     'showActions' => null,
+    'eager' => false,
 ])
 
 <div {{ $attributes->merge(['class' => 'mod-list-component relative mx-auto max-w-2xl h-full w-full']) }}>
@@ -39,7 +40,13 @@
                     @if ($mod->thumbnail)
                         <img
                             src="{{ $mod->thumbnailUrl }}"
+                            @if ($mod->thumbnailSrcset) srcset="{{ $mod->thumbnailSrcset }}"
+                                sizes="(min-width: 1024px) 12rem, 8rem" @endif
                             alt="{{ $mod->name }}"
+                            width="192"
+                            height="192"
+                            loading="{{ $eager ? 'eager' : 'lazy' }}"
+                            decoding="async"
                             class="@lg:size-48 size-32 transform object-cover transition-transform duration-200 group-hover:scale-105"
                         >
                     @else

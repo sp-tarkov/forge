@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Jobs\GenerateThumbnailVariants;
 use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\License;
 use App\Models\Mod;
@@ -250,6 +251,11 @@ new #[Layout('layouts::base')] class extends Component
 
         // Save the mod.
         $mod->save();
+
+        // Generate resized thumbnail variants in the background.
+        if ($this->thumbnail instanceof UploadedFile) {
+            dispatch(new GenerateThumbnailVariants($mod));
+        }
 
         // Add authors
         if ($this->authorIds !== []) {

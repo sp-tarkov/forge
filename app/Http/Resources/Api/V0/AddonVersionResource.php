@@ -62,7 +62,7 @@ final class AddonVersionResource extends JsonResource
         }
 
         if ($this->shouldInclude('link')) {
-            $data['link'] = $this->resource->link;
+            $data['link'] = $this->resource->downloadUrl(absolute: true);
         }
 
         if ($this->shouldInclude('content_length')) {
