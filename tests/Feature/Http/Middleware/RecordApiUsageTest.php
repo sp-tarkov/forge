@@ -22,6 +22,30 @@ it('records unmatched API paths under a sentinel route name', function (): void 
         ->and(array_keys($data['unmatched']))->toContain('GET|404|api/v0/this-route-does-not-exist');
 });
 
+it('records CORS preflights under the preflight sentinel and not the unmatched map', function (): void {
+    $this->options('/api/v0/ping', [], [
+        'Origin' => 'https://example.com',
+        'Access-Control-Request-Method' => 'GET',
+    ])->assertNoContent();
+
+    $data = resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'));
+
+    expect(array_keys($data['requests']))->toContain('api.v0.preflight|OPTIONS|204')
+        ->and($data['unmatched'])->toBe([]);
+});
+
+it('answers CORS preflights with the configured max age and read-only methods', function (): void {
+    $this->options('/api/v0/ping', [], [
+        'Origin' => 'https://example.com',
+        'Access-Control-Request-Method' => 'GET',
+        'Access-Control-Request-Headers' => 'x-client-name',
+    ])
+        ->assertNoContent()
+        ->assertHeader('Access-Control-Max-Age', '7200')
+        ->assertHeader('Access-Control-Allow-Origin', '*')
+        ->assertHeader('Access-Control-Allow-Methods', 'GET, HEAD');
+});
+
 it('does not record matched routes into the unmatched map', function (): void {
     $this->getJson('/api/v0/ping')->assertOk();
 

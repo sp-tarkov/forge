@@ -171,6 +171,33 @@ describe('ApiAnalytics Unmatched Requests', function (): void {
     });
 });
 
+describe('ApiAnalytics Preflights', function (): void {
+    it('lists the preflight sentinel as an endpoint row', function (): void {
+        ApiUsageMetric::factory()->create([
+            'period' => ApiUsagePeriod::Minute,
+            'period_start' => now()->utc()->startOfMinute(),
+            'route_name' => 'api.v0.mods',
+            'status_code' => 200,
+            'request_count' => 10,
+        ]);
+        ApiUsageMetric::factory()->create([
+            'period' => ApiUsagePeriod::Minute,
+            'period_start' => now()->utc()->startOfMinute(),
+            'route_name' => 'api.v0.preflight',
+            'method' => 'OPTIONS',
+            'status_code' => 204,
+            'request_count' => 40,
+        ]);
+
+        $component = Livewire::actingAs(User::factory()->admin()->create())
+            ->test('pages::admin.api-analytics')
+            ->assertSee('api.v0.preflight');
+
+        expect(array_column($component->instance()->endpoints(), 'route_name'))->toBe(['api.v0.preflight', 'api.v0.mods'])
+            ->and($component->instance()->summary()['requests'])->toBe(50);
+    });
+});
+
 describe('ApiAnalytics Top Clients', function (): void {
     it('enriches clients with location, share, activity, and last seen', function (): void {
         app()->instance(Geolocator::class, new class implements Geolocator

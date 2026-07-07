@@ -24,6 +24,11 @@ final readonly class RecordApiUsage
     public const string UNMATCHED_ROUTE = 'api.v0.unmatched';
 
     /**
+     * The sentinel route name recorded for CORS preflight requests, which HandleCors answers before routing runs.
+     */
+    public const string PREFLIGHT_ROUTE = 'api.v0.preflight';
+
+    /**
      * The request attribute used to carry the high-resolution start time from handle() to terminate().
      */
     private const string STARTED_AT = 'api_usage_started_at';
@@ -55,6 +60,10 @@ final readonly class RecordApiUsage
         $latencyMs = is_int($startedAt) ? (hrtime(true) - $startedAt) / 1_000_000 : 0.0;
         $routeName = $request->route()?->getName();
 
+        if ($routeName === null && $this->isPreflight($request)) {
+            $routeName = self::PREFLIGHT_ROUTE;
+        }
+
         $this->recorder->record(
             $routeName ?? self::UNMATCHED_ROUTE,
             $request->method(),
@@ -71,5 +80,13 @@ final readonly class RecordApiUsage
     private function tracks(Request $request): bool
     {
         return $request->is('api/v0/*');
+    }
+
+    /**
+     * Whether this request is a CORS preflight: an OPTIONS request carrying an Access-Control-Request-Method header.
+     */
+    private function isPreflight(Request $request): bool
+    {
+        return $request->isMethod('OPTIONS') && $request->headers->has('Access-Control-Request-Method');
     }
 }
