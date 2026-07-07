@@ -292,6 +292,7 @@ final class DependencyService
             /** @var int $latestVersionId */
             $latestVersionId = $modVersionMap[$mod->id] ?? 0;
             $latestVersion = $latestVersionId ? $mod->versions->firstWhere('id', $latestVersionId) : null;
+            $latestVersion?->setRelation('mod', $mod);
 
             // Recursively build dependencies for this version
             $subDependencies = $latestVersionId
@@ -404,6 +405,7 @@ final class DependencyService
             /** @var int $latestVersionId */
             $latestVersionId = $modVersionMap[$mod->id] ?? 0;
             $latestVersion = $latestVersionId ? $mod->versions->firstWhere('id', $latestVersionId) : null;
+            $latestVersion?->setRelation('mod', $mod);
 
             // Recursively build dependencies for this mod version (mods can depend on other mods)
             $subDependencies = $latestVersionId

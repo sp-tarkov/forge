@@ -91,6 +91,76 @@ describe('visibility', function (): void {
         $response->assertJsonPath('success', true);
     });
 
+    it('returns not found when the addon is disabled', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
+        $addon = Addon::factory()->disabled()->create(['mod_id' => $mod->id]);
+        AddonVersion::factory()->create(['addon_id' => $addon->id]);
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('success', false);
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+
+    it('returns not found when the parent mod is disabled', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->disabled()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
+        $addon = Addon::factory()->create(['mod_id' => $mod->id]);
+        AddonVersion::factory()->create(['addon_id' => $addon->id]);
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('success', false);
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+
+    it('returns not found when the parent mod is unpublished', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->unpublished()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
+        $addon = Addon::factory()->create(['mod_id' => $mod->id]);
+        AddonVersion::factory()->create(['addon_id' => $addon->id]);
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('success', false);
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+
+    it('returns the forge download link for each version instead of the raw file link', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
+        $addon = Addon::factory()->create(['mod_id' => $mod->id]);
+        $addonVersion = AddonVersion::factory()->create(['addon_id' => $addon->id]);
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.0.link', route('addon.version.download', [$addon->id, $addon->slug, $addonVersion->version]));
+
+        expect($response->json('data.0.link'))->not->toBe($addonVersion->link);
+    });
+
     it('returns not found when parent mod has no published versions', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
         $mod = Mod::factory()->create();

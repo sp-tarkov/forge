@@ -74,7 +74,7 @@ final class ModUpdateController extends Controller
      *                  "recommended_version": {
      *                      "id": 58,
      *                      "version": "1.5.0",
-     *                      "link": "https://example.com/download",
+     *                      "link": "https://forge.sp-tarkov.com/mod/download/5/example-mod/1.5.0",
      *                      "content_length": 1048576,
      *                      "fika_compatibility": "compatible",
      *                      "spt_versions": ["3.11.0", "3.11.5"]

@@ -38,13 +38,13 @@ final class AddonQueryBuilder extends AbstractQueryBuilder
     /**
      * Get the allowed relationships that can be included.
      *
-     * @return array<string, string>
+     * @return array<string, string|array<string>>
      */
     public static function getAllowedIncludes(): array
     {
         return [
-            'versions' => 'versions',
-            'latest_version' => 'latestVersion',
+            'versions' => ['versions', 'versions.addon'],
+            'latest_version' => ['latestVersion', 'latestVersion.addon'],
             'license' => 'license',
             'mod' => 'mod',
             'source_code_links' => 'sourceCodeLinks',

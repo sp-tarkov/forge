@@ -53,12 +53,12 @@ final class ModQueryBuilder extends AbstractQueryBuilder
     /**
      * Get the allowed relationships that can be included.
      *
-     * @return array<string, string>
+     * @return array<string, string|array<string>>
      */
     public static function getAllowedIncludes(): array
     {
         return [
-            'versions' => 'versions',
+            'versions' => ['versions', 'versions.mod'],
             'license' => 'license',
             'category' => 'category',
             'source_code_links' => 'sourceCodeLinks',

@@ -70,7 +70,7 @@ final class ModDependencyController extends Controller
      *              "latest_compatible_version": {
      *                  "id": 42,
      *                  "version": "2.1.0",
-     *                  "link": "https://example.com/mods/dependency-mod-2.1.0.zip",
+     *                  "link": "https://forge.sp-tarkov.com/mod/download/5/dependency-mod/2.1.0",
      *                  "content_length": 1048576,
      *                  "fika_compatibility": "compatible"
      *              },
@@ -84,7 +84,7 @@ final class ModDependencyController extends Controller
      *                      "latest_compatible_version": {
      *                          "id": 67,
      *                          "version": "1.0.0",
-     *                          "link": "https://example.com/mods/sub-dependency-1.0.0.zip",
+     *                          "link": "https://forge.sp-tarkov.com/mod/download/8/sub-dependency/1.0.0",
      *                          "content_length": 524288,
      *                          "fika_compatibility": "unknown"
      *                      },
@@ -107,7 +107,7 @@ final class ModDependencyController extends Controller
      *              "latest_compatible_version": {
      *                  "id": 100,
      *                  "version": "1.5.0",
-     *                  "link": "https://example.com/mods/conflicting-1.5.0.zip",
+     *                  "link": "https://forge.sp-tarkov.com/mod/download/12/conflicting-dependency/1.5.0",
      *                  "content_length": 2097152,
      *                  "fika_compatibility": "compatible"
      *              },
@@ -122,7 +122,7 @@ final class ModDependencyController extends Controller
      *              "latest_compatible_version": {
      *                  "id": 150,
      *                  "version": "2.0.0",
-     *                  "link": "https://example.com/mods/conflicting-2.0.0.zip",
+     *                  "link": "https://forge.sp-tarkov.com/mod/download/12/conflicting-dependency/2.0.0",
      *                  "content_length": 3145728,
      *                  "fika_compatibility": "incompatible"
      *              },

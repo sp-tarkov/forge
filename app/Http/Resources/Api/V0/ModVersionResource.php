@@ -43,7 +43,7 @@ final class ModVersionResource extends JsonResource
             return [
                 'id' => $this->resource->id,
                 'version' => $this->resource->version,
-                'link' => $this->resource->link,
+                'link' => $this->resource->downloadUrl(absolute: true),
                 'content_length' => $this->resource->content_length,
                 'fika_compatibility' => $this->resource->fika_compatibility->value,
             ];
@@ -79,7 +79,7 @@ final class ModVersionResource extends JsonResource
         }
 
         if ($this->shouldInclude('link')) {
-            $data['link'] = $this->resource->link;
+            $data['link'] = $this->resource->downloadUrl(absolute: true);
         }
 
         if ($this->shouldInclude('content_length')) {

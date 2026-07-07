@@ -47,7 +47,7 @@ final class ModVersionController extends Controller
      *              "hub_id": null,
      *              "version": "0.2.9",
      *              "description": "Magni eius ad temporibus similique accusamus assumenda aliquid. Quisquam placeat in necessitatibus ducimus quasi odit. Autem nulla ea minus itaque.",
-     *              "link": "http://kautzer.com/enim-ut-quis-suscipit-dolores.html",
+     *              "link": "https://forge.sp-tarkov.com/mod/download/1/example-mod/0.2.9",
      *              "content_length": 52428800,
      *              "spt_version_constraint": "^1.0.0",
      *              "downloads": 8,
@@ -61,7 +61,7 @@ final class ModVersionController extends Controller
      *              "hub_id": null,
      *              "version": "8.2.8",
      *              "description": "Mollitia voluptatem quia et ex aut. Qui libero tempore ut. Suscipit a eius recusandae aut pariatur soluta necessitatibus.",
-     *              "link": "http://lockman.net/",
+     *              "link": "https://forge.sp-tarkov.com/mod/download/1/example-mod/8.2.8",
      *              "spt_version_constraint": "<4.0.0",
      *              "downloads": 3332503,
      *              "fika_compatibility": "compatible",
@@ -74,7 +74,7 @@ final class ModVersionController extends Controller
      *              "hub_id": null,
      *              "version": "6.5.2",
      *              "description": "Consequatur modi et labore ea neque id. Natus sapiente amet rerum quia in molestiae autem. Eligendi molestiae blanditiis voluptatem earum.",
-     *              "link": "https://auer.com/ipsum-ratione-sint-eveniet-aut-porro-qui-in-odio.html",
+     *              "link": "https://forge.sp-tarkov.com/mod/download/1/example-mod/6.5.2",
      *              "spt_version_constraint": "<4.0.0",
      *              "downloads": 40217550,
      *              "fika_compatibility": "incompatible",
@@ -87,7 +87,7 @@ final class ModVersionController extends Controller
      *              "hub_id": null,
      *              "version": "5.9.5",
      *              "description": "Aut ut inventore aut ex tempora a aspernatur asperiores. A laborum ullam ex rerum illo dolorem cupiditate. Veritatis id dolor qui quam et.",
-     *              "link": "http://kreiger.com/ut-voluptas-doloremque-natus-dolorem-odit-facilis",
+     *              "link": "https://forge.sp-tarkov.com/mod/download/1/example-mod/5.9.5",
      *              "spt_version_constraint": "^1.0.0",
      *              "downloads": 11236658,
      *              "fika_compatibility": "unknown",
@@ -100,7 +100,7 @@ final class ModVersionController extends Controller
      *              "hub_id": null,
      *              "version": "2.6.8",
      *              "description": "Aut in rerum est labore omnis. Voluptatem est velit doloribus expedita et. Illo error ut aspernatur quia quo repellat tenetur.",
-     *              "link": "http://www.becker.org/eum-laboriosam-ut-voluptates-voluptatibus-voluptates-nihil",
+     *              "link": "https://forge.sp-tarkov.com/mod/download/1/example-mod/2.6.8",
      *              "spt_version_constraint": ">=3.0.0",
      *              "downloads": 425925,
      *              "fika_compatibility": "compatible",
@@ -151,7 +151,7 @@ final class ModVersionController extends Controller
      *              "hub_id": null,
      *              "version": "0.2.9",
      *              "description": "Magni eius ad temporibus similique accusamus assumenda aliquid. Quisquam placeat in necessitatibus ducimus quasi odit. Autem nulla ea minus itaque.",
-     *              "link": "http://kautzer.com/enim-ut-quis-suscipit-dolores.html",
+     *              "link": "https://forge.sp-tarkov.com/mod/download/1/example-mod/0.2.9",
      *              "content_length": 52428800,
      *              "spt_version_constraint": "^1.0.0",
      *              "downloads": 8,
@@ -183,7 +183,7 @@ final class ModVersionController extends Controller
      *              "hub_id": null,
      *              "version": "8.2.8",
      *              "description": "Mollitia voluptatem quia et ex aut. Qui libero tempore ut. Suscipit a eius recusandae aut pariatur soluta necessitatibus.",
-     *              "link": "http://lockman.net/",
+     *              "link": "https://forge.sp-tarkov.com/mod/download/1/example-mod/8.2.8",
      *              "spt_version_constraint": "<4.0.0",
      *              "downloads": 3332503,
      *              "fika_compatibility": "compatible",
@@ -238,7 +238,6 @@ final class ModVersionController extends Controller
     #[QueryParam('filter[hub_id]', description: 'Filter by mod hub ID. Comma-separated.', required: false, example: '234,432')]
     #[QueryParam('filter[version]', description: 'Filter mod versions by using a SemVer constraint.', required: false, example: '^1.0.0')]
     #[QueryParam('filter[description]', description: 'Fuzzy-filter by mod version description.', required: false, example: 'This is a description')]
-    #[QueryParam('filter[link]', description: 'Filter by mod version link.', required: false, example: 'example.com')]
     #[QueryParam('filter[published_between]', description: 'Filter by mod version published between.', required: false, example: '2025-01-01,2025-03-31')]
     #[QueryParam('filter[created_between]', description: 'Filter by mod version created between.', required: false, example: '2025-01-01,2025-03-31')]
     #[QueryParam('filter[updated_between]', description: 'Filter by mod version updated between.', required: false, example: '2025-01-01,2025-03-31')]

@@ -824,6 +824,11 @@ describe('show', function (): void {
                 ]]],
             ])
             ->assertJsonCount(3, 'data.versions');
+
+        $versionsById = $mod->versions->keyBy('id');
+        foreach ($response->json('data.versions') as $versionData) {
+            expect($versionData['link'])->toBe(route('mod.version.download', [$mod->id, $mod->slug, $versionsById[$versionData['id']]->version]));
+        }
     });
 
     it('includes multiple relationships', function (): void {

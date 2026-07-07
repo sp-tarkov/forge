@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Api\V0\QueryBuilder;
 
 use App\Exceptions\Api\V0\InvalidQueryException;
+use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Support\VersionMatcher;
 use Illuminate\Database\Eloquent\Builder;
@@ -41,7 +42,6 @@ final class AddonVersionQueryBuilder extends AbstractQueryBuilder
             'id' => 'filterById',
             'version' => 'filterByVersion',
             'description' => 'filterByDescription',
-            'link' => 'filterByLink',
             'published_between' => 'filterByPublishedBetween',
             'created_between' => 'filterByCreatedBetween',
             'updated_between' => 'filterByUpdatedBetween',
@@ -120,6 +120,18 @@ final class AddonVersionQueryBuilder extends AbstractQueryBuilder
      */
     protected function getBaseQuery(): Builder
     {
+        $parentAddonIsVisible = Addon::query()
+            ->whereKey($this->addonId)
+            ->where('addons.disabled', false)
+            ->whereHas('mod', function (Builder $modQuery): void {
+                $modQuery->where('mods.disabled', false);
+            })
+            ->exists();
+
+        if (! $parentAddonIsVisible) {
+            throw new ModelNotFoundException()->setModel(Addon::class);
+        }
+
         $hasPublishedVersions = AddonVersion::query()
             ->where('addon_versions.addon_id', $this->addonId)
             ->where('addon_versions.disabled', false)
@@ -147,6 +159,7 @@ final class AddonVersionQueryBuilder extends AbstractQueryBuilder
         }
 
         return AddonVersion::query()
+            ->with('addon')
             ->where('addon_versions.addon_id', $this->addonId)
             ->where('addon_versions.disabled', false)
             ->whereNotNull('addon_versions.published_at');
@@ -213,20 +226,6 @@ final class AddonVersionQueryBuilder extends AbstractQueryBuilder
         }
 
         $query->whereLike('addon_versions.description', sprintf('%%%s%%', $term));
-    }
-
-    /**
-     * Filter by link.
-     *
-     * @param  Builder<AddonVersion>  $query
-     */
-    protected function filterByLink(Builder $query, ?string $term): void
-    {
-        if ($term === null) {
-            return;
-        }
-
-        $query->whereLike('addon_versions.link', sprintf('%%%s%%', $term));
     }
 
     /**

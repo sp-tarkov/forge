@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Api\V0\QueryBuilder;
 
 use App\Exceptions\Api\V0\InvalidQueryException;
+use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Support\VersionMatcher;
@@ -44,7 +45,6 @@ final class ModVersionQueryBuilder extends AbstractQueryBuilder
             'hub_id' => 'filterByHubId',
             'version' => 'filterByVersion',
             'description' => 'filterByDescription',
-            'link' => 'filterByLink',
             'published_between' => 'filterByPublishedBetween',
             'created_between' => 'filterByCreatedBetween',
             'updated_between' => 'filterByUpdatedBetween',
@@ -132,6 +132,15 @@ final class ModVersionQueryBuilder extends AbstractQueryBuilder
      */
     protected function getBaseQuery(): Builder
     {
+        $parentModIsVisible = Mod::query()
+            ->whereKey($this->modId)
+            ->where('mods.disabled', false)
+            ->exists();
+
+        if (! $parentModIsVisible) {
+            throw new ModelNotFoundException()->setModel(Mod::class);
+        }
+
         $hasVisibleVersions = ModVersion::query()
             ->whereModId($this->modId)
             ->where('mod_versions.disabled', false)
@@ -145,6 +154,7 @@ final class ModVersionQueryBuilder extends AbstractQueryBuilder
         }
 
         $query = ModVersion::query()
+            ->with('mod')
             ->whereModId($this->modId)
             ->where('mod_versions.disabled', false);
 
@@ -250,20 +260,6 @@ final class ModVersionQueryBuilder extends AbstractQueryBuilder
         }
 
         $query->whereLike('mod_versions.description', sprintf('%%%s%%', $term));
-    }
-
-    /**
-     * Filter by link.
-     *
-     * @param  Builder<ModVersion>  $query
-     */
-    protected function filterByLink(Builder $query, ?string $term): void
-    {
-        if ($term === null) {
-            return;
-        }
-
-        $query->whereLike('mod_versions.link', sprintf('%%%s%%', $term));
     }
 
     /**
