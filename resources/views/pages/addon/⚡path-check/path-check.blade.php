@@ -35,8 +35,9 @@
                             </h3>
                         </div>
                         <p class="mb-3 text-sm text-green-400">
-                            You're extending <strong>{{ $mod->name }}</strong> with content it loads itself, 
-                            or compiling new code that extends the functionality of <strong>{{ $mod->name }}</strong> directly.
+                            You're extending <strong>{{ $mod->name }}</strong> with content it loads itself,
+                            or compiling new code that extends the functionality of <strong>{{ $mod->name }}</strong>
+                            directly.
                         </p>
                         <ul class="space-y-2 text-sm text-green-400">
                             <li class="flex items-start">
@@ -79,8 +80,10 @@
                                 own mod</h3>
                         </div>
                         <p class="mb-3 text-sm text-red-400">
-                            You're shipping your own compiled code or a module that SPT loads directly, that isn't solely
-                            meant to extend the functionality of <strong>{{ $mod->name }}</strong> directly. Publish it
+                            You're shipping your own compiled code or a module that SPT loads directly, that isn't
+                            solely
+                            meant to extend the functionality of <strong>{{ $mod->name }}</strong> directly. Publish
+                            it
                             as a mod with a dependency on <strong>{{ $mod->name }}</strong> instead.
                         </p>
                         <ul class="space-y-2 text-sm text-red-400">
@@ -88,7 +91,7 @@
                                 <flux:icon.x-mark class="mr-2 mt-0.5 size-4 flex-shrink-0 text-red-400" />
                                 <span>You compile and ship a <code
                                         class="rounded bg-red-900/40 px-1 font-mono text-xs">.dll</code>
-                                        that does more than extend the functionality of the parent mod
+                                    that does more than extend the functionality of the parent mod
                                 </span>
                             </li>
                             <li class="flex items-start">

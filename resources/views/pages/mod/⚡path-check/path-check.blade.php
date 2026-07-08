@@ -32,7 +32,7 @@
                             <h3 class="ml-3 text-lg font-semibold text-green-300">A mod fits</h3>
                         </div>
                         <p class="mb-3 text-sm text-green-400">
-                            You're publishing your own compiled code or a module that SPT loads directly, that isn't 
+                            You're publishing your own compiled code or a module that SPT loads directly, that isn't
                             solely meant to extend the functionality of an existing mod.
                         </p>
                         <ul class="space-y-2 text-sm text-green-400">
