@@ -20,7 +20,7 @@
                     if (element) {
                         element.scrollIntoView({ block: 'start' });
                         const highlightTarget = element.parentElement?.parentElement ?? element;
-                        const colorClasses = ['bg-yellow-100', 'bg-sky-700'];
+                        const colorClasses = ['bg-sky-700'];
                         const transitionClasses = ['transition-colors', 'duration-1000'];
                         highlightTarget.classList.add(...transitionClasses, ...colorClasses);
                         setTimeout(() => highlightTarget.classList.remove(...colorClasses), 1500);
