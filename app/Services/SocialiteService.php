@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Jobs\DownloadUserAvatar;
 use App\Models\OAuthConnection;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Contracts\User as ProviderUser;
-use Throwable;
 
 final class SocialiteService
 {
@@ -94,7 +92,9 @@ final class SocialiteService
                 'mfa_enabled' => $mfaStatus,
             ]);
 
-            $this->downloadAndStoreAvatar($user, $oAuthConnection->avatar);
+            if ($oAuthConnection->avatar !== '') {
+                dispatch(new DownloadUserAvatar($user, $oAuthConnection->avatar))->afterCommit();
+            }
 
             return $user;
         });
@@ -127,37 +127,5 @@ final class SocialiteService
             'discord' => isset($userData['mfa_enabled']) ? (bool) $userData['mfa_enabled'] : null,
             default => null,
         };
-    }
-
-    /**
-     * Download an avatar from a URL and store it on the configured disk.
-     */
-    private function downloadAndStoreAvatar(User $user, string $avatarUrl): void
-    {
-        if ($avatarUrl === '') {
-            return;
-        }
-
-        $disk = app()->isProduction() ? 'r2' : 'public';
-
-        try {
-            $response = Http::connectTimeout(5)->timeout(30)->get($avatarUrl);
-
-            if ($response->failed()) {
-                Log::error('Failed to download avatar', ['url' => $avatarUrl, 'status' => $response->status()]);
-
-                return;
-            }
-
-            do {
-                $relativePath = User::profilePhotoStoragePath().'/'.Str::random(40).'.webp';
-            } while (Storage::disk($disk)->exists($relativePath));
-
-            Storage::disk($disk)->put($relativePath, $response->body());
-
-            $user->forceFill(['profile_photo_path' => $relativePath])->save();
-        } catch (Throwable $throwable) {
-            Log::error('Failed to download and store avatar', ['url' => $avatarUrl, 'error' => $throwable->getMessage()]);
-        }
     }
 }

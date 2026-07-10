@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Jobs\GenerateThumbnailVariants;
 use App\Models\Addon;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Services\ThumbnailService;
 use Illuminate\Support\Facades\Storage;
 
@@ -52,6 +53,21 @@ it('generates and stores thumbnail variants for an addon', function (): void {
     ]);
     Storage::disk('public')->assertExists('addons/thumb_192w.webp');
     Storage::disk('public')->assertExists('addons/thumb_384w.webp');
+});
+
+it('generates and stores thumbnail variants for a mod list', function (): void {
+    Storage::disk('public')->put('mod-lists/thumb.png', makeVariantJobTestImage(512, 512));
+    $list = ModList::factory()->create(['thumbnail' => 'mod-lists/thumb.png']);
+
+    new GenerateThumbnailVariants($list)->handle(resolve(ThumbnailService::class));
+
+    $list->refresh();
+    expect($list->thumbnail_variants)->toBe([
+        192 => 'mod-lists/thumb_192w.webp',
+        384 => 'mod-lists/thumb_384w.webp',
+    ]);
+    Storage::disk('public')->assertExists('mod-lists/thumb_192w.webp');
+    Storage::disk('public')->assertExists('mod-lists/thumb_384w.webp');
 });
 
 it('deletes stale variant files before regenerating', function (): void {

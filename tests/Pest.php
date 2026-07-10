@@ -29,3 +29,29 @@ pest()->extend(TestCase::class)
 // `--group=browser` / `--exclude-group=browser`, mirroring the dedicated browser job in CI. The directory split
 // (and the matching phpunit.xml testsuite) is what CI actually selects on; the group is the local convenience.
 pest()->group('browser')->in('Browser');
+
+/**
+ * Build an animated image blob with cycling frame colors and an infinite loop, for animation pipeline tests.
+ */
+function makeAnimatedTestImage(int $frames, int $width, int $height, string $format = 'gif', int $delay = 5): string
+{
+    $colors = ['red', 'lime', 'blue', 'yellow', 'fuchsia', 'aqua'];
+
+    $animation = new Imagick;
+    for ($i = 0; $i < $frames; $i++) {
+        $frame = new Imagick;
+        $frame->newImage($width, $height, new ImagickPixel($colors[$i % count($colors)]));
+        $frame->setImageFormat($format);
+        $frame->setImageDelay($delay);
+        $animation->addImage($frame);
+        $frame->clear();
+    }
+
+    $animation->setFormat($format);
+    $animation->setImageIterations(0);
+
+    $blob = $animation->getImagesBlob();
+    $animation->clear();
+
+    return $blob;
+}

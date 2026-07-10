@@ -7,5 +7,6 @@ Alpine.plugin(collapse);
 
 // Register Alpine components before Livewire starts
 import './registerGuidInput';
+import './registerImageCropper';
 
 Livewire.start();

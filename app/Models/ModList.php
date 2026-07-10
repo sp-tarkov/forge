@@ -35,6 +35,7 @@ use Override;
  * @property string|null $description_html
  * @property string|null $thumbnail
  * @property string|null $thumbnail_hash
+ * @property array<int|string, string>|null $thumbnail_variants
  * @property ListVisibility $visibility
  * @property int|null $spt_version_id
  * @property string|null $share_token
@@ -45,6 +46,7 @@ use Override;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read string $thumbnailUrl
+ * @property-read string $thumbnailSrcset
  * @property-read User|null $owner
  * @property-read SptVersion|null $sptVersion
  * @property-read ModList|null $forkedFromList
@@ -452,6 +454,21 @@ final class ModList extends Model implements Commentable, Reportable
     }
 
     /**
+     * Build the srcset attribute value for the list's thumbnail variants.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function thumbnailSrcset(): Attribute
+    {
+        /** @var string $disk */
+        $disk = config()->string('filesystems.asset_upload', 'public');
+
+        return Attribute::get(fn (): string => collect($this->thumbnail_variants ?? [])
+            ->map(fn (string $path, int|string $width): string => sprintf('%s %dw', Storage::disk($disk)->url($path), $width))
+            ->implode(', '));
+    }
+
+    /**
      * The attributes that should be cast to native types.
      *
      * @return array<string, string>
@@ -461,6 +478,7 @@ final class ModList extends Model implements Commentable, Reportable
     {
         return [
             'visibility' => ListVisibility::class,
+            'thumbnail_variants' => 'array',
             'is_default' => 'boolean',
             'comments_disabled' => 'boolean',
             'disabled' => 'boolean',

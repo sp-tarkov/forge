@@ -55,7 +55,9 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $about
  * @property int|null $user_role_id
  * @property string|null $profile_photo_path
+ * @property array<int|string, string>|null $profile_photo_variants
  * @property string|null $cover_photo_path
+ * @property array<int|string, string>|null $cover_photo_variants
  * @property string|null $remember_token
  * @property CarbonImmutable|null $last_seen_at
  * @property CarbonImmutable|null $mods_updated_viewed_at
@@ -72,7 +74,9 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $email_chat_notifications_enabled
  * @property-read string|null $cover_photo_url attribute
  * @property-read string $cover_photo_gradient attribute
+ * @property-read string $cover_photo_srcset attribute
  * @property-read string $profile_photo_url attribute
+ * @property-read string $profile_photo_srcset attribute
  * @property-read string $profile_url attribute
  * @property-read string $slug attribute
  * @property-read UserRole|null $role
@@ -867,6 +871,8 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
             'hub_id' => 'integer',
             'discord_id' => 'integer',
             'user_role_id' => 'integer',
+            'profile_photo_variants' => 'array',
+            'cover_photo_variants' => 'array',
             'email_verified_at' => 'datetime',
             'last_seen_at' => 'datetime',
             'mods_updated_viewed_at' => 'datetime',

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
+use App\Jobs\NormalizeUserAvatar;
+use App\Services\ThumbnailService;
+use App\Support\DataTransferObjects\ImageCropRect;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -11,25 +14,38 @@ use Illuminate\Support\Facades\Storage;
 trait HasProfilePhoto
 {
     /**
-     * Update the user's profile photo.
+     * Update the user's profile photo, remove the previous photo and its variants, and queue normalization of the
+     * raw upload (square crop across every frame, WebP re-encode, and variant generation).
      */
-    public function updateProfilePhoto(UploadedFile $uploadedFile, string $storagePath = 'profile-photos'): void
-    {
-        tap($this->profile_photo_path, function ($previous) use ($uploadedFile, $storagePath): void {
-            $this->forceFill([
-                'profile_photo_path' => $uploadedFile->storePublicly(
-                    $storagePath, ['disk' => $this->profilePhotoDisk()]
-                ),
-            ])->save();
+    public function updateProfilePhoto(
+        UploadedFile $uploadedFile,
+        ?ImageCropRect $cropRect = null,
+        string $storagePath = 'profile-photos',
+    ): void {
+        $previousPath = $this->profile_photo_path;
+        $previousVariants = $this->profile_photo_variants;
 
-            if ($previous) {
-                Storage::disk($this->profilePhotoDisk())->delete($previous);
-            }
-        });
+        $rawPath = $uploadedFile->storePublicly($storagePath, ['disk' => $this->profilePhotoDisk()]);
+        if ($rawPath === false) {
+            return;
+        }
+
+        $this->forceFill([
+            'profile_photo_path' => $rawPath,
+            'profile_photo_variants' => null,
+        ])->save();
+
+        if ($previousPath) {
+            Storage::disk($this->profilePhotoDisk())->delete($previousPath);
+        }
+
+        resolve(ThumbnailService::class)->deleteVariants($this->profilePhotoDisk(), $previousVariants);
+
+        dispatch(new NormalizeUserAvatar($this, $rawPath, $cropRect));
     }
 
     /**
-     * Delete the user's profile photo.
+     * Delete the user's profile photo and its variants.
      */
     public function deleteProfilePhoto(): void
     {
@@ -38,9 +54,11 @@ trait HasProfilePhoto
         }
 
         Storage::disk($this->profilePhotoDisk())->delete($this->profile_photo_path);
+        resolve(ThumbnailService::class)->deleteVariants($this->profilePhotoDisk(), $this->profile_photo_variants);
 
         $this->forceFill([
             'profile_photo_path' => null,
+            'profile_photo_variants' => null,
         ])->save();
     }
 
@@ -53,7 +71,7 @@ trait HasProfilePhoto
     }
 
     /**
-     * Get the profile photo URL for the user.
+     * Get the profile photo URL for the user, preferring the largest resized variant.
      *
      * @return Attribute<string, never>
      */
@@ -61,9 +79,33 @@ trait HasProfilePhoto
     {
         /** @var Attribute<string, never> $attribute */
         $attribute = new Attribute(
-            get: fn (): string => $this->profile_photo_path
-                ? Storage::disk($this->profilePhotoDisk())->url($this->profile_photo_path)
-                : $this->defaultProfilePhotoUrl()
+            get: function (): string {
+                $variants = $this->profile_photo_variants ?? [];
+                if ($variants !== []) {
+                    return Storage::disk($this->profilePhotoDisk())->url($variants[max(array_keys($variants))]);
+                }
+
+                return $this->profile_photo_path
+                    ? Storage::disk($this->profilePhotoDisk())->url($this->profile_photo_path)
+                    : $this->defaultProfilePhotoUrl();
+            }
+        );
+
+        return $attribute;
+    }
+
+    /**
+     * Build the srcset attribute value for the user's profile photo variants.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function profilePhotoSrcset(): Attribute
+    {
+        /** @var Attribute<string, never> $attribute */
+        $attribute = new Attribute(
+            get: fn (): string => collect($this->profile_photo_variants ?? [])
+                ->map(fn (string $path, int|string $width): string => sprintf('%s %dw', Storage::disk($this->profilePhotoDisk())->url($path), $width))
+                ->implode(', ')
         );
 
         return $attribute;

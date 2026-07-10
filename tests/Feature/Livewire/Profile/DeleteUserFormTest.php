@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 describe('account deletion', function (): void {
@@ -16,6 +17,31 @@ describe('account deletion', function (): void {
             ->call('deleteUser');
 
         expect($user->fresh())->toBeNull();
+    });
+
+    it('deletes the profile photo, cover photo, and their variants with the account', function (): void {
+        Storage::fake('public');
+        Storage::disk('public')->put('profile-photos/avatar.png', 'photo');
+        Storage::disk('public')->put('profile-photos/avatar_128w.webp', 'variant');
+        Storage::disk('public')->put('cover-photos/banner.png', 'cover');
+        Storage::disk('public')->put('cover-photos/banner_1280w.webp', 'variant');
+
+        $this->actingAs($user = User::factory()->create([
+            'profile_photo_path' => 'profile-photos/avatar.png',
+            'profile_photo_variants' => [128 => 'profile-photos/avatar_128w.webp'],
+            'cover_photo_path' => 'cover-photos/banner.png',
+            'cover_photo_variants' => [1280 => 'cover-photos/banner_1280w.webp'],
+        ]));
+
+        Livewire::test('profile.delete-user-form')
+            ->set('password', 'password')
+            ->call('deleteUser');
+
+        expect($user->fresh())->toBeNull();
+        Storage::disk('public')->assertMissing('profile-photos/avatar.png');
+        Storage::disk('public')->assertMissing('profile-photos/avatar_128w.webp');
+        Storage::disk('public')->assertMissing('cover-photos/banner.png');
+        Storage::disk('public')->assertMissing('cover-photos/banner_1280w.webp');
     });
 
     it('requires correct password before deletion', function (): void {

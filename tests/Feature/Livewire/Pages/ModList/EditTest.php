@@ -3,8 +3,12 @@
 declare(strict_types=1);
 
 use App\Enums\ListVisibility;
+use App\Jobs\GenerateThumbnailVariants;
 use App\Models\ModList;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 describe('edit page', function (): void {
@@ -82,5 +86,62 @@ describe('edit page', function (): void {
         $response->assertDontSee('Locked');
         $response->assertDontSee('Your Favourites list has a fixed title and cannot be renamed.');
         $response->assertDontSee('Your Favourites list is always private and only visible to you.');
+    });
+});
+
+describe('thumbnail variants', function (): void {
+    it('dispatches thumbnail variant generation when the thumbnail is replaced', function (): void {
+        Storage::fake('public');
+        Queue::fake([GenerateThumbnailVariants::class]);
+        $owner = User::factory()->create(['email_verified_at' => now()]);
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        $this->actingAs($owner);
+
+        Livewire::test('pages::list.edit', ['listId' => $list->id])
+            ->set('thumbnail', UploadedFile::fake()->image('thumbnail.png', 512, 512))
+            ->call('save')
+            ->assertRedirect();
+
+        Queue::assertPushed(fn (GenerateThumbnailVariants $job): bool => $job->model->is($list));
+    });
+
+    it('does not dispatch thumbnail variant generation when saving without a new thumbnail', function (): void {
+        Queue::fake([GenerateThumbnailVariants::class]);
+        $owner = User::factory()->create(['email_verified_at' => now()]);
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        $this->actingAs($owner);
+
+        Livewire::test('pages::list.edit', ['listId' => $list->id])
+            ->set('form.title', 'Renamed Without Thumbnail')
+            ->call('save')
+            ->assertRedirect();
+
+        Queue::assertNotPushed(GenerateThumbnailVariants::class);
+    });
+
+    it('deletes the thumbnail variants when the existing thumbnail is removed', function (): void {
+        Storage::fake('public');
+        Storage::disk('public')->put('mod-lists/thumb.png', 'thumbnail');
+        Storage::disk('public')->put('mod-lists/thumb_192w.webp', 'variant');
+        $owner = User::factory()->create(['email_verified_at' => now()]);
+        $list = ModList::factory()->for($owner, 'owner')->public()->create([
+            'thumbnail' => 'mod-lists/thumb.png',
+            'thumbnail_hash' => 'hash',
+            'thumbnail_variants' => [192 => 'mod-lists/thumb_192w.webp'],
+        ]);
+
+        $this->actingAs($owner);
+
+        Livewire::test('pages::list.edit', ['listId' => $list->id])
+            ->call('deleteExistingThumbnail');
+
+        Storage::disk('public')->assertMissing('mod-lists/thumb.png');
+        Storage::disk('public')->assertMissing('mod-lists/thumb_192w.webp');
+        expect($list->refresh())
+            ->thumbnail->toBeNull()
+            ->thumbnail_hash->toBeNull()
+            ->thumbnail_variants->toBeNull();
     });
 });

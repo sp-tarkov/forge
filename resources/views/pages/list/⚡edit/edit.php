@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Jobs\GenerateThumbnailVariants;
 use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Livewire\Forms\ModListForm;
 use App\Models\ModList;
+use App\Services\ThumbnailService;
 use Flux\Flux;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
@@ -42,7 +44,7 @@ new #[Layout('layouts::base')] class extends Component
     public function rules(): array
     {
         return [
-            'thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:min_width=128,min_height=128,max_width=4000,max_height=4000'],
+            'thumbnail' => ['nullable', 'mimes:jpg,jpeg,png,webp,gif,avif', 'max:2048', 'dimensions:min_width=128,min_height=128,max_width=4000,max_height=4000'],
         ];
     }
 
@@ -52,11 +54,17 @@ new #[Layout('layouts::base')] class extends Component
 
         $this->validate();
 
+        $thumbnailReplaced = false;
         if ($this->thumbnail instanceof UploadedFile && ! $this->modList->isFavourites()) {
             $this->replaceThumbnail($this->modList, $this->thumbnail);
+            $thumbnailReplaced = true;
         }
 
         $list = $this->form->save($this->modList);
+
+        if ($thumbnailReplaced) {
+            dispatch(new GenerateThumbnailVariants($list));
+        }
 
         $this->redirectRoute('list.show', [
             'listId' => $list->id,
@@ -84,8 +92,10 @@ new #[Layout('layouts::base')] class extends Component
             /** @var string $diskName */
             $diskName = config('filesystems.asset_upload', 'public');
             Storage::disk($diskName)->delete($this->modList->thumbnail);
+            resolve(ThumbnailService::class)->deleteVariants($diskName, $this->modList->thumbnail_variants);
             $this->modList->thumbnail = null;
             $this->modList->thumbnail_hash = null;
+            $this->modList->thumbnail_variants = null;
             $this->modList->save();
 
             Flux::toast(heading: 'Thumbnail Deleted', text: 'The list thumbnail has been deleted.', variant: 'success');

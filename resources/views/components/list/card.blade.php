@@ -10,7 +10,12 @@
     @elseif ($list->thumbnail)
         <img
             src="{{ $list->thumbnailUrl }}"
+            @if ($list->thumbnailSrcset) srcset="{{ $list->thumbnailSrcset }}" sizes="7rem" @endif
             alt=""
+            width="112"
+            height="112"
+            loading="lazy"
+            decoding="async"
             class="size-28 shrink-0 object-cover"
         >
     @else

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\ListVisibility;
 use App\Models\ModList;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 
 describe('Favourites observer', function (): void {
     it('creates a private default Favourites list for new users', function (): void {
@@ -90,5 +91,29 @@ describe('ModList slug + share token lifecycle', function (): void {
         $list->save();
 
         expect($list->fresh()->slug)->toBe($originalSlug);
+    });
+});
+
+describe('ModList deletion cleanup', function (): void {
+    it('deletes the thumbnail and its variants when a list is deleted', function (): void {
+        Storage::fake('public');
+        Storage::disk('public')->put('mod-lists/thumb.png', 'thumbnail');
+        Storage::disk('public')->put('mod-lists/thumb_192w.webp', 'variant');
+        Storage::disk('public')->put('mod-lists/thumb_384w.webp', 'variant');
+
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->create([
+            'thumbnail' => 'mod-lists/thumb.png',
+            'thumbnail_variants' => [
+                192 => 'mod-lists/thumb_192w.webp',
+                384 => 'mod-lists/thumb_384w.webp',
+            ],
+        ]);
+
+        $list->delete();
+
+        Storage::disk('public')->assertMissing('mod-lists/thumb.png');
+        Storage::disk('public')->assertMissing('mod-lists/thumb_192w.webp');
+        Storage::disk('public')->assertMissing('mod-lists/thumb_384w.webp');
     });
 });
