@@ -460,7 +460,7 @@ new #[Layout('layouts::base')] class extends Component
         ];
 
         return [
-            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'thumbnail' => 'nullable|mimes:jpg,jpeg,png,webp,gif,avif|max:2048',
             'name' => 'required|string|max:75',
             'guid' => $guidRules,
             'teaser' => 'required|string|max:255',

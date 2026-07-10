@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Enums\UserImageType;
 use App\Jobs\GenerateThumbnailVariants;
+use App\Jobs\GenerateUserImageVariants;
 use App\Models\Addon;
 use App\Models\Mod;
+use App\Models\ModList;
+use App\Models\User;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
-#[Description('Queue thumbnail variant generation for mods and addons that are missing variants')]
+#[Description('Queue image variant generation for mods, addons, lists, and users that are missing variants')]
 #[Signature('thumbnails:backfill-variants {--force : Regenerate variants even when they already exist}')]
 final class BackfillThumbnailVariantsCommand extends Command
 {
@@ -19,7 +23,7 @@ final class BackfillThumbnailVariantsCommand extends Command
     {
         $dispatched = 0;
 
-        foreach ([Mod::class, Addon::class] as $modelClass) {
+        foreach ([Mod::class, Addon::class, ModList::class] as $modelClass) {
             $query = $modelClass::query()
                 ->withoutGlobalScopes()
                 ->where('thumbnail', '!=', '')
@@ -35,7 +39,23 @@ final class BackfillThumbnailVariantsCommand extends Command
             }
         }
 
-        $this->info(sprintf('Dispatched %d thumbnail variant generation jobs to the queue.', $dispatched));
+        foreach (UserImageType::cases() as $type) {
+            $query = User::query()
+                ->withoutGlobalScopes()
+                ->where($type->pathColumn(), '!=', '')
+                ->whereNotNull($type->pathColumn());
+
+            if (! $this->option('force')) {
+                $query->whereNull($type->variantsColumn());
+            }
+
+            foreach ($query->cursor() as $user) {
+                dispatch(new GenerateUserImageVariants($user, $type));
+                $dispatched++;
+            }
+        }
+
+        $this->info(sprintf('Dispatched %d image variant generation jobs to the queue.', $dispatched));
 
         return self::SUCCESS;
     }

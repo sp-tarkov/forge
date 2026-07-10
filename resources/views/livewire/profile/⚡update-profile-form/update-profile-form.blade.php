@@ -12,7 +12,7 @@
         <flux:field class="col-span-6">
             <flux:label>{{ __('Profile Picture') }}</flux:label>
             <flux:description>
-                {{ __('A square image used as your avatar across the site. JPG or PNG, up to 1MB.') }}
+                {{ __('A square image used as your avatar across the site. Animated images stay animated. JPG, PNG, GIF, WebP, or AVIF, up to 1MB.') }}
             </flux:description>
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 @if ($photo)
@@ -59,21 +59,18 @@
                         />
                     </div>
                 @endif
-                <flux:file-upload
-                    wire:model="photo"
+                <x-image-crop-upload
+                    wire-model="photo"
+                    max-kilobytes="1024"
+                    preserve-animation
+                    crop-model="photoCropRect"
+                    :heading="__('Drop image here or click to browse')"
+                    :text="__('JPG, PNG, GIF, WebP, or AVIF, up to 1MB')"
                     @class([
                         'h-full',
                         'lg:col-span-2' => !$photo && !$this->user->profile_photo_path,
                     ])
-                >
-                    <flux:file-upload.dropzone
-                        heading="{{ __('Drop image here or click to browse') }}"
-                        text="{{ __('JPG or PNG, up to 1MB') }}"
-                        with-progress
-                        inline
-                        class="h-full"
-                    />
-                </flux:file-upload>
+                />
             </div>
             <flux:error name="photo" />
         </flux:field>
@@ -82,7 +79,7 @@
         <flux:field class="col-span-6">
             <flux:label>{{ __('Cover Picture') }}</flux:label>
             <flux:description>
-                {{ __('A wide banner image displayed at the top of your profile. JPG or PNG, up to 2MB.') }}
+                {{ __('A wide banner image displayed at the top of your profile. JPG, PNG, GIF, WebP, or AVIF, up to 2MB.') }}
             </flux:description>
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 @if ($cover)
@@ -138,7 +135,7 @@
                 >
                     <flux:file-upload.dropzone
                         heading="{{ __('Drop image here or click to browse') }}"
-                        text="{{ __('JPG or PNG, up to 2MB') }}"
+                        text="{{ __('JPG, PNG, GIF, WebP, or AVIF, up to 2MB') }}"
                         with-progress
                         inline
                         class="h-full"

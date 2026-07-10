@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
+use App\Enums\UserImageType;
+use App\Jobs\GenerateUserImageVariants;
+use App\Services\ThumbnailService;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -11,25 +14,31 @@ use Illuminate\Support\Facades\Storage;
 trait HasCoverPhoto
 {
     /**
-     * Update the user's cover photo.
+     * Update the user's cover photo, remove the previous photo and its variants, and queue variant generation.
      */
     public function updateCoverPhoto(UploadedFile $uploadedFile, string $storagePath = 'cover-photos'): void
     {
-        tap($this->cover_photo_path, function ($previous) use ($uploadedFile, $storagePath): void {
-            $this->forceFill([
-                'cover_photo_path' => $uploadedFile->storePublicly(
-                    $storagePath, ['disk' => $this->coverPhotoDisk()]
-                ),
-            ])->save();
+        $previousPath = $this->cover_photo_path;
+        $previousVariants = $this->cover_photo_variants;
 
-            if ($previous) {
-                Storage::disk($this->coverPhotoDisk())->delete($previous);
-            }
-        });
+        $this->forceFill([
+            'cover_photo_path' => $uploadedFile->storePublicly(
+                $storagePath, ['disk' => $this->coverPhotoDisk()]
+            ),
+            'cover_photo_variants' => null,
+        ])->save();
+
+        if ($previousPath) {
+            Storage::disk($this->coverPhotoDisk())->delete($previousPath);
+        }
+
+        resolve(ThumbnailService::class)->deleteVariants($this->coverPhotoDisk(), $previousVariants);
+
+        dispatch(new GenerateUserImageVariants($this, UserImageType::CoverPhoto));
     }
 
     /**
-     * Delete the user's cover photo.
+     * Delete the user's cover photo and its variants.
      */
     public function deleteCoverPhoto(): void
     {
@@ -38,9 +47,11 @@ trait HasCoverPhoto
         }
 
         Storage::disk($this->coverPhotoDisk())->delete($this->cover_photo_path);
+        resolve(ThumbnailService::class)->deleteVariants($this->coverPhotoDisk(), $this->cover_photo_variants);
 
         $this->forceFill([
             'cover_photo_path' => null,
+            'cover_photo_variants' => null,
         ])->save();
     }
 
@@ -53,7 +64,8 @@ trait HasCoverPhoto
     }
 
     /**
-     * Get the cover photo URL for the user, or null when no cover photo has been uploaded.
+     * Get the cover photo URL for the user, preferring the largest resized variant, or null when no cover photo has
+     * been uploaded.
      *
      * @return Attribute<string|null, never>
      */
@@ -61,9 +73,33 @@ trait HasCoverPhoto
     {
         /** @var Attribute<string|null, never> $attribute */
         $attribute = new Attribute(
-            get: fn (): ?string => $this->cover_photo_path
-                ? Storage::disk($this->coverPhotoDisk())->url($this->cover_photo_path)
-                : null
+            get: function (): ?string {
+                $variants = $this->cover_photo_variants ?? [];
+                if ($variants !== []) {
+                    return Storage::disk($this->coverPhotoDisk())->url($variants[max(array_keys($variants))]);
+                }
+
+                return $this->cover_photo_path
+                    ? Storage::disk($this->coverPhotoDisk())->url($this->cover_photo_path)
+                    : null;
+            }
+        );
+
+        return $attribute;
+    }
+
+    /**
+     * Build the srcset attribute value for the user's cover photo variants.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function coverPhotoSrcset(): Attribute
+    {
+        /** @var Attribute<string, never> $attribute */
+        $attribute = new Attribute(
+            get: fn (): string => collect($this->cover_photo_variants ?? [])
+                ->map(fn (string $path, int|string $width): string => sprintf('%s %dw', Storage::disk($this->coverPhotoDisk())->url($path), $width))
+                ->implode(', ')
         );
 
         return $attribute;

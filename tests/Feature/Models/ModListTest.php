@@ -967,9 +967,16 @@ describe('Thumbnail', function (): void {
 
         $this->actingAs($owner);
 
-        // GIF is a real image but not in the allowed mime list (jpg, png, webp).
+        // BMP is a real image but not in the allowed mime list (jpg, png, webp, gif, avif).
+        $image = new Imagick;
+        $image->newImage(512, 512, new ImagickPixel('teal'));
+        $image->setImageFormat('bmp');
+
+        $bmp = $image->getImageBlob();
+        $image->clear();
+
         Livewire::test('pages::list.edit', ['listId' => $list->id])
-            ->set('thumbnail', UploadedFile::fake()->image('anim.gif', 512, 512))
+            ->set('thumbnail', UploadedFile::fake()->createWithContent('image.bmp', $bmp))
             ->call('save')
             ->assertHasErrors('thumbnail');
     });

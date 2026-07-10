@@ -6,14 +6,17 @@ namespace App\Observers;
 
 use App\Enums\ListVisibility;
 use App\Models\ModList;
+use App\Services\ThumbnailService;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Stevebauman\Purify\Facades\Purify;
 
-final class ModListObserver
+final readonly class ModListObserver
 {
+    public function __construct(private ThumbnailService $thumbnailService) {}
+
     /**
      * Handle the ModList "saving" event.
      *
@@ -37,17 +40,18 @@ final class ModListObserver
     /**
      * Handle the ModList "deleting" event.
      *
-     * Removes the stored thumbnail from disk when a list is deleted.
+     * Removes the stored thumbnail and its variants from disk when a list is deleted.
      */
     public function deleting(ModList $modList): void
     {
-        if ($modList->thumbnail) {
-            /** @var string $disk */
-            $disk = config()->string('filesystems.asset_upload', 'public');
-            if (Storage::disk($disk)->exists($modList->thumbnail)) {
-                Storage::disk($disk)->delete($modList->thumbnail);
-            }
+        /** @var string $disk */
+        $disk = config()->string('filesystems.asset_upload', 'public');
+
+        if ($modList->thumbnail && Storage::disk($disk)->exists($modList->thumbnail)) {
+            Storage::disk($disk)->delete($modList->thumbnail);
         }
+
+        $this->thumbnailService->deleteVariants($disk, $modList->thumbnail_variants);
     }
 
     /**

@@ -388,7 +388,8 @@ describe('Deep links', function (): void {
 
         $page = visit($target->getUrl())
             ->on()->desktop()
-            ->waitForText('TARGET ROOT on first page for deep link test.');
+            ->waitForText('TARGET ROOT on first page for deep link test.')
+            ->assertPresent('.comment-container-'.$target->id.' .bg-sky-700');
 
         $anchorId = $target->getHashId();
         $anchorPresent = $page->script(sprintf(

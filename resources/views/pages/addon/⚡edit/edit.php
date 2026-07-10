@@ -405,7 +405,7 @@ new #[Layout('layouts::base')] class extends Component
     protected function rules(): array
     {
         return [
-            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'thumbnail' => 'nullable|mimes:jpg,jpeg,png,webp,gif,avif|max:2048',
             'name' => 'required|string|max:75',
             'teaser' => 'required|string|max:255',
             'description' => 'required|string',

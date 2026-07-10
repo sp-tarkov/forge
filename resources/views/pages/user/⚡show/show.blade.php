@@ -22,6 +22,7 @@
             @if ($user->cover_photo_url)
                 <img
                     src="{{ $user->cover_photo_url }}"
+                    @if ($user->cover_photo_srcset) srcset="{{ $user->cover_photo_srcset }}" sizes="100vw" @endif
                     alt="{{ __(':name\'s Cover Photo', ['name' => $user->name]) }}"
                     class="h-32 w-full object-cover lg:h-48"
                 />
@@ -39,8 +40,9 @@
                 <div class="-mt-12 flex-shrink-0 md:mt-0">
                     <img
                         src="{{ $user->profile_photo_url }}"
+                        @if ($user->profile_photo_srcset) srcset="{{ $user->profile_photo_srcset }}" sizes="128px" @endif
                         alt="{{ __(':name\'s Profile Picture', ['name' => $user->name]) }}"
-                        class="h-32 w-32 rounded-full bg-gray-800 ring-4 ring-gray-800"
+                        class="h-32 w-32 rounded-full bg-gray-800 object-cover ring-4 ring-gray-800"
                     />
                 </div>
                 <div

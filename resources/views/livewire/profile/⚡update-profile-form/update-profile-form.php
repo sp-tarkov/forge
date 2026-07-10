@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\User;
+use App\Rules\ProcessableAnimation;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
@@ -26,6 +27,13 @@ new class extends Component
      * The new avatar for the user.
      */
     public mixed $photo = null;
+
+    /**
+     * The crop rectangle for an animated avatar upload, in natural pixels of the source image.
+     *
+     * @var array{x: int, y: int, width: int, height: int}|null
+     */
+    public ?array $photoCropRect = null;
 
     /**
      * The new cover photo for the user.
@@ -60,7 +68,7 @@ new class extends Component
     public function updatedPhoto(): void
     {
         $this->validate([
-            'photo' => 'image|mimes:jpg,jpeg,png|max:1024', // 1MB Max
+            'photo' => ['mimes:jpg,jpeg,png,webp,gif,avif', 'max:1024', 'dimensions:min_width=128,min_height=128', new ProcessableAnimation], // 1MB Max
         ]);
     }
 
@@ -70,7 +78,7 @@ new class extends Component
     public function updatedCover(): void
     {
         $this->validate([
-            'cover' => 'image|mimes:jpg,jpeg,png|max:2048', // 2MB Max
+            'cover' => 'mimes:jpg,jpeg,png,webp,gif,avif|max:2048', // 2MB Max
         ]);
     }
 
@@ -89,11 +97,13 @@ new class extends Component
             $this->photo || $this->cover
                 ? array_merge($this->state, array_filter([
                     'photo' => $this->photo,
+                    'photoCropRect' => $this->photoCropRect,
                     'cover' => $this->cover,
                 ])) : $this->state
         );
 
         $this->photo = null;
+        $this->photoCropRect = null;
         $this->cover = null;
 
         Flux::toast(heading: 'Profile Updated', text: 'Your profile has been updated successfully.', variant: 'success');
@@ -107,6 +117,7 @@ new class extends Component
     public function removePhoto(): void
     {
         $this->photo = null;
+        $this->photoCropRect = null;
         $this->resetErrorBag('photo');
     }
 

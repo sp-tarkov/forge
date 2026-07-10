@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\ListVisibility;
+use App\Jobs\GenerateThumbnailVariants;
 use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Livewire\Forms\ModListForm;
 use App\Models\ModList;
@@ -40,7 +41,7 @@ new #[Layout('layouts::base')] class extends Component
     public function rules(): array
     {
         return [
-            'thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:min_width=128,min_height=128,max_width=4000,max_height=4000'],
+            'thumbnail' => ['nullable', 'mimes:jpg,jpeg,png,webp,gif,avif', 'max:2048', 'dimensions:min_width=128,min_height=128,max_width=4000,max_height=4000'],
         ];
     }
 
@@ -59,6 +60,8 @@ new #[Layout('layouts::base')] class extends Component
         if ($this->thumbnail instanceof UploadedFile) {
             $this->storeThumbnail($list, $this->thumbnail);
             $list->save();
+
+            dispatch(new GenerateThumbnailVariants($list));
         }
 
         $this->redirectRoute('list.show', [

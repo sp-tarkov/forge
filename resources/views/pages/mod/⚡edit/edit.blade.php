@@ -45,7 +45,7 @@
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('Thumbnail') }}</flux:label>
                                 <flux:description>
-                                    {{ __('Optionally upload an image to use as the mod\'s thumbnail. This will be displayed on the mod page and in search results. The image should be square, JPG or PNG, and no larger than 2MB.') }}
+                                    {{ __('Optionally upload an image to use as the mod\'s thumbnail. This will be displayed on the mod page and in search results. The image should be square JPG, PNG, GIF, WebP, or AVIF, no larger than 2MB.') }}
                                 </flux:description>
                                 <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                                     @if ($thumbnail)
@@ -97,18 +97,12 @@
                                             />
                                         </div>
                                     @endif
-                                    <flux:file-upload
-                                        wire:model="thumbnail"
+                                    <x-image-crop-upload
+                                        wire-model="thumbnail"
+                                        :heading="__('Drop image here or click to browse')"
+                                        :text="__('JPG, PNG, GIF, WebP, or AVIF, square, up to 2MB')"
                                         @class(['h-full', 'lg:col-span-2' => !$thumbnail && !$mod->thumbnail])
-                                    >
-                                        <flux:file-upload.dropzone
-                                            heading="{{ __('Drop image here or click to browse') }}"
-                                            text="{{ __('JPG or PNG, square, up to 2MB') }}"
-                                            with-progress
-                                            inline
-                                            class="h-full"
-                                        />
-                                    </flux:file-upload>
+                                    />
                                 </div>
                                 <flux:error name="thumbnail" />
                             </flux:field>

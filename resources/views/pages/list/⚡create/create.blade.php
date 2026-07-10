@@ -29,17 +29,19 @@
                             <flux:field class="col-span-6">
                                 <flux:label badge="Optional">{{ __('Thumbnail') }}</flux:label>
                                 <flux:description>
-                                    {{ __('Upload an image to represent this list. The image should be square, JPG, PNG, or WebP, and no larger than 2 MB.') }}
+                                    {{ __('Upload an image to represent this list. The image should be square, JPG, PNG, GIF, WebP, or AVIF, and no larger than 2 MB.') }}
                                 </flux:description>
                                 <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                                     @if ($thumbnail)
                                         <div
                                             class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-3">
-                                            <img
-                                                src="{{ $thumbnail->temporaryUrl() }}"
-                                                class="size-20 shrink-0 rounded-lg object-cover"
-                                                alt="{{ __('Thumbnail preview') }}"
-                                            >
+                                            @if ($thumbnail->isPreviewable())
+                                                <img
+                                                    src="{{ $thumbnail->temporaryUrl() }}"
+                                                    class="size-20 shrink-0 rounded-lg object-cover"
+                                                    alt="{{ __('Thumbnail preview') }}"
+                                                >
+                                            @endif
                                             <div class="min-w-0 flex-1">
                                                 <p class="truncate text-sm font-medium text-zinc-300">
                                                     {{ $thumbnail->getClientOriginalName() }}</p>
@@ -56,18 +58,12 @@
                                             />
                                         </div>
                                     @endif
-                                    <flux:file-upload
-                                        wire:model="thumbnail"
+                                    <x-image-crop-upload
+                                        wire-model="thumbnail"
+                                        :heading="__('Drop image here or click to browse')"
+                                        :text="__('JPG, PNG, GIF, WebP, or AVIF, square, up to 2 MB')"
                                         @class(['h-full', 'lg:col-span-2' => !$thumbnail])
-                                    >
-                                        <flux:file-upload.dropzone
-                                            heading="{{ __('Drop image here or click to browse') }}"
-                                            text="{{ __('JPG, PNG, or WebP, square, up to 2 MB') }}"
-                                            with-progress
-                                            inline
-                                            class="h-full"
-                                        />
-                                    </flux:file-upload>
+                                    />
                                 </div>
                                 <flux:error name="thumbnail" />
                             </flux:field>

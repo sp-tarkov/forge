@@ -6,6 +6,7 @@ namespace App\Jobs;
 
 use App\Models\Addon;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Services\ThumbnailService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -20,7 +21,7 @@ final class GenerateThumbnailVariants implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public Mod|Addon $model) {}
+    public function __construct(public Mod|Addon|ModList $model) {}
 
     /**
      * Regenerate the model's thumbnail variants, removing any stale variant files first.

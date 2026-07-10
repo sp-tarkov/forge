@@ -3,8 +3,12 @@
 declare(strict_types=1);
 
 use App\Enums\ListVisibility;
+use App\Jobs\GenerateThumbnailVariants;
 use App\Models\ModList;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 describe('page access', function (): void {
@@ -59,5 +63,36 @@ describe('save', function (): void {
             ->set('form.spt_version_id', 999999)
             ->call('save')
             ->assertHasErrors('form.spt_version_id');
+    });
+});
+
+describe('thumbnail variants', function (): void {
+    it('dispatches thumbnail variant generation when a thumbnail is uploaded', function (): void {
+        Storage::fake('public');
+        Queue::fake([GenerateThumbnailVariants::class]);
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $this->actingAs($user);
+
+        Livewire::test('pages::list.create')
+            ->set('form.title', 'Thumbnail Variant List')
+            ->set('thumbnail', UploadedFile::fake()->image('thumbnail.png', 512, 512))
+            ->call('save')
+            ->assertRedirect();
+
+        $list = ModList::query()->where('title', 'Thumbnail Variant List')->firstOrFail();
+        Queue::assertPushed(fn (GenerateThumbnailVariants $job): bool => $job->model->is($list));
+    });
+
+    it('does not dispatch thumbnail variant generation without a thumbnail', function (): void {
+        Queue::fake([GenerateThumbnailVariants::class]);
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $this->actingAs($user);
+
+        Livewire::test('pages::list.create')
+            ->set('form.title', 'No Thumbnail List')
+            ->call('save')
+            ->assertRedirect();
+
+        Queue::assertNotPushed(GenerateThumbnailVariants::class);
     });
 });

@@ -32,15 +32,15 @@
                             <h3 class="ml-3 text-lg font-semibold text-green-300">A mod fits</h3>
                         </div>
                         <p class="mb-3 text-sm text-green-400">
-                            You're publishing your own compiled code or a module that SPT loads directly, not content
-                            an existing mod reads.
+                            You're publishing your own compiled code or a module that SPT loads directly, that isn't
+                            solely meant to extend the functionality of an existing mod.
                         </p>
                         <ul class="space-y-2 text-sm text-green-400">
                             <li class="flex items-start">
                                 <flux:icon.check class="mr-2 mt-0.5 size-4 flex-shrink-0 text-green-400" />
                                 <span>You compile and ship a <code
                                         class="rounded bg-green-900/40 px-1 font-mono text-xs"
-                                    >.dll</code>
+                                    >.dll</code> that does more than extend the functionality of the parent mod
                                 </span>
                             </li>
                             <li class="flex items-start">
@@ -62,8 +62,9 @@
                                 add-on</h3>
                         </div>
                         <p class="mb-3 text-sm text-red-400">
-                            You're extending an existing mod with content it loads itself. Find that mod on the Forge
-                            and publish your work as an add-on from its page instead.
+                            You're extending an existing mod with content it loads itself, or compiling new code that
+                            extends the functionality of a mod. Find that mod on the Forge and publish your work as an
+                            add-on from its page instead.
                         </p>
                         <ul class="space-y-2 text-sm text-red-400">
                             <li class="flex items-start">
@@ -86,6 +87,10 @@
                                 <flux:icon.x-mark class="mr-2 mt-0.5 size-4 flex-shrink-0 text-red-400" />
                                 <span>Content packs another mod loads at runtime (items, loot tables, bot
                                     templates)</span>
+                            </li>
+                            <li class="flex items-start">
+                                <flux:icon.x-mark class="mr-2 mt-0.5 size-4 flex-shrink-0 text-red-400" />
+                                <span>DLLs that extend the functionality of another mod at runtime</span>
                             </li>
                             <li class="flex items-start">
                                 <flux:icon.x-mark class="mr-2 mt-0.5 size-4 flex-shrink-0 text-red-400" />
