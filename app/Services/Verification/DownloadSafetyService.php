@@ -52,9 +52,32 @@ final class DownloadSafetyService
      */
     public function validate(string $url, int $maxFileSize): array
     {
-        $urlError = $this->validateUrlStructure($url);
-        if ($urlError !== null) {
-            return ['safe' => false, 'error' => $urlError];
+        $destination = $this->validateDestination($url);
+        if ($destination['safe'] === false) {
+            return $destination;
+        }
+
+        $validatedIp = $destination['resolved_ip'] ?? null;
+
+        $headCheck = $this->validateWithHeadRequest($url, $maxFileSize, $validatedIp);
+        if ($headCheck['safe'] === false) {
+            return $headCheck;
+        }
+
+        return [...$headCheck, 'resolved_ip' => $validatedIp];
+    }
+
+    /**
+     * Validate a destination's structure, scheme, port, and resolved host IP without making any request. On success
+     * the returned `resolved_ip` is the validated address the caller must pin its connection to.
+     *
+     * @return array{safe: bool, error?: string, resolved_ip?: string|null}
+     */
+    public function validateDestination(string $url): array
+    {
+        $structureError = $this->validateUrlStructure($url);
+        if ($structureError !== null) {
+            return ['safe' => false, 'error' => $structureError];
         }
 
         /** @var string $host */
@@ -65,12 +88,29 @@ final class DownloadSafetyService
             return ['safe' => false, 'error' => $hostCheck['error']];
         }
 
-        $headCheck = $this->validateWithHeadRequest($url, $maxFileSize);
-        if ($headCheck['safe'] === false) {
-            return $headCheck;
+        return ['safe' => true, 'resolved_ip' => $hostCheck['ip']];
+    }
+
+    /**
+     * Build the Guzzle options every outbound request to a user-supplied link must carry: a guard that re-validates
+     * each redirect hop, and a connection pinned to the already-validated IP.
+     *
+     * @return array<string, mixed>
+     */
+    public function requestOptions(string $url, ?string $validatedIp): array
+    {
+        $options = ['allow_redirects' => $this->redirectGuard()];
+
+        if ($validatedIp === null) {
+            return $options;
         }
 
-        return [...$headCheck, 'resolved_ip' => $hostCheck['ip']];
+        $resolveEntry = $this->curlResolveEntry($url, $validatedIp);
+        if ($resolveEntry !== null) {
+            $options['curl'] = [CURLOPT_RESOLVE => [$resolveEntry]];
+        }
+
+        return $options;
     }
 
     /**
@@ -86,8 +126,12 @@ final class DownloadSafetyService
             'strict' => true,
             'on_redirect' => function (mixed $request, mixed $response, mixed $uri): void {
                 /** @var UriInterface $uri */
-                $error = $this->validateDestination((string) $uri);
-                throw_if($error !== null, RuntimeException::class, 'Redirect blocked: '.$error);
+                $check = $this->validateDestination((string) $uri);
+                throw_if(
+                    $check['safe'] === false,
+                    RuntimeException::class,
+                    'Redirect blocked: '.($check['error'] ?? 'unsafe destination'),
+                );
             },
         ];
     }
@@ -135,22 +179,6 @@ final class DownloadSafetyService
     }
 
     /**
-     * Validate a destination's structure, port, and resolved host IP. Used for the initial URL and every redirect hop.
-     */
-    private function validateDestination(string $url): ?string
-    {
-        $structureError = $this->validateUrlStructure($url);
-        if ($structureError !== null) {
-            return $structureError;
-        }
-
-        /** @var string $host */
-        $host = parse_url($url, PHP_URL_HOST);
-
-        return $this->checkHostIp($host);
-    }
-
-    /**
      * Resolve a URL's port, falling back to the scheme default when it is not explicit.
      */
     private function resolvePort(string $url, string $scheme): int
@@ -182,13 +210,13 @@ final class DownloadSafetyService
      *
      * @return array{safe: bool, error?: string, content_length?: int|null}
      */
-    private function validateWithHeadRequest(string $url, int $maxFileSize): array
+    private function validateWithHeadRequest(string $url, int $maxFileSize, ?string $validatedIp): array
     {
         try {
             $response = Http::connectTimeout(5)
                 ->timeout(30)
                 ->withoutVerifying()
-                ->withOptions(['allow_redirects' => $this->redirectGuard()])
+                ->withOptions($this->requestOptions($url, $validatedIp))
                 ->head($url);
 
             if (! $response->successful()) {
@@ -271,14 +299,6 @@ final class DownloadSafetyService
         }
 
         return ['safe' => true, 'content_length' => $reportedSize];
-    }
-
-    /**
-     * Resolve a hostname and check all resulting IPs against blocked CIDR ranges.
-     */
-    private function checkHostIp(string $host): ?string
-    {
-        return $this->resolveAndValidateHost($host)['error'];
     }
 
     /**

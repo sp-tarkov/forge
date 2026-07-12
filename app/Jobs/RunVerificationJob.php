@@ -297,10 +297,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
             $response = Http::connectTimeout(10)
                 ->timeout($downloadTimeout)
                 ->withoutVerifying()
-                ->withOptions([
-                    'allow_redirects' => $safetyService->redirectGuard(),
-                    ...$this->pinnedConnectionOptions($url, $safetyService),
-                ])
+                ->withOptions($safetyService->requestOptions($url, $this->validatedIp))
                 ->sink($this->tempFilePath)
                 ->get($url);
 
@@ -327,26 +324,6 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         } catch (Throwable $throwable) {
             return ['ok' => false, 'error' => 'Download failed: '.$throwable->getMessage()];
         }
-    }
-
-    /**
-     * Build the curl options that pin the download connection to the IP validated during the safety check, closing
-     * the DNS rebinding window between validation and download. Empty when no IP was captured.
-     *
-     * @return array<string, mixed>
-     */
-    private function pinnedConnectionOptions(string $url, DownloadSafetyService $safetyService): array
-    {
-        if ($this->validatedIp === null) {
-            return [];
-        }
-
-        $resolveEntry = $safetyService->curlResolveEntry($url, $this->validatedIp);
-        if ($resolveEntry === null) {
-            return [];
-        }
-
-        return ['curl' => [CURLOPT_RESOLVE => [$resolveEntry]]];
     }
 
     /**

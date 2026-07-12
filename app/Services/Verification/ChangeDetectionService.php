@@ -15,8 +15,12 @@ use Throwable;
 /**
  * Performs HEAD requests against mod/addon download links to detect file changes.
  */
-final class ChangeDetectionService
+final readonly class ChangeDetectionService
 {
+    public function __construct(
+        private DownloadSafetyService $safetyService,
+    ) {}
+
     /**
      * Check whether the download link for a version has changed since the last check.
      */
@@ -26,10 +30,22 @@ final class ChangeDetectionService
             return new ChangeDetectionResult(changed: false, unreachable: true);
         }
 
+        $destination = $this->safetyService->validateDestination($version->link);
+        if ($destination['safe'] === false) {
+            Log::warning('Change detection blocked an unsafe download link', [
+                'version_type' => $version::class,
+                'version_id' => $version->id,
+                'error' => $destination['error'] ?? 'Unsafe destination',
+            ]);
+
+            return new ChangeDetectionResult(changed: false, unreachable: true);
+        }
+
         try {
             $response = Http::connectTimeout(5)
                 ->timeout(30)
                 ->withoutVerifying()
+                ->withOptions($this->safetyService->requestOptions($version->link, $destination['resolved_ip'] ?? null))
                 ->head($version->link);
 
             if (! $response->successful()) {

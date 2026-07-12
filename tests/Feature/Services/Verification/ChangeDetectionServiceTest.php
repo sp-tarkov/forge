@@ -6,11 +6,12 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
 use App\Services\Verification\ChangeDetectionService;
+use App\Services\Verification\DownloadSafetyService;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
-    $this->service = new ChangeDetectionService;
+    $this->service = new ChangeDetectionService(new DownloadSafetyService);
     $this->mod = Mod::factory()->for(User::factory(), 'owner')->create();
 });
 
@@ -94,15 +95,11 @@ it('marks as unreachable when request fails', function (): void {
 
 it('marks as unreachable when connection fails', function (): void {
     Http::fake([
-        '*' => Http::sequence()->pushResponse(Http::response('', 200))->whenEmpty(fn () => throw new ConnectionException('Connection refused')),
-    ]);
-
-    Http::fake([
         '*' => fn () => throw new ConnectionException('Connection refused'),
     ]);
 
     $modVersion = ModVersion::factory()->for($this->mod)->create([
-        'link' => 'https://unreachable.example.com/mod.zip',
+        'link' => 'https://93.184.215.14/mod.zip',
     ]);
 
     $result = $this->service->check($modVersion);
@@ -119,4 +116,50 @@ it('returns unreachable for empty link', function (): void {
 
     expect($result->unreachable)->toBeTrue();
     expect($result->changed)->toBeFalse();
+});
+
+it('never requests a link that resolves to an internal address', function (string $link): void {
+    Http::fake();
+
+    $modVersion = ModVersion::factory()->for($this->mod)->create(['link' => $link]);
+
+    $result = $this->service->check($modVersion);
+
+    expect($result->unreachable)->toBeTrue();
+    expect($result->changed)->toBeFalse();
+
+    Http::assertNothingSent();
+})->with([
+    'loopback' => 'http://127.0.0.1/mod.zip',
+    'cloud metadata' => 'http://169.254.169.254/latest/meta-data/mod.zip',
+    'private range' => 'http://192.168.1.1/mod.zip',
+    'link local' => 'http://10.0.0.1/mod.zip',
+]);
+
+it('never requests a link targeting a non-web port', function (): void {
+    Http::fake();
+
+    $modVersion = ModVersion::factory()->for($this->mod)->create([
+        'link' => 'http://15.235.87.67:6379/mod.zip',
+    ]);
+
+    $result = $this->service->check($modVersion);
+
+    expect($result->unreachable)->toBeTrue();
+
+    Http::assertNothingSent();
+});
+
+it('never requests a link with a non-http scheme', function (): void {
+    Http::fake();
+
+    $modVersion = ModVersion::factory()->for($this->mod)->create([
+        'link' => 'file:///etc/passwd',
+    ]);
+
+    $result = $this->service->check($modVersion);
+
+    expect($result->unreachable)->toBeTrue();
+
+    Http::assertNothingSent();
 });
