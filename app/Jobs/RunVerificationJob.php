@@ -296,7 +296,6 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
 
             $response = Http::connectTimeout(10)
                 ->timeout($downloadTimeout)
-                ->withoutVerifying()
                 ->withOptions($safetyService->requestOptions($url, $this->validatedIp))
                 ->sink($this->tempFilePath)
                 ->get($url);

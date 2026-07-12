@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Services\Verification\DownloadSafetyService;
 use GuzzleHttp\Psr7\Uri;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
@@ -172,6 +173,22 @@ it('does not return a resolved ip when validation fails', function (): void {
 
     expect($result['safe'])->toBeFalse();
     expect($result)->not->toHaveKey('resolved_ip');
+});
+
+it('verifies tls certificates on every outbound request', function (): void {
+    expect($this->service->requestOptions('https://example.com/mod.zip', null)['verify'])->toBeTrue();
+    expect($this->service->requestOptions('https://example.com/mod.zip', '93.184.215.14')['verify'])->toBeTrue();
+});
+
+it('rejects a url whose certificate cannot be verified', function (): void {
+    Http::fake([
+        '*' => fn () => throw new ConnectionException('cURL error 60: SSL certificate problem: self-signed certificate'),
+    ]);
+
+    $result = $this->service->validate('https://example.com/mod.zip', $this->maxSize);
+
+    expect($result['safe'])->toBeFalse();
+    expect($result['error'])->toContain('SSL certificate problem');
 });
 
 it('builds a curl resolve entry using the scheme default port', function (): void {

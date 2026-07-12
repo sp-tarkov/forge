@@ -10,6 +10,7 @@ use App\Models\ModVersion;
 use App\Models\User;
 use App\Models\VerificationResult;
 use App\Services\Verification\DownloadSafetyService;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 
@@ -376,6 +377,33 @@ it('pins the download connection to the validated ip and guards redirects', func
 
     expect($result->status)->toBe(VerificationStatus::Passed);
     expect($result->details['safety_check']['resolved_ip'])->toBe('93.184.215.14');
+});
+
+it('fails verification when the download certificate cannot be verified', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : throw new ConnectionException('cURL error 60: SSL certificate problem: self-signed certificate')
+    );
+
+    Process::fake();
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+    ]);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    $result->refresh();
+
+    expect($result->status)->toBe(VerificationStatus::Failed);
+    expect($result->download_ok)->toBeFalse();
+    expect($result->failure_reason)->toContain('SSL certificate problem');
+    Process::assertNothingRan();
 });
 
 it('computes its timeout from the stage timeouts plus slack', function (): void {

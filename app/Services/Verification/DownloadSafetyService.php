@@ -97,14 +97,17 @@ final readonly class DownloadSafetyService
     }
 
     /**
-     * Build the Guzzle options every outbound request to a user-supplied link must carry: a guard that re-validates
-     * each redirect hop, and a connection pinned to the already-validated IP.
+     * Build the Guzzle options every outbound request to a user-supplied link must carry: certificate verification, a
+     * guard that re-validates each redirect hop, and a connection pinned to the already-validated IP.
      *
      * @return array<string, mixed>
      */
     public function requestOptions(string $url, ?string $validatedIp): array
     {
-        $options = ['allow_redirects' => $this->redirectGuard()];
+        $options = [
+            'verify' => true,
+            'allow_redirects' => $this->redirectGuard(),
+        ];
 
         if ($validatedIp === null) {
             return $options;
@@ -220,7 +223,6 @@ final readonly class DownloadSafetyService
         try {
             $response = Http::connectTimeout(5)
                 ->timeout(30)
-                ->withoutVerifying()
                 ->withOptions($this->requestOptions($url, $validatedIp))
                 ->head($url);
 
