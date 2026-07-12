@@ -93,4 +93,22 @@ return [
         'container' => (int) env('VERIFICATION_CONTAINER_TIMEOUT', 600),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Stale Thresholds
+    |--------------------------------------------------------------------------
+    |
+    | How long (in minutes) a verification result may remain in the Pending or
+    | Running status before it is considered stale. Stale results no longer
+    | block new dispatches and are marked as errored by the scheduled cleanup
+    | job. Pending allows for queue backlog on the dedicated worker; Running
+    | only needs to cover the job timeout plus retries.
+    |
+    */
+
+    'stale' => [
+        'pending_minutes' => (int) env('VERIFICATION_STALE_PENDING_MINUTES', 1440),
+        'running_minutes' => (int) env('VERIFICATION_STALE_RUNNING_MINUTES', 60),
+    ],
+
 ];

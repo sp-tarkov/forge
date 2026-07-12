@@ -8,6 +8,7 @@ use App\Console\Commands\ForgeHeartbeat;
 use App\Console\Commands\UpdateGeoLiteDatabase;
 use App\Jobs\AggregateApiUsageDailyJob;
 use App\Jobs\AggregateApiUsageJob;
+use App\Jobs\CleanupStaleVerificationsJob;
 use App\Jobs\DetectDownloadChangesJob;
 use App\Jobs\FetchCloudflareApiAnalyticsJob;
 use App\Jobs\ProcessPinnedModVersionPublishDates;
@@ -31,6 +32,7 @@ if (config('app.forge_heartbeat_url')) {
 
 if (config('verification.enabled')) {
     Schedule::job(new DetectDownloadChangesJob)->twiceDaily(6, 18)->onOneServer()->withoutOverlapping();
+    Schedule::job(new CleanupStaleVerificationsJob)->hourly()->onOneServer()->withoutOverlapping();
 }
 
 // Drain the API usage counters every minute and roll them up daily. Gated on the same flag that enables recording so

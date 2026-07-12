@@ -16,6 +16,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Backoff;
 use Illuminate\Queue\Attributes\Timeout;
 use Illuminate\Queue\Attributes\Tries;
+use Illuminate\Queue\Attributes\UniqueFor;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
@@ -28,6 +29,7 @@ use Throwable;
 #[Timeout(900)]
 #[Backoff([30, 60])]
 #[Tries(2)]
+#[UniqueFor(3600)]
 final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
