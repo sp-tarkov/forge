@@ -67,7 +67,7 @@ it('marks result as failed when download returns non-200', function (): void {
 it('marks result as failed when docker container fails', function (): void {
     Http::fake(fn ($request) => $request->method() === 'HEAD'
         ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
-        : Http::response('fake-archive-content', 200)
+        : Http::response("PK\x03\x04fake-archive-content", 200)
     );
 
     Process::fake([
@@ -100,7 +100,7 @@ it('marks result as failed when docker container fails', function (): void {
 it('marks result as passed when container reports success', function (): void {
     Http::fake(fn ($request) => $request->method() === 'HEAD'
         ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
-        : Http::response('fake-archive-content', 200)
+        : Http::response("PK\x03\x04fake-archive-content", 200)
     );
 
     $containerOutput = json_encode([
@@ -141,7 +141,7 @@ it('marks result as passed when container reports success', function (): void {
 it('marks result as failed when container reports extraction failure', function (): void {
     Http::fake(fn ($request) => $request->method() === 'HEAD'
         ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
-        : Http::response('fake-archive-content', 200)
+        : Http::response("PK\x03\x04fake-archive-content", 200)
     );
 
     $containerOutput = json_encode([
@@ -172,10 +172,10 @@ it('marks result as failed when container reports extraction failure', function 
     expect($result->archive_ok)->toBeFalse();
 });
 
-it('detects 7z extension from download url', function (): void {
+it('detects 7z format from the downloaded file magic bytes', function (): void {
     Http::fake(fn ($request) => $request->method() === 'HEAD'
         ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
-        : Http::response('fake-archive-content', 200)
+        : Http::response("7z\xBC\xAF\x27\x1Cfake-archive-content", 200)
     );
 
     $containerOutput = json_encode([
@@ -203,10 +203,76 @@ it('detects 7z extension from download url', function (): void {
     Process::assertRan(fn ($process): bool => is_string($process->command) && str_contains($process->command, "ARCHIVE_EXTENSION='7z'"));
 });
 
+it('verifies urls without an archive extension via content-disposition and magic bytes', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, [
+            'Content-Type' => 'application/octet-stream',
+            'Content-Length' => '1000',
+            'Content-Disposition' => 'attachment; filename="mod.zip"',
+        ])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    $containerOutput = json_encode([
+        'downloaded_sha256' => 'abc',
+        'archive_ok' => true,
+        'file_tree' => ['file.txt'],
+        'error' => null,
+    ]);
+
+    Process::fake([
+        'docker run *' => Process::result(output: $containerOutput),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/download/12345',
+    ]);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+
+    $result->refresh();
+
+    expect($result->status)->toBe(VerificationStatus::Passed);
+    Process::assertRan(fn ($process): bool => is_string($process->command) && str_contains($process->command, "ARCHIVE_EXTENSION='zip'"));
+});
+
+it('marks result as failed when the downloaded file is not a recognized archive', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response('this-is-not-an-archive', 200)
+    );
+
+    Process::fake();
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+    ]);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+
+    $result->refresh();
+
+    expect($result->status)->toBe(VerificationStatus::Failed);
+    expect($result->download_ok)->toBeTrue();
+    expect($result->archive_ok)->toBeFalse();
+    expect($result->failure_reason)->toContain('not a ZIP or 7z archive');
+    Process::assertNothingRan();
+});
+
 it('uses docker run with network none flag', function (): void {
     Http::fake(fn ($request) => $request->method() === 'HEAD'
         ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
-        : Http::response('fake-archive-content', 200)
+        : Http::response("PK\x03\x04fake-archive-content", 200)
     );
 
     $containerOutput = json_encode([

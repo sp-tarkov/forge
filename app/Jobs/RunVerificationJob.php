@@ -144,10 +144,20 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
      */
     private function extractAndAnalyze(): void
     {
+        $archiveFormat = $this->detectArchiveFormat();
+        if ($archiveFormat === null) {
+            $this->markAsFailed(
+                failureReason: 'Downloaded file is not a ZIP or 7z archive',
+                archiveOk: false,
+            );
+        }
+
+        $this->details['archive_format'] = $archiveFormat;
+
         $archiveSize = $this->verificationResult->downloaded_size ?? 0;
 
         $extractionStart = microtime(true);
-        $outcome = $this->runContainer($archiveSize);
+        $outcome = $this->runContainer($archiveSize, $archiveFormat);
         $this->details['container'] = [
             'duration_seconds' => round(microtime(true) - $extractionStart, 2),
         ];
@@ -285,13 +295,11 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
      *
      * @return array<string, mixed>
      */
-    private function runContainer(int $archiveSize): array
+    private function runContainer(int $archiveSize, string $extension): array
     {
         if ($this->tempFilePath === null || ! file_exists($this->tempFilePath)) {
             return ['ok' => false, 'error' => 'No downloaded file available for container'];
         }
-
-        $extension = $this->detectExtension($this->verificationResult->download_url);
 
         $dockerImage = config()->string('verification.docker_image', 'ghcr.io/sp-tarkov/forge/verification:latest');
         $timeout = config()->integer('verification.timeouts.container', 600);
@@ -337,16 +345,33 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
-     * Detect the archive extension from the download URL.
+     * Detect the archive format from the downloaded file's magic bytes. Returns null when the file is not a
+     * recognizable ZIP or 7z archive.
      */
-    private function detectExtension(string $url): string
+    private function detectArchiveFormat(): ?string
     {
-        $path = mb_strtolower((string) parse_url($url, PHP_URL_PATH));
+        if ($this->tempFilePath === null || ! file_exists($this->tempFilePath)) {
+            return null;
+        }
+
+        $handle = fopen($this->tempFilePath, 'rb');
+        if ($handle === false) {
+            return null;
+        }
+
+        $magic = fread($handle, 6);
+        fclose($handle);
+
+        if (! is_string($magic)) {
+            return null;
+        }
 
         return match (true) {
-            str_ends_with($path, '.7z') => '7z',
-            str_ends_with($path, '.zip') => 'zip',
-            default => throw new VerificationFailedException('Unsupported archive format: URL must end with .zip or .7z'),
+            str_starts_with($magic, "PK\x03\x04"),
+            str_starts_with($magic, "PK\x05\x06"),
+            str_starts_with($magic, "PK\x07\x08") => 'zip',
+            str_starts_with($magic, "7z\xBC\xAF\x27\x1C") => '7z',
+            default => null,
         };
     }
 
