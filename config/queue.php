@@ -82,7 +82,8 @@ return [
             'driver' => 'redis',
             'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
             'queue' => 'verification',
-            'retry_after' => 930, // Must exceed verification worker timeout (900)
+            // Exceeds the RunVerificationJob timeout (download timeout + container timeout + 120s slack) by 60s.
+            'retry_after' => (int) env('VERIFICATION_DOWNLOAD_TIMEOUT', 900) + (int) env('VERIFICATION_CONTAINER_TIMEOUT', 600) + 180,
             'block_for' => null,
             'after_commit' => false,
             'options' => [

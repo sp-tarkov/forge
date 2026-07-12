@@ -89,7 +89,7 @@ return [
     */
 
     'timeouts' => [
-        'download' => (int) env('VERIFICATION_DOWNLOAD_TIMEOUT', 300),
+        'download' => (int) env('VERIFICATION_DOWNLOAD_TIMEOUT', 900),
         'container' => (int) env('VERIFICATION_CONTAINER_TIMEOUT', 600),
     ],
 

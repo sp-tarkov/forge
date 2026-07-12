@@ -14,7 +14,6 @@ use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Backoff;
-use Illuminate\Queue\Attributes\Timeout;
 use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Queue\Attributes\UniqueFor;
 use Illuminate\Support\Facades\Http;
@@ -26,7 +25,6 @@ use Throwable;
  * Downloads a mod/addon archive on the host, then runs an ephemeral Docker container to extract it and report the file
  * tree. The container has no network access and is destroyed after each job.
  */
-#[Timeout(900)]
 #[Backoff([30, 60])]
 #[Tries(2)]
 #[UniqueFor(3600)]
@@ -34,15 +32,46 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
+    public const string CONTAINER_LABEL = 'forge-verification';
+
+    public const string TEMP_FILE_PREFIX = 'forge_verify_';
+
+    /**
+     * The number of seconds the job may run before timing out.
+     */
+    public int $timeout;
+
     /** @var array<string, mixed> */
     private array $details = [];
 
     private ?string $tempFilePath = null;
 
+    private ?string $containerName = null;
+
     public function __construct(
         public VerificationResult $verificationResult,
     ) {
         $this->onQueue(config()->string('verification.queue', 'verification'));
+        $this->timeout = self::maxRuntime();
+    }
+
+    /**
+     * The maximum number of seconds a verification job may run: both stage timeouts plus slack for URL validation,
+     * archive hashing, and status updates.
+     */
+    public static function maxRuntime(): int
+    {
+        return config()->integer('verification.timeouts.download', 900)
+            + config()->integer('verification.timeouts.container', 600)
+            + 120;
+    }
+
+    /**
+     * The directory where downloaded archives are temporarily stored.
+     */
+    public static function tempDirectory(): string
+    {
+        return storage_path('app/private/verification');
     }
 
     /**
@@ -246,12 +275,12 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
      */
     private function performDownload(string $url, int $maxFileSize): array
     {
-        $tempDir = storage_path('app/private/verification');
+        $tempDir = self::tempDirectory();
         if (! is_dir($tempDir)) {
             mkdir($tempDir, 0755, true);
         }
 
-        $tempFile = $tempDir.'/forge_verify_'.bin2hex(random_bytes(16));
+        $tempFile = $tempDir.'/'.self::TEMP_FILE_PREFIX.bin2hex(random_bytes(16));
         if (touch($tempFile) === false) {
             return ['ok' => false, 'error' => 'Failed to create temporary file'];
         }
@@ -259,7 +288,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         $this->tempFilePath = $tempFile;
 
         try {
-            $downloadTimeout = config()->integer('verification.timeouts.download', 300);
+            $downloadTimeout = config()->integer('verification.timeouts.download', 900);
 
             $response = Http::connectTimeout(10)
                 ->timeout($downloadTimeout)
@@ -310,9 +339,14 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
 
         chmod($this->tempFilePath, 0644);
 
+        $this->containerName = 'forge-verify-'.$this->verificationResult->id;
+        $this->removeContainer();
+
         $command = sprintf(
-            'docker run --rm --network=none --memory=512m --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s %s',
-            escapeshellarg($this->tempFilePath),
+            'docker run --rm --name=%s --label=%s --network=none --memory=512m --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s %s',
+            escapeshellarg((string) $this->containerName),
+            escapeshellarg(self::CONTAINER_LABEL),
+            escapeshellarg((string) $this->tempFilePath),
             escapeshellarg($extension),
             escapeshellarg((string) $archiveSize),
             escapeshellarg((string) $maxExtractionRatio),
@@ -391,7 +425,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
-     * Clean up the temporary download file.
+     * Clean up the temporary download file and any container left behind by this run.
      */
     private function cleanup(): void
     {
@@ -399,5 +433,20 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
             @unlink($this->tempFilePath);
             $this->tempFilePath = null;
         }
+
+        $this->removeContainer();
+        $this->containerName = null;
+    }
+
+    /**
+     * Force-remove this run's named container, ignoring failures for containers that no longer exist.
+     */
+    private function removeContainer(): void
+    {
+        if ($this->containerName === null) {
+            return;
+        }
+
+        Process::timeout(30)->run('docker rm --force '.escapeshellarg($this->containerName));
     }
 }

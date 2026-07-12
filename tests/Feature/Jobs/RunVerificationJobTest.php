@@ -76,6 +76,7 @@ it('marks result as failed when docker container fails', function (): void {
             errorOutput: 'docker: Error response from daemon: image not found',
             exitCode: 125,
         ),
+        'docker rm *' => Process::result(output: ''),
     ]);
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
@@ -112,6 +113,7 @@ it('marks result as passed when container reports success', function (): void {
 
     Process::fake([
         'docker run *' => Process::result(output: $containerOutput),
+        'docker rm *' => Process::result(output: ''),
     ]);
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
@@ -153,6 +155,7 @@ it('marks result as failed when container reports extraction failure', function 
 
     Process::fake([
         'docker run *' => Process::result(output: $containerOutput),
+        'docker rm *' => Process::result(output: ''),
     ]);
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
@@ -187,6 +190,7 @@ it('detects 7z format from the downloaded file magic bytes', function (): void {
 
     Process::fake([
         'docker run *' => Process::result(output: $containerOutput),
+        'docker rm *' => Process::result(output: ''),
     ]);
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
@@ -222,6 +226,7 @@ it('verifies urls without an archive extension via content-disposition and magic
 
     Process::fake([
         'docker run *' => Process::result(output: $containerOutput),
+        'docker rm *' => Process::result(output: ''),
     ]);
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
@@ -284,6 +289,7 @@ it('uses docker run with network none flag', function (): void {
 
     Process::fake([
         'docker run *' => Process::result(output: $containerOutput),
+        'docker rm *' => Process::result(output: ''),
     ]);
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
@@ -300,7 +306,52 @@ it('uses docker run with network none flag', function (): void {
     Process::assertRan(fn ($process): bool => is_string($process->command)
         && str_contains($process->command, '--network=none')
         && str_contains($process->command, '--rm')
-        && str_contains($process->command, '--memory=512m'));
+        && str_contains($process->command, '--memory=512m')
+        && str_contains($process->command, sprintf("--name='forge-verify-%d'", $result->id))
+        && str_contains($process->command, "--label='forge-verification'"));
+});
+
+it('removes the named container during cleanup', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    $containerOutput = json_encode([
+        'downloaded_sha256' => 'abc',
+        'archive_ok' => true,
+        'file_tree' => [],
+        'error' => null,
+    ]);
+
+    Process::fake([
+        'docker run *' => Process::result(output: $containerOutput),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+    ]);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_contains($process->command, 'docker rm --force')
+        && str_contains($process->command, sprintf("'forge-verify-%d'", $result->id)));
+});
+
+it('computes its timeout from the stage timeouts plus slack', function (): void {
+    config()->set('verification.timeouts.download', 900);
+    config()->set('verification.timeouts.container', 600);
+
+    $result = VerificationResult::factory()->create();
+
+    expect(new RunVerificationJob($result)->timeout)->toBe(1620);
 });
 
 it('rejects file exceeding content-length before downloading', function (): void {
