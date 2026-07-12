@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\View\Components\Mod;
 
+use App\Enums\VerificationStatus;
 use App\Models\ModVersion;
 use Illuminate\View\Component;
 use Illuminate\View\View;
@@ -35,6 +36,22 @@ final class VersionCard extends Component
     public function modalName(): string
     {
         return 'version-download-'.$this->version->id;
+    }
+
+    /**
+     * Whether this version's latest file verification passed.
+     */
+    public function isVerified(): bool
+    {
+        return $this->version->verification_status === VerificationStatus::Passed;
+    }
+
+    /**
+     * The unique modal name for this version's verification details modal.
+     */
+    public function verificationModalName(): string
+    {
+        return 'version-verification-'.$this->version->id;
     }
 
     /**
