@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Services\Verification\DownloadSafetyService;
+use GuzzleHttp\Psr7\Uri;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
@@ -150,4 +151,91 @@ it('accepts urls with content-disposition attachment header', function (): void 
     $result = $this->service->validate('https://example.com/download?id=123', $this->maxSize);
 
     expect($result['safe'])->toBeTrue();
+});
+
+it('returns the validated ip so the download can be pinned to it', function (): void {
+    Http::fake([
+        '*' => Http::response('', 200, [
+            'Content-Type' => 'application/octet-stream',
+            'Content-Length' => '5000',
+        ]),
+    ]);
+
+    $result = $this->service->validate('https://93.184.215.14/mod.zip', $this->maxSize);
+
+    expect($result['safe'])->toBeTrue();
+    expect($result['resolved_ip'])->toBe('93.184.215.14');
+});
+
+it('does not return a resolved ip when validation fails', function (): void {
+    $result = $this->service->validate('http://127.0.0.1/mod.zip', $this->maxSize);
+
+    expect($result['safe'])->toBeFalse();
+    expect($result)->not->toHaveKey('resolved_ip');
+});
+
+it('builds a curl resolve entry using the scheme default port', function (): void {
+    expect($this->service->curlResolveEntry('https://example.com/mod.zip', '93.184.215.14'))
+        ->toBe('example.com:443:93.184.215.14');
+
+    expect($this->service->curlResolveEntry('http://example.com/mod.zip', '93.184.215.14'))
+        ->toBe('example.com:80:93.184.215.14');
+});
+
+it('builds a curl resolve entry using an explicit port', function (): void {
+    expect($this->service->curlResolveEntry('https://example.com:8443/mod.zip', '93.184.215.14'))
+        ->toBe('example.com:8443:93.184.215.14');
+});
+
+it('returns no curl resolve entry for a url without a host', function (): void {
+    expect($this->service->curlResolveEntry('not-a-url', '93.184.215.14'))->toBeNull();
+});
+
+it('rejects urls targeting a non-web port', function (int $port): void {
+    $result = $this->service->validate('http://15.235.87.67:'.$port.'/mod.zip', $this->maxSize);
+
+    expect($result['safe'])->toBeFalse();
+    expect($result['error'])->toContain('port');
+})->with([
+    'redis' => 6379,
+    'mysql' => 3306,
+    'ssh' => 22,
+]);
+
+it('accepts urls on an explicitly allowed port', function (): void {
+    Http::fake([
+        '*' => Http::response('', 200, [
+            'Content-Type' => 'application/octet-stream',
+            'Content-Length' => '5000',
+        ]),
+    ]);
+
+    config()->set('verification.allowed_ports', [80, 443, 8443]);
+
+    $result = $this->service->validate('https://example.com:8443/mod.zip', $this->maxSize);
+
+    expect($result['safe'])->toBeTrue();
+});
+
+it('blocks a redirect hop targeting a non-web port', function (): void {
+    $guard = $this->service->redirectGuard();
+    $onRedirect = $guard['on_redirect'];
+
+    expect(fn () => $onRedirect(null, null, new Uri('http://15.235.87.67:6379/')))
+        ->toThrow(RuntimeException::class, 'Redirect blocked');
+});
+
+it('blocks a redirect hop that resolves to an internal address', function (): void {
+    $guard = $this->service->redirectGuard();
+    $onRedirect = $guard['on_redirect'];
+
+    expect(fn () => $onRedirect(null, null, new Uri('http://169.254.169.254/latest/meta-data/')))
+        ->toThrow(RuntimeException::class, 'Redirect blocked');
+});
+
+it('allows a redirect hop that resolves to a public address', function (): void {
+    $guard = $this->service->redirectGuard();
+    $onRedirect = $guard['on_redirect'];
+
+    expect(fn () => $onRedirect(null, null, new Uri('https://example.com/mod.zip')))->not->toThrow(RuntimeException::class);
 });

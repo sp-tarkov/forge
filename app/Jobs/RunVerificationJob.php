@@ -48,6 +48,8 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
 
     private ?string $containerName = null;
 
+    private ?string $validatedIp = null;
+
     public function __construct(
         public VerificationResult $verificationResult,
     ) {
@@ -91,7 +93,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
             ]);
 
             $this->validateDownloadUrl($safetyService);
-            $this->downloadArchive();
+            $this->downloadArchive($safetyService);
             $this->extractAndAnalyze();
         } catch (VerificationFailedException) {
             // Expected failure. Just clean up.
@@ -140,17 +142,19 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
                 downloadOk: false,
             );
         }
+
+        $this->validatedIp = $safetyCheck['resolved_ip'] ?? null;
     }
 
     /**
      * Download the archive file to a temporary path on the host.
      */
-    private function downloadArchive(): void
+    private function downloadArchive(DownloadSafetyService $safetyService): void
     {
         $maxFileSize = config()->integer('verification.max_file_size', 500 * 1024 * 1024);
 
         $downloadStart = microtime(true);
-        $outcome = $this->performDownload($this->verificationResult->download_url, $maxFileSize);
+        $outcome = $this->performDownload($this->verificationResult->download_url, $maxFileSize, $safetyService);
         $this->details['download'] = [
             'duration_seconds' => round(microtime(true) - $downloadStart, 2),
             ...$outcome,
@@ -273,7 +277,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
      *
      * @return array<string, mixed>
      */
-    private function performDownload(string $url, int $maxFileSize): array
+    private function performDownload(string $url, int $maxFileSize, DownloadSafetyService $safetyService): array
     {
         $tempDir = self::tempDirectory();
         if (! is_dir($tempDir)) {
@@ -293,6 +297,10 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
             $response = Http::connectTimeout(10)
                 ->timeout($downloadTimeout)
                 ->withoutVerifying()
+                ->withOptions([
+                    'allow_redirects' => $safetyService->redirectGuard(),
+                    ...$this->pinnedConnectionOptions($url, $safetyService),
+                ])
                 ->sink($this->tempFilePath)
                 ->get($url);
 
@@ -319,6 +327,26 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         } catch (Throwable $throwable) {
             return ['ok' => false, 'error' => 'Download failed: '.$throwable->getMessage()];
         }
+    }
+
+    /**
+     * Build the curl options that pin the download connection to the IP validated during the safety check, closing
+     * the DNS rebinding window between validation and download. Empty when no IP was captured.
+     *
+     * @return array<string, mixed>
+     */
+    private function pinnedConnectionOptions(string $url, DownloadSafetyService $safetyService): array
+    {
+        if ($this->validatedIp === null) {
+            return [];
+        }
+
+        $resolveEntry = $safetyService->curlResolveEntry($url, $this->validatedIp);
+        if ($resolveEntry === null) {
+            return [];
+        }
+
+        return ['curl' => [CURLOPT_RESOLVE => [$resolveEntry]]];
     }
 
     /**

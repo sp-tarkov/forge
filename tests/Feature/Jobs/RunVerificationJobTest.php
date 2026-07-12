@@ -345,6 +345,39 @@ it('removes the named container during cleanup', function (): void {
         && str_contains($process->command, sprintf("'forge-verify-%d'", $result->id)));
 });
 
+it('pins the download connection to the validated ip and guards redirects', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: json_encode([
+            'downloaded_sha256' => 'abc',
+            'archive_ok' => true,
+            'file_tree' => [],
+            'error' => null,
+        ])),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://93.184.215.14/mod.zip',
+    ]);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+
+    $result->refresh();
+
+    expect($result->status)->toBe(VerificationStatus::Passed);
+    expect($result->details['safety_check']['resolved_ip'])->toBe('93.184.215.14');
+});
+
 it('computes its timeout from the stage timeouts plus slack', function (): void {
     config()->set('verification.timeouts.download', 900);
     config()->set('verification.timeouts.container', 600);

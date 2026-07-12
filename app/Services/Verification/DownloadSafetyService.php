@@ -45,9 +45,10 @@ final class DownloadSafetyService
     ];
 
     /**
-     * Validate a URL is safe to download from and within size limits.
+     * Validate a URL is safe to download from and within size limits. On success the returned `resolved_ip` is the
+     * validated address the download must be pinned to.
      *
-     * @return array{safe: bool, error?: string, content_length?: int|null}
+     * @return array{safe: bool, error?: string, content_length?: int|null, resolved_ip?: string|null}
      */
     public function validate(string $url, int $maxFileSize): array
     {
@@ -59,16 +60,59 @@ final class DownloadSafetyService
         /** @var string $host */
         $host = parse_url($url, PHP_URL_HOST);
 
-        $ipError = $this->checkHostIp($host);
-        if ($ipError !== null) {
-            return ['safe' => false, 'error' => $ipError];
+        $hostCheck = $this->resolveAndValidateHost($host);
+        if ($hostCheck['error'] !== null) {
+            return ['safe' => false, 'error' => $hostCheck['error']];
         }
 
-        return $this->validateWithHeadRequest($url, $maxFileSize);
+        $headCheck = $this->validateWithHeadRequest($url, $maxFileSize);
+        if ($headCheck['safe'] === false) {
+            return $headCheck;
+        }
+
+        return [...$headCheck, 'resolved_ip' => $hostCheck['ip']];
     }
 
     /**
-     * Validate the URL has a valid structure, host, and scheme.
+     * Build the Guzzle allow_redirects option that re-validates the scheme, port, and resolved host of every redirect
+     * hop. Shared by the safety HEAD request and the archive download so both enforce the same policy.
+     *
+     * @return array<string, mixed>
+     */
+    public function redirectGuard(int $max = 5): array
+    {
+        return [
+            'max' => $max,
+            'strict' => true,
+            'on_redirect' => function (mixed $request, mixed $response, mixed $uri): void {
+                /** @var UriInterface $uri */
+                $error = $this->validateDestination((string) $uri);
+                throw_if($error !== null, RuntimeException::class, 'Redirect blocked: '.$error);
+            },
+        ];
+    }
+
+    /**
+     * Build the curl CURLOPT_RESOLVE entry that pins a URL's host and port to an already-validated IP, so the
+     * connection cannot be redirected to a different address by a DNS record that changes after validation.
+     */
+    public function curlResolveEntry(string $url, string $ip): ?string
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        if (! is_string($host) || $host === '') {
+            return null;
+        }
+
+        $port = parse_url($url, PHP_URL_PORT);
+        if (! is_int($port)) {
+            $port = mb_strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https' ? 443 : 80;
+        }
+
+        return $host.':'.$port.':'.$ip;
+    }
+
+    /**
+     * Validate the URL has a valid structure, host, scheme, and port.
      */
     private function validateUrlStructure(string $url): ?string
     {
@@ -82,7 +126,55 @@ final class DownloadSafetyService
             return 'Invalid URL scheme: only HTTP and HTTPS are allowed';
         }
 
+        $allowedPorts = $this->allowedPorts();
+        if (! in_array($this->resolvePort($url, $scheme), $allowedPorts, true)) {
+            return 'Invalid URL port: only ports '.implode(', ', $allowedPorts).' are allowed';
+        }
+
         return null;
+    }
+
+    /**
+     * Validate a destination's structure, port, and resolved host IP. Used for the initial URL and every redirect hop.
+     */
+    private function validateDestination(string $url): ?string
+    {
+        $structureError = $this->validateUrlStructure($url);
+        if ($structureError !== null) {
+            return $structureError;
+        }
+
+        /** @var string $host */
+        $host = parse_url($url, PHP_URL_HOST);
+
+        return $this->checkHostIp($host);
+    }
+
+    /**
+     * Resolve a URL's port, falling back to the scheme default when it is not explicit.
+     */
+    private function resolvePort(string $url, string $scheme): int
+    {
+        $port = parse_url($url, PHP_URL_PORT);
+
+        if (is_int($port)) {
+            return $port;
+        }
+
+        return $scheme === 'https' ? 443 : 80;
+    }
+
+    /**
+     * The ports a download URL is permitted to target.
+     *
+     * @return list<int>
+     */
+    private function allowedPorts(): array
+    {
+        /** @var list<int> $ports */
+        $ports = config()->array('verification.allowed_ports', [80, 443]);
+
+        return $ports;
     }
 
     /**
@@ -96,12 +188,7 @@ final class DownloadSafetyService
             $response = Http::connectTimeout(5)
                 ->timeout(30)
                 ->withoutVerifying()
-                ->withOptions(['allow_redirects' => ['max' => 5, 'on_redirect' => function (mixed $request, mixed $response, mixed $uri): void {
-                    /** @var UriInterface $uri */
-                    $redirectHost = (string) $uri->getHost();
-                    $ipCheck = $this->checkHostIp($redirectHost);
-                    throw_if($ipCheck !== null, RuntimeException::class, 'Redirect blocked: '.$ipCheck);
-                }]])
+                ->withOptions(['allow_redirects' => $this->redirectGuard()])
                 ->head($url);
 
             if (! $response->successful()) {
@@ -191,27 +278,46 @@ final class DownloadSafetyService
      */
     private function checkHostIp(string $host): ?string
     {
+        return $this->resolveAndValidateHost($host)['error'];
+    }
+
+    /**
+     * Resolve a hostname once, reject it if any resulting address falls in a blocked range, and return the first
+     * validated address so the caller can pin the connection to it.
+     *
+     * @return array{error: string|null, ip: string|null}
+     */
+    private function resolveAndValidateHost(string $host): array
+    {
         if (filter_var($host, FILTER_VALIDATE_IP)) {
             if ($this->isBlockedIp($host)) {
-                return 'Download URL resolves to a blocked IP address';
+                return ['error' => 'Download URL resolves to a blocked IP address', 'ip' => null];
             }
 
-            return null;
+            return ['error' => null, 'ip' => $host];
         }
 
         $records = @dns_get_record($host, DNS_A | DNS_AAAA);
         if ($records === false || $records === []) {
-            return 'Could not resolve hostname: '.$host;
+            return ['error' => 'Could not resolve hostname: '.$host, 'ip' => null];
         }
+
+        $firstIp = null;
 
         foreach ($records as $record) {
             $ip = $record['ip'] ?? $record['ipv6'] ?? null;
-            if (is_string($ip) && $this->isBlockedIp($ip)) {
-                return 'Download URL resolves to a blocked IP address';
+            if (! is_string($ip)) {
+                continue;
             }
+
+            if ($this->isBlockedIp($ip)) {
+                return ['error' => 'Download URL resolves to a blocked IP address', 'ip' => null];
+            }
+
+            $firstIp ??= $ip;
         }
 
-        return null;
+        return ['error' => null, 'ip' => $firstIp];
     }
 
     /**

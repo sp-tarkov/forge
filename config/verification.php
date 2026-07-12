@@ -42,6 +42,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Allowed Ports
+    |--------------------------------------------------------------------------
+    |
+    | Download URLs may only target these ports. The IP blocklist cannot protect
+    | services that sit on public addresses, so this stops the downloader being
+    | pointed at the database, Redis, SSH, or any other non-web port, whether it
+    | is reached directly or through a redirect.
+    |
+    */
+
+    'allowed_ports' => array_values(array_filter(array_map(
+        intval(...),
+        explode(',', (string) env('VERIFICATION_ALLOWED_PORTS', '80,443')),
+    ))),
+
+    /*
+    |--------------------------------------------------------------------------
     | Queue Name
     |--------------------------------------------------------------------------
     |
