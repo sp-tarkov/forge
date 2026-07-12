@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Enums\VerificationStatus;
 use App\Models\Dependency;
 use App\Models\DependencyResolved;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use App\Models\VerificationResult;
 use Livewire\Livewire;
 
 /**
@@ -149,6 +151,55 @@ describe('versions tab', function (): void {
 
         // Verify the placeholder renders skeleton content for the versions tab
         expect($placeholder->render())->toContain('data-flux-skeleton');
+    });
+});
+
+describe('verification shield', function (): void {
+    it('shows a verification shield to guests when the latest verification passed', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        $version = ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '1.0.0',
+            'verification_status' => VerificationStatus::Passed,
+        ]);
+        VerificationResult::factory()->forModVersion($version)->passed()->create();
+
+        Livewire::withoutLazyLoading()
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertSee('View File Verification')
+            ->assertSuccessful();
+    });
+
+    it('does not show a verification shield when verification has not run', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '1.0.0',
+        ]);
+
+        Livewire::withoutLazyLoading()
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertDontSee('View File Verification')
+            ->assertSuccessful();
+    });
+
+    it('does not show a verification shield or failure details when the latest verification failed', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        $version = ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '1.0.0',
+            'verification_status' => VerificationStatus::Failed,
+        ]);
+        $result = VerificationResult::factory()->forModVersion($version)->failed('Download returned HTTP 404')->create();
+
+        Livewire::withoutLazyLoading()
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertDontSee('View File Verification')
+            ->assertDontSee($result->failure_reason)
+            ->assertSuccessful();
     });
 });
 
