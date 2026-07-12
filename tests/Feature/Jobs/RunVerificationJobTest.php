@@ -30,7 +30,7 @@ it('marks result as failed when safety check rejects the url', function (): void
         'trigger' => VerificationTrigger::Manual,
     ]);
 
-    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
 
     $result->refresh();
 
@@ -55,7 +55,7 @@ it('marks result as failed when download returns non-200', function (): void {
         'trigger' => VerificationTrigger::Manual,
     ]);
 
-    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
 
     $result->refresh();
 
@@ -88,7 +88,7 @@ it('marks result as failed when docker container fails', function (): void {
         'status' => VerificationStatus::Pending,
     ]);
 
-    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
 
     $result->refresh();
 
@@ -125,7 +125,7 @@ it('marks result as passed when container reports success', function (): void {
         'status' => VerificationStatus::Pending,
     ]);
 
-    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
 
     $result->refresh();
 
@@ -167,7 +167,7 @@ it('marks result as failed when container reports extraction failure', function 
         'status' => VerificationStatus::Pending,
     ]);
 
-    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
 
     $result->refresh();
 
@@ -202,7 +202,7 @@ it('detects 7z format from the downloaded file magic bytes', function (): void {
         'status' => VerificationStatus::Pending,
     ]);
 
-    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
 
     Process::assertRan(fn ($process): bool => is_string($process->command) && str_contains($process->command, "ARCHIVE_EXTENSION='7z'"));
 });
@@ -238,7 +238,7 @@ it('verifies urls without an archive extension via content-disposition and magic
         'status' => VerificationStatus::Pending,
     ]);
 
-    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
 
     $result->refresh();
 
@@ -263,7 +263,7 @@ it('marks result as failed when the downloaded file is not a recognized archive'
         'status' => VerificationStatus::Pending,
     ]);
 
-    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
 
     $result->refresh();
 
@@ -301,7 +301,7 @@ it('uses docker run with network none flag', function (): void {
         'status' => VerificationStatus::Pending,
     ]);
 
-    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
 
     Process::assertRan(fn ($process): bool => is_string($process->command)
         && str_contains($process->command, '--network=none')
@@ -338,7 +338,7 @@ it('removes the named container during cleanup', function (): void {
         'status' => VerificationStatus::Pending,
     ]);
 
-    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
 
     Process::assertRan(fn ($process): bool => is_string($process->command)
         && str_contains($process->command, 'docker rm --force')
@@ -370,7 +370,7 @@ it('pins the download connection to the validated ip and guards redirects', func
         'status' => VerificationStatus::Pending,
     ]);
 
-    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
 
     $result->refresh();
 
@@ -404,7 +404,7 @@ it('rejects file exceeding content-length before downloading', function (): void
         'status' => VerificationStatus::Pending,
     ]);
 
-    new RunVerificationJob($result)->handle(new DownloadSafetyService);
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
 
     $result->refresh();
 

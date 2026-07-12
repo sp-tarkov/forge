@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Verification;
 
+use App\Contracts\DnsResolver;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -14,7 +15,7 @@ use Throwable;
 /**
  * Validates download URLs before fetching them to prevent SSRF attacks and enforce file size limits.
  */
-final class DownloadSafetyService
+final readonly class DownloadSafetyService
 {
     /**
      * CIDR ranges that must be blocked to prevent SSRF.
@@ -43,6 +44,10 @@ final class DownloadSafetyService
         'fe80::/10',          // IPv6 link-local
         '::ffff:0:0/96',      // IPv4-mapped IPv6
     ];
+
+    public function __construct(
+        private DnsResolver $dnsResolver,
+    ) {}
 
     /**
      * Validate a URL is safe to download from and within size limits. On success the returned `resolved_ip` is the
@@ -317,24 +322,19 @@ final class DownloadSafetyService
             return ['error' => null, 'ip' => $host];
         }
 
-        $records = @dns_get_record($host, DNS_A | DNS_AAAA);
-        if ($records === false || $records === []) {
+        $addresses = $this->dnsResolver->resolve($host);
+        if ($addresses === []) {
             return ['error' => 'Could not resolve hostname: '.$host, 'ip' => null];
         }
 
         $firstIp = null;
 
-        foreach ($records as $record) {
-            $ip = $record['ip'] ?? $record['ipv6'] ?? null;
-            if (! is_string($ip)) {
-                continue;
-            }
-
-            if ($this->isBlockedIp($ip)) {
+        foreach ($addresses as $address) {
+            if ($this->isBlockedIp($address)) {
                 return ['error' => 'Download URL resolves to a blocked IP address', 'ip' => null];
             }
 
-            $firstIp ??= $ip;
+            $firstIp ??= $address;
         }
 
         return ['error' => null, 'ip' => $firstIp];

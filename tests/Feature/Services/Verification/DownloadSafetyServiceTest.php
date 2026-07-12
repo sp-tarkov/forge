@@ -7,7 +7,7 @@ use GuzzleHttp\Psr7\Uri;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
-    $this->service = new DownloadSafetyService;
+    $this->service = resolve(DownloadSafetyService::class);
     $this->maxSize = 500 * 1024 * 1024;
 });
 

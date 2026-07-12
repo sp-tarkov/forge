@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 
+use App\Contracts\DnsResolver;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
 use App\Services\Verification\ChangeDetectionService;
-use App\Services\Verification\DownloadSafetyService;
+use App\Support\Dns\ArrayDnsResolver;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
-    $this->service = new ChangeDetectionService(new DownloadSafetyService);
+    $this->service = resolve(ChangeDetectionService::class);
     $this->mod = Mod::factory()->for(User::factory(), 'owner')->create();
 });
 
@@ -155,6 +156,60 @@ it('never requests a link with a non-http scheme', function (): void {
 
     $modVersion = ModVersion::factory()->for($this->mod)->create([
         'link' => 'file:///etc/passwd',
+    ]);
+
+    $result = $this->service->check($modVersion);
+
+    expect($result->unreachable)->toBeTrue();
+
+    Http::assertNothingSent();
+});
+
+it('never requests a hostname that resolves to an internal address', function (): void {
+    Http::fake();
+
+    /** @var ArrayDnsResolver $resolver */
+    $resolver = resolve(DnsResolver::class);
+    $resolver->set('rebind.example.com', ['169.254.169.254']);
+
+    $modVersion = ModVersion::factory()->for($this->mod)->create([
+        'link' => 'https://rebind.example.com/mod.zip',
+    ]);
+
+    $result = $this->service->check($modVersion);
+
+    expect($result->unreachable)->toBeTrue();
+
+    Http::assertNothingSent();
+});
+
+it('never requests a hostname where only one of several addresses is internal', function (): void {
+    Http::fake();
+
+    /** @var ArrayDnsResolver $resolver */
+    $resolver = resolve(DnsResolver::class);
+    $resolver->set('mixed.example.com', ['93.184.215.14', '127.0.0.1']);
+
+    $modVersion = ModVersion::factory()->for($this->mod)->create([
+        'link' => 'https://mixed.example.com/mod.zip',
+    ]);
+
+    $result = $this->service->check($modVersion);
+
+    expect($result->unreachable)->toBeTrue();
+
+    Http::assertNothingSent();
+});
+
+it('marks as unreachable when the hostname does not resolve', function (): void {
+    Http::fake();
+
+    /** @var ArrayDnsResolver $resolver */
+    $resolver = resolve(DnsResolver::class);
+    $resolver->set('dead.example.com', []);
+
+    $modVersion = ModVersion::factory()->for($this->mod)->create([
+        'link' => 'https://dead.example.com/mod.zip',
     ]);
 
     $result = $this->service->check($modVersion);

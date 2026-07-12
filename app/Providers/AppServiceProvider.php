@@ -8,6 +8,7 @@ use Anthropic\Client;
 use App\Contracts\ApiUsageStore;
 use App\Contracts\CommentTranslator;
 use App\Contracts\DependencyResolver;
+use App\Contracts\DnsResolver;
 use App\Contracts\Geolocator;
 use App\Contracts\SpamChecker;
 use App\Contracts\VisitorPresenceStore;
@@ -23,6 +24,8 @@ use App\Services\DependencyVersionService;
 use App\Services\GeolocationService;
 use App\Support\ApiUsage\ArrayApiUsageStore;
 use App\Support\ApiUsage\RedisApiUsageStore;
+use App\Support\Dns\AmpDnsResolver;
+use App\Support\Dns\ArrayDnsResolver;
 use App\Support\Visitors\ArrayVisitorPresenceStore;
 use App\Support\Visitors\RedisVisitorPresenceStore;
 use App\View\Composers\PaginationComposer;
@@ -48,6 +51,8 @@ use Mchev\Banhammer\Middleware\AuthBanned;
 use Nitotm\Eld\LanguageDetector;
 use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
+
+use function Amp\Dns\dnsResolver;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -91,6 +96,18 @@ final class AppServiceProvider extends ServiceProvider
             return new RedisVisitorPresenceStore(
                 config()->string('visitors.connection'),
                 config()->integer('visitors.online_window'),
+            );
+        });
+
+        // Verification resolves download link hostnames before connecting to them.
+        $this->app->singleton(DnsResolver::class, function (): DnsResolver {
+            if ($this->app->runningUnitTests()) {
+                return new ArrayDnsResolver;
+            }
+
+            return new AmpDnsResolver(
+                dnsResolver(),
+                config()->float('verification.timeouts.dns', 5),
             );
         });
     }

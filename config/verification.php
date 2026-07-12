@@ -106,6 +106,7 @@ return [
     */
 
     'timeouts' => [
+        'dns' => (int) env('VERIFICATION_DNS_TIMEOUT', 5),
         'download' => (int) env('VERIFICATION_DOWNLOAD_TIMEOUT', 900),
         'container' => (int) env('VERIFICATION_CONTAINER_TIMEOUT', 600),
     ],
