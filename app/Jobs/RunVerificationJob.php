@@ -333,6 +333,17 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
+     * The image pull policy passed to `docker run --pull`. Defaults to "always" so the worker adopts each freshly
+     * built image at the cost of a per-job registry check.
+     */
+    private function pullPolicy(): string
+    {
+        $policy = config()->string('verification.container.pull_policy', 'always');
+
+        return in_array($policy, ['always', 'missing', 'never'], true) ? $policy : 'always';
+    }
+
+    /**
      * Run the ephemeral Docker container to extract the archive and report the file tree.
      *
      * @return array<string, mixed>
@@ -354,7 +365,9 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         $this->removeContainer();
 
         $command = sprintf(
-            'docker run --rm --name=%s --label=%s --network=none --memory=512m --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s %s',
+            'docker run --rm --pull=%s --init --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=%s --name=%s --label=%s --network=none --memory=512m --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s %s',
+            escapeshellarg($this->pullPolicy()),
+            escapeshellarg((string) config()->integer('verification.container.pids_limit', 256)),
             escapeshellarg((string) $this->containerName),
             escapeshellarg(self::CONTAINER_LABEL),
             escapeshellarg((string) $this->tempFilePath),

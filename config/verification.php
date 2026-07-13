@@ -30,6 +30,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Container Resource & Pull Limits
+    |--------------------------------------------------------------------------
+    |
+    | Hard limits applied to the extraction container. The process/thread cap is
+    | fork-bomb protection; it must stay well above the handful of threads the
+    | .NET runtime spawns, so the default is deliberately generous.
+    |
+    */
+
+    'container' => [
+        'pids_limit' => (int) env('VERIFICATION_CONTAINER_PIDS_LIMIT', 256),
+        'pull_policy' => env('VERIFICATION_CONTAINER_PULL_POLICY', 'always'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Maximum File Size
     |--------------------------------------------------------------------------
     |

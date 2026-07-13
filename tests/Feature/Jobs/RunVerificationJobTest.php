@@ -313,6 +313,132 @@ it('uses docker run with network none flag', function (): void {
         && str_contains($process->command, "--label='forge-verification'"));
 });
 
+it('runs the container with the security hardening flags', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: json_encode([
+            'downloaded_sha256' => 'abc',
+            'archive_ok' => true,
+            'file_tree' => [],
+            'error' => null,
+        ])),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_contains($process->command, "--pull='always'")
+        && str_contains($process->command, '--init')
+        && str_contains($process->command, '--cap-drop=ALL')
+        && str_contains($process->command, '--security-opt=no-new-privileges')
+        && str_contains($process->command, "--pids-limit='256'"));
+});
+
+it('uses the configured container pull policy', function (): void {
+    config()->set('verification.container.pull_policy', 'missing');
+
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: json_encode([
+            'downloaded_sha256' => 'abc',
+            'archive_ok' => true,
+            'file_tree' => [],
+            'error' => null,
+        ])),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_contains($process->command, "--pull='missing'"));
+});
+
+it('falls back to the always pull policy for an unrecognized value', function (): void {
+    config()->set('verification.container.pull_policy', 'bogus');
+
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: json_encode([
+            'downloaded_sha256' => 'abc',
+            'archive_ok' => true,
+            'file_tree' => [],
+            'error' => null,
+        ])),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_contains($process->command, "--pull='always'"));
+});
+
+it('uses the configured pids limit for the container', function (): void {
+    config()->set('verification.container.pids_limit', 512);
+
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: json_encode([
+            'downloaded_sha256' => 'abc',
+            'archive_ok' => true,
+            'file_tree' => [],
+            'error' => null,
+        ])),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_contains($process->command, "--pids-limit='512'"));
+});
+
 it('removes the named container during cleanup', function (): void {
     Http::fake(fn ($request) => $request->method() === 'HEAD'
         ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
