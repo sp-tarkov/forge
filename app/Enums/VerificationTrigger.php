@@ -20,6 +20,11 @@ enum VerificationTrigger: string
     case Manual = 'manual';
 
     /**
+     * Triggered when a new mod or addon version is created.
+     */
+    case Upload = 'upload';
+
+    /**
      * Get a human-readable label for the trigger.
      */
     public function label(): string
@@ -27,6 +32,7 @@ enum VerificationTrigger: string
         return match ($this) {
             self::ChangeDetected => 'Change Detected',
             self::Manual => 'Manual',
+            self::Upload => 'Upload',
         };
     }
 }

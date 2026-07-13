@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Contracts\DependencyResolver;
+use App\Enums\VerificationTrigger;
 use App\Models\AddonVersion;
 use App\Models\Mod;
 use App\Models\ModVersion;
+use App\Models\VerificationResult;
 use App\Services\AddonVersionService;
 use App\Services\SptVersionService;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,6 +21,14 @@ final readonly class ModVersionObserver
         private SptVersionService $sptVersionService,
         private AddonVersionService $addonVersionService,
     ) {}
+
+    /**
+     * Handle the ModVersion "created" event.
+     */
+    public function created(ModVersion $modVersion): void
+    {
+        $this->dispatchVerification($modVersion);
+    }
 
     /**
      * Handle the ModVersion "saved" event.
@@ -44,6 +54,23 @@ final readonly class ModVersionObserver
         $this->updateRelatedSptVersions($modVersion); // After resolving SPT versions.
         $this->updateRelatedMod($modVersion);
         $this->resolveRelatedAddonVersions($modVersion);
+    }
+
+    /**
+     * Dispatch a file verification for a newly uploaded version when the pipeline is enabled and the version has a
+     * downloadable link and is not disabled.
+     */
+    private function dispatchVerification(ModVersion $modVersion): void
+    {
+        if (! config()->boolean('verification.enabled')) {
+            return;
+        }
+
+        if ($modVersion->link === '' || $modVersion->disabled) {
+            return;
+        }
+
+        VerificationResult::dispatchFor($modVersion, VerificationTrigger::Upload);
     }
 
     /**
