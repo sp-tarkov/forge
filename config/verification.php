@@ -33,12 +33,14 @@ return [
     | Maximum File Size
     |--------------------------------------------------------------------------
     |
-    | Files larger than this threshold (in bytes) will be skipped during
-    | verification. Default: 500 MB.
+    | Archives larger than this threshold (in bytes) are rejected. The limit is
+    | enforced while the body streams in, not once it has landed on disk, so a
+    | server that lies about (or omits) its content length cannot exceed it.
+    | Default: 5 GB.
     |
     */
 
-    'max_file_size' => (int) env('VERIFICATION_MAX_FILE_SIZE', 500 * 1024 * 1024),
+    'max_file_size' => (int) env('VERIFICATION_MAX_FILE_SIZE', 5 * 1024 * 1024 * 1024),
 
     /*
     |--------------------------------------------------------------------------
@@ -90,11 +92,13 @@ return [
     |--------------------------------------------------------------------------
     |
     | Absolute cap on total extracted content size (in bytes), regardless of
-    | ratio. Default: 2 GB.
+    | ratio. Kept at three times the maximum file size, because an archive at
+    | the limit will normally extract to more than its own size and would
+    | otherwise pass the download only to fail extraction. Default: 15 GB.
     |
     */
 
-    'max_extracted_size' => (int) env('VERIFICATION_MAX_EXTRACTED_SIZE', 2 * 1024 * 1024 * 1024),
+    'max_extracted_size' => (int) env('VERIFICATION_MAX_EXTRACTED_SIZE', 15 * 1024 * 1024 * 1024),
 
     /*
     |--------------------------------------------------------------------------

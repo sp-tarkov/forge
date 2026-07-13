@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Services\Verification;
 
 use App\Contracts\DnsResolver;
+use App\Exceptions\DownloadSizeExceededException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
 use RuntimeException;
 use Throwable;
@@ -119,6 +121,30 @@ final readonly class DownloadSafetyService
         }
 
         return $options;
+    }
+
+    /**
+     * Build the Guzzle options that hold a download to the maximum file size while it is still in flight.
+     *
+     * A declared Content-Length is only a claim and a chunked response declares no length at all, so checking the
+     * size once the body has landed on disk bounds nothing: a hostile or broken server can stream until the disk
+     * fills. `on_headers` refuses an oversized response before any of its body transfers, and `progress` aborts a
+     * server that understates its length, at the cost of whatever curl has already buffered.
+     *
+     * @return array<string, mixed>
+     */
+    public function downloadGuards(int $maxFileSize): array
+    {
+        return [
+            'on_headers' => function (ResponseInterface $response) use ($maxFileSize): void {
+                $contentLength = $response->getHeaderLine('Content-Length');
+
+                throw_if(is_numeric($contentLength) && (int) $contentLength > $maxFileSize, DownloadSizeExceededException::class, (int) $contentLength, $maxFileSize);
+            },
+            'progress' => function (mixed $downloadTotal, mixed $downloadedBytes) use ($maxFileSize): void {
+                throw_if(is_int($downloadedBytes) && $downloadedBytes > $maxFileSize, DownloadSizeExceededException::class, $downloadedBytes, $maxFileSize);
+            },
+        ];
     }
 
     /**

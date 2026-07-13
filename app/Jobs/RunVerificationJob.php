@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\VerificationStatus;
+use App\Exceptions\DownloadSizeExceededException;
 use App\Exceptions\VerificationFailedException;
 use App\Models\AddonVersion;
 use App\Models\ModVersion;
@@ -296,7 +297,10 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
 
             $response = Http::connectTimeout(10)
                 ->timeout($downloadTimeout)
-                ->withOptions($safetyService->requestOptions($url, $this->validatedIp))
+                ->withOptions([
+                    ...$safetyService->requestOptions($url, $this->validatedIp),
+                    ...$safetyService->downloadGuards($maxFileSize),
+                ])
                 ->sink($this->tempFilePath)
                 ->get($url);
 
@@ -309,8 +313,9 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
                 return ['ok' => false, 'error' => 'Downloaded file is empty'];
             }
 
+            // Backstop for whatever curl had already buffered when the in-flight guards aborted the transfer.
             if ($fileSize > $maxFileSize) {
-                return ['ok' => false, 'error' => 'File size ('.$fileSize.' bytes) exceeds maximum ('.$maxFileSize.' bytes)'];
+                return ['ok' => false, 'error' => new DownloadSizeExceededException($fileSize, $maxFileSize)->getMessage()];
             }
 
             $sha256 = hash_file('sha256', $this->tempFilePath);
@@ -320,6 +325,8 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
                 'size' => $fileSize,
                 'sha256' => $sha256,
             ];
+        } catch (DownloadSizeExceededException $exception) {
+            return ['ok' => false, 'error' => $exception->getMessage()];
         } catch (Throwable $throwable) {
             return ['ok' => false, 'error' => 'Download failed: '.$throwable->getMessage()];
         }

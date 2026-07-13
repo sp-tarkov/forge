@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\VerificationStatus;
 use App\Enums\VerificationTrigger;
+use App\Exceptions\DownloadSizeExceededException;
 use App\Jobs\RunVerificationJob;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -404,6 +405,75 @@ it('fails verification when the download certificate cannot be verified', functi
     expect($result->download_ok)->toBeFalse();
     expect($result->failure_reason)->toContain('SSL certificate problem');
     Process::assertNothingRan();
+});
+
+it('rejects an oversized download that understated its length to the head request', function (): void {
+    config()->set('verification.max_file_size', 1024);
+
+    // The server passes the HEAD size check by claiming a small body, then serves far more than it declared. The
+    // in-flight guards abort this mid-transfer in production; the fake cannot stream, so this covers the backstop.
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '100'])
+        : Http::response("PK\x03\x04".str_repeat('A', 8192), 200, ['Content-Length' => '100'])
+    );
+
+    Process::fake();
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    $result->refresh();
+
+    expect($result->status)->toBe(VerificationStatus::Failed);
+    expect($result->download_ok)->toBeFalse();
+    expect($result->failure_reason)->toContain('exceeds maximum');
+    Process::assertNothingRan();
+});
+
+it('guards the download against oversized responses in flight', function (): void {
+    $downloadOptions = [];
+
+    Http::fake(function ($request, $options) use (&$downloadOptions) {
+        if ($request->method() === 'GET') {
+            $downloadOptions = $options;
+
+            return Http::response("PK\x03\x04fake-archive-content", 200);
+        }
+
+        return Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000']);
+    });
+
+    Process::fake([
+        'docker run *' => Process::result(output: json_encode([
+            'downloaded_sha256' => 'abc',
+            'archive_ok' => true,
+            'file_tree' => [],
+            'error' => null,
+        ])),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    // The fake cannot stream, so assert the in-flight guards are actually attached to the download request.
+    expect($downloadOptions)->toHaveKeys(['on_headers', 'progress']);
+
+    $maxFileSize = config()->integer('verification.max_file_size');
+    expect(fn () => $downloadOptions['progress'](0, $maxFileSize + 1))
+        ->toThrow(DownloadSizeExceededException::class);
 });
 
 it('computes its timeout from the stage timeouts plus slack', function (): void {

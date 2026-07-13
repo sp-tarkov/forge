@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\DownloadSizeExceededException;
 use App\Services\Verification\DownloadSafetyService;
+use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Uri;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
@@ -174,6 +176,41 @@ it('does not return a resolved ip when validation fails', function (): void {
     expect($result['safe'])->toBeFalse();
     expect($result)->not->toHaveKey('resolved_ip');
 });
+
+it('refuses a response whose declared length exceeds the maximum before its body transfers', function (): void {
+    $onHeaders = $this->service->downloadGuards(1024)['on_headers'];
+
+    expect(fn () => $onHeaders(new Response(200, ['Content-Length' => '2048'])))
+        ->toThrow(DownloadSizeExceededException::class, 'exceeds maximum (1024 bytes)');
+});
+
+it('allows a response whose declared length is within the maximum', function (array $headers): void {
+    $onHeaders = $this->service->downloadGuards(1024)['on_headers'];
+
+    expect(fn () => $onHeaders(new Response(200, $headers)))->not->toThrow(DownloadSizeExceededException::class);
+})->with([
+    'under the limit' => [['Content-Length' => '1023']],
+    'exactly at the limit' => [['Content-Length' => '1024']],
+    'no declared length' => [[]],
+]);
+
+it('aborts a transfer that streams past the maximum while understating its length', function (): void {
+    $progress = $this->service->downloadGuards(1024)['progress'];
+
+    // The server claimed 100 bytes, so on_headers let it through; it is now well past the limit.
+    expect(fn () => $progress(100, 2048))
+        ->toThrow(DownloadSizeExceededException::class, 'after receiving 2048 bytes');
+});
+
+it('lets a transfer continue while it remains within the maximum', function (int $downloadedBytes): void {
+    $progress = $this->service->downloadGuards(1024)['progress'];
+
+    expect(fn () => $progress(1024, $downloadedBytes))->not->toThrow(DownloadSizeExceededException::class);
+})->with([
+    'nothing yet' => 0,
+    'partway' => 512,
+    'exactly at the limit' => 1024,
+]);
 
 it('verifies tls certificates on every outbound request', function (): void {
     expect($this->service->requestOptions('https://example.com/mod.zip', null)['verify'])->toBeTrue();
