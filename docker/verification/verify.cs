@@ -13,6 +13,7 @@ string extension = Environment.GetEnvironmentVariable("ARCHIVE_EXTENSION") ?? "z
 long archiveSize = long.TryParse(Environment.GetEnvironmentVariable("ARCHIVE_SIZE"), out long s) ? s : 0L;
 int maxRatio = int.TryParse(Environment.GetEnvironmentVariable("MAX_EXTRACTION_RATIO"), out int r) ? r : 100;
 long maxExtractedSize = long.TryParse(Environment.GetEnvironmentVariable("MAX_EXTRACTED_SIZE"), out long m) ? m : 2L * 1024 * 1024 * 1024;
+int maxFileTreeEntries = int.TryParse(Environment.GetEnvironmentVariable("MAX_FILE_TREE_ENTRIES"), out int f) ? f : 10000;
 
 string workDir = "/tmp/work";
 string extractDir = Path.Combine(workDir, "extracted");
@@ -42,14 +43,14 @@ try
         return;
     }
 
-    (List<string> fileTree, int symlinksRemoved, string? postError) = PostExtractionScan(extractDir, archiveSize, maxRatio, maxExtractedSize);
+    (List<string> fileTree, int symlinksRemoved, bool fileTreeTruncated, string? postError) = PostExtractionScan(extractDir, archiveSize, maxRatio, maxExtractedSize, maxFileTreeEntries);
     if (postError is not null)
     {
         WriteError(sha256, postError);
         return;
     }
 
-    WriteSuccess(sha256, fileTree, symlinksRemoved);
+    WriteSuccess(sha256, fileTree, symlinksRemoved, fileTreeTruncated);
 }
 catch (Exception ex)
 {
@@ -80,7 +81,8 @@ static string? ValidateAndExtract(
 {
     try
     {
-        string extractDirFull = Path.GetFullPath(extractDir) + Path.DirectorySeparatorChar;
+        string extractDirRoot = Path.GetFullPath(extractDir);
+        string extractDirFull = extractDirRoot + Path.DirectorySeparatorChar;
         long maxByRatio = ComputeRatioLimit(archiveSize, maxRatio);
         long totalWritten = 0;
 
@@ -107,10 +109,9 @@ static string? ValidateAndExtract(
             foreach (ZipArchiveEntry entry in zip.Entries)
             {
                 string destPath = Path.GetFullPath(Path.Combine(extractDir, entry.FullName));
-                if (!destPath.StartsWith(extractDirFull, StringComparison.Ordinal) &&
-                    destPath != Path.GetFullPath(extractDir))
+                if (destPath != extractDirRoot && !destPath.StartsWith(extractDirFull, StringComparison.Ordinal))
                 {
-                    continue;
+                    return $"Archive contains an entry that resolves outside the extraction directory: {entry.FullName}";
                 }
 
                 if (string.IsNullOrEmpty(entry.Name))
@@ -158,10 +159,9 @@ static string? ValidateAndExtract(
                 }
 
                 string destPath = Path.GetFullPath(Path.Combine(extractDir, entry.Key));
-                if (!destPath.StartsWith(extractDirFull, StringComparison.Ordinal) &&
-                    destPath != Path.GetFullPath(extractDir))
+                if (destPath != extractDirRoot && !destPath.StartsWith(extractDirFull, StringComparison.Ordinal))
                 {
-                    continue;
+                    return $"Archive contains an entry that resolves outside the extraction directory: {entry.Key}";
                 }
 
                 Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
@@ -188,12 +188,15 @@ static string? ValidateAndExtract(
 
 /// <summary>
 /// Scans the extracted directory in a single pass: removes symlinks, checks size limits, and builds the file tree.
+/// The tree is capped at maxFileTreeEntries so the reported list, and the JSON written to stdout, cannot grow without
+/// bound; the flag records whether entries were dropped.
 /// </summary>
-static (List<string> FileTree, int SymlinksRemoved, string? Error) PostExtractionScan(
+static (List<string> FileTree, int SymlinksRemoved, bool Truncated, string? Error) PostExtractionScan(
     string extractDir,
     long archiveSize,
     int maxRatio,
-    long maxExtractedSize)
+    long maxExtractedSize,
+    int maxFileTreeEntries)
 {
     List<string> fileTree = [];
     int symlinksRemoved = 0;
@@ -220,7 +223,7 @@ static (List<string> FileTree, int SymlinksRemoved, string? Error) PostExtractio
         if (relativePath.Contains("../", StringComparison.Ordinal) ||
             relativePath.StartsWith("..", StringComparison.Ordinal))
         {
-            return ([], 0, $"Extracted archive contains path traversal: {relativePath}");
+            return ([], 0, false, $"Extracted archive contains path traversal: {relativePath}");
         }
 
         totalSize += new FileInfo(fullPath).Length;
@@ -229,7 +232,7 @@ static (List<string> FileTree, int SymlinksRemoved, string? Error) PostExtractio
 
     if (totalSize > maxExtractedSize)
     {
-        return ([], 0, $"Extracted size ({totalSize} bytes) exceeds maximum ({maxExtractedSize} bytes)");
+        return ([], 0, false, $"Extracted size ({totalSize} bytes) exceeds maximum ({maxExtractedSize} bytes)");
     }
 
     if (archiveSize > 0)
@@ -237,13 +240,19 @@ static (List<string> FileTree, int SymlinksRemoved, string? Error) PostExtractio
         long ratio = totalSize / archiveSize;
         if (ratio > maxRatio)
         {
-            return ([], 0, $"Actual extraction ratio ({ratio}:1) exceeds maximum ({maxRatio}:1): potential zip bomb");
+            return ([], 0, false, $"Actual extraction ratio ({ratio}:1) exceeds maximum ({maxRatio}:1): potential zip bomb");
         }
     }
 
     fileTree.Sort(StringComparer.Ordinal);
 
-    return (fileTree, symlinksRemoved, null);
+    bool truncated = fileTree.Count > maxFileTreeEntries;
+    if (truncated)
+    {
+        fileTree = fileTree.GetRange(0, maxFileTreeEntries);
+    }
+
+    return (fileTree, symlinksRemoved, truncated, null);
 }
 
 /// <summary>Checks whether a file path contains directory traversal sequences.</summary>
@@ -322,13 +331,14 @@ void WriteError(string? sha256, string error)
 }
 
 /// <summary>Writes a successful verification result as JSON to stdout.</summary>
-void WriteSuccess(string sha256, List<string> fileTree, int symlinksRemoved)
+void WriteSuccess(string sha256, List<string> fileTree, int symlinksRemoved, bool fileTreeTruncated)
 {
     var result = new
     {
         DownloadedSha256 = sha256,
         ArchiveOk = true,
         FileTree = fileTree,
+        FileTreeTruncated = fileTreeTruncated,
         SymlinksRemoved = symlinksRemoved,
         Error = (string?)null,
     };

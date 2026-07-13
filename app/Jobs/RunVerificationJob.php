@@ -176,6 +176,30 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
+     * Coerce the container's reported file tree into a bounded list of strings. The container output is untrusted, so
+     * non-string entries are dropped and the list is capped host-side independently of what the container reported,
+     * with truncation recorded when it happens at either end.
+     *
+     * @param  array<string, mixed>  $containerData
+     * @return array{tree: list<string>, truncated: bool}
+     */
+    private function sanitizeFileTree(array $containerData): array
+    {
+        $rawTree = $containerData['file_tree'] ?? [];
+        $tree = is_array($rawTree) ? array_values(array_filter($rawTree, is_string(...))) : [];
+
+        $truncated = (bool) ($containerData['file_tree_truncated'] ?? false);
+
+        $maxEntries = config()->integer('verification.max_file_tree_entries', 10000);
+        if (count($tree) > $maxEntries) {
+            $tree = array_slice($tree, 0, $maxEntries);
+            $truncated = true;
+        }
+
+        return ['tree' => $tree, 'truncated' => $truncated];
+    }
+
+    /**
      * Run the ephemeral Docker container to extract the archive and analyze the results.
      */
     private function extractAndAnalyze(): void
@@ -208,8 +232,10 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         /** @var array<string, mixed> $containerData */
         $containerData = $outcome['data'] ?? [];
         $archiveOk = (bool) ($containerData['archive_ok'] ?? false);
-        /** @var list<string> $fileTree */
-        $fileTree = $containerData['file_tree'] ?? [];
+
+        $fileTreeResult = $this->sanitizeFileTree($containerData);
+        $fileTree = $fileTreeResult['tree'];
+        $this->details['file_tree_truncated'] = $fileTreeResult['truncated'];
 
         if (isset($containerData['downloaded_sha256']) && is_string($containerData['downloaded_sha256']) && $this->verificationResult->downloaded_sha256 === null) {
             $this->verificationResult->downloaded_sha256 = $containerData['downloaded_sha256'];
@@ -358,6 +384,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         $timeout = config()->integer('verification.timeouts.container', 600);
         $maxExtractionRatio = config()->integer('verification.max_extraction_ratio', 100);
         $maxExtractedSize = config()->integer('verification.max_extracted_size', 2 * 1024 * 1024 * 1024);
+        $maxFileTreeEntries = config()->integer('verification.max_file_tree_entries', 10000);
 
         chmod($this->tempFilePath, 0644);
 
@@ -365,7 +392,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         $this->removeContainer();
 
         $command = sprintf(
-            'docker run --rm --pull=%s --init --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=%s --name=%s --label=%s --network=none --memory=512m --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s %s',
+            'docker run --rm --pull=%s --init --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=%s --name=%s --label=%s --network=none --memory=512m --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s -e MAX_FILE_TREE_ENTRIES=%s %s',
             escapeshellarg($this->pullPolicy()),
             escapeshellarg((string) config()->integer('verification.container.pids_limit', 256)),
             escapeshellarg((string) $this->containerName),
@@ -375,6 +402,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
             escapeshellarg((string) $archiveSize),
             escapeshellarg((string) $maxExtractionRatio),
             escapeshellarg((string) $maxExtractedSize),
+            escapeshellarg((string) $maxFileTreeEntries),
             escapeshellarg($dockerImage),
         );
 

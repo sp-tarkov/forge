@@ -118,6 +118,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Maximum File Tree Entries
+    |--------------------------------------------------------------------------
+    |
+    | The most file paths kept from a verified archive. The container caps its
+    | own reported list at this count and the host re-caps it, so neither the
+    | JSON returned over stdout nor the stored column can grow without bound for
+    | an archive with an enormous number of files. Excess entries are dropped
+    | and the result is flagged as truncated.
+    |
+    */
+
+    'max_file_tree_entries' => (int) env('VERIFICATION_MAX_FILE_TREE_ENTRIES', 10000),
+
+    /*
+    |--------------------------------------------------------------------------
     | Timeouts
     |--------------------------------------------------------------------------
     |

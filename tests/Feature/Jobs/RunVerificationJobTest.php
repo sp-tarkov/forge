@@ -142,6 +142,137 @@ it('marks result as passed when container reports success', function (): void {
     expect($modVersion->last_verified_at)->not->toBeNull();
 });
 
+it('caps and sanitizes the container-reported file tree', function (): void {
+    config()->set('verification.max_file_tree_entries', 5);
+
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    // The container is untrusted: it reports 8 entries, two of which are non-strings, past a host cap of 5.
+    $reported = ['a.txt', 'b.txt', 42, 'c.txt', ['nested'], 'd.txt', 'e.txt', 'f.txt'];
+
+    Process::fake([
+        'docker run *' => Process::result(output: json_encode([
+            'downloaded_sha256' => 'abc',
+            'archive_ok' => true,
+            'file_tree' => $reported,
+            'file_tree_truncated' => false,
+            'error' => null,
+        ])),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    $result->refresh();
+
+    expect($result->file_tree)->toBe(['a.txt', 'b.txt', 'c.txt', 'd.txt', 'e.txt']);
+    expect($result->details['file_tree_truncated'])->toBeTrue();
+});
+
+it('honours the container truncation flag even when under the host cap', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: json_encode([
+            'downloaded_sha256' => 'abc',
+            'archive_ok' => true,
+            'file_tree' => ['a.txt', 'b.txt'],
+            'file_tree_truncated' => true,
+            'error' => null,
+        ])),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    $result->refresh();
+
+    expect($result->file_tree)->toBe(['a.txt', 'b.txt']);
+    expect($result->details['file_tree_truncated'])->toBeTrue();
+});
+
+it('tolerates a non-array file tree from the container', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: json_encode([
+            'downloaded_sha256' => 'abc',
+            'archive_ok' => true,
+            'file_tree' => 'not-an-array',
+            'error' => null,
+        ])),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    $result->refresh();
+
+    expect($result->status)->toBe(VerificationStatus::Passed);
+    expect($result->file_tree)->toBe([]);
+});
+
+it('passes the file tree entry cap to the container', function (): void {
+    config()->set('verification.max_file_tree_entries', 7500);
+
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: json_encode([
+            'downloaded_sha256' => 'abc',
+            'archive_ok' => true,
+            'file_tree' => [],
+            'error' => null,
+        ])),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_contains($process->command, "-e MAX_FILE_TREE_ENTRIES='7500'"));
+});
+
 it('marks result as failed when container reports extraction failure', function (): void {
     Http::fake(fn ($request) => $request->method() === 'HEAD'
         ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
