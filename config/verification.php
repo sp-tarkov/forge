@@ -77,6 +77,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | User Agent
+    |--------------------------------------------------------------------------
+    |
+    | Sent on every request to a mod download link (safety check, change
+    | detection, and the download itself) so hosts can identify the verifier and
+    | allowlist it rather than rate-limit or block it. Includes an info URL.
+    |
+    */
+
+    'user_agent' => env('VERIFICATION_USER_AGENT', 'ForgeVerifier/1.0 (+https://forge.sp-tarkov.com)'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Queue Name
     |--------------------------------------------------------------------------
     |

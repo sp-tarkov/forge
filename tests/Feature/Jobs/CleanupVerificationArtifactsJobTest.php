@@ -35,7 +35,7 @@ it('does not remove containers when none are stale', function (): void {
         && str_contains($process->command, 'docker rm'));
 });
 
-it('does not inspect or remove anything when no labeled containers are running', function (): void {
+it('does not inspect or remove anything when no labelled containers are running', function (): void {
     Process::fake([
         'docker ps *' => Process::result(output: ''),
     ]);

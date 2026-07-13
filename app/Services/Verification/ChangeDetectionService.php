@@ -44,6 +44,7 @@ final readonly class ChangeDetectionService
         try {
             $response = Http::connectTimeout(5)
                 ->timeout(30)
+                ->withUserAgent($this->safetyService->userAgent())
                 ->withOptions($this->safetyService->requestOptions($version->link, $destination['resolved_ip'] ?? null))
                 ->head($version->link);
 

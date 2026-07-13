@@ -323,6 +323,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
 
             $response = Http::connectTimeout(10)
                 ->timeout($downloadTimeout)
+                ->withUserAgent($safetyService->userAgent())
                 ->withOptions([
                     ...$safetyService->requestOptions($url, $this->validatedIp),
                     ...$safetyService->downloadGuards($maxFileSize),

@@ -41,7 +41,12 @@ final readonly class DownloadSafetyService
         '224.0.0.0/4',        // Multicast
         '240.0.0.0/4',        // Reserved
         '255.255.255.255/32', // Broadcast
+        '::/128',             // IPv6 unspecified
         '::1/128',            // IPv6 loopback
+        '64:ff9b::/96',       // NAT64 (maps to IPv4, can reach IPv4 internals)
+        '100::/64',           // IPv6 discard-only
+        '2001:db8::/32',      // IPv6 documentation
+        '2002::/16',          // 6to4
         'fc00::/7',           // IPv6 unique local
         'fe80::/10',          // IPv6 link-local
         '::ffff:0:0/96',      // IPv4-mapped IPv6
@@ -171,6 +176,14 @@ final readonly class DownloadSafetyService
     }
 
     /**
+     * The User-Agent identifying the verifier.
+     */
+    public function userAgent(): string
+    {
+        return config()->string('verification.user_agent', 'ForgeVerifier/1.0 (+https://forge.sp-tarkov.com)');
+    }
+
+    /**
      * Build the curl CURLOPT_RESOLVE entry that pins a URL's host and port to an already-validated IP, so the
      * connection cannot be redirected to a different address by a DNS record that changes after validation.
      */
@@ -178,6 +191,11 @@ final readonly class DownloadSafetyService
     {
         $host = parse_url($url, PHP_URL_HOST);
         if (! is_string($host) || $host === '') {
+            return null;
+        }
+
+        // An IP-literal host carries no DNS lookup to pin.
+        if (filter_var($this->normalizeHost($host), FILTER_VALIDATE_IP)) {
             return null;
         }
 
@@ -249,6 +267,7 @@ final readonly class DownloadSafetyService
         try {
             $response = Http::connectTimeout(5)
                 ->timeout(30)
+                ->withUserAgent($this->userAgent())
                 ->withOptions($this->requestOptions($url, $validatedIp))
                 ->head($url);
 
@@ -342,6 +361,8 @@ final readonly class DownloadSafetyService
      */
     private function resolveAndValidateHost(string $host): array
     {
+        $host = $this->normalizeHost($host);
+
         if (filter_var($host, FILTER_VALIDATE_IP)) {
             if ($this->isBlockedIp($host)) {
                 return ['error' => 'Download URL resolves to a blocked IP address', 'ip' => null];
@@ -366,6 +387,18 @@ final readonly class DownloadSafetyService
         }
 
         return ['error' => null, 'ip' => $firstIp];
+    }
+
+    /**
+     * Strip the surrounding brackets from a bracketed IPv6 literal so it can be validated as a plain address.
+     */
+    private function normalizeHost(string $host): string
+    {
+        if (str_starts_with($host, '[') && str_ends_with($host, ']')) {
+            return mb_substr($host, 1, -1);
+        }
+
+        return $host;
     }
 
     /**

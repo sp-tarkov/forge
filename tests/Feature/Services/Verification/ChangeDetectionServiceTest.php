@@ -108,6 +108,22 @@ it('marks as unreachable when connection fails', function (): void {
     expect($result->unreachable)->toBeTrue();
 });
 
+it('sends the verifier user agent on the change detection request', function (): void {
+    config()->set('verification.user_agent', 'ForgeVerifier/9.9 (+https://example.test)');
+
+    Http::fake([
+        '*' => Http::response('', 200, ['ETag' => '"abc123"']),
+    ]);
+
+    $modVersion = ModVersion::factory()->for($this->mod)->create([
+        'link' => 'https://example.com/mod.zip',
+    ]);
+
+    $this->service->check($modVersion);
+
+    Http::assertSent(fn ($request): bool => $request->hasHeader('User-Agent', 'ForgeVerifier/9.9 (+https://example.test)'));
+});
+
 it('returns unreachable for empty link', function (): void {
     $modVersion = ModVersion::factory()->for($this->mod)->create([
         'link' => '',

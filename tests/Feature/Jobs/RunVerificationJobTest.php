@@ -733,6 +733,37 @@ it('guards the download against oversized responses in flight', function (): voi
         ->toThrow(DownloadSizeExceededException::class);
 });
 
+it('sends the verifier user agent on the download request', function (): void {
+    config()->set('verification.user_agent', 'ForgeVerifier/9.9 (+https://example.test)');
+
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: json_encode([
+            'downloaded_sha256' => 'abc',
+            'archive_ok' => true,
+            'file_tree' => [],
+            'error' => null,
+        ])),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Http::assertSent(fn ($request): bool => $request->method() !== 'GET'
+        || $request->hasHeader('User-Agent', 'ForgeVerifier/9.9 (+https://example.test)'));
+});
+
 it('computes its timeout from the stage timeouts plus slack', function (): void {
     config()->set('verification.timeouts.download', 900);
     config()->set('verification.timeouts.container', 600);

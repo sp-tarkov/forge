@@ -90,6 +90,22 @@ it('rejects 172.16.x.x private range', function (): void {
     expect($result['error'])->toContain('blocked IP');
 });
 
+it('rejects blocked ipv6 ranges', function (string $url): void {
+    $result = $this->service->validate($url, $this->maxSize);
+
+    expect($result['safe'])->toBeFalse();
+    expect($result['error'])->toContain('blocked IP');
+})->with([
+    'loopback' => 'http://[::1]/mod.zip',
+    'unspecified' => 'http://[::]/mod.zip',
+    'unique local' => 'http://[fc00::1]/mod.zip',
+    'link local' => 'http://[fe80::1]/mod.zip',
+    'nat64' => 'http://[64:ff9b::7f00:1]/mod.zip',
+    '6to4' => 'http://[2002:c0a8:0101::1]/mod.zip',
+    'documentation' => 'http://[2001:db8::1]/mod.zip',
+    'ipv4-mapped loopback' => 'http://[::ffff:127.0.0.1]/mod.zip',
+]);
+
 it('rejects urls that do not point to archive files', function (): void {
     Http::fake([
         '*' => Http::response('', 200, [
@@ -215,6 +231,21 @@ it('lets a transfer continue while it remains within the maximum', function (int
 it('verifies tls certificates on every outbound request', function (): void {
     expect($this->service->requestOptions('https://example.com/mod.zip', null)['verify'])->toBeTrue();
     expect($this->service->requestOptions('https://example.com/mod.zip', '93.184.215.14')['verify'])->toBeTrue();
+});
+
+it('sends the verifier user agent on the safety check request', function (): void {
+    config()->set('verification.user_agent', 'ForgeVerifier/9.9 (+https://example.test)');
+
+    Http::fake([
+        '*' => Http::response('', 200, [
+            'Content-Type' => 'application/octet-stream',
+            'Content-Length' => '5000',
+        ]),
+    ]);
+
+    $this->service->validate('https://example.com/mod.zip', $this->maxSize);
+
+    Http::assertSent(fn ($request): bool => $request->hasHeader('User-Agent', 'ForgeVerifier/9.9 (+https://example.test)'));
 });
 
 it('rejects a url whose certificate cannot be verified', function (): void {
