@@ -262,17 +262,6 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
     }
 
     /**
-     * The toast message shown when a mod version is not eligible for verification.
-     */
-    private function ineligibleVersionMessage(): string
-    {
-        return sprintf(
-            'Verification only runs for versions compatible with SPT %s or newer.',
-            config()->string('verification.min_spt_version', '4.0.0'),
-        );
-    }
-
-    /**
      * Show the detail modal for a specific result.
      */
     public function showDetails(int $resultId): void
@@ -358,5 +347,16 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
     public function updatedStatusFilter(): void
     {
         $this->resetPage();
+    }
+
+    /**
+     * The toast message shown when a mod version is not eligible for verification.
+     */
+    private function ineligibleVersionMessage(): string
+    {
+        return sprintf(
+            'Verification only runs for versions compatible with SPT %s or newer.',
+            config()->string('verification.min_spt_version', '4.0.0'),
+        );
     }
 };

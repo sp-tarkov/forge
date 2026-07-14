@@ -26,7 +26,8 @@
                             @if ($check->failed() && $check->description())
                                 <flux:separator class="my-2" />
                             @endif
-                            <p class="mt-1 break-words text-xs {{ $check->failed() ? 'text-red-400' : 'text-gray-300' }}">
+                            <p
+                                class="{{ $check->failed() ? 'text-red-400' : 'text-gray-300' }} mt-1 break-words text-xs">
                                 {{ $check->message }}
                             </p>
                         @endif
