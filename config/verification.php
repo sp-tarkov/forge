@@ -20,6 +20,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Minimum SPT Version
+    |--------------------------------------------------------------------------
+    |
+    | Mod versions are only verified when their SPT constraint can match this version or newer. Versions for older
+    | SPT releases are skipped everywhere a verification would otherwise be dispatched.
+    |
+    */
+
+    'min_spt_version' => env('VERIFICATION_MIN_SPT_VERSION', '4.0.0'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Docker Image
     |--------------------------------------------------------------------------
     |

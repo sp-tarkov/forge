@@ -17,6 +17,7 @@ it('dispatches verification job for a valid mod version', function (): void {
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
     $modVersion = ModVersion::factory()->for($mod)->create([
         'link' => 'https://example.com/mod.zip',
+        'spt_version_constraint' => '>=4.0.0',
     ]);
 
     $this->artisan(VerifyVersionCommand::class, ['type' => 'mod_version', 'id' => $modVersion->id])
@@ -47,4 +48,21 @@ it('fails for version with no download link', function (): void {
 
     $this->artisan(VerifyVersionCommand::class, ['type' => 'mod_version', 'id' => $modVersion->id])
         ->assertFailed();
+});
+
+it('fails for a mod version only compatible with SPT versions below the minimum', function (): void {
+    Queue::fake([RunVerificationJob::class]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+        'spt_version_constraint' => '~3.9.0',
+    ]);
+
+    $this->artisan(VerifyVersionCommand::class, ['type' => 'mod_version', 'id' => $modVersion->id])
+        ->expectsOutput('This version is not eligible for verification. Only versions compatible with SPT 4.0.0 or newer are verified.')
+        ->assertFailed();
+
+    Queue::assertNotPushed(RunVerificationJob::class);
+    expect(VerificationResult::query()->count())->toBe(0);
 });

@@ -46,10 +46,15 @@ final class VerificationResult extends Model
 
     /**
      * Create a pending verification result and dispatch the verification job.
-     * Skips dispatch if an active (non-stale) pending or running verification already exists for this version.
+     * Skips dispatch for mod versions that are not eligible for verification, and when an active (non-stale) pending
+     * or running verification already exists for this version.
      */
     public static function dispatchFor(ModVersion|AddonVersion $version, VerificationTrigger $trigger): ?self
     {
+        if ($version instanceof ModVersion && ! $version->isEligibleForVerification()) {
+            return null;
+        }
+
         $hasActive = self::query()
             ->where('verifiable_type', $version::class)
             ->where('verifiable_id', $version->id)

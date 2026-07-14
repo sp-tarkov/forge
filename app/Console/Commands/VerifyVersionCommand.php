@@ -45,6 +45,15 @@ final class VerifyVersionCommand extends Command
             return self::FAILURE;
         }
 
+        if ($version instanceof ModVersion && ! $version->isEligibleForVerification()) {
+            $this->error(sprintf(
+                'This version is not eligible for verification. Only versions compatible with SPT %s or newer are verified.',
+                config()->string('verification.min_spt_version', '4.0.0'),
+            ));
+
+            return self::FAILURE;
+        }
+
         $result = VerificationResult::dispatchFor($version, VerificationTrigger::Manual);
 
         if (! $result instanceof VerificationResult) {

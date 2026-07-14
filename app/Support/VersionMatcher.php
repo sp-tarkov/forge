@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use Composer\Semver\Intervals;
 use Composer\Semver\Semver;
 use Composer\Semver\VersionParser;
 use Illuminate\Support\Str;
@@ -39,6 +40,24 @@ final class VersionMatcher
             $versions,
             static fn (string $version): bool => self::satisfies($version, $constraint),
         ));
+    }
+
+    /**
+     * Determine whether two constraints can both be satisfied by at least one common version, treating unparsable
+     * input as a non-match.
+     */
+    public static function intersects(string $constraintA, string $constraintB): bool
+    {
+        try {
+            $parser = new VersionParser;
+
+            return Intervals::haveIntersections(
+                $parser->parseConstraints($constraintA),
+                $parser->parseConstraints($constraintB),
+            );
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     /**

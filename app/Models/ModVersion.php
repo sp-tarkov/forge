@@ -12,6 +12,7 @@ use App\Models\Scopes\PublishedScope;
 use App\Models\Scopes\PublishedSptVersionScope;
 use App\Observers\ModVersionObserver;
 use App\Support\Version;
+use App\Support\VersionMatcher;
 use Carbon\CarbonImmutable;
 use Database\Factories\ModVersionFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
@@ -330,6 +331,16 @@ final class ModVersion extends Model implements Trackable
     public function isLegacy(): bool
     {
         return $this->spt_version_constraint === '';
+    }
+
+    /**
+     * Check if this mod version's SPT constraint can match the minimum SPT version required for file verification.
+     */
+    public function isEligibleForVerification(): bool
+    {
+        $minimumSptVersion = config()->string('verification.min_spt_version', '4.0.0');
+
+        return VersionMatcher::intersects($this->spt_version_constraint, '>='.$minimumSptVersion);
     }
 
     /**

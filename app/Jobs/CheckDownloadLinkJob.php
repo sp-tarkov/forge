@@ -46,6 +46,10 @@ final class CheckDownloadLinkJob implements ShouldQueue
             return;
         }
 
+        if ($version instanceof ModVersion && ! $version->isEligibleForVerification()) {
+            return;
+        }
+
         $result = $changeDetectionService->check($version);
 
         if ($result->unreachable) {

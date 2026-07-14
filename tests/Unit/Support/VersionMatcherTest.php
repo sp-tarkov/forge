@@ -43,6 +43,26 @@ describe('VersionMatcher::satisfiedBy', function (): void {
     });
 });
 
+describe('VersionMatcher::intersects', function (): void {
+    it('detects overlapping constraints', function (): void {
+        expect(VersionMatcher::intersects('~4.0.0', '>=4.0.0'))->toBeTrue()
+            ->and(VersionMatcher::intersects('^4.1', '>=4.0.0'))->toBeTrue()
+            ->and(VersionMatcher::intersects('>=3.0.0', '>=4.0.0'))->toBeTrue()
+            ->and(VersionMatcher::intersects('~3.9.0 || ^4.0', '>=4.0.0'))->toBeTrue();
+    });
+
+    it('rejects disjoint constraints', function (): void {
+        expect(VersionMatcher::intersects('~3.9.0', '>=4.0.0'))->toBeFalse()
+            ->and(VersionMatcher::intersects('^2.0.0', '>=4.0.0'))->toBeFalse()
+            ->and(VersionMatcher::intersects('<4.0.0', '>=4.0.0'))->toBeFalse();
+    });
+
+    it('treats unparsable constraints as a non-match instead of throwing', function (): void {
+        expect(VersionMatcher::intersects('', '>=4.0.0'))->toBeFalse()
+            ->and(VersionMatcher::intersects('not-a-constraint', '>=4.0.0'))->toBeFalse();
+    });
+});
+
 describe('VersionMatcher sorting', function (): void {
     it('sorts ascending and descending', function (): void {
         expect(VersionMatcher::sort(['2.0.0', '1.0.0', '1.5.0']))->toBe(['1.0.0', '1.5.0', '2.0.0'])

@@ -79,7 +79,7 @@ it('creates a pending result and dispatches the verification job', function (): 
     Queue::fake();
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
-    $modVersion = ModVersion::factory()->for($mod)->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['spt_version_constraint' => '>=4.0.0']);
 
     $result = VerificationResult::dispatchFor($modVersion, VerificationTrigger::Manual);
 
@@ -94,7 +94,7 @@ it('does not dispatch when a fresh pending verification exists', function (): vo
     Queue::fake();
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
-    $modVersion = ModVersion::factory()->for($mod)->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['spt_version_constraint' => '>=4.0.0']);
 
     VerificationResult::factory()->forModVersion($modVersion)->create([
         'status' => VerificationStatus::Pending,
@@ -110,7 +110,7 @@ it('does not dispatch when a fresh running verification exists', function (): vo
     Queue::fake();
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
-    $modVersion = ModVersion::factory()->for($mod)->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['spt_version_constraint' => '>=4.0.0']);
 
     VerificationResult::factory()->forModVersion($modVersion)->create([
         'status' => VerificationStatus::Running,
@@ -128,7 +128,7 @@ it('dispatches when the existing pending verification is stale', function (): vo
     Queue::fake();
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
-    $modVersion = ModVersion::factory()->for($mod)->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['spt_version_constraint' => '>=4.0.0']);
 
     VerificationResult::factory()->forModVersion($modVersion)->create([
         'status' => VerificationStatus::Pending,
@@ -146,7 +146,7 @@ it('dispatches when the existing running verification is stale', function (): vo
     Queue::fake();
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
-    $modVersion = ModVersion::factory()->for($mod)->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['spt_version_constraint' => '>=4.0.0']);
 
     VerificationResult::factory()->forModVersion($modVersion)->create([
         'status' => VerificationStatus::Running,
@@ -164,7 +164,7 @@ it('dispatches when only completed verifications exist', function (): void {
     Queue::fake();
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
-    $modVersion = ModVersion::factory()->for($mod)->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['spt_version_constraint' => '>=4.0.0']);
 
     VerificationResult::factory()->forModVersion($modVersion)->passed()->create();
     VerificationResult::factory()->forModVersion($modVersion)->failed()->create();
@@ -173,6 +173,30 @@ it('dispatches when only completed verifications exist', function (): void {
 
     expect($result)->toBeInstanceOf(VerificationResult::class);
     Queue::assertPushed(RunVerificationJob::class, 1);
+});
+
+it('does not dispatch for a mod version only compatible with SPT versions below the minimum', function (): void {
+    Queue::fake();
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['spt_version_constraint' => '~3.9.0']);
+
+    $result = VerificationResult::dispatchFor($modVersion, VerificationTrigger::Manual);
+
+    expect($result)->toBeNull();
+    Queue::assertNotPushed(RunVerificationJob::class);
+});
+
+it('does not dispatch for a legacy mod version without an SPT constraint', function (): void {
+    Queue::fake();
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['spt_version_constraint' => '']);
+
+    $result = VerificationResult::dispatchFor($modVersion, VerificationTrigger::Manual);
+
+    expect($result)->toBeNull();
+    Queue::assertNotPushed(RunVerificationJob::class);
 });
 
 it('casts file_tree and details to arrays', function (): void {
