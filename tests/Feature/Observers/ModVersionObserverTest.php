@@ -17,7 +17,7 @@ beforeEach(function (): void {
 
 describe('upload verification', function (): void {
     it('dispatches an upload verification when a mod version is created', function (): void {
-        config()->set('verification.enabled', true);
+        config()->set('verification.auto_enabled', true);
         Queue::fake();
 
         $modVersion = ModVersion::factory()->for($this->mod)->create([
@@ -35,8 +35,8 @@ describe('upload verification', function (): void {
             ->exists())->toBeTrue();
     });
 
-    it('does not dispatch when the verification pipeline is disabled', function (): void {
-        config()->set('verification.enabled', false);
+    it('does not dispatch when automatic verification is disabled', function (): void {
+        config()->set('verification.auto_enabled', false);
         Queue::fake();
 
         ModVersion::factory()->for($this->mod)->create(['link' => 'https://example.com/mod.zip']);
@@ -46,7 +46,7 @@ describe('upload verification', function (): void {
     });
 
     it('does not dispatch for a version without a download link', function (): void {
-        config()->set('verification.enabled', true);
+        config()->set('verification.auto_enabled', true);
         Queue::fake();
 
         ModVersion::factory()->for($this->mod)->create(['link' => '']);
@@ -55,7 +55,7 @@ describe('upload verification', function (): void {
     });
 
     it('does not dispatch for a disabled version', function (): void {
-        config()->set('verification.enabled', true);
+        config()->set('verification.auto_enabled', true);
         Queue::fake();
 
         ModVersion::factory()->for($this->mod)->disabled()->create(['link' => 'https://example.com/mod.zip']);

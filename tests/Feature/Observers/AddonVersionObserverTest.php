@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Queue;
 
 describe('upload verification', function (): void {
     it('dispatches an upload verification when an addon version is created', function (): void {
-        config()->set('verification.enabled', true);
+        config()->set('verification.auto_enabled', true);
         Queue::fake();
 
         $addonVersion = AddonVersion::factory()->create([
@@ -29,8 +29,8 @@ describe('upload verification', function (): void {
             ->exists())->toBeTrue();
     });
 
-    it('does not dispatch when the verification pipeline is disabled', function (): void {
-        config()->set('verification.enabled', false);
+    it('does not dispatch when automatic verification is disabled', function (): void {
+        config()->set('verification.auto_enabled', false);
         Queue::fake();
 
         AddonVersion::factory()->create(['link' => 'https://example.com/addon.zip']);
@@ -40,7 +40,7 @@ describe('upload verification', function (): void {
     });
 
     it('does not dispatch for a version without a download link', function (): void {
-        config()->set('verification.enabled', true);
+        config()->set('verification.auto_enabled', true);
         Queue::fake();
 
         AddonVersion::factory()->create(['link' => '']);
@@ -49,7 +49,7 @@ describe('upload verification', function (): void {
     });
 
     it('does not dispatch for a disabled version', function (): void {
-        config()->set('verification.enabled', true);
+        config()->set('verification.auto_enabled', true);
         Queue::fake();
 
         AddonVersion::factory()->disabled()->create(['link' => 'https://example.com/addon.zip']);

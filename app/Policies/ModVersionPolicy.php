@@ -31,6 +31,22 @@ final class ModVersionPolicy
     }
 
     /**
+     * Determine whether the user can view the mod version's failed verification details.
+     */
+    public function viewFailedVerification(?User $user, ModVersion $modVersion): bool
+    {
+        if (! $user instanceof User) {
+            return false;
+        }
+
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        return $modVersion->mod->isAuthorOrOwner($user);
+    }
+
+    /**
      * Determine whether the user can create mod versions.
      */
     public function create(User $user, Mod $mod): bool

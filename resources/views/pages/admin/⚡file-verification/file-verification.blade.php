@@ -11,6 +11,17 @@
 
     <div class="px-6 lg:px-8">
         <div class="space-y-6">
+            {{-- Actions --}}
+            <div class="flex justify-end">
+                <flux:button
+                    wire:click="openQueueModal"
+                    variant="primary"
+                    icon="plus"
+                >
+                    Queue Verification
+                </flux:button>
+            </div>
+
             {{-- Filters Section --}}
             <div class="rounded-lg border border-gray-700 bg-gray-900 p-6 shadow-sm">
                 <div class="mb-4 flex items-center justify-between">
@@ -215,6 +226,110 @@
         </div>
     </div>
 
+    {{-- Queue Verification Modal --}}
+    <flux:modal
+        wire:model.self="showQueueModal"
+        class="w-full max-w-lg"
+    >
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">Queue Verification</flux:heading>
+                <flux:subheading>Select a mod, then choose which version to verify.</flux:subheading>
+            </div>
+
+            @if ($this->queueSelectedMod === null)
+                <flux:input
+                    wire:model.live.debounce.300ms="queueSearch"
+                    placeholder="Search mods by name..."
+                    icon="magnifying-glass"
+                />
+
+                @if (mb_strlen(mb_trim($queueSearch)) < 2)
+                    <p class="text-sm text-gray-400">Type at least two characters to search.</p>
+                @elseif ($this->queueModResults->isEmpty())
+                    <p class="text-sm text-gray-400">No mods with downloadable versions match the search.</p>
+                @else
+                    <div class="space-y-2">
+                        @foreach ($this->queueModResults as $mod)
+                            <button
+                                type="button"
+                                wire:key="queue-mod-{{ $mod->id }}"
+                                wire:click="selectQueueMod({{ $mod->id }})"
+                                class="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-700 bg-gray-800 p-3 text-left hover:border-gray-500"
+                            >
+                                <span class="truncate text-sm font-medium text-gray-100">{{ $mod->name }}</span>
+                                <flux:icon.chevron-right
+                                    variant="micro"
+                                    class="text-gray-400"
+                                />
+                            </button>
+                        @endforeach
+                    </div>
+                @endif
+            @else
+                <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-700 bg-gray-800 p-3">
+                    <span
+                        class="truncate text-sm font-medium text-gray-100">{{ $this->queueSelectedMod->name }}</span>
+                    <flux:button
+                        wire:click="clearQueueMod"
+                        variant="ghost"
+                        size="sm"
+                        icon="x-mark"
+                        square="true"
+                        title="Change mod"
+                    />
+                </div>
+
+                @if ($this->queueModVersions->isEmpty())
+                    <p class="text-sm text-gray-400">This mod has no versions with a download link.</p>
+                @else
+                    <div>
+                        <flux:label
+                            for="queueModVersionId"
+                            class="text-xs"
+                        >Version</flux:label>
+                        <flux:select
+                            wire:model.live="queueModVersionId"
+                            id="queueModVersionId"
+                            size="sm"
+                            variant="listbox"
+                            placeholder="Select a version..."
+                        >
+                            @foreach ($this->queueModVersions as $modVersion)
+                                <flux:select.option
+                                    wire:key="queue-mod-version-{{ $modVersion->id }}"
+                                    value="{{ $modVersion->id }}"
+                                >
+                                    v{{ $modVersion->version }}
+                                    ({{ $modVersion->verification_status?->label() ?? 'Unverified' }})
+                                </flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    </div>
+                @endif
+            @endif
+
+            <flux:separator />
+
+            <div class="flex gap-2">
+                <flux:button
+                    wire:click="queueSelectedVersion"
+                    variant="primary"
+                    icon="plus"
+                    :disabled="$queueModVersionId === null"
+                >
+                    Queue Verification
+                </flux:button>
+                <flux:button
+                    wire:click="closeQueueModal"
+                    variant="ghost"
+                >
+                    Close
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
     {{-- Detail Modal --}}
     <flux:modal
         wire:model.self="showDetailModal"
@@ -316,19 +431,26 @@
                     </div>
                 @endif
 
+                {{-- Checks --}}
+                <x-verification.check-list :checks="$this->selectedChecks" />
+
                 {{-- File Tree --}}
-                @if ($this->selectedResult->file_tree && count($this->selectedResult->file_tree) > 0)
+                @if ($this->selectedFileCount > 0)
                     <div>
                         <span class="text-sm text-gray-400">
-                            File Tree ({{ count($this->selectedResult->file_tree) }} files)
+                            File Tree
+                            ({{ Number::format($this->selectedFileCount) }}
+                            {{ Str::plural('file', $this->selectedFileCount) }})
                         </span>
-                        <div class="mt-2 max-h-64 overflow-y-auto rounded-lg border border-gray-700 bg-gray-800 p-3">
-                            <ul class="space-y-0.5">
-                                @foreach ($this->selectedResult->file_tree as $file)
-                                    <li class="font-mono text-xs text-gray-300">{{ $file }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
+                        <x-verification.file-tree
+                            :nodes="$this->selectedFileTree"
+                            class="mt-2"
+                        />
+                        @if ($this->selectedHiddenFileCount > 0)
+                            <p class="mt-1 text-xs text-gray-500">
+                                {{ Number::format($this->selectedHiddenFileCount) }} more files not shown
+                            </p>
+                        @endif
                     </div>
                 @endif
 

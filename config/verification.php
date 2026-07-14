@@ -6,15 +6,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Verification Enabled
+    | Automatic Verification
     |--------------------------------------------------------------------------
     |
-    | Toggle the file verification pipeline on or off. When disabled, no
-    | change detection or verification jobs will be dispatched.
+    | Toggle automatic file verification on or off. When disabled, uploads no
+    | longer dispatch verification jobs and the scheduled change detection and
+    | cleanup jobs are not registered. Manual verification from the admin
+    | dashboard is always available.
     |
     */
 
-    'enabled' => env('VERIFICATION_ENABLED', false),
+    'auto_enabled' => env('AUTO_VERIFICATION_ENABLED', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -27,6 +29,20 @@ return [
     */
 
     'docker_image' => env('VERIFICATION_DOCKER_IMAGE', 'ghcr.io/sp-tarkov/forge/verification:latest'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Local Image Build
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, the verification job builds the image from the local
+    | docker/verification/ Dockerfile before each run and uses it instead of
+    | pulling the published registry image. Defaults to on in the local
+    | environment, where the registry image is unavailable.
+    |
+    */
+
+    'build_local_image' => env('VERIFICATION_BUILD_LOCAL_IMAGE', env('APP_ENV') === 'local'),
 
     /*
     |--------------------------------------------------------------------------
@@ -149,14 +165,17 @@ return [
     | Timeouts
     |--------------------------------------------------------------------------
     |
-    | Timeout values (in seconds) for each stage of the verification pipeline.
+    | Timeout values (in seconds) for each stage of the verification pipeline. The container stage covers hashing and
+    | extracting an archive up to the maximum file size on a single CPU, so its ceiling is sized for the largest
+    | legitimate upload rather than the typical one.
     |
     */
 
     'timeouts' => [
-        'dns' => (int) env('VERIFICATION_DNS_TIMEOUT', 5),
+        'dns' => (float) env('VERIFICATION_DNS_TIMEOUT', 5),
         'download' => (int) env('VERIFICATION_DOWNLOAD_TIMEOUT', 900),
-        'container' => (int) env('VERIFICATION_CONTAINER_TIMEOUT', 600),
+        'container' => (int) env('VERIFICATION_CONTAINER_TIMEOUT', 1800),
+        'build' => (int) env('VERIFICATION_BUILD_TIMEOUT', 600),
     ],
 
     /*
@@ -174,7 +193,7 @@ return [
 
     'stale' => [
         'pending_minutes' => (int) env('VERIFICATION_STALE_PENDING_MINUTES', 1440),
-        'running_minutes' => (int) env('VERIFICATION_STALE_RUNNING_MINUTES', 60),
+        'running_minutes' => (int) env('VERIFICATION_STALE_RUNNING_MINUTES', 90),
     ],
 
 ];

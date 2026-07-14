@@ -15,6 +15,44 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 
+/**
+ * Build a v2 container output carrying a single passing archive_extraction check.
+ */
+function passingContainerOutput(mixed $fileTree = [], bool $fileTreeTruncated = false, string $sha256 = 'abc'): string
+{
+    return (string) json_encode([
+        'schema_version' => 2,
+        'checks_version' => '1',
+        'sha256' => $sha256,
+        'archive' => [
+            'file_tree' => $fileTree,
+            'file_tree_truncated' => $fileTreeTruncated,
+            'symlinks_removed' => 0,
+        ],
+        'checks' => [
+            ['name' => 'archive_extraction', 'status' => 'passed', 'report_only' => false, 'message' => null, 'data' => []],
+        ],
+        'error' => null,
+    ]);
+}
+
+/**
+ * Build a v2 container output whose enforcing archive_extraction check failed.
+ */
+function failingContainerOutput(string $message = 'Failed to extract ZIP archive', string $sha256 = 'abc'): string
+{
+    return (string) json_encode([
+        'schema_version' => 2,
+        'checks_version' => '1',
+        'sha256' => $sha256,
+        'archive' => null,
+        'checks' => [
+            ['name' => 'archive_extraction', 'status' => 'failed', 'report_only' => false, 'message' => $message, 'data' => []],
+        ],
+        'error' => null,
+    ]);
+}
+
 it('marks result as failed when safety check rejects the url', function (): void {
     Http::fake([
         '*' => Http::response('', 200, [
@@ -106,15 +144,8 @@ it('marks result as passed when container reports success', function (): void {
         : Http::response("PK\x03\x04fake-archive-content", 200)
     );
 
-    $containerOutput = json_encode([
-        'downloaded_sha256' => 'abc123def456',
-        'archive_ok' => true,
-        'file_tree' => ['package.json', 'src/mod.ts', 'README.md'],
-        'error' => null,
-    ]);
-
     Process::fake([
-        'docker run *' => Process::result(output: $containerOutput),
+        'docker run *' => Process::result(output: passingContainerOutput(['package.json', 'src/mod.ts', 'README.md'])),
         'docker rm *' => Process::result(output: ''),
     ]);
 
@@ -135,6 +166,10 @@ it('marks result as passed when container reports success', function (): void {
     expect($result->download_ok)->toBeTrue();
     expect($result->archive_ok)->toBeTrue();
     expect($result->file_tree)->toBe(['package.json', 'src/mod.ts', 'README.md']);
+    expect($result->checks)->toHaveCount(1);
+    expect($result->checks[0]['name'])->toBe('archive_extraction');
+    expect($result->checks[0]['status'])->toBe('passed');
+    expect($result->checks_version)->toBe('1');
     expect($result->failure_reason)->toBeNull();
 
     $modVersion->refresh();
@@ -154,13 +189,7 @@ it('caps and sanitizes the container-reported file tree', function (): void {
     $reported = ['a.txt', 'b.txt', 42, 'c.txt', ['nested'], 'd.txt', 'e.txt', 'f.txt'];
 
     Process::fake([
-        'docker run *' => Process::result(output: json_encode([
-            'downloaded_sha256' => 'abc',
-            'archive_ok' => true,
-            'file_tree' => $reported,
-            'file_tree_truncated' => false,
-            'error' => null,
-        ])),
+        'docker run *' => Process::result(output: passingContainerOutput($reported)),
         'docker rm *' => Process::result(output: ''),
     ]);
 
@@ -186,13 +215,7 @@ it('honours the container truncation flag even when under the host cap', functio
     );
 
     Process::fake([
-        'docker run *' => Process::result(output: json_encode([
-            'downloaded_sha256' => 'abc',
-            'archive_ok' => true,
-            'file_tree' => ['a.txt', 'b.txt'],
-            'file_tree_truncated' => true,
-            'error' => null,
-        ])),
+        'docker run *' => Process::result(output: passingContainerOutput(['a.txt', 'b.txt'], fileTreeTruncated: true)),
         'docker rm *' => Process::result(output: ''),
     ]);
 
@@ -218,12 +241,7 @@ it('tolerates a non-array file tree from the container', function (): void {
     );
 
     Process::fake([
-        'docker run *' => Process::result(output: json_encode([
-            'downloaded_sha256' => 'abc',
-            'archive_ok' => true,
-            'file_tree' => 'not-an-array',
-            'error' => null,
-        ])),
+        'docker run *' => Process::result(output: passingContainerOutput('not-an-array')),
         'docker rm *' => Process::result(output: ''),
     ]);
 
@@ -251,12 +269,7 @@ it('passes the file tree entry cap to the container', function (): void {
     );
 
     Process::fake([
-        'docker run *' => Process::result(output: json_encode([
-            'downloaded_sha256' => 'abc',
-            'archive_ok' => true,
-            'file_tree' => [],
-            'error' => null,
-        ])),
+        'docker run *' => Process::result(output: passingContainerOutput()),
         'docker rm *' => Process::result(output: ''),
     ]);
 
@@ -279,12 +292,7 @@ it('marks result as failed when container reports extraction failure', function 
         : Http::response("PK\x03\x04fake-archive-content", 200)
     );
 
-    $containerOutput = json_encode([
-        'downloaded_sha256' => 'abc123',
-        'archive_ok' => false,
-        'file_tree' => [],
-        'error' => 'Failed to extract ZIP archive',
-    ]);
+    $containerOutput = failingContainerOutput('Failed to extract ZIP archive', 'abc123');
 
     Process::fake([
         'docker run *' => Process::result(output: $containerOutput),
@@ -306,6 +314,10 @@ it('marks result as failed when container reports extraction failure', function 
 
     expect($result->status)->toBe(VerificationStatus::Failed);
     expect($result->archive_ok)->toBeFalse();
+    expect($result->failure_reason)->toContain('archive_extraction');
+    expect($result->failure_reason)->toContain('Failed to extract ZIP archive');
+    expect($result->checks)->toHaveCount(1);
+    expect($result->checks[0]['status'])->toBe('failed');
 });
 
 it('detects 7z format from the downloaded file magic bytes', function (): void {
@@ -314,12 +326,7 @@ it('detects 7z format from the downloaded file magic bytes', function (): void {
         : Http::response("7z\xBC\xAF\x27\x1Cfake-archive-content", 200)
     );
 
-    $containerOutput = json_encode([
-        'downloaded_sha256' => 'abc',
-        'archive_ok' => true,
-        'file_tree' => ['file.txt'],
-        'error' => null,
-    ]);
+    $containerOutput = passingContainerOutput(['file.txt']);
 
     Process::fake([
         'docker run *' => Process::result(output: $containerOutput),
@@ -350,12 +357,7 @@ it('verifies urls without an archive extension via content-disposition and magic
         : Http::response("PK\x03\x04fake-archive-content", 200)
     );
 
-    $containerOutput = json_encode([
-        'downloaded_sha256' => 'abc',
-        'archive_ok' => true,
-        'file_tree' => ['file.txt'],
-        'error' => null,
-    ]);
+    $containerOutput = passingContainerOutput(['file.txt']);
 
     Process::fake([
         'docker run *' => Process::result(output: $containerOutput),
@@ -413,12 +415,7 @@ it('uses docker run with network none flag', function (): void {
         : Http::response("PK\x03\x04fake-archive-content", 200)
     );
 
-    $containerOutput = json_encode([
-        'downloaded_sha256' => 'abc',
-        'archive_ok' => true,
-        'file_tree' => [],
-        'error' => null,
-    ]);
+    $containerOutput = passingContainerOutput();
 
     Process::fake([
         'docker run *' => Process::result(output: $containerOutput),
@@ -451,12 +448,7 @@ it('runs the container with the security hardening flags', function (): void {
     );
 
     Process::fake([
-        'docker run *' => Process::result(output: json_encode([
-            'downloaded_sha256' => 'abc',
-            'archive_ok' => true,
-            'file_tree' => [],
-            'error' => null,
-        ])),
+        'docker run *' => Process::result(output: passingContainerOutput()),
         'docker rm *' => Process::result(output: ''),
     ]);
 
@@ -486,12 +478,7 @@ it('uses the configured container pull policy', function (): void {
     );
 
     Process::fake([
-        'docker run *' => Process::result(output: json_encode([
-            'downloaded_sha256' => 'abc',
-            'archive_ok' => true,
-            'file_tree' => [],
-            'error' => null,
-        ])),
+        'docker run *' => Process::result(output: passingContainerOutput()),
         'docker rm *' => Process::result(output: ''),
     ]);
 
@@ -517,12 +504,7 @@ it('falls back to the always pull policy for an unrecognized value', function ()
     );
 
     Process::fake([
-        'docker run *' => Process::result(output: json_encode([
-            'downloaded_sha256' => 'abc',
-            'archive_ok' => true,
-            'file_tree' => [],
-            'error' => null,
-        ])),
+        'docker run *' => Process::result(output: passingContainerOutput()),
         'docker rm *' => Process::result(output: ''),
     ]);
 
@@ -539,6 +521,99 @@ it('falls back to the always pull policy for an unrecognized value', function ()
         && str_contains($process->command, "--pull='always'"));
 });
 
+it('builds the local image and runs it with pull never when local builds are enabled', function (): void {
+    config()->set('verification.build_local_image', true);
+
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker build *' => Process::result(output: ''),
+        'docker run *' => Process::result(output: passingContainerOutput()),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_starts_with($process->command, 'docker build')
+        && str_contains($process->command, sprintf("--tag='%s'", RunVerificationJob::LOCAL_IMAGE_TAG))
+        && str_contains($process->command, base_path('docker/verification')));
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_starts_with($process->command, 'docker run')
+        && str_contains($process->command, "--pull='never'")
+        && str_contains($process->command, RunVerificationJob::LOCAL_IMAGE_TAG));
+
+    expect($result->refresh()->status)->toBe(VerificationStatus::Passed);
+});
+
+it('marks result as failed when the local image build fails', function (): void {
+    config()->set('verification.build_local_image', true);
+
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker build *' => Process::result(output: '', errorOutput: 'failed to solve: dockerfile parse error', exitCode: 1),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    $result->refresh();
+
+    expect($result->status)->toBe(VerificationStatus::Failed);
+    expect($result->archive_ok)->toBeFalse();
+    expect($result->failure_reason)->toContain('Docker image build failed');
+    expect($result->failure_reason)->toContain('dockerfile parse error');
+
+    Process::assertDidntRun(fn ($process): bool => is_string($process->command)
+        && str_starts_with($process->command, 'docker run'));
+});
+
+it('does not build the image when local builds are disabled', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: passingContainerOutput()),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Process::assertDidntRun(fn ($process): bool => is_string($process->command)
+        && str_starts_with($process->command, 'docker build'));
+});
+
 it('uses the configured pids limit for the container', function (): void {
     config()->set('verification.container.pids_limit', 512);
 
@@ -548,12 +623,7 @@ it('uses the configured pids limit for the container', function (): void {
     );
 
     Process::fake([
-        'docker run *' => Process::result(output: json_encode([
-            'downloaded_sha256' => 'abc',
-            'archive_ok' => true,
-            'file_tree' => [],
-            'error' => null,
-        ])),
+        'docker run *' => Process::result(output: passingContainerOutput()),
         'docker rm *' => Process::result(output: ''),
     ]);
 
@@ -576,12 +646,7 @@ it('removes the named container during cleanup', function (): void {
         : Http::response("PK\x03\x04fake-archive-content", 200)
     );
 
-    $containerOutput = json_encode([
-        'downloaded_sha256' => 'abc',
-        'archive_ok' => true,
-        'file_tree' => [],
-        'error' => null,
-    ]);
+    $containerOutput = passingContainerOutput();
 
     Process::fake([
         'docker run *' => Process::result(output: $containerOutput),
@@ -611,12 +676,7 @@ it('pins the download connection to the validated ip and guards redirects', func
     );
 
     Process::fake([
-        'docker run *' => Process::result(output: json_encode([
-            'downloaded_sha256' => 'abc',
-            'archive_ok' => true,
-            'file_tree' => [],
-            'error' => null,
-        ])),
+        'docker run *' => Process::result(output: passingContainerOutput()),
         'docker rm *' => Process::result(output: ''),
     ]);
 
@@ -707,12 +767,7 @@ it('guards the download against oversized responses in flight', function (): voi
     });
 
     Process::fake([
-        'docker run *' => Process::result(output: json_encode([
-            'downloaded_sha256' => 'abc',
-            'archive_ok' => true,
-            'file_tree' => [],
-            'error' => null,
-        ])),
+        'docker run *' => Process::result(output: passingContainerOutput()),
         'docker rm *' => Process::result(output: ''),
     ]);
 
@@ -742,12 +797,7 @@ it('sends the verifier user agent on the download request', function (): void {
     );
 
     Process::fake([
-        'docker run *' => Process::result(output: json_encode([
-            'downloaded_sha256' => 'abc',
-            'archive_ok' => true,
-            'file_tree' => [],
-            'error' => null,
-        ])),
+        'docker run *' => Process::result(output: passingContainerOutput()),
         'docker rm *' => Process::result(output: ''),
     ]);
 
@@ -797,4 +847,196 @@ it('rejects file exceeding content-length before downloading', function (): void
     expect($result->status)->toBe(VerificationStatus::Failed);
     expect($result->download_ok)->toBeFalse();
     expect($result->failure_reason)->toContain('exceeds maximum');
+});
+
+it('does not fail the verification for a failing report-only check', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    $output = json_encode([
+        'schema_version' => 2,
+        'checks_version' => '2',
+        'sha256' => 'abc',
+        'archive' => ['file_tree' => ['mod.dll'], 'file_tree_truncated' => false, 'symlinks_removed' => 0],
+        'checks' => [
+            ['name' => 'archive_extraction', 'status' => 'passed', 'report_only' => false, 'message' => null, 'data' => []],
+            ['name' => 'manifest_present', 'status' => 'failed', 'report_only' => true, 'message' => 'No manifest found', 'data' => []],
+        ],
+        'error' => null,
+    ]);
+
+    Process::fake([
+        'docker run *' => Process::result(output: $output),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    $result->refresh();
+
+    expect($result->status)->toBe(VerificationStatus::Passed);
+    expect($result->archive_ok)->toBeTrue();
+    expect($result->checks)->toHaveCount(2);
+    expect($result->checks[1]['name'])->toBe('manifest_present');
+    expect($result->checks[1]['status'])->toBe('failed');
+    expect($result->checks[1]['report_only'])->toBeTrue();
+    expect($result->checks_version)->toBe('2');
+});
+
+it('does not fail the verification for a skipped enforcing check', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    $output = json_encode([
+        'schema_version' => 2,
+        'checks_version' => '1',
+        'sha256' => 'abc',
+        'archive' => ['file_tree' => [], 'file_tree_truncated' => false, 'symlinks_removed' => 0],
+        'checks' => [
+            ['name' => 'archive_extraction', 'status' => 'passed', 'report_only' => false, 'message' => null, 'data' => []],
+            ['name' => 'signature_check', 'status' => 'skipped', 'report_only' => false, 'message' => 'Not applicable', 'data' => []],
+        ],
+        'error' => null,
+    ]);
+
+    Process::fake([
+        'docker run *' => Process::result(output: $output),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    $result->refresh();
+
+    expect($result->status)->toBe(VerificationStatus::Passed);
+    expect($result->archive_ok)->toBeTrue();
+});
+
+it('fails the verification for a failing enforcing check alongside a passing one', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    $output = json_encode([
+        'schema_version' => 2,
+        'checks_version' => '1',
+        'sha256' => 'abc',
+        'archive' => ['file_tree' => [], 'file_tree_truncated' => false, 'symlinks_removed' => 0],
+        'checks' => [
+            ['name' => 'archive_extraction', 'status' => 'passed', 'report_only' => false, 'message' => null, 'data' => []],
+            ['name' => 'forbidden_files', 'status' => 'failed', 'report_only' => false, 'message' => 'Contains an executable', 'data' => []],
+        ],
+        'error' => null,
+    ]);
+
+    Process::fake([
+        'docker run *' => Process::result(output: $output),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    $result->refresh();
+
+    expect($result->status)->toBe(VerificationStatus::Failed);
+    expect($result->archive_ok)->toBeFalse();
+    expect($result->failure_reason)->toContain('forbidden_files: Contains an executable');
+});
+
+it('marks result as failed for an unsupported container schema version', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: (string) json_encode([
+            'schema_version' => 99,
+            'checks' => [],
+        ])),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    $result->refresh();
+
+    expect($result->status)->toBe(VerificationStatus::Failed);
+    expect($result->archive_ok)->toBeFalse();
+    expect($result->failure_reason)->toContain('schema version');
+});
+
+it('sanitizes malformed and unknown-status checks from the container', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    $output = json_encode([
+        'schema_version' => 2,
+        'checks_version' => '1',
+        'sha256' => 'abc',
+        'archive' => ['file_tree' => [], 'file_tree_truncated' => false, 'symlinks_removed' => 0],
+        'checks' => [
+            ['name' => 'archive_extraction', 'status' => 'passed', 'report_only' => false, 'message' => null, 'data' => []],
+            'not-an-array',
+            ['name' => 'mystery', 'status' => 'weird', 'report_only' => true, 'message' => null, 'data' => []],
+        ],
+        'error' => null,
+    ]);
+
+    Process::fake([
+        'docker run *' => Process::result(output: $output),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    $result->refresh();
+
+    // The string entry is dropped; the unknown status resolves to a failure, but it is report-only so the run passes.
+    expect($result->checks)->toHaveCount(2);
+    expect($result->checks[1]['name'])->toBe('mystery');
+    expect($result->checks[1]['status'])->toBe('failed');
+    expect($result->status)->toBe(VerificationStatus::Passed);
 });

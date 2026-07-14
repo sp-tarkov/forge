@@ -56,6 +56,8 @@
             />
         @endif
 
+        <x-verification.check-list :checks="$this->checks" />
+
         @if ($this->fileCount > 0)
             <div>
                 <span class="text-sm text-gray-400">

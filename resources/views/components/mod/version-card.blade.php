@@ -50,6 +50,24 @@
                                 </flux:tooltip>
                             </button>
                         </flux:modal.trigger>
+                    @elseif ($hasVisibleFailedVerification())
+                        <flux:modal.trigger name="{{ $verificationModalName() }}">
+                            <button
+                                type="button"
+                                data-test="verification-shield-failed"
+                                class="cursor-pointer"
+                            >
+                                <flux:tooltip
+                                    content="{{ __('File Verification Failed') }}"
+                                    position="right"
+                                >
+                                    <flux:icon
+                                        icon="shield-x"
+                                        class="size-6 text-red-500 transition hover:text-red-400 hover:drop-shadow-[0_0_8px_rgba(248,113,113,0.9)]"
+                                    />
+                                </flux:tooltip>
+                            </button>
+                        </flux:modal.trigger>
                     @endif
                 </div>
                 <div class="mt-3 flex flex-row flex-wrap items-center justify-start gap-2.5">
@@ -292,9 +310,11 @@
         :is-latest="$isLatest()"
     />
 
-    @if ($isVerified())
+    @if ($isVerified() || $hasVisibleFailedVerification())
         <flux:modal
             name="{{ $verificationModalName() }}"
+            variant="flyout"
+            position="left"
             class="md:w-[600px] lg:w-[700px]"
         >
             <livewire:verification-details

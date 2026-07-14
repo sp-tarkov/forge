@@ -31,7 +31,7 @@ if (config('app.forge_heartbeat_url')) {
     Schedule::command(ForgeHeartbeat::class)->everyMinute()->onOneServer()->withoutOverlapping();
 }
 
-if (config('verification.enabled')) {
+if (config('verification.auto_enabled')) {
     Schedule::job(new DetectDownloadChangesJob)->twiceDaily(6, 18)->onOneServer()->withoutOverlapping();
     Schedule::job(new CleanupStaleVerificationsJob)->hourly()->onOneServer()->withoutOverlapping();
     Schedule::job(new CleanupVerificationArtifactsJob)->hourly()->onOneServer()->withoutOverlapping();

@@ -150,8 +150,8 @@ it('dispatches when the existing running verification is stale', function (): vo
 
     VerificationResult::factory()->forModVersion($modVersion)->create([
         'status' => VerificationStatus::Running,
-        'created_at' => now()->subMinutes(90),
-        'updated_at' => now()->subMinutes(90),
+        'created_at' => now()->subMinutes(120),
+        'updated_at' => now()->subMinutes(120),
     ]);
 
     $result = VerificationResult::dispatchFor($modVersion, VerificationTrigger::Manual);
@@ -185,4 +185,20 @@ it('casts file_tree and details to arrays', function (): void {
 
     expect($result->file_tree)->toBe(['package.json', 'src/mod.ts']);
     expect($result->details)->toBe(['download' => ['duration_seconds' => 1.5]]);
+});
+
+it('casts checks to an array and stores the check-suite version', function (): void {
+    $checks = [
+        ['name' => 'archive_extraction', 'status' => 'passed', 'report_only' => false, 'message' => null, 'data' => []],
+    ];
+
+    $result = VerificationResult::factory()->create([
+        'checks' => $checks,
+        'checks_version' => '3',
+    ]);
+
+    $result->refresh();
+
+    expect($result->checks)->toEqual($checks);
+    expect($result->checks_version)->toBe('3');
 });

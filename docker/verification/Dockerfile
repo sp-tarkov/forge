@@ -6,10 +6,9 @@ ENV DOTNET_NOLOGO=1 \
 
 COPY verify.cs /src/verify.cs
 
-# Publish the file-based app as a self-contained binary.
 RUN dotnet publish /src/verify.cs -o /app
 
-# Runtime stage — no SDK needed, just the compiled binary.
+# Runtime stage
 FROM mcr.microsoft.com/dotnet/runtime:10.0-alpine
 
 RUN adduser -D -h /home/verifier verifier

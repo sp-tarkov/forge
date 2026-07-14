@@ -79,6 +79,10 @@ it('returns no addresses when resolution fails unexpectedly', function (): void 
     expect($resolver->resolve('example.com'))->toBe([]);
 });
 
+it('reads the configured dns timeout as a float', function (): void {
+    expect(config()->float('verification.timeouts.dns'))->toBe(5.0);
+});
+
 it('bounds every query with the configured timeout', function (): void {
     $seen = [];
 

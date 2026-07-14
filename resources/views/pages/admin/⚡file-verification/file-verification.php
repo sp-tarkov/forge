@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 use App\Enums\VerificationTrigger;
 use App\Models\AddonVersion;
+use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\VerificationResult;
+use App\Support\DataTransferObjects\FileTreeNode;
+use App\Support\DataTransferObjects\VerificationCheck;
 use Flux\Flux;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
@@ -19,6 +24,8 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
 {
     use WithPagination;
 
+    private const int MAX_TREE_FILES = 1000;
+
     /**
      * Filter properties.
      */
@@ -30,6 +37,17 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
     public bool $showDetailModal = false;
 
     public ?int $selectedResultId = null;
+
+    /**
+     * Modal state for queueing a new verification.
+     */
+    public bool $showQueueModal = false;
+
+    public string $queueSearch = '';
+
+    public ?int $queueModId = null;
+
+    public ?int $queueModVersionId = null;
 
     /**
      * Initialize the component.
@@ -83,6 +101,158 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
         }
 
         return VerificationResult::query()->with('verifiable')->find($this->selectedResultId);
+    }
+
+    /**
+     * Get the selected result's checks as value objects for display.
+     *
+     * @return list<VerificationCheck>
+     */
+    #[Computed]
+    public function selectedChecks(): array
+    {
+        return array_values(array_map(
+            VerificationCheck::fromContainer(...),
+            $this->selectedResult->checks ?? []
+        ));
+    }
+
+    /**
+     * Get the selected result's archive file tree as nested nodes, capped for rendering.
+     *
+     * @return list<FileTreeNode>
+     */
+    #[Computed]
+    public function selectedFileTree(): array
+    {
+        return FileTreeNode::buildTree(array_slice($this->selectedResult->file_tree ?? [], 0, self::MAX_TREE_FILES));
+    }
+
+    /**
+     * Get the total number of files in the selected result's archive.
+     */
+    #[Computed]
+    public function selectedFileCount(): int
+    {
+        return count($this->selectedResult->file_tree ?? []);
+    }
+
+    /**
+     * Get the number of files omitted from the rendered tree.
+     */
+    #[Computed]
+    public function selectedHiddenFileCount(): int
+    {
+        return max(0, $this->selectedFileCount - self::MAX_TREE_FILES);
+    }
+
+    /**
+     * Mods with at least one downloadable version whose name matches the queue search term.
+     *
+     * @return Collection<int, Mod>
+     */
+    #[Computed]
+    public function queueModResults(): Collection
+    {
+        $term = mb_trim($this->queueSearch);
+
+        if (mb_strlen($term) < 2) {
+            return new Collection;
+        }
+
+        return Mod::query()
+            ->where('name', 'like', '%'.$term.'%')
+            ->whereHas('versions', fn (Builder $query): Builder => $query->where('link', '!=', ''))
+            ->orderBy('name')
+            ->limit(10)
+            ->get();
+    }
+
+    /**
+     * The mod selected in the queue modal.
+     */
+    #[Computed]
+    public function queueSelectedMod(): ?Mod
+    {
+        return $this->queueModId === null ? null : Mod::query()->find($this->queueModId);
+    }
+
+    /**
+     * The selected mod's downloadable versions, newest first.
+     *
+     * @return Collection<int, ModVersion>
+     */
+    #[Computed]
+    public function queueModVersions(): Collection
+    {
+        $mod = $this->queueSelectedMod;
+
+        if ($mod === null) {
+            return new Collection;
+        }
+
+        return $mod->versions()->where('link', '!=', '')->get();
+    }
+
+    /**
+     * Open the queue modal with a fresh mod search and selection.
+     */
+    public function openQueueModal(): void
+    {
+        $this->reset('queueSearch', 'queueModId', 'queueModVersionId');
+        $this->showQueueModal = true;
+    }
+
+    /**
+     * Close the queue modal and clear the mod search and selection.
+     */
+    public function closeQueueModal(): void
+    {
+        $this->showQueueModal = false;
+        $this->reset('queueSearch', 'queueModId', 'queueModVersionId');
+    }
+
+    /**
+     * Select the mod whose versions can be queued, clearing any previously selected version.
+     */
+    public function selectQueueMod(int $modId): void
+    {
+        $this->queueModId = $modId;
+        $this->queueModVersionId = null;
+    }
+
+    /**
+     * Clear the selected mod and return to the mod search.
+     */
+    public function clearQueueMod(): void
+    {
+        $this->reset('queueModId', 'queueModVersionId');
+    }
+
+    /**
+     * Queue a manual verification for the selected mod version.
+     */
+    public function queueSelectedVersion(): void
+    {
+        if ($this->queueModVersionId === null) {
+            return;
+        }
+
+        $modVersion = ModVersion::query()->findOrFail($this->queueModVersionId);
+
+        if ($modVersion->link === '') {
+            Flux::toast(heading: 'Error', text: 'This version has no download link to verify.', variant: 'danger');
+
+            return;
+        }
+
+        $result = VerificationResult::dispatchFor($modVersion, VerificationTrigger::Manual);
+
+        if ($result instanceof VerificationResult) {
+            Flux::toast(heading: 'Verification Queued', text: 'A verification job has been queued for this version.', variant: 'success');
+        } else {
+            Flux::toast(heading: 'Already Pending', text: 'A verification is already pending for this version.', variant: 'warning');
+        }
     }
 
     /**

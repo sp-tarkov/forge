@@ -79,6 +79,21 @@ final class VerificationResultFactory extends Factory
     }
 
     /**
+     * Attach a set of checks and a check-suite version to the result.
+     *
+     * @param  list<array{name: string, status: string, report_only: bool, message: string|null, data: array<string, mixed>}>|null  $checks
+     */
+    public function withChecks(?array $checks = null, string $version = '1'): static
+    {
+        return $this->state([
+            'checks' => $checks ?? [
+                ['name' => 'archive_extraction', 'status' => 'passed', 'report_only' => false, 'message' => null, 'data' => []],
+            ],
+            'checks_version' => $version,
+        ]);
+    }
+
+    /**
      * Set the verification as failed.
      */
     public function failed(string $reason = 'Download returned HTTP 404'): static

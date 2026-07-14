@@ -11,6 +11,7 @@ use App\Models\AddonVersion;
 use App\Models\ModVersion;
 use App\Models\VerificationResult;
 use App\Services\Verification\DownloadSafetyService;
+use App\Support\DataTransferObjects\VerificationCheck;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -35,7 +36,19 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
 
     public const string CONTAINER_LABEL = 'forge-verification';
 
+    public const string LOCAL_IMAGE_TAG = 'forge-verification:local';
+
     public const string TEMP_FILE_PREFIX = 'forge_verify_';
+
+    /**
+     * The container output schema version this host understands.
+     */
+    public const int SUPPORTED_SCHEMA_VERSION = 2;
+
+    /**
+     * The most checks kept from a single container run, bounding untrusted output.
+     */
+    private const int MAX_CHECKS = 100;
 
     /**
      * The number of seconds the job may run before timing out.
@@ -59,13 +72,18 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
-     * The maximum number of seconds a verification job may run: both stage timeouts plus slack for URL validation,
-     * archive hashing, and status updates.
+     * The maximum number of seconds a verification job may run: every stage timeout, including the image build when
+     * local image builds are enabled, plus slack for URL validation, archive hashing, and status updates.
      */
     public static function maxRuntime(): int
     {
+        $buildTimeout = config()->boolean('verification.build_local_image', false)
+            ? config()->integer('verification.timeouts.build', 600)
+            : 0;
+
         return config()->integer('verification.timeouts.download', 900)
-            + config()->integer('verification.timeouts.container', 600)
+            + config()->integer('verification.timeouts.container', 1800)
+            + $buildTimeout
             + 120;
     }
 
@@ -180,15 +198,15 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
      * non-string entries are dropped and the list is capped host-side independently of what the container reported,
      * with truncation recorded when it happens at either end.
      *
-     * @param  array<string, mixed>  $containerData
+     * @param  array<string, mixed>  $archive
      * @return array{tree: list<string>, truncated: bool}
      */
-    private function sanitizeFileTree(array $containerData): array
+    private function sanitizeFileTree(array $archive): array
     {
-        $rawTree = $containerData['file_tree'] ?? [];
+        $rawTree = $archive['file_tree'] ?? [];
         $tree = is_array($rawTree) ? array_values(array_filter($rawTree, is_string(...))) : [];
 
-        $truncated = (bool) ($containerData['file_tree_truncated'] ?? false);
+        $truncated = (bool) ($archive['file_tree_truncated'] ?? false);
 
         $maxEntries = config()->integer('verification.max_file_tree_entries', 10000);
         if (count($tree) > $maxEntries) {
@@ -231,24 +249,32 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
 
         /** @var array<string, mixed> $containerData */
         $containerData = $outcome['data'] ?? [];
-        $archiveOk = (bool) ($containerData['archive_ok'] ?? false);
 
-        $fileTreeResult = $this->sanitizeFileTree($containerData);
+        $checks = $this->sanitizeChecks($containerData);
+        $archiveOk = $this->checksPass($checks);
+
+        /** @var array<string, mixed> $archiveData */
+        $archiveData = is_array($containerData['archive'] ?? null) ? $containerData['archive'] : [];
+        $fileTreeResult = $this->sanitizeFileTree($archiveData);
         $fileTree = $fileTreeResult['tree'];
         $this->details['file_tree_truncated'] = $fileTreeResult['truncated'];
 
-        if (isset($containerData['downloaded_sha256']) && is_string($containerData['downloaded_sha256']) && $this->verificationResult->downloaded_sha256 === null) {
-            $this->verificationResult->downloaded_sha256 = $containerData['downloaded_sha256'];
+        $reportedSha256 = $containerData['sha256'] ?? null;
+        if (is_string($reportedSha256) && $this->verificationResult->downloaded_sha256 === null) {
+            $this->verificationResult->downloaded_sha256 = $reportedSha256;
         }
 
+        $checksVersion = is_string($containerData['checks_version'] ?? null) ? $containerData['checks_version'] : null;
+
         $finalStatus = $archiveOk ? VerificationStatus::Passed : VerificationStatus::Failed;
-        $errorValue = $containerData['error'] ?? null;
-        $failureReason = $archiveOk ? null : (is_string($errorValue) ? $errorValue : 'Archive extraction failed');
+        $failureReason = $archiveOk ? null : $this->failureReasonFromChecks($checks);
 
         $this->verificationResult->update([
             'status' => $finalStatus,
             'archive_ok' => $archiveOk,
             'file_tree' => $fileTree,
+            'checks' => array_map(fn (VerificationCheck $check): array => $check->toArray(), $checks),
+            'checks_version' => $checksVersion,
             'downloaded_sha256' => $this->verificationResult->downloaded_sha256,
             'failure_reason' => $failureReason,
             'details' => $this->details,
@@ -256,6 +282,67 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         ]);
 
         $this->updateVersionStatus($finalStatus);
+    }
+
+    /**
+     * Coerce the container's reported checks into a bounded list of value objects. The container output is untrusted,
+     * so non-array entries are dropped, each entry's fields are sanitized, and the list is capped independently of what
+     * the container reported.
+     *
+     * @param  array<string, mixed>  $containerData
+     * @return list<VerificationCheck>
+     */
+    private function sanitizeChecks(array $containerData): array
+    {
+        $rawChecks = $containerData['checks'] ?? [];
+        if (! is_array($rawChecks)) {
+            return [];
+        }
+
+        $checks = [];
+
+        foreach ($rawChecks as $entry) {
+            if (! is_array($entry)) {
+                continue;
+            }
+
+            /** @var array<string, mixed> $entry */
+            $checks[] = VerificationCheck::fromContainer($entry);
+
+            if (count($checks) >= self::MAX_CHECKS) {
+                break;
+            }
+        }
+
+        return $checks;
+    }
+
+    /**
+     * Whether every enforcing check passed. Report-only checks are ignored, and a skipped check does not fail the run.
+     *
+     * @param  list<VerificationCheck>  $checks
+     */
+    private function checksPass(array $checks): bool
+    {
+        return ! array_any($checks, fn (VerificationCheck $check): bool => $check->isEnforcing() && $check->failed());
+    }
+
+    /**
+     * Build a failure reason from the enforcing checks that failed.
+     *
+     * @param  list<VerificationCheck>  $checks
+     */
+    private function failureReasonFromChecks(array $checks): string
+    {
+        $reasons = [];
+
+        foreach ($checks as $check) {
+            if ($check->isEnforcing() && $check->failed()) {
+                $reasons[] = $check->message !== null ? $check->name.': '.$check->message : $check->name;
+            }
+        }
+
+        return $reasons === [] ? 'Archive verification failed' : implode('; ', $reasons);
     }
 
     /**
@@ -371,6 +458,35 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
+     * Build the verification image from the local docker/verification/ Dockerfile and tag it for the run command.
+     * Returns an error message on failure, or null when the image built successfully.
+     */
+    private function buildLocalImage(): ?string
+    {
+        $buildStart = microtime(true);
+
+        $command = sprintf(
+            'docker build --tag=%s %s',
+            escapeshellarg(self::LOCAL_IMAGE_TAG),
+            escapeshellarg(base_path('docker/verification')),
+        );
+
+        $processResult = Process::timeout(config()->integer('verification.timeouts.build', 600))->run($command);
+
+        $this->details['image_build'] = [
+            'duration_seconds' => round(microtime(true) - $buildStart, 2),
+        ];
+
+        if (! $processResult->successful()) {
+            $stderr = $processResult->errorOutput();
+
+            return 'Docker image build failed: '.($stderr !== '' ? $stderr : 'exit code '.$processResult->exitCode());
+        }
+
+        return null;
+    }
+
+    /**
      * Run the ephemeral Docker container to extract the archive and report the file tree.
      *
      * @return array<string, mixed>
@@ -382,7 +498,19 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         }
 
         $dockerImage = config()->string('verification.docker_image', 'ghcr.io/sp-tarkov/forge/verification:latest');
-        $timeout = config()->integer('verification.timeouts.container', 600);
+        $pullPolicy = $this->pullPolicy();
+
+        if (config()->boolean('verification.build_local_image', false)) {
+            $buildError = $this->buildLocalImage();
+            if ($buildError !== null) {
+                return ['ok' => false, 'error' => $buildError];
+            }
+
+            $dockerImage = self::LOCAL_IMAGE_TAG;
+            $pullPolicy = 'never';
+        }
+
+        $timeout = config()->integer('verification.timeouts.container', 1800);
         $maxExtractionRatio = config()->integer('verification.max_extraction_ratio', 100);
         $maxExtractedSize = config()->integer('verification.max_extracted_size', 2 * 1024 * 1024 * 1024);
         $maxFileTreeEntries = config()->integer('verification.max_file_tree_entries', 10000);
@@ -394,7 +522,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
 
         $command = sprintf(
             'docker run --rm --pull=%s --init --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=%s --name=%s --label=%s --network=none --memory=512m --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s -e MAX_FILE_TREE_ENTRIES=%s %s',
-            escapeshellarg($this->pullPolicy()),
+            escapeshellarg($pullPolicy),
             escapeshellarg((string) config()->integer('verification.container.pids_limit', 256)),
             escapeshellarg((string) $this->containerName),
             escapeshellarg(self::CONTAINER_LABEL),
@@ -424,6 +552,10 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         $data = json_decode($stdout, true);
         if (! is_array($data)) {
             return ['ok' => false, 'error' => 'Docker container produced invalid JSON'];
+        }
+
+        if (($data['schema_version'] ?? null) !== self::SUPPORTED_SCHEMA_VERSION) {
+            return ['ok' => false, 'error' => 'Unsupported verification container schema version'];
         }
 
         if (isset($data['error']) && is_string($data['error'])) {
