@@ -125,7 +125,7 @@ return [
     */
 
     'temporary_file_upload' => [
-        'disk' => 'local',
+        'disk' => env('LIVEWIRE_TEMP_DISK', 'local'),
         'rules' => ['file', 'max:12288'],
         'directory' => 'livewire-tmp',
         'middleware' => 'throttle:5,1',

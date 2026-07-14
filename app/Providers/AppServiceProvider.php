@@ -44,6 +44,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -130,6 +131,10 @@ final class AppServiceProvider extends ServiceProvider
 
         // Throttle all outbound email to stay within the shared SES sending quota.
         RateLimiter::for('outbound-email', fn () => Limit::perSecond(10));
+
+        // Emit crossorigin on Vite script, modulepreload, and prefetch tags so every fetch of a CDN-hosted chunk runs
+        // in CORS mode and the browser caches the Access-Control-Allow-Origin header that dynamic imports require.
+        Vite::useScriptTagAttributes(['crossorigin' => 'anonymous']);
 
         // Register custom macros and mixins.
         $this->registerMacros();
