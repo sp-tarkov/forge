@@ -7,6 +7,7 @@ using System.Text.Json;
 using SharpCompress.Archives;
 using SharpCompress.Archives.SevenZip;
 using SharpCompress.Common;
+using SharpCompress.Readers;
 
 const int SchemaVersion = 2;
 const string ChecksVersion = "1";
@@ -155,9 +156,12 @@ static string? ValidateAndExtract(
                 return $"Archive declares an uncompressed size ({declaredTotal} bytes) exceeding maximum ({maxExtractedSize} bytes)";
             }
 
-            foreach (SevenZipArchiveEntry entry in archive.Entries.Where(e => !e.IsDirectory))
+            // Extracts every entry in one sequential pass.
+            using IReader reader = archive.ExtractAllEntries();
+            while (reader.MoveToNextEntry())
             {
-                if (entry.Key is null)
+                IEntry entry = reader.Entry;
+                if (entry.Key is null || entry.IsDirectory)
                 {
                     continue;
                 }
@@ -169,7 +173,7 @@ static string? ValidateAndExtract(
                 }
 
                 Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-                using Stream source = entry.OpenEntryStream();
+                using Stream source = reader.OpenEntryStream();
                 totalWritten = ExtractEntry(source, destPath, totalWritten, maxExtractedSize, maxByRatio, maxRatio);
             }
         }

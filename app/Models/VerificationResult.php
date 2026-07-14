@@ -61,7 +61,7 @@ final class VerificationResult extends Model
                     })
                     ->orWhere(function (Builder $query): void {
                         $query->where('status', VerificationStatus::Running)
-                            ->where('updated_at', '>=', now()->subMinutes(config()->integer('verification.stale.running_minutes', 60)));
+                            ->where('updated_at', '>=', now()->subMinutes(config()->integer('verification.stale.running_minutes', 90)));
                     });
             })
             ->exists();

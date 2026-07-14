@@ -165,14 +165,16 @@ return [
     | Timeouts
     |--------------------------------------------------------------------------
     |
-    | Timeout values (in seconds) for each stage of the verification pipeline.
+    | Timeout values (in seconds) for each stage of the verification pipeline. The container stage covers hashing and
+    | extracting an archive up to the maximum file size on a single CPU, so its ceiling is sized for the largest
+    | legitimate upload rather than the typical one.
     |
     */
 
     'timeouts' => [
         'dns' => (float) env('VERIFICATION_DNS_TIMEOUT', 5),
         'download' => (int) env('VERIFICATION_DOWNLOAD_TIMEOUT', 900),
-        'container' => (int) env('VERIFICATION_CONTAINER_TIMEOUT', 600),
+        'container' => (int) env('VERIFICATION_CONTAINER_TIMEOUT', 1800),
         'build' => (int) env('VERIFICATION_BUILD_TIMEOUT', 600),
     ],
 
@@ -191,7 +193,7 @@ return [
 
     'stale' => [
         'pending_minutes' => (int) env('VERIFICATION_STALE_PENDING_MINUTES', 1440),
-        'running_minutes' => (int) env('VERIFICATION_STALE_RUNNING_MINUTES', 60),
+        'running_minutes' => (int) env('VERIFICATION_STALE_RUNNING_MINUTES', 90),
     ],
 
 ];

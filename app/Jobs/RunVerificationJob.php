@@ -82,7 +82,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
             : 0;
 
         return config()->integer('verification.timeouts.download', 900)
-            + config()->integer('verification.timeouts.container', 600)
+            + config()->integer('verification.timeouts.container', 1800)
             + $buildTimeout
             + 120;
     }
@@ -510,7 +510,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
             $pullPolicy = 'never';
         }
 
-        $timeout = config()->integer('verification.timeouts.container', 600);
+        $timeout = config()->integer('verification.timeouts.container', 1800);
         $maxExtractionRatio = config()->integer('verification.max_extraction_ratio', 100);
         $maxExtractedSize = config()->integer('verification.max_extracted_size', 2 * 1024 * 1024 * 1024);
         $maxFileTreeEntries = config()->integer('verification.max_file_tree_entries', 10000);

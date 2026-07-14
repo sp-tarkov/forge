@@ -33,7 +33,7 @@ final class CleanupStaleVerificationsJob implements ShouldBeUnique, ShouldQueue
 
         $staleCount += $this->markStale(
             VerificationStatus::Running,
-            now()->subMinutes(config()->integer('verification.stale.running_minutes', 60)),
+            now()->subMinutes(config()->integer('verification.stale.running_minutes', 90)),
         );
 
         if ($staleCount > 0) {

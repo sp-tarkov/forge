@@ -34,8 +34,8 @@ it('marks stale running results as errored', function (): void {
 
     $stale = VerificationResult::factory()->forModVersion($modVersion)->create([
         'status' => VerificationStatus::Running,
-        'created_at' => now()->subMinutes(90),
-        'updated_at' => now()->subMinutes(90),
+        'created_at' => now()->subMinutes(120),
+        'updated_at' => now()->subMinutes(120),
     ]);
 
     new CleanupStaleVerificationsJob()->handle();

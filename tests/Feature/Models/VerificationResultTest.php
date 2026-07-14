@@ -150,8 +150,8 @@ it('dispatches when the existing running verification is stale', function (): vo
 
     VerificationResult::factory()->forModVersion($modVersion)->create([
         'status' => VerificationStatus::Running,
-        'created_at' => now()->subMinutes(90),
-        'updated_at' => now()->subMinutes(90),
+        'created_at' => now()->subMinutes(120),
+        'updated_at' => now()->subMinutes(120),
     ]);
 
     $result = VerificationResult::dispatchFor($modVersion, VerificationTrigger::Manual);
