@@ -44,6 +44,7 @@ return RectorConfig::configure()
         __DIR__.'/tests',
     ])
     ->withSkip([
+        __DIR__.'/public/frankenphp-worker.php',
         AddOverrideAttributeToOverriddenMethodsRector::class,
         MakeInheritedMethodVisibilitySameAsParentRector::class,
         AddOverrideAttributeToOverriddenPropertiesRector::class,

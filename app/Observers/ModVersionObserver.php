@@ -57,12 +57,12 @@ final readonly class ModVersionObserver
     }
 
     /**
-     * Dispatch a file verification for a newly uploaded version when the pipeline is enabled and the version has a
-     * downloadable link and is not disabled.
+     * Dispatch a file verification for a newly uploaded version when automatic verification is enabled and the
+     * version has a downloadable link and is not disabled.
      */
     private function dispatchVerification(ModVersion $modVersion): void
     {
-        if (! config()->boolean('verification.enabled')) {
+        if (! config()->boolean('verification.auto_enabled')) {
             return;
         }
 

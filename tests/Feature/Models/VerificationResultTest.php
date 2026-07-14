@@ -186,3 +186,19 @@ it('casts file_tree and details to arrays', function (): void {
     expect($result->file_tree)->toBe(['package.json', 'src/mod.ts']);
     expect($result->details)->toBe(['download' => ['duration_seconds' => 1.5]]);
 });
+
+it('casts checks to an array and stores the check-suite version', function (): void {
+    $checks = [
+        ['name' => 'archive_extraction', 'status' => 'passed', 'report_only' => false, 'message' => null, 'data' => []],
+    ];
+
+    $result = VerificationResult::factory()->create([
+        'checks' => $checks,
+        'checks_version' => '3',
+    ]);
+
+    $result->refresh();
+
+    expect($result->checks)->toEqual($checks);
+    expect($result->checks_version)->toBe('3');
+});

@@ -8,6 +8,9 @@ using SharpCompress.Archives;
 using SharpCompress.Archives.SevenZip;
 using SharpCompress.Common;
 
+const int SchemaVersion = 2;
+const string ChecksVersion = "1";
+
 string inputFile = "/input/archive";
 string extension = Environment.GetEnvironmentVariable("ARCHIVE_EXTENSION") ?? "zip";
 long archiveSize = long.TryParse(Environment.GetEnvironmentVariable("ARCHIVE_SIZE"), out long s) ? s : 0L;
@@ -39,18 +42,19 @@ try
     string? extractionError = ValidateAndExtract(inputFile, extension, extractDir, archiveSize, maxRatio, maxExtractedSize);
     if (extractionError is not null)
     {
-        WriteError(sha256, extractionError);
+        WriteResult(sha256, null, [FailedCheck("archive_extraction", extractionError)]);
         return;
     }
 
     (List<string> fileTree, int symlinksRemoved, bool fileTreeTruncated, string? postError) = PostExtractionScan(extractDir, archiveSize, maxRatio, maxExtractedSize, maxFileTreeEntries);
     if (postError is not null)
     {
-        WriteError(sha256, postError);
+        WriteResult(sha256, null, [FailedCheck("archive_extraction", postError)]);
         return;
     }
 
-    WriteSuccess(sha256, fileTree, symlinksRemoved, fileTreeTruncated);
+    ArchiveInfo archive = new(fileTree, fileTreeTruncated, symlinksRemoved);
+    WriteResult(sha256, archive, [PassedCheck("archive_extraction")]);
 }
 catch (Exception ex)
 {
@@ -315,36 +319,56 @@ static long ComputeRatioLimit(long archiveSize, int maxRatio)
     return maxRatio <= long.MaxValue / archiveSize ? (long)maxRatio * archiveSize : long.MaxValue;
 }
 
-/// <summary>Writes a failed verification result as JSON to stdout.</summary>
+/// <summary>Writes an infrastructure failure (no checks could run) as a versioned result to stdout.</summary>
 void WriteError(string? sha256, string error)
 {
-    var result = new
-    {
-        DownloadedSha256 = sha256,
-        ArchiveOk = false,
-        FileTree = Array.Empty<string>(),
-        SymlinksRemoved = 0,
-        Error = error,
-    };
+    VerificationOutput output = new(SchemaVersion, ChecksVersion, sha256, null, [], error);
 
-    Console.WriteLine(JsonSerializer.Serialize(result, jsonOptions));
+    Console.WriteLine(JsonSerializer.Serialize(output, jsonOptions));
 }
 
-/// <summary>Writes a successful verification result as JSON to stdout.</summary>
-void WriteSuccess(string sha256, List<string> fileTree, int symlinksRemoved, bool fileTreeTruncated)
+/// <summary>Writes a completed verification result, carrying the archive metadata and per-check outcomes, to stdout.</summary>
+void WriteResult(string? sha256, ArchiveInfo? archive, List<CheckResult> checks)
 {
-    var result = new
-    {
-        DownloadedSha256 = sha256,
-        ArchiveOk = true,
-        FileTree = fileTree,
-        FileTreeTruncated = fileTreeTruncated,
-        SymlinksRemoved = symlinksRemoved,
-        Error = (string?)null,
-    };
+    VerificationOutput output = new(SchemaVersion, ChecksVersion, sha256, archive, checks, null);
 
-    Console.WriteLine(JsonSerializer.Serialize(result, jsonOptions));
+    Console.WriteLine(JsonSerializer.Serialize(output, jsonOptions));
 }
+
+/// <summary>Builds a passing enforcing check.</summary>
+static CheckResult PassedCheck(string name)
+{
+    return new CheckResult(name, "passed", false, null, new Dictionary<string, object?>());
+}
+
+/// <summary>Builds a failing enforcing check.</summary>
+static CheckResult FailedCheck(string name, string message)
+{
+    return new CheckResult(name, "failed", false, message, new Dictionary<string, object?>());
+}
+
+/// <summary>The versioned container output contract consumed by the host.</summary>
+sealed record VerificationOutput(
+    int SchemaVersion,
+    string ChecksVersion,
+    string? Sha256,
+    ArchiveInfo? Archive,
+    List<CheckResult> Checks,
+    string? Error);
+
+/// <summary>Metadata about the extracted archive.</summary>
+sealed record ArchiveInfo(
+    List<string> FileTree,
+    bool FileTreeTruncated,
+    int SymlinksRemoved);
+
+/// <summary>The outcome of a single check. A report-only check is recorded but does not fail the verification.</summary>
+sealed record CheckResult(
+    string Name,
+    string Status,
+    bool ReportOnly,
+    string? Message,
+    Dictionary<string, object?> Data);
 
 /// <summary>Raised when an archive extracts past the absolute or ratio size limit.</summary>
 sealed class ExtractionLimitException(string message) : Exception(message);

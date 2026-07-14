@@ -2,8 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Enums\VerificationStatus;
+use App\Enums\VerificationTrigger;
+use App\Jobs\RunVerificationJob;
+use App\Models\Mod;
+use App\Models\ModVersion;
 use App\Models\User;
 use App\Models\VerificationResult;
+use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 
 it('blocks access for non-admin users', function (): void {
@@ -71,4 +77,131 @@ it('shows full detail columns in the result modal', function (): void {
         ->call('showDetails', $result->id)
         ->assertOk()
         ->assertSee('Download returned HTTP 500');
+});
+
+it('shows the per-check results in the modal', function (): void {
+    $admin = User::factory()->admin()->create();
+
+    $result = VerificationResult::factory()->passed()->withChecks([
+        ['name' => 'archive_extraction', 'status' => 'passed', 'report_only' => false, 'message' => null, 'data' => []],
+        ['name' => 'manifest_present', 'status' => 'failed', 'report_only' => true, 'message' => 'No manifest found', 'data' => []],
+    ], '4')->create();
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.file-verification')
+        ->call('showDetails', $result->id)
+        ->assertOk()
+        ->assertSee('archive_extraction')
+        ->assertSee('manifest_present')
+        ->assertSee('Report only')
+        ->assertSee('No manifest found')
+        ->assertSee('suite 4');
+});
+
+it('renders the archive file tree as nested nodes in the modal', function (): void {
+    $admin = User::factory()->admin()->create();
+
+    $result = VerificationResult::factory()->passed()->create();
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.file-verification')
+        ->call('showDetails', $result->id)
+        ->assertOk()
+        ->assertSee('File Tree')
+        ->assertSee('package.json')
+        ->assertSee('src')
+        ->assertSee('mod.ts')
+        ->assertSee('README.md');
+});
+
+it('caps the rendered file tree and reports the hidden file count', function (): void {
+    $admin = User::factory()->admin()->create();
+
+    $paths = array_map(fn (int $index): string => sprintf('src/file-%04d.ts', $index), range(1, 1005));
+    $result = VerificationResult::factory()->passed()->create(['file_tree' => $paths]);
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.file-verification')
+        ->call('showDetails', $result->id)
+        ->assertOk()
+        ->assertSee('file-1000.ts')
+        ->assertDontSee('file-1001.ts')
+        ->assertSee('5 more files not shown');
+});
+
+it('queues a manual verification for a selected mod version', function (): void {
+    Queue::fake();
+
+    $admin = User::factory()->admin()->create();
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create(['name' => 'Epic Weapons Pack']);
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.file-verification')
+        ->call('openQueueModal')
+        ->set('queueSearch', 'Epic')
+        ->assertSee('Epic Weapons Pack')
+        ->call('selectQueueMod', $mod->id)
+        ->assertSee('v'.$modVersion->version)
+        ->set('queueModVersionId', $modVersion->id)
+        ->call('queueSelectedVersion')
+        ->assertOk();
+
+    Queue::assertPushed(RunVerificationJob::class);
+
+    expect(VerificationResult::query()
+        ->where('verifiable_type', ModVersion::class)
+        ->where('verifiable_id', $modVersion->id)
+        ->where('trigger', VerificationTrigger::Manual)
+        ->where('status', VerificationStatus::Pending)
+        ->exists())->toBeTrue();
+});
+
+it('does not queue a duplicate verification when one is already pending', function (): void {
+    Queue::fake();
+
+    $admin = User::factory()->admin()->create();
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create(['name' => 'Epic Weapons Pack']);
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.file-verification')
+        ->call('selectQueueMod', $mod->id)
+        ->set('queueModVersionId', $modVersion->id)
+        ->call('queueSelectedVersion')
+        ->assertOk();
+
+    Queue::assertNotPushed(RunVerificationJob::class);
+    expect(VerificationResult::query()->where('verifiable_id', $modVersion->id)->count())->toBe(1);
+});
+
+it('excludes mods without downloadable versions from the queue search', function (): void {
+    $admin = User::factory()->admin()->create();
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create(['name' => 'Linkless Mod']);
+    ModVersion::factory()->for($mod)->create(['link' => '']);
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.file-verification')
+        ->call('openQueueModal')
+        ->set('queueSearch', 'Linkless')
+        ->assertSee('No mods with downloadable versions match the search')
+        ->assertDontSee('Linkless Mod');
+});
+
+it('excludes versions without a download link from the version list', function (): void {
+    $admin = User::factory()->admin()->create();
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create(['name' => 'Epic Weapons Pack']);
+    ModVersion::factory()->for($mod)->create(['version' => '1.0.0', 'link' => 'https://example.com/mod.zip']);
+    ModVersion::factory()->for($mod)->create(['version' => '2.0.0', 'link' => '']);
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.file-verification')
+        ->call('openQueueModal')
+        ->call('selectQueueMod', $mod->id)
+        ->assertSee('v1.0.0')
+        ->assertDontSee('v2.0.0');
 });

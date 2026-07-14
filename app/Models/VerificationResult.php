@@ -28,6 +28,8 @@ use Override;
  * @property string|null $downloaded_sha256
  * @property bool|null $archive_ok
  * @property array<int, string>|null $file_tree
+ * @property array<int, array<string, mixed>>|null $checks
+ * @property string|null $checks_version
  * @property array<string, mixed>|null $details
  * @property string|null $failure_reason
  * @property CarbonImmutable|null $started_at
@@ -107,6 +109,7 @@ final class VerificationResult extends Model
             'downloaded_size' => 'integer',
             'archive_ok' => 'boolean',
             'file_tree' => 'array',
+            'checks' => 'array',
             'details' => 'array',
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
