@@ -64,6 +64,52 @@ describe('view', function (): void {
     });
 });
 
+describe('viewFailedVerification', function (): void {
+    it('returns false for guests', function (): void {
+        $mod = Mod::factory()->create();
+        $version = ModVersion::factory()->for($mod)->create();
+
+        expect($this->policy->viewFailedVerification(null, $version))->toBeFalse();
+    });
+
+    it('returns false for a regular user who is not the owner or author', function (): void {
+        $mod = Mod::factory()->create();
+        $version = ModVersion::factory()->for($mod)->create();
+
+        expect($this->policy->viewFailedVerification($this->user, $version))->toBeFalse();
+    });
+
+    it('returns true for the mod owner', function (): void {
+        $mod = Mod::factory()->create(['owner_id' => $this->user->id]);
+        $version = ModVersion::factory()->for($mod)->create();
+
+        expect($this->policy->viewFailedVerification($this->user, $version))->toBeTrue();
+    });
+
+    it('returns true for an additional author', function (): void {
+        $author = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $mod->additionalAuthors()->attach($author);
+        $version = ModVersion::factory()->for($mod)->create();
+
+        expect($this->policy->viewFailedVerification($author, $version))->toBeTrue();
+    });
+
+    it('returns true for moderators', function (): void {
+        $mod = Mod::factory()->create();
+        $version = ModVersion::factory()->for($mod)->create();
+
+        expect($this->policy->viewFailedVerification($this->moderator, $version))->toBeTrue();
+    });
+
+    it('returns true for admins', function (): void {
+        $mod = Mod::factory()->create();
+        $version = ModVersion::factory()->for($mod)->create();
+
+        expect($this->policy->viewFailedVerification($this->admin, $version))->toBeTrue();
+    });
+});
+
 describe('create', function (): void {
     it('returns true for the mod owner with MFA enabled', function (): void {
         $owner = User::factory()->withMfa()->create();

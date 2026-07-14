@@ -198,7 +198,111 @@ describe('verification shield', function (): void {
         Livewire::withoutLazyLoading()
             ->test('mod.show.versions-tab', ['modId' => $mod->id])
             ->assertDontSee('View File Verification')
+            ->assertDontSee('File Verification Failed')
             ->assertDontSee($result->failure_reason)
+            ->assertSuccessful();
+    });
+
+    it('does not show a failed verification shield to regular users', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '1.0.0',
+            'verification_status' => VerificationStatus::Failed,
+        ]);
+
+        Livewire::withoutLazyLoading()
+            ->actingAs(User::factory()->create())
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertDontSee('File Verification Failed')
+            ->assertDontSeeHtml('data-test="verification-shield-failed"')
+            ->assertSuccessful();
+    });
+
+    it('shows a failed verification shield to the mod owner', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '1.0.0',
+            'verification_status' => VerificationStatus::Failed,
+        ]);
+        $owner = User::query()->findOrFail($mod->owner_id);
+
+        Livewire::withoutLazyLoading()
+            ->actingAs($owner)
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertSee('File Verification Failed')
+            ->assertSeeHtml('data-test="verification-shield-failed"')
+            ->assertSuccessful();
+    });
+
+    it('shows a failed verification shield to an additional author', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        $author = User::factory()->create();
+        $mod->additionalAuthors()->attach($author);
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '1.0.0',
+            'verification_status' => VerificationStatus::Failed,
+        ]);
+
+        Livewire::withoutLazyLoading()
+            ->actingAs($author)
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertSeeHtml('data-test="verification-shield-failed"')
+            ->assertSuccessful();
+    });
+
+    it('shows a failed verification shield to moderators', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '1.0.0',
+            'verification_status' => VerificationStatus::Failed,
+        ]);
+
+        Livewire::withoutLazyLoading()
+            ->actingAs(User::factory()->moderator()->create())
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertSeeHtml('data-test="verification-shield-failed"')
+            ->assertSuccessful();
+    });
+
+    it('shows a failed verification shield to admins', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '1.0.0',
+            'verification_status' => VerificationStatus::Failed,
+        ]);
+
+        Livewire::withoutLazyLoading()
+            ->actingAs(User::factory()->admin()->create())
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertSeeHtml('data-test="verification-shield-failed"')
+            ->assertSuccessful();
+    });
+
+    it('shows the passed verification shield to the mod owner when the latest verification passed', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '1.0.0',
+            'verification_status' => VerificationStatus::Passed,
+        ]);
+        $owner = User::query()->findOrFail($mod->owner_id);
+
+        Livewire::withoutLazyLoading()
+            ->actingAs($owner)
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertSee('View File Verification')
+            ->assertDontSeeHtml('data-test="verification-shield-failed"')
             ->assertSuccessful();
     });
 });

@@ -51,6 +51,53 @@ describe('CheckList Blade Component', function (): void {
         $view->assertSeeInOrder(['enforcing_failure', 'report_only_failure', 'skipped_check', 'passed_check']);
     });
 
+    it('orders the file download check before failures regardless of its status', function (): void {
+        $checks = [
+            new VerificationCheck('enforcing_failure', VerificationCheckStatus::Failed, false, 'Blocking'),
+            new VerificationCheck('file_download', VerificationCheckStatus::Passed, false, null),
+        ];
+
+        $view = $this->blade('<x-verification.check-list :checks="$checks" />', ['checks' => $checks]);
+
+        $view->assertSeeInOrder(['file_download', 'enforcing_failure']);
+    });
+
+    it('separates a failed check\'s message from its description and renders it in red', function (): void {
+        $checks = [
+            new VerificationCheck('archive_extraction', VerificationCheckStatus::Failed, false, 'Broken archive'),
+        ];
+
+        $view = $this->blade('<x-verification.check-list :checks="$checks" />', ['checks' => $checks]);
+
+        $view->assertSeeHtml('data-flux-separator');
+        $view->assertSeeHtml('text-red-400');
+        $view->assertSee('Broken archive');
+    });
+
+    it('renders a passed check\'s message without a divider or red styling', function (): void {
+        $checks = [
+            new VerificationCheck('archive_extraction', VerificationCheckStatus::Passed, false, 'Extracted 12 files'),
+        ];
+
+        $view = $this->blade('<x-verification.check-list :checks="$checks" />', ['checks' => $checks]);
+
+        $view->assertDontSeeHtml('data-flux-separator');
+        $view->assertDontSeeHtml('text-red-400');
+        $view->assertSee('Extracted 12 files');
+    });
+
+    it('renders a failed check\'s message without a divider when the check has no description', function (): void {
+        $checks = [
+            new VerificationCheck('unknown_check', VerificationCheckStatus::Failed, false, 'Something broke'),
+        ];
+
+        $view = $this->blade('<x-verification.check-list :checks="$checks" />', ['checks' => $checks]);
+
+        $view->assertDontSeeHtml('data-flux-separator');
+        $view->assertSeeHtml('text-red-400');
+        $view->assertSee('Something broke');
+    });
+
     it('renders nothing when there are no checks', function (): void {
         $view = $this->blade('<x-verification.check-list :checks="$checks" />', ['checks' => []]);
 
