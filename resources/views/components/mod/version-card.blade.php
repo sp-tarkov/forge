@@ -295,6 +295,8 @@
     @if ($isVerified())
         <flux:modal
             name="{{ $verificationModalName() }}"
+            variant="flyout"
+            position="left"
             class="md:w-[600px] lg:w-[700px]"
         >
             <livewire:verification-details
