@@ -268,7 +268,8 @@
                 @endif
             @else
                 <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-700 bg-gray-800 p-3">
-                    <span class="truncate text-sm font-medium text-gray-100">{{ $this->queueSelectedMod->name }}</span>
+                    <span
+                        class="truncate text-sm font-medium text-gray-100">{{ $this->queueSelectedMod->name }}</span>
                     <flux:button
                         wire:click="clearQueueMod"
                         variant="ghost"
