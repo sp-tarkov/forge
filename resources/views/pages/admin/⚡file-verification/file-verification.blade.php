@@ -447,8 +447,9 @@
                                         size="sm"
                                     >{{ $check['status']->label() }}</flux:badge>
                                     <div class="min-w-0 flex-1">
-                                        <div class="flex items-center gap-2">
-                                            <span class="font-mono text-sm text-gray-100">{{ $check['name'] }}</span>
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span class="text-sm font-medium text-gray-100">{{ $check['label'] }}</span>
+                                            <span class="font-mono text-xs text-gray-500">{{ $check['name'] }}</span>
                                             @if ($check['report_only'])
                                                 <flux:badge
                                                     color="gray"
@@ -456,8 +457,11 @@
                                                 >Report only</flux:badge>
                                             @endif
                                         </div>
+                                        @if ($check['description'])
+                                            <p class="mt-1 text-xs text-gray-400">{{ $check['description'] }}</p>
+                                        @endif
                                         @if ($check['message'])
-                                            <p class="mt-1 break-words text-xs text-gray-400">{{ $check['message'] }}</p>
+                                            <p class="mt-1 break-words text-xs text-gray-300">{{ $check['message'] }}</p>
                                         @endif
                                     </div>
                                 </div>
