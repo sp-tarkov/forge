@@ -246,6 +246,12 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
             return;
         }
 
+        if (! $modVersion->isEligibleForVerification()) {
+            Flux::toast(heading: 'Not Eligible', text: $this->ineligibleVersionMessage(), variant: 'warning');
+
+            return;
+        }
+
         $result = VerificationResult::dispatchFor($modVersion, VerificationTrigger::Manual);
 
         if ($result instanceof VerificationResult) {
@@ -253,6 +259,17 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
         } else {
             Flux::toast(heading: 'Already Pending', text: 'A verification is already pending for this version.', variant: 'warning');
         }
+    }
+
+    /**
+     * The toast message shown when a mod version is not eligible for verification.
+     */
+    private function ineligibleVersionMessage(): string
+    {
+        return sprintf(
+            'Verification only runs for versions compatible with SPT %s or newer.',
+            config()->string('verification.min_spt_version', '4.0.0'),
+        );
     }
 
     /**
@@ -285,6 +302,12 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
 
         if (! $verifiable instanceof ModVersion && ! $verifiable instanceof AddonVersion) {
             Flux::toast(heading: 'Error', text: 'The associated version no longer exists.', variant: 'danger');
+
+            return;
+        }
+
+        if ($verifiable instanceof ModVersion && ! $verifiable->isEligibleForVerification()) {
+            Flux::toast(heading: 'Not Eligible', text: $this->ineligibleVersionMessage(), variant: 'warning');
 
             return;
         }

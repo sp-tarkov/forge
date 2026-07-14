@@ -7,6 +7,8 @@ use App\Jobs\RunVerificationJob;
 use Illuminate\Support\Facades\Process;
 
 it('force-removes containers running longer than twice the container timeout', function (): void {
+    config()->set('verification.timeouts.container', 600);
+
     Process::fake([
         'docker ps *' => Process::result(output: "abc123\ndef456\n"),
         'docker inspect *' => Process::result(

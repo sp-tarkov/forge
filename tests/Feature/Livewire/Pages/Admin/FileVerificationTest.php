@@ -136,7 +136,10 @@ it('queues a manual verification for a selected mod version', function (): void 
 
     $admin = User::factory()->admin()->create();
     $mod = Mod::factory()->for(User::factory(), 'owner')->create(['name' => 'Epic Weapons Pack']);
-    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+        'spt_version_constraint' => '>=4.0.0',
+    ]);
 
     Livewire::actingAs($admin)
         ->test('pages::admin.file-verification')
@@ -164,7 +167,10 @@ it('does not queue a duplicate verification when one is already pending', functi
 
     $admin = User::factory()->admin()->create();
     $mod = Mod::factory()->for(User::factory(), 'owner')->create(['name' => 'Epic Weapons Pack']);
-    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+        'spt_version_constraint' => '>=4.0.0',
+    ]);
 
     VerificationResult::factory()->forModVersion($modVersion)->create([
         'status' => VerificationStatus::Pending,
@@ -179,6 +185,27 @@ it('does not queue a duplicate verification when one is already pending', functi
 
     Queue::assertNotPushed(RunVerificationJob::class);
     expect(VerificationResult::query()->where('verifiable_id', $modVersion->id)->count())->toBe(1);
+});
+
+it('does not queue a verification for a version only compatible with SPT versions below the minimum', function (): void {
+    Queue::fake();
+
+    $admin = User::factory()->admin()->create();
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create(['name' => 'Epic Weapons Pack']);
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+        'spt_version_constraint' => '~3.9.0',
+    ]);
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.file-verification')
+        ->call('selectQueueMod', $mod->id)
+        ->set('queueModVersionId', $modVersion->id)
+        ->call('queueSelectedVersion')
+        ->assertOk();
+
+    Queue::assertNotPushed(RunVerificationJob::class);
+    expect(VerificationResult::query()->where('verifiable_id', $modVersion->id)->count())->toBe(0);
 });
 
 it('excludes mods without downloadable versions from the queue search', function (): void {

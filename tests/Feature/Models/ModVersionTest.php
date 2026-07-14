@@ -46,6 +46,40 @@ describe('version prefix stripping', function (): void {
     });
 });
 
+describe('verification eligibility', function (): void {
+    it('is eligible when the constraint can match the minimum SPT version or newer', function (): void {
+        $modVersion = ModVersion::factory()->create(['spt_version_constraint' => '~4.0.0']);
+
+        expect($modVersion->isEligibleForVerification())->toBeTrue();
+    });
+
+    it('is eligible when the constraint spans versions below and above the minimum', function (): void {
+        $modVersion = ModVersion::factory()->create(['spt_version_constraint' => '>=3.0.0']);
+
+        expect($modVersion->isEligibleForVerification())->toBeTrue();
+    });
+
+    it('is not eligible when the constraint only matches versions below the minimum', function (): void {
+        $modVersion = ModVersion::factory()->create(['spt_version_constraint' => '~3.9.0']);
+
+        expect($modVersion->isEligibleForVerification())->toBeFalse();
+    });
+
+    it('is not eligible for a legacy version without an SPT constraint', function (): void {
+        $modVersion = ModVersion::factory()->create(['spt_version_constraint' => '']);
+
+        expect($modVersion->isEligibleForVerification())->toBeFalse();
+    });
+
+    it('respects the configured minimum SPT version', function (): void {
+        config()->set('verification.min_spt_version', '5.0.0');
+
+        $modVersion = ModVersion::factory()->create(['spt_version_constraint' => '~4.0.0']);
+
+        expect($modVersion->isEligibleForVerification())->toBeFalse();
+    });
+});
+
 describe('SPT version resolution', function (): void {
     beforeEach(function (): void {
         $this->withoutDefer();

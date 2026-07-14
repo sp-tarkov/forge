@@ -23,6 +23,7 @@ describe('upload verification', function (): void {
         $modVersion = ModVersion::factory()->for($this->mod)->create([
             'link' => 'https://example.com/mod.zip',
             'disabled' => false,
+            'spt_version_constraint' => '>=4.0.0',
         ]);
 
         Queue::assertPushed(RunVerificationJob::class);
@@ -61,5 +62,19 @@ describe('upload verification', function (): void {
         ModVersion::factory()->for($this->mod)->disabled()->create(['link' => 'https://example.com/mod.zip']);
 
         Queue::assertNotPushed(RunVerificationJob::class);
+    });
+
+    it('does not dispatch for a version only compatible with SPT versions below the minimum', function (): void {
+        config()->set('verification.auto_enabled', true);
+        Queue::fake();
+
+        ModVersion::factory()->for($this->mod)->create([
+            'link' => 'https://example.com/mod.zip',
+            'disabled' => false,
+            'spt_version_constraint' => '~3.9.0',
+        ]);
+
+        Queue::assertNotPushed(RunVerificationJob::class);
+        expect(VerificationResult::query()->count())->toBe(0);
     });
 });

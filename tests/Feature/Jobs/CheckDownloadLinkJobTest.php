@@ -30,6 +30,7 @@ it('dispatches verification job when download link has changed', function (): vo
         'disabled' => false,
         'etag' => null,
         'last_verified_at' => null,
+        'spt_version_constraint' => '>=4.0.0',
     ]);
 
     new CheckDownloadLinkJob(ModVersion::class, $modVersion->id)->handle(resolve(ChangeDetectionService::class));
@@ -58,6 +59,7 @@ it('does not dispatch when no change detected', function (): void {
         'content_length' => 12345,
         'etag' => '"same-etag"',
         'last_verified_at' => now(),
+        'spt_version_constraint' => '>=4.0.0',
     ]);
 
     new CheckDownloadLinkJob(ModVersion::class, $modVersion->id)->handle(resolve(ChangeDetectionService::class));
@@ -82,6 +84,7 @@ it('skips versions that already have a pending verification', function (): void 
         'disabled' => false,
         'etag' => null,
         'last_verified_at' => null,
+        'spt_version_constraint' => '>=4.0.0',
     ]);
 
     VerificationResult::factory()->forModVersion($modVersion)->create([
@@ -112,6 +115,7 @@ it('updates fingerprint columns when values change', function (): void {
         'disabled' => false,
         'etag' => null,
         'last_verified_at' => null,
+        'spt_version_constraint' => '>=4.0.0',
     ]);
 
     new CheckDownloadLinkJob(ModVersion::class, $modVersion->id)->handle(resolve(ChangeDetectionService::class));
@@ -121,6 +125,27 @@ it('updates fingerprint columns when values change', function (): void {
     expect($modVersion->content_length)->toBe(54321);
     expect($modVersion->etag)->toBe('"fresh-etag"');
     expect($modVersion->last_modified_header)->toBe('Thu, 10 Apr 2025 12:00:00 GMT');
+});
+
+it('skips mod versions only compatible with SPT versions below the minimum without making a request', function (): void {
+    Queue::fake([RunVerificationJob::class]);
+    Http::fake();
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+        'published_at' => now(),
+        'disabled' => false,
+        'etag' => null,
+        'last_verified_at' => null,
+        'spt_version_constraint' => '~3.9.0',
+    ]);
+
+    new CheckDownloadLinkJob(ModVersion::class, $modVersion->id)->handle(resolve(ChangeDetectionService::class));
+
+    Http::assertNothingSent();
+    Queue::assertNotPushed(RunVerificationJob::class);
+    expect(VerificationResult::query()->count())->toBe(0);
 });
 
 it('silently returns when version does not exist', function (): void {
