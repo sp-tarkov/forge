@@ -13,6 +13,7 @@ string extension = Environment.GetEnvironmentVariable("ARCHIVE_EXTENSION") ?? "z
 long archiveSize = long.TryParse(Environment.GetEnvironmentVariable("ARCHIVE_SIZE"), out long s) ? s : 0L;
 int maxRatio = int.TryParse(Environment.GetEnvironmentVariable("MAX_EXTRACTION_RATIO"), out int r) ? r : 100;
 long maxExtractedSize = long.TryParse(Environment.GetEnvironmentVariable("MAX_EXTRACTED_SIZE"), out long m) ? m : 2L * 1024 * 1024 * 1024;
+int maxFileTreeEntries = int.TryParse(Environment.GetEnvironmentVariable("MAX_FILE_TREE_ENTRIES"), out int f) ? f : 10000;
 
 string workDir = "/tmp/work";
 string extractDir = Path.Combine(workDir, "extracted");
@@ -42,14 +43,14 @@ try
         return;
     }
 
-    (List<string> fileTree, int symlinksRemoved, string? postError) = PostExtractionScan(extractDir, archiveSize, maxRatio, maxExtractedSize);
+    (List<string> fileTree, int symlinksRemoved, bool fileTreeTruncated, string? postError) = PostExtractionScan(extractDir, archiveSize, maxRatio, maxExtractedSize, maxFileTreeEntries);
     if (postError is not null)
     {
         WriteError(sha256, postError);
         return;
     }
 
-    WriteSuccess(sha256, fileTree, symlinksRemoved);
+    WriteSuccess(sha256, fileTree, symlinksRemoved, fileTreeTruncated);
 }
 catch (Exception ex)
 {
@@ -65,7 +66,11 @@ static string ComputeSha256(string filePath)
     return Convert.ToHexStringLower(hash);
 }
 
-/// <summary>Validates and extracts an archive in a single pass, checking for path traversal and zip bombs.</summary>
+/// <summary>
+/// Validates and extracts an archive, enforcing the size and ratio limits against the bytes actually written rather
+/// than the sizes the archive declares. The declared total is only used for a cheap fast-fail on honestly oversized
+/// archives; a declared size cannot be trusted, so the per-entry streaming copy is the real limit.
+/// </summary>
 static string? ValidateAndExtract(
     string archiveFile,
     string extension,
@@ -76,13 +81,16 @@ static string? ValidateAndExtract(
 {
     try
     {
-        string extractDirFull = Path.GetFullPath(extractDir) + Path.DirectorySeparatorChar;
+        string extractDirRoot = Path.GetFullPath(extractDir);
+        string extractDirFull = extractDirRoot + Path.DirectorySeparatorChar;
+        long maxByRatio = ComputeRatioLimit(archiveSize, maxRatio);
+        long totalWritten = 0;
 
         if (extension.Equals("zip", StringComparison.OrdinalIgnoreCase))
         {
             using ZipArchive zip = ZipFile.OpenRead(archiveFile);
 
-            long totalUncompressed = 0;
+            long declaredTotal = 0;
             foreach (ZipArchiveEntry entry in zip.Entries)
             {
                 if (ContainsPathTraversal(entry.FullName))
@@ -90,22 +98,20 @@ static string? ValidateAndExtract(
                     return $"Archive contains path traversal entry: {entry.FullName}";
                 }
 
-                totalUncompressed += entry.Length;
+                declaredTotal += entry.Length;
             }
 
-            string? sizeError = CheckSizeLimits(totalUncompressed, archiveSize, maxRatio, maxExtractedSize);
-            if (sizeError is not null)
+            if (declaredTotal > maxExtractedSize)
             {
-                return sizeError;
+                return $"Archive declares an uncompressed size ({declaredTotal} bytes) exceeding maximum ({maxExtractedSize} bytes)";
             }
 
             foreach (ZipArchiveEntry entry in zip.Entries)
             {
                 string destPath = Path.GetFullPath(Path.Combine(extractDir, entry.FullName));
-                if (!destPath.StartsWith(extractDirFull, StringComparison.Ordinal) &&
-                    destPath != Path.GetFullPath(extractDir))
+                if (destPath != extractDirRoot && !destPath.StartsWith(extractDirFull, StringComparison.Ordinal))
                 {
-                    continue;
+                    return $"Archive contains an entry that resolves outside the extraction directory: {entry.FullName}";
                 }
 
                 if (string.IsNullOrEmpty(entry.Name))
@@ -115,7 +121,8 @@ static string? ValidateAndExtract(
                 else
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-                    entry.ExtractToFile(destPath, overwrite: true);
+                    using Stream source = entry.Open();
+                    totalWritten = ExtractEntry(source, destPath, totalWritten, maxExtractedSize, maxByRatio, maxRatio);
                 }
             }
         }
@@ -123,7 +130,7 @@ static string? ValidateAndExtract(
         {
             using SevenZipArchive archive = SevenZipArchive.Open(archiveFile);
 
-            long totalUncompressed = 0;
+            long declaredTotal = 0;
             foreach (SevenZipArchiveEntry entry in archive.Entries)
             {
                 if (entry.Key is null)
@@ -136,13 +143,12 @@ static string? ValidateAndExtract(
                     return $"Archive contains path traversal entry: {entry.Key}";
                 }
 
-                totalUncompressed += entry.Size;
+                declaredTotal += entry.Size;
             }
 
-            string? sizeError = CheckSizeLimits(totalUncompressed, archiveSize, maxRatio, maxExtractedSize);
-            if (sizeError is not null)
+            if (declaredTotal > maxExtractedSize)
             {
-                return sizeError;
+                return $"Archive declares an uncompressed size ({declaredTotal} bytes) exceeding maximum ({maxExtractedSize} bytes)";
             }
 
             foreach (SevenZipArchiveEntry entry in archive.Entries.Where(e => !e.IsDirectory))
@@ -153,14 +159,14 @@ static string? ValidateAndExtract(
                 }
 
                 string destPath = Path.GetFullPath(Path.Combine(extractDir, entry.Key));
-                if (!destPath.StartsWith(extractDirFull, StringComparison.Ordinal) &&
-                    destPath != Path.GetFullPath(extractDir))
+                if (destPath != extractDirRoot && !destPath.StartsWith(extractDirFull, StringComparison.Ordinal))
                 {
-                    continue;
+                    return $"Archive contains an entry that resolves outside the extraction directory: {entry.Key}";
                 }
 
                 Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-                entry.WriteToFile(destPath, new ExtractionOptions { ExtractFullPath = false, Overwrite = true });
+                using Stream source = entry.OpenEntryStream();
+                totalWritten = ExtractEntry(source, destPath, totalWritten, maxExtractedSize, maxByRatio, maxRatio);
             }
         }
         else
@@ -170,6 +176,10 @@ static string? ValidateAndExtract(
 
         return null;
     }
+    catch (ExtractionLimitException ex)
+    {
+        return ex.Message;
+    }
     catch (Exception ex)
     {
         return $"Failed to extract {extension.ToUpperInvariant()} archive: {ex.Message}";
@@ -178,12 +188,15 @@ static string? ValidateAndExtract(
 
 /// <summary>
 /// Scans the extracted directory in a single pass: removes symlinks, checks size limits, and builds the file tree.
+/// The tree is capped at maxFileTreeEntries so the reported list, and the JSON written to stdout, cannot grow without
+/// bound; the flag records whether entries were dropped.
 /// </summary>
-static (List<string> FileTree, int SymlinksRemoved, string? Error) PostExtractionScan(
+static (List<string> FileTree, int SymlinksRemoved, bool Truncated, string? Error) PostExtractionScan(
     string extractDir,
     long archiveSize,
     int maxRatio,
-    long maxExtractedSize)
+    long maxExtractedSize,
+    int maxFileTreeEntries)
 {
     List<string> fileTree = [];
     int symlinksRemoved = 0;
@@ -210,7 +223,7 @@ static (List<string> FileTree, int SymlinksRemoved, string? Error) PostExtractio
         if (relativePath.Contains("../", StringComparison.Ordinal) ||
             relativePath.StartsWith("..", StringComparison.Ordinal))
         {
-            return ([], 0, $"Extracted archive contains path traversal: {relativePath}");
+            return ([], 0, false, $"Extracted archive contains path traversal: {relativePath}");
         }
 
         totalSize += new FileInfo(fullPath).Length;
@@ -219,7 +232,7 @@ static (List<string> FileTree, int SymlinksRemoved, string? Error) PostExtractio
 
     if (totalSize > maxExtractedSize)
     {
-        return ([], 0, $"Extracted size ({totalSize} bytes) exceeds maximum ({maxExtractedSize} bytes)");
+        return ([], 0, false, $"Extracted size ({totalSize} bytes) exceeds maximum ({maxExtractedSize} bytes)");
     }
 
     if (archiveSize > 0)
@@ -227,13 +240,19 @@ static (List<string> FileTree, int SymlinksRemoved, string? Error) PostExtractio
         long ratio = totalSize / archiveSize;
         if (ratio > maxRatio)
         {
-            return ([], 0, $"Actual extraction ratio ({ratio}:1) exceeds maximum ({maxRatio}:1) — potential zip bomb");
+            return ([], 0, false, $"Actual extraction ratio ({ratio}:1) exceeds maximum ({maxRatio}:1): potential zip bomb");
         }
     }
 
     fileTree.Sort(StringComparer.Ordinal);
 
-    return (fileTree, symlinksRemoved, null);
+    bool truncated = fileTree.Count > maxFileTreeEntries;
+    if (truncated)
+    {
+        fileTree = fileTree.GetRange(0, maxFileTreeEntries);
+    }
+
+    return (fileTree, symlinksRemoved, truncated, null);
 }
 
 /// <summary>Checks whether a file path contains directory traversal sequences.</summary>
@@ -245,24 +264,55 @@ static bool ContainsPathTraversal(string path)
            path.Contains(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal);
 }
 
-/// <summary>Returns an error if the uncompressed size exceeds absolute or ratio limits.</summary>
-static string? CheckSizeLimits(long totalUncompressed, long archiveSize, int maxRatio, long maxExtractedSize)
+/// <summary>
+/// Streams a single entry to disk, aborting the moment the running total of bytes written crosses the absolute or ratio
+/// limit. The breaching buffer is never written, so total bytes on disk stay within one buffer of the limit regardless
+/// of what the archive declared. Returns the new running total.
+/// </summary>
+static long ExtractEntry(
+    Stream source,
+    string destPath,
+    long totalWritten,
+    long maxExtractedSize,
+    long maxByRatio,
+    int maxRatio)
 {
-    if (totalUncompressed > maxExtractedSize)
-    {
-        return $"Archive uncompressed size ({totalUncompressed} bytes) exceeds maximum ({maxExtractedSize} bytes)";
-    }
+    byte[] buffer = new byte[81920];
+    using FileStream destination = File.Create(destPath);
 
-    if (archiveSize > 0)
+    int read;
+    while ((read = source.Read(buffer, 0, buffer.Length)) > 0)
     {
-        long ratio = totalUncompressed / archiveSize;
-        if (ratio > maxRatio)
+        totalWritten += read;
+
+        if (totalWritten > maxExtractedSize)
         {
-            return $"Archive compression ratio ({ratio}:1) exceeds maximum ({maxRatio}:1) — potential zip bomb";
+            throw new ExtractionLimitException($"Extracted size exceeds maximum ({maxExtractedSize} bytes)");
         }
+
+        if (totalWritten > maxByRatio)
+        {
+            throw new ExtractionLimitException($"Extraction ratio exceeds maximum ({maxRatio}:1): potential zip bomb");
+        }
+
+        destination.Write(buffer, 0, read);
     }
 
-    return null;
+    return totalWritten;
+}
+
+/// <summary>
+/// Returns the maximum number of extracted bytes permitted by the ratio limit, or long.MaxValue when the archive size
+/// is unknown or would overflow.
+/// </summary>
+static long ComputeRatioLimit(long archiveSize, int maxRatio)
+{
+    if (archiveSize <= 0 || maxRatio <= 0)
+    {
+        return long.MaxValue;
+    }
+
+    return maxRatio <= long.MaxValue / archiveSize ? (long)maxRatio * archiveSize : long.MaxValue;
 }
 
 /// <summary>Writes a failed verification result as JSON to stdout.</summary>
@@ -281,16 +331,20 @@ void WriteError(string? sha256, string error)
 }
 
 /// <summary>Writes a successful verification result as JSON to stdout.</summary>
-void WriteSuccess(string sha256, List<string> fileTree, int symlinksRemoved)
+void WriteSuccess(string sha256, List<string> fileTree, int symlinksRemoved, bool fileTreeTruncated)
 {
     var result = new
     {
         DownloadedSha256 = sha256,
         ArchiveOk = true,
         FileTree = fileTree,
+        FileTreeTruncated = fileTreeTruncated,
         SymlinksRemoved = symlinksRemoved,
         Error = (string?)null,
     };
 
     Console.WriteLine(JsonSerializer.Serialize(result, jsonOptions));
 }
+
+/// <summary>Raised when an archive extracts past the absolute or ratio size limit.</summary>
+sealed class ExtractionLimitException(string message) : Exception(message);

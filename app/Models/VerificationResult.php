@@ -10,6 +10,7 @@ use App\Jobs\RunVerificationJob;
 use Carbon\CarbonImmutable;
 use Database\Factories\VerificationResultFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -42,23 +43,28 @@ final class VerificationResult extends Model
     use HasFactory;
 
     /**
-     * The polymorphic relationship to the parent model (ModVersion or AddonVersion).
-     *
-     * @return MorphTo<Model, $this>
-     */
-    /**
      * Create a pending verification result and dispatch the verification job.
-     * Skips dispatch if a pending or running verification already exists for this version.
+     * Skips dispatch if an active (non-stale) pending or running verification already exists for this version.
      */
     public static function dispatchFor(ModVersion|AddonVersion $version, VerificationTrigger $trigger): ?self
     {
-        $hasPending = self::query()
+        $hasActive = self::query()
             ->where('verifiable_type', $version::class)
             ->where('verifiable_id', $version->id)
-            ->whereIn('status', [VerificationStatus::Pending, VerificationStatus::Running])
+            ->where(function (Builder $query): void {
+                $query
+                    ->where(function (Builder $query): void {
+                        $query->where('status', VerificationStatus::Pending)
+                            ->where('updated_at', '>=', now()->subMinutes(config()->integer('verification.stale.pending_minutes', 1440)));
+                    })
+                    ->orWhere(function (Builder $query): void {
+                        $query->where('status', VerificationStatus::Running)
+                            ->where('updated_at', '>=', now()->subMinutes(config()->integer('verification.stale.running_minutes', 60)));
+                    });
+            })
             ->exists();
 
-        if ($hasPending) {
+        if ($hasActive) {
             return null;
         }
 

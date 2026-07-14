@@ -25,6 +25,7 @@
         minCropSize: @js($minCropSize),
         messages: {
             type: @js(__('That file type is not supported.')),
+            load: @js(__('The image editor failed to load. Please refresh the page and try again.')),
             export: @js(__('The image could not be cropped. Please try another image.')),
             upload: @js(__('The upload failed. Please try again.')),
             selection: @js(__('Selection is too small. Choose an area of at least :min x :min pixels.', ['min' => $minCropSize])),

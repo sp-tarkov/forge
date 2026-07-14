@@ -93,17 +93,24 @@ Alpine.data('imageCropUpload', (config) => ({
             return;
         }
 
-        this.sourceFile = file;
-        this.sourceType = file.type;
-        this.sourceName = file.name;
-        this.isAnimated = config.preserveAnimation && config.cropModel ? await isAnimatedImage(file) : false;
-        this.objectUrl = URL.createObjectURL(file);
+        try {
+            this.sourceFile = file;
+            this.sourceType = file.type;
+            this.sourceName = file.name;
+            this.isAnimated = config.preserveAnimation && config.cropModel ? await isAnimatedImage(file) : false;
+            this.objectUrl = URL.createObjectURL(file);
 
-        await import('cropperjs');
-        this.$flux.modal(config.modalName).show();
-        await this.waitForStageLayout();
-        this.mountCropper();
-        await this.positionSelection();
+            await import('./cropper.js');
+            this.$flux.modal(config.modalName).show();
+            await this.waitForStageLayout();
+            this.mountCropper();
+            await this.positionSelection();
+        } catch (error) {
+            console.error(error);
+            this.$flux.modal(config.modalName).close();
+            this.cleanup();
+            this.error = config.messages.load;
+        }
     },
 
     // Resolves once the modal open animation has settled and the stage reports a stable, non-zero size across
@@ -220,49 +227,54 @@ Alpine.data('imageCropUpload', (config) => ({
             return;
         }
 
-        await image.$ready();
-        if (selection.width < 1 || selection.height < 1) {
-            await this.positionSelection();
-        }
+        try {
+            await image.$ready();
+            if (selection.width < 1 || selection.height < 1) {
+                await this.positionSelection();
+            }
 
-        if (selection.width < 1 || selection.height < 1) {
+            if (selection.width < 1 || selection.height < 1) {
+                this.error = config.messages.export;
+                return;
+            }
+
+            if (this.isAnimated) {
+                this.applyCropRect(selection, image);
+                return;
+            }
+
+            if (config.cropModel) {
+                this.$wire.set(config.cropModel, null, false);
+            }
+
+            const scale = image.$image.naturalWidth / image.getBoundingClientRect().width;
+            const width = Math.min(config.maxDimension, Math.round(selection.width * scale));
+            const height = Math.round(width / config.aspectRatio);
+
+            const canvas = await selection.$toCanvas({ width, height });
+            let type = this.sourceType === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+            let blob = await this.canvasToBlob(canvas, type, 0.9);
+
+            if (blob && type === 'image/png' && blob.size > config.maxBytes) {
+                type = 'image/jpeg';
+                blob = await this.canvasToBlob(canvas, type, 0.85);
+            }
+
+            if (!blob) {
+                this.error = config.messages.export;
+                return;
+            }
+
+            const basename = this.sourceName.replace(/\.[^.]*$/, '');
+            const file = new File([blob], basename + (type === 'image/jpeg' ? '.jpg' : '.png'), { type });
+
+            this.$flux.modal(config.modalName).close();
+            this.cleanup();
+            this.upload(file);
+        } catch (error) {
+            console.error(error);
             this.error = config.messages.export;
-            return;
         }
-
-        if (this.isAnimated) {
-            this.applyCropRect(selection, image);
-            return;
-        }
-
-        if (config.cropModel) {
-            this.$wire.set(config.cropModel, null, false);
-        }
-
-        const scale = image.$image.naturalWidth / image.getBoundingClientRect().width;
-        const width = Math.min(config.maxDimension, Math.round(selection.width * scale));
-        const height = Math.round(width / config.aspectRatio);
-
-        const canvas = await selection.$toCanvas({ width, height });
-        let type = this.sourceType === 'image/jpeg' ? 'image/jpeg' : 'image/png';
-        let blob = await this.canvasToBlob(canvas, type, 0.9);
-
-        if (blob && type === 'image/png' && blob.size > config.maxBytes) {
-            type = 'image/jpeg';
-            blob = await this.canvasToBlob(canvas, type, 0.85);
-        }
-
-        if (!blob) {
-            this.error = config.messages.export;
-            return;
-        }
-
-        const basename = this.sourceName.replace(/\.[^.]*$/, '');
-        const file = new File([blob], basename + (type === 'image/jpeg' ? '.jpg' : '.png'), { type });
-
-        this.$flux.modal(config.modalName).close();
-        this.cleanup();
-        this.upload(file);
     },
 
     // Converts the selection into a natural-pixel crop rectangle, hands it to the bound Livewire property, and

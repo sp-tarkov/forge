@@ -32,7 +32,7 @@ it('dispatches verification job when download link has changed', function (): vo
         'last_verified_at' => null,
     ]);
 
-    new CheckDownloadLinkJob(ModVersion::class, $modVersion->id)->handle(new ChangeDetectionService);
+    new CheckDownloadLinkJob(ModVersion::class, $modVersion->id)->handle(resolve(ChangeDetectionService::class));
 
     Queue::assertPushed(RunVerificationJob::class);
     expect(VerificationResult::query()->count())->toBe(1);
@@ -60,7 +60,7 @@ it('does not dispatch when no change detected', function (): void {
         'last_verified_at' => now(),
     ]);
 
-    new CheckDownloadLinkJob(ModVersion::class, $modVersion->id)->handle(new ChangeDetectionService);
+    new CheckDownloadLinkJob(ModVersion::class, $modVersion->id)->handle(resolve(ChangeDetectionService::class));
 
     Queue::assertNotPushed(RunVerificationJob::class);
 });
@@ -88,7 +88,7 @@ it('skips versions that already have a pending verification', function (): void 
         'status' => VerificationStatus::Pending,
     ]);
 
-    new CheckDownloadLinkJob(ModVersion::class, $modVersion->id)->handle(new ChangeDetectionService);
+    new CheckDownloadLinkJob(ModVersion::class, $modVersion->id)->handle(resolve(ChangeDetectionService::class));
 
     Queue::assertNotPushed(RunVerificationJob::class);
     expect(VerificationResult::query()->count())->toBe(1);
@@ -114,7 +114,7 @@ it('updates fingerprint columns when values change', function (): void {
         'last_verified_at' => null,
     ]);
 
-    new CheckDownloadLinkJob(ModVersion::class, $modVersion->id)->handle(new ChangeDetectionService);
+    new CheckDownloadLinkJob(ModVersion::class, $modVersion->id)->handle(resolve(ChangeDetectionService::class));
 
     $modVersion->refresh();
 
@@ -126,7 +126,7 @@ it('updates fingerprint columns when values change', function (): void {
 it('silently returns when version does not exist', function (): void {
     Queue::fake([RunVerificationJob::class]);
 
-    new CheckDownloadLinkJob(ModVersion::class, 99999)->handle(new ChangeDetectionService);
+    new CheckDownloadLinkJob(ModVersion::class, 99999)->handle(resolve(ChangeDetectionService::class));
 
     Queue::assertNotPushed(RunVerificationJob::class);
 });

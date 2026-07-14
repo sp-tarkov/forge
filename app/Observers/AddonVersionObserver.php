@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
+use App\Enums\VerificationTrigger;
 use App\Models\Addon;
 use App\Models\AddonVersion;
+use App\Models\VerificationResult;
 use App\Services\AddonVersionService;
 
 final readonly class AddonVersionObserver
@@ -20,6 +22,8 @@ final readonly class AddonVersionObserver
         $this->addonVersionService->resolve($addonVersion);
 
         $this->updateRelatedAddon($addonVersion);
+
+        $this->dispatchVerification($addonVersion);
     }
 
     /**
@@ -51,5 +55,22 @@ final readonly class AddonVersionObserver
         /** @var Addon|null $addon */
         $addon = $addonVersion->addon;
         $addon?->calculateDownloads();
+    }
+
+    /**
+     * Dispatch a file verification for a newly uploaded version when the pipeline is enabled and the version has a
+     * downloadable link and is not disabled.
+     */
+    private function dispatchVerification(AddonVersion $addonVersion): void
+    {
+        if (! config()->boolean('verification.enabled')) {
+            return;
+        }
+
+        if ($addonVersion->link === '' || $addonVersion->disabled) {
+            return;
+        }
+
+        VerificationResult::dispatchFor($addonVersion, VerificationTrigger::Upload);
     }
 }

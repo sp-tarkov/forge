@@ -9,6 +9,7 @@
         "ext-curl": "*",
         "ext-imagick": "*",
         "ext-intl": "*",
+        "amphp/dns": "^2.4",
         "anthropic-ai/sdk": "^0.36.0",
         "aws/aws-sdk-php": "^3.382.0",
         "composer/semver": "^3.4.4",
