@@ -65,16 +65,6 @@ new #[Lazy] class extends Component
     }
 
     /**
-     * Whether the current user is authorized to see failed verification results for this version.
-     */
-    private function canViewFailedVerification(): bool
-    {
-        $version = ModVersion::query()->find($this->verifiableId);
-
-        return $version !== null && CachedGate::allows('viewFailedVerification', $version);
-    }
-
-    /**
      * Get the human-readable size of the downloaded file.
      */
     #[Computed]
@@ -119,21 +109,6 @@ new #[Lazy] class extends Component
     }
 
     /**
-     * Build the host-side file download check from the result's download outcome.
-     */
-    private function fileDownloadCheck(VerificationResult $result): VerificationCheck
-    {
-        $downloadFailed = $result->download_ok === false;
-
-        return new VerificationCheck(
-            name: VerificationCheckType::FileDownload->value,
-            status: $downloadFailed ? VerificationCheckStatus::Failed : VerificationCheckStatus::Passed,
-            reportOnly: false,
-            message: $downloadFailed ? $result->failure_reason : null,
-        );
-    }
-
-    /**
      * Get the archive file tree as nested nodes, capped for rendering.
      *
      * @return list<FileTreeNode>
@@ -160,5 +135,30 @@ new #[Lazy] class extends Component
     public function hiddenFileCount(): int
     {
         return max(0, $this->fileCount - self::MAX_TREE_FILES);
+    }
+
+    /**
+     * Whether the current user is authorized to see failed verification results for this version.
+     */
+    private function canViewFailedVerification(): bool
+    {
+        $version = ModVersion::query()->find($this->verifiableId);
+
+        return $version !== null && CachedGate::allows('viewFailedVerification', $version);
+    }
+
+    /**
+     * Build the host-side file download check from the result's download outcome.
+     */
+    private function fileDownloadCheck(VerificationResult $result): VerificationCheck
+    {
+        $downloadFailed = $result->download_ok === false;
+
+        return new VerificationCheck(
+            name: VerificationCheckType::FileDownload->value,
+            status: $downloadFailed ? VerificationCheckStatus::Failed : VerificationCheckStatus::Passed,
+            reportOnly: false,
+            message: $downloadFailed ? $result->failure_reason : null,
+        );
     }
 };
