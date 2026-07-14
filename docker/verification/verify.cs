@@ -55,11 +55,43 @@ try
     }
 
     ArchiveInfo archive = new(fileTree, fileTreeTruncated, symlinksRemoved);
-    WriteResult(sha256, archive, [PassedCheck("archive_extraction")]);
+    List<CheckResult> checks = [PassedCheck("archive_extraction")];
+    checks.AddRange(RunPostExtractionChecks(new CheckContext(extractDir, fileTree, archiveSize)));
+    WriteResult(sha256, archive, checks);
 }
 catch (Exception ex)
 {
     WriteError(null, $"Unexpected error: {ex.Message}");
+}
+
+/// <summary>
+/// The post-extraction checks to run, in order. To add a check: implement a static method taking a CheckContext and
+/// returning a CheckResult, register it here, bump ChecksVersion, and add a matching VerificationCheckType case on the
+/// host for its label and description. Emit new checks with ReportOnly=true until they are trusted to enforce.
+/// </summary>
+static (string Name, Func<CheckContext, CheckResult> Run)[] PostExtractionChecks()
+{
+    return [];
+}
+
+/// <summary>Runs every registered post-extraction check, recording a check that throws as a failure of that check.</summary>
+static List<CheckResult> RunPostExtractionChecks(CheckContext context)
+{
+    List<CheckResult> results = [];
+
+    foreach ((string name, Func<CheckContext, CheckResult> run) in PostExtractionChecks())
+    {
+        try
+        {
+            results.Add(run(context));
+        }
+        catch (Exception ex)
+        {
+            results.Add(FailedCheck(name, $"Check failed to run: {ex.Message}"));
+        }
+    }
+
+    return results;
 }
 
 /// <summary>Computes the SHA-256 hash of a file.</summary>
@@ -339,16 +371,16 @@ void WriteResult(string? sha256, ArchiveInfo? archive, List<CheckResult> checks)
     Console.WriteLine(JsonSerializer.Serialize(output, jsonOptions));
 }
 
-/// <summary>Builds a passing enforcing check.</summary>
-static CheckResult PassedCheck(string name)
+/// <summary>Builds a passing check.</summary>
+static CheckResult PassedCheck(string name, bool reportOnly = false, Dictionary<string, object?>? data = null)
 {
-    return new CheckResult(name, "passed", false, null, new Dictionary<string, object?>());
+    return new CheckResult(name, "passed", reportOnly, null, data ?? new Dictionary<string, object?>());
 }
 
-/// <summary>Builds a failing enforcing check.</summary>
-static CheckResult FailedCheck(string name, string message)
+/// <summary>Builds a failing check.</summary>
+static CheckResult FailedCheck(string name, string message, bool reportOnly = false, Dictionary<string, object?>? data = null)
 {
-    return new CheckResult(name, "failed", false, message, new Dictionary<string, object?>());
+    return new CheckResult(name, "failed", reportOnly, message, data ?? new Dictionary<string, object?>());
 }
 
 /// <summary>The versioned container output contract consumed by the host.</summary>
@@ -365,6 +397,12 @@ sealed record ArchiveInfo(
     List<string> FileTree,
     bool FileTreeTruncated,
     int SymlinksRemoved);
+
+/// <summary>The extracted archive state handed to each post-extraction check.</summary>
+sealed record CheckContext(
+    string ExtractDir,
+    List<string> FileTree,
+    long ArchiveSize);
 
 /// <summary>The outcome of a single check. A report-only check is recorded but does not fail the verification.</summary>
 sealed record CheckResult(

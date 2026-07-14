@@ -8,7 +8,9 @@ use Illuminate\Support\Str;
 
 /**
  * Identifies the known checks a verification run can perform, providing the author-facing label and description for
- * each. Check names arrive as untrusted container output, so unknown names resolve to a humanized fallback label.
+ * each. Checks are implemented in docker/verification/verify.cs; a new check needs a case here so the admin and public
+ * check lists can present its label and description. Check names arrive as untrusted container output, so unknown
+ * names resolve to a humanized fallback label.
  */
 enum VerificationCheckType: string
 {

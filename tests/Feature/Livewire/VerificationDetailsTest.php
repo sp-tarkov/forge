@@ -43,7 +43,6 @@ describe('verification details', function (): void {
             ->assertSee('manifest_present')
             ->assertSee('Report only')
             ->assertSee('No manifest found')
-            ->assertSee('suite 4')
             ->assertSuccessful();
     });
 

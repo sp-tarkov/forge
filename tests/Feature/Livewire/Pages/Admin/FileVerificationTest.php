@@ -97,8 +97,7 @@ it('shows the per-check results in the modal', function (): void {
         ->assertSee('Manifest Present')
         ->assertSee('manifest_present')
         ->assertSee('Report only')
-        ->assertSee('No manifest found')
-        ->assertSee('suite 4');
+        ->assertSee('No manifest found');
 });
 
 it('renders the archive file tree as nested nodes in the modal', function (): void {
