@@ -62,7 +62,7 @@ describe('CheckList Blade Component', function (): void {
         $view->assertSeeInOrder(['file_download', 'enforcing_failure']);
     });
 
-    it('separates a failed check\'s message from its description and renders it in red', function (): void {
+    it("separates a failed check's message from its description and renders it in red", function (): void {
         $checks = [
             new VerificationCheck('archive_extraction', VerificationCheckStatus::Failed, false, 'Broken archive'),
         ];
@@ -74,7 +74,7 @@ describe('CheckList Blade Component', function (): void {
         $view->assertSee('Broken archive');
     });
 
-    it('renders a passed check\'s message without a divider or red styling', function (): void {
+    it("renders a passed check's message without a divider or red styling", function (): void {
         $checks = [
             new VerificationCheck('archive_extraction', VerificationCheckStatus::Passed, false, 'Extracted 12 files'),
         ];
@@ -86,7 +86,7 @@ describe('CheckList Blade Component', function (): void {
         $view->assertSee('Extracted 12 files');
     });
 
-    it('renders a failed check\'s message without a divider when the check has no description', function (): void {
+    it("renders a failed check's message without a divider when the check has no description", function (): void {
         $checks = [
             new VerificationCheck('unknown_check', VerificationCheckStatus::Failed, false, 'Something broke'),
         ];
