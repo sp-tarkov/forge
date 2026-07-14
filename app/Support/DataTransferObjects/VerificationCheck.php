@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\DataTransferObjects;
 
 use App\Enums\VerificationCheckStatus;
+use App\Enums\VerificationCheckType;
 
 /**
  * Value object representing a single check within a verification run, built from untrusted container output.
@@ -51,6 +52,22 @@ final readonly class VerificationCheck
             message: $message,
             data: $data,
         );
+    }
+
+    /**
+     * Get the human-readable label for the check, humanizing unknown check names.
+     */
+    public function label(): string
+    {
+        return VerificationCheckType::labelFor($this->name);
+    }
+
+    /**
+     * Get the author-facing description of what the check verifies, or null when the check name is unknown.
+     */
+    public function description(): ?string
+    {
+        return VerificationCheckType::descriptionFor($this->name);
     }
 
     /**

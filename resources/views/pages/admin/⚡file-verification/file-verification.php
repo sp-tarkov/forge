@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Enums\VerificationCheckStatus;
-use App\Enums\VerificationCheckType;
 use App\Enums\VerificationTrigger;
 use App\Models\AddonVersion;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\VerificationResult;
 use App\Support\DataTransferObjects\FileTreeNode;
+use App\Support\DataTransferObjects\VerificationCheck;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -105,31 +104,17 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
     }
 
     /**
-     * The selected result's checks with each status resolved to its enum and the author-facing label and description
-     * resolved from the check name for display.
+     * Get the selected result's checks as value objects for display.
      *
-     * @return list<array{name: string, label: string, description: string|null, status: VerificationCheckStatus, report_only: bool, message: string|null}>
+     * @return list<VerificationCheck>
      */
     #[Computed]
     public function selectedChecks(): array
     {
-        $result = $this->selectedResult;
-        if ($result === null) {
-            return [];
-        }
-
-        return array_values(array_map(function (array $check): array {
-            $name = is_string($check['name'] ?? null) ? $check['name'] : 'unknown';
-
-            return [
-                'name' => $name,
-                'label' => VerificationCheckType::labelFor($name),
-                'description' => VerificationCheckType::descriptionFor($name),
-                'status' => VerificationCheckStatus::tryFrom(is_string($check['status'] ?? null) ? $check['status'] : '') ?? VerificationCheckStatus::Failed,
-                'report_only' => (bool) ($check['report_only'] ?? false),
-                'message' => is_string($check['message'] ?? null) ? $check['message'] : null,
-            ];
-        }, $result->checks ?? []));
+        return array_values(array_map(
+            VerificationCheck::fromContainer(...),
+            $this->selectedResult->checks ?? []
+        ));
     }
 
     /**

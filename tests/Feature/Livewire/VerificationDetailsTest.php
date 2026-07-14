@@ -26,6 +26,37 @@ describe('verification details', function (): void {
             ->assertSuccessful();
     });
 
+    it('renders the per-check results', function (): void {
+        $version = ModVersion::factory()->create();
+        VerificationResult::factory()->forModVersion($version)->passed()->withChecks([
+            ['name' => 'archive_extraction', 'status' => 'passed', 'report_only' => false, 'message' => null, 'data' => []],
+            ['name' => 'manifest_present', 'status' => 'failed', 'report_only' => true, 'message' => 'No manifest found', 'data' => []],
+        ], '4')->create();
+
+        Livewire::withoutLazyLoading()
+            ->test('verification-details', ['verifiableId' => $version->id, 'verifiableType' => ModVersion::class])
+            ->assertSee('Checks')
+            ->assertSee('Archive Extraction')
+            ->assertSee('archive_extraction')
+            ->assertSee('Confirms your uploaded archive can be opened')
+            ->assertSee('Manifest Present')
+            ->assertSee('manifest_present')
+            ->assertSee('Report only')
+            ->assertSee('No manifest found')
+            ->assertSee('suite 4')
+            ->assertSuccessful();
+    });
+
+    it('omits the checks section when the result has no checks', function (): void {
+        $version = ModVersion::factory()->create();
+        VerificationResult::factory()->forModVersion($version)->passed()->create();
+
+        Livewire::withoutLazyLoading()
+            ->test('verification-details', ['verifiableId' => $version->id, 'verifiableType' => ModVersion::class])
+            ->assertDontSee('Checks')
+            ->assertSuccessful();
+    });
+
     it('does not expose failure information from other runs', function (): void {
         $version = ModVersion::factory()->create();
         $passed = VerificationResult::factory()->forModVersion($version)->passed()->create();

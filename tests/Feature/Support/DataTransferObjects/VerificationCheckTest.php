@@ -72,6 +72,16 @@ describe('helpers', function (): void {
         expect($failed->passed())->toBeFalse();
     });
 
+    it('resolves the display label and description from the check name', function (): void {
+        $known = new VerificationCheck('archive_extraction', VerificationCheckStatus::Passed, false, null);
+        $unknown = new VerificationCheck('mystery_check', VerificationCheckStatus::Passed, false, null);
+
+        expect($known->label())->toBe('Archive Extraction');
+        expect($known->description())->toContain('unpacked safely');
+        expect($unknown->label())->toBe('Mystery Check');
+        expect($unknown->description())->toBeNull();
+    });
+
     it('round-trips through toArray', function (): void {
         $check = new VerificationCheck('forbidden_files', VerificationCheckStatus::Failed, true, 'Contains an exe', ['count' => 1]);
 

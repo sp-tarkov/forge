@@ -6,6 +6,7 @@ use App\Enums\VerificationStatus;
 use App\Models\ModVersion;
 use App\Models\VerificationResult;
 use App\Support\DataTransferObjects\FileTreeNode;
+use App\Support\DataTransferObjects\VerificationCheck;
 use Illuminate\Support\Number;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
@@ -62,6 +63,20 @@ new #[Lazy] class extends Component
         $size = $this->result?->downloaded_size;
 
         return $size === null ? null : Number::fileSize($size, precision: 2);
+    }
+
+    /**
+     * Get the result's checks as value objects for display.
+     *
+     * @return list<VerificationCheck>
+     */
+    #[Computed]
+    public function checks(): array
+    {
+        return array_values(array_map(
+            VerificationCheck::fromContainer(...),
+            $this->result->checks ?? []
+        ));
     }
 
     /**
