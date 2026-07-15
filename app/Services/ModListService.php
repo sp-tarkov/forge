@@ -13,6 +13,7 @@ use App\Models\Mod;
 use App\Models\ModList;
 use App\Models\ModListItem;
 use App\Models\ModVersion;
+use App\Models\Scopes\PublishedScope;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Support\DataTransferObjects\DependencyCascadeResult;
@@ -267,7 +268,8 @@ final class ModListService
     }
 
     /**
-     * Remove an item from a list. Cascades addons when a parent mod is removed.
+     * Remove an item from a list. Cascades addons when a parent mod is removed. The cascade bypasses the published
+     * scope so addon items whose addons are unpublished or hidden from the viewer are removed along with the mod.
      */
     public function removeItem(ModList $modList, ModListItem $item): void
     {
@@ -276,7 +278,10 @@ final class ModListService
                 ModListItem::query()
                     ->where('mod_list_id', $modList->id)
                     ->where('listable_type', Addon::class)
-                    ->whereIn('listable_id', Addon::query()->where('mod_id', $item->listable_id)->pluck('id'))
+                    ->whereIn('listable_id', Addon::query()
+                        ->withoutGlobalScope(PublishedScope::class)
+                        ->where('mod_id', $item->listable_id)
+                        ->pluck('id'))
                     ->delete();
             }
 

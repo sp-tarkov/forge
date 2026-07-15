@@ -325,8 +325,21 @@
                             @endif
                         </x-mod.list-row>
                     @else
-                        <div class="p-3 text-sm italic text-gray-400 sm:p-4">
-                            {{ __('This mod is no longer available.') }}
+                        <div class="flex items-center gap-3 p-3 text-gray-400 sm:p-4">
+                            <div class="min-w-0 flex-1 text-sm italic">
+                                {{ __('This mod is no longer available.') }}
+                            </div>
+                            @if ($canManage && $group['mod_item'])
+                                <flux:button
+                                    icon="x-mark"
+                                    variant="subtle"
+                                    size="sm"
+                                    square
+                                    class="shrink-0"
+                                    :aria-label="__('Remove unavailable mod from list')"
+                                    wire:click="confirmRemoveItem({{ $group['mod_item']->id }})"
+                                />
+                            @endif
                         </div>
                     @endif
 
@@ -395,6 +408,31 @@
                                                 />
                                             @endif
                                         </x-addon.list-item>
+                                    </li>
+                                @else
+                                    <li wire:key="list-addon-{{ $addonItem->id }}">
+                                        <div class="flex items-center gap-3 px-3 py-1.5 text-gray-400 sm:px-4">
+                                            <div class="flex w-14 shrink-0 items-center justify-end sm:w-16">
+                                                <div
+                                                    class="flex size-10 items-center justify-center rounded bg-gray-900/40">
+                                                    <flux:icon.no-symbol class="size-5 text-gray-700" />
+                                                </div>
+                                            </div>
+                                            <div class="min-w-0 flex-1 text-sm italic">
+                                                {{ __('This addon is no longer available.') }}
+                                            </div>
+                                            @if ($canManage)
+                                                <flux:button
+                                                    icon="x-mark"
+                                                    variant="subtle"
+                                                    size="sm"
+                                                    square
+                                                    class="shrink-0"
+                                                    :aria-label="__('Remove unavailable addon from list')"
+                                                    wire:click="confirmRemoveItem({{ $addonItem->id }})"
+                                                />
+                                            @endif
+                                        </div>
                                     </li>
                                 @endif
                             @endforeach
