@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\VerificationCheckStatus;
+use App\Enums\VerificationCheckType;
 use App\Enums\VerificationStatus;
 use App\Enums\VerificationTrigger;
 use App\Jobs\RunVerificationJob;
+use App\Support\DataTransferObjects\VerificationCheck;
 use Carbon\CarbonImmutable;
 use Database\Factories\VerificationResultFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -99,6 +102,36 @@ final class VerificationResult extends Model
     }
 
     /**
+     * Get the run's checks as value objects for display, led by the host-side file download check whenever a download
+     * outcome was recorded. A failed run that recorded no container checks after a successful download synthesizes a
+     * failed archive extraction check, so every failure renders in the same style as a normal check.
+     *
+     * @return list<VerificationCheck>
+     */
+    public function displayChecks(): array
+    {
+        $checks = array_values(array_map(
+            VerificationCheck::fromContainer(...),
+            $this->checks ?? []
+        ));
+
+        if ($checks === [] && $this->status === VerificationStatus::Failed && $this->download_ok !== false) {
+            $checks = [new VerificationCheck(
+                name: VerificationCheckType::ArchiveExtraction->value,
+                status: VerificationCheckStatus::Failed,
+                reportOnly: false,
+                message: $this->failure_reason,
+            )];
+        }
+
+        if ($this->download_ok === null) {
+            return $checks;
+        }
+
+        return [$this->fileDownloadCheck(), ...$checks];
+    }
+
+    /**
      * The attributes that should be cast to native types.
      *
      * @return array<string, string>
@@ -121,5 +154,20 @@ final class VerificationResult extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Build the host-side file download check from the run's download outcome.
+     */
+    private function fileDownloadCheck(): VerificationCheck
+    {
+        $downloadFailed = $this->download_ok === false;
+
+        return new VerificationCheck(
+            name: VerificationCheckType::FileDownload->value,
+            status: $downloadFailed ? VerificationCheckStatus::Failed : VerificationCheckStatus::Passed,
+            reportOnly: false,
+            message: $downloadFailed ? $this->failure_reason : null,
+        );
     }
 }

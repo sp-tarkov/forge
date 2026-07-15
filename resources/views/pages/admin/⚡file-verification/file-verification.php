@@ -111,10 +111,7 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
     #[Computed]
     public function selectedChecks(): array
     {
-        return array_values(array_map(
-            VerificationCheck::fromContainer(...),
-            $this->selectedResult->checks ?? []
-        ));
+        return $this->selectedResult?->displayChecks() ?? [];
     }
 
     /**

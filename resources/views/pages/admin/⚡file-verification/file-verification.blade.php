@@ -381,33 +381,13 @@
                     </p>
                 </div>
 
-                {{-- Download Details --}}
-                @if ($this->selectedResult->download_ok !== null)
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="text-gray-400">Download</span>
-                            <div class="mt-1">
-                                @if ($this->selectedResult->download_ok)
-                                    <flux:badge
-                                        color="green"
-                                        size="sm"
-                                    >OK</flux:badge>
-                                @else
-                                    <flux:badge
-                                        color="red"
-                                        size="sm"
-                                    >Failed</flux:badge>
-                                @endif
-                            </div>
-                        </div>
-                        @if ($this->selectedResult->downloaded_size)
-                            <div>
-                                <span class="text-gray-400">File Size</span>
-                                <p class="mt-1 text-gray-100">
-                                    {{ \Illuminate\Support\Number::fileSize($this->selectedResult->downloaded_size, precision: 2) }}
-                                </p>
-                            </div>
-                        @endif
+                {{-- File Size --}}
+                @if ($this->selectedResult->downloaded_size)
+                    <div>
+                        <span class="text-sm text-gray-400">File Size</span>
+                        <p class="mt-1 text-sm text-gray-100">
+                            {{ Number::fileSize($this->selectedResult->downloaded_size, precision: 2) }}
+                        </p>
                     </div>
                 @endif
 

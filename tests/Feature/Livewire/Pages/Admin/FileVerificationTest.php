@@ -100,6 +100,33 @@ it('shows the per-check results in the modal', function (): void {
         ->assertSee('No manifest found');
 });
 
+it('shows the file download check first among the stored checks in the modal', function (): void {
+    $admin = User::factory()->admin()->create();
+
+    $result = VerificationResult::factory()->passed()->withChecks()->create();
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.file-verification')
+        ->call('showDetails', $result->id)
+        ->assertOk()
+        ->assertSeeInOrder(['file_download', 'archive_extraction']);
+});
+
+it('shows a failed file download check in the modal when the download failed', function (): void {
+    $admin = User::factory()->admin()->create();
+
+    $result = VerificationResult::factory()->failed('Download returned HTTP 404')->create();
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.file-verification')
+        ->call('showDetails', $result->id)
+        ->assertOk()
+        ->assertSee('File Download')
+        ->assertSee('file_download')
+        ->assertSee('Confirms your download URL serves the mod archive file directly.')
+        ->assertSee('Download returned HTTP 404');
+});
+
 it('renders the archive file tree as nested nodes in the modal', function (): void {
     $admin = User::factory()->admin()->create();
 
