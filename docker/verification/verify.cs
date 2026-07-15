@@ -1,11 +1,11 @@
-#:package SharpCompress@0.40.0
+#:package SharpCompress@0.50.0
 #:property PublishAot=false
 
-using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text.Json;
 using SharpCompress.Archives;
 using SharpCompress.Archives.SevenZip;
+using SharpCompress.Archives.Zip;
 using SharpCompress.Common;
 using SharpCompress.Readers;
 
@@ -125,17 +125,24 @@ static string? ValidateAndExtract(
 
         if (extension.Equals("zip", StringComparison.OrdinalIgnoreCase))
         {
-            using ZipArchive zip = ZipFile.OpenRead(archiveFile);
+            // Reads the zip through SharpCompress, which decompresses the LZMA, PPMd, and BZip2 entry methods that
+            // System.IO.Compression does not support.
+            using IArchive zip = ZipArchive.OpenArchive(new BufferedArchiveStream(archiveFile));
 
             long declaredTotal = 0;
-            foreach (ZipArchiveEntry entry in zip.Entries)
+            foreach (IArchiveEntry entry in zip.Entries)
             {
-                if (ContainsPathTraversal(entry.FullName))
+                if (entry.Key is null)
                 {
-                    return $"Archive contains path traversal entry: {entry.FullName}";
+                    continue;
                 }
 
-                declaredTotal += entry.Length;
+                if (ContainsPathTraversal(entry.Key))
+                {
+                    return $"Archive contains path traversal entry: {entry.Key}";
+                }
+
+                declaredTotal += entry.Size;
             }
 
             if (declaredTotal > maxExtractedSize)
@@ -143,32 +150,37 @@ static string? ValidateAndExtract(
                 return $"Archive declares an uncompressed size ({declaredTotal} bytes) exceeding maximum ({maxExtractedSize} bytes)";
             }
 
-            foreach (ZipArchiveEntry entry in zip.Entries)
+            foreach (IArchiveEntry entry in zip.Entries)
             {
-                string destPath = Path.GetFullPath(Path.Combine(extractDir, entry.FullName));
-                if (destPath != extractDirRoot && !destPath.StartsWith(extractDirFull, StringComparison.Ordinal))
+                if (entry.Key is null)
                 {
-                    return $"Archive contains an entry that resolves outside the extraction directory: {entry.FullName}";
+                    continue;
                 }
 
-                if (string.IsNullOrEmpty(entry.Name))
+                string destPath = Path.GetFullPath(Path.Combine(extractDir, entry.Key));
+                if (destPath != extractDirRoot && !destPath.StartsWith(extractDirFull, StringComparison.Ordinal))
+                {
+                    return $"Archive contains an entry that resolves outside the extraction directory: {entry.Key}";
+                }
+
+                if (entry.IsDirectory)
                 {
                     Directory.CreateDirectory(destPath);
                 }
                 else
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-                    using Stream source = entry.Open();
+                    using Stream source = entry.OpenEntryStream();
                     totalWritten = ExtractEntry(source, destPath, totalWritten, maxExtractedSize, maxByRatio, maxRatio);
                 }
             }
         }
         else if (extension.Equals("7z", StringComparison.OrdinalIgnoreCase))
         {
-            using SevenZipArchive archive = SevenZipArchive.Open(archiveFile);
+            using IArchive archive = SevenZipArchive.OpenArchive(new BufferedArchiveStream(archiveFile));
 
             long declaredTotal = 0;
-            foreach (SevenZipArchiveEntry entry in archive.Entries)
+            foreach (IArchiveEntry entry in archive.Entries)
             {
                 if (entry.Key is null)
                 {
@@ -418,3 +430,59 @@ sealed record CheckResult(
 
 /// <summary>Raised when an archive extracts past the absolute or ratio size limit.</summary>
 sealed class ExtractionLimitException(string message) : Exception(message);
+
+/// <summary>
+/// A read-only archive stream that reports a length captured once at open and serves reads through a 1 MB buffer.
+/// SharpCompress decompressors read the archive one byte at a time and query its length on every read, which costs a
+/// stat syscall plus an unbuffered read per byte on the raw file stream.
+/// </summary>
+sealed class BufferedArchiveStream : Stream
+{
+    private readonly BufferedStream _inner;
+    private readonly long _length;
+
+    public BufferedArchiveStream(string path)
+    {
+        FileStream file = File.OpenRead(path);
+        _length = file.Length;
+        _inner = new BufferedStream(file, 1 << 20);
+    }
+
+    public override bool CanRead => true;
+
+    public override bool CanSeek => true;
+
+    public override bool CanWrite => false;
+
+    public override long Length => _length;
+
+    public override long Position
+    {
+        get => _inner.Position;
+        set => _inner.Position = value;
+    }
+
+    public override int Read(byte[] buffer, int offset, int count) => _inner.Read(buffer, offset, count);
+
+    public override int ReadByte() => _inner.ReadByte();
+
+    public override long Seek(long offset, SeekOrigin origin) => _inner.Seek(offset, origin);
+
+    public override void Flush()
+    {
+    }
+
+    public override void SetLength(long value) => throw new NotSupportedException();
+
+    public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _inner.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+}
