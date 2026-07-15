@@ -70,6 +70,7 @@ return [
     'container' => [
         'pids_limit' => (int) env('VERIFICATION_CONTAINER_PIDS_LIMIT', 256),
         'pull_policy' => env('VERIFICATION_CONTAINER_PULL_POLICY', 'always'),
+        'memory' => env('VERIFICATION_CONTAINER_MEMORY', '3g'),
     ],
 
     /*

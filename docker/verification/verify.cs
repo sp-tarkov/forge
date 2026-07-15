@@ -220,6 +220,10 @@ static string? ValidateAndExtract(
     {
         return ex.Message;
     }
+    catch (OutOfMemoryException)
+    {
+        return "Extracting the archive requires more memory than verification allows. This usually means it was created with an unusually large dictionary size; it should be archived again with a smaller dictionary (64 MB is plenty).";
+    }
     catch (Exception ex)
     {
         return $"Failed to extract {extension.ToUpperInvariant()} archive: {ex.Message}";
