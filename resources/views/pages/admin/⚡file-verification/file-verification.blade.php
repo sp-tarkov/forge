@@ -198,6 +198,15 @@
                                             square="true"
                                             title="Re-verify"
                                         />
+                                        <flux:button
+                                            wire:click="deleteResult({{ $result->id }})"
+                                            wire:confirm="Are you sure you want to delete this verification result? This action cannot be undone."
+                                            variant="ghost"
+                                            size="sm"
+                                            icon="trash"
+                                            square="true"
+                                            title="Delete"
+                                        />
                                     </td>
                                 </tr>
                             @empty
@@ -443,6 +452,14 @@
                         icon="arrow-path"
                     >
                         Re-verify
+                    </flux:button>
+                    <flux:button
+                        wire:click="deleteResult({{ $this->selectedResult->id }})"
+                        wire:confirm="Are you sure you want to delete this verification result? This action cannot be undone."
+                        variant="danger"
+                        icon="trash"
+                    >
+                        Delete
                     </flux:button>
                     <flux:button
                         wire:click="closeModal"

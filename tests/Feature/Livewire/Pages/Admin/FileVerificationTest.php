@@ -127,6 +127,58 @@ it('shows a failed file download check in the modal when the download failed', f
         ->assertSee('Download returned HTTP 404');
 });
 
+it('deletes a verification result and closes the detail modal', function (): void {
+    $admin = User::factory()->admin()->create();
+
+    $result = VerificationResult::factory()->passed()->create();
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.file-verification')
+        ->call('showDetails', $result->id)
+        ->call('deleteResult', $result->id)
+        ->assertOk()
+        ->assertSet('showDetailModal', false)
+        ->assertSet('selectedResultId', null);
+
+    expect(VerificationResult::query()->find($result->id))->toBeNull();
+});
+
+it('falls back to the previous completed result when the latest one is deleted', function (): void {
+    $admin = User::factory()->admin()->create();
+
+    $version = ModVersion::factory()->create();
+    VerificationResult::factory()->forModVersion($version)->passed()->create();
+    $failed = VerificationResult::factory()->forModVersion($version)->failed()->create();
+    $version->updateQuietly(['verification_status' => VerificationStatus::Failed, 'last_verified_at' => now()]);
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.file-verification')
+        ->call('deleteResult', $failed->id)
+        ->assertOk();
+
+    expect(VerificationResult::query()->find($failed->id))->toBeNull()
+        ->and($version->refresh())
+        ->verification_status->toBe(VerificationStatus::Passed)
+        ->last_verified_at->not->toBeNull();
+});
+
+it('clears the version verification status when its only result is deleted', function (): void {
+    $admin = User::factory()->admin()->create();
+
+    $version = ModVersion::factory()->create();
+    $result = VerificationResult::factory()->forModVersion($version)->passed()->create();
+    $version->updateQuietly(['verification_status' => VerificationStatus::Passed, 'last_verified_at' => now()]);
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.file-verification')
+        ->call('deleteResult', $result->id)
+        ->assertOk();
+
+    expect($version->refresh())
+        ->verification_status->toBeNull()
+        ->last_verified_at->toBeNull();
+});
+
 it('renders the archive file tree as nested nodes in the modal', function (): void {
     $admin = User::factory()->admin()->create();
 

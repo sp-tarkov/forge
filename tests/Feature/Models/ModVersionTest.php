@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Contracts\DependencyResolver;
+use App\Enums\VerificationStatus;
 use App\Http\Filters\ModFilter;
 use App\Models\Addon;
 use App\Models\AddonVersion;
@@ -12,6 +13,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use App\Models\VerificationResult;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -1655,5 +1657,30 @@ describe('View Addons Link', function (): void {
                 'slug' => $mod->slug,
             ])
             ->assertDontSee('View Addons');
+    });
+});
+
+describe('verification status refresh', function (): void {
+    it('refreshes the verification status from the latest completed result, ignoring incomplete runs', function (): void {
+        $version = ModVersion::factory()->create();
+        VerificationResult::factory()->forModVersion($version)->passed()->create();
+        VerificationResult::factory()->forModVersion($version)->create();
+
+        $version->refreshVerificationStatus();
+
+        expect($version->refresh())
+            ->verification_status->toBe(VerificationStatus::Passed)
+            ->last_verified_at->not->toBeNull();
+    });
+
+    it('clears the verification status when no completed results remain', function (): void {
+        $version = ModVersion::factory()->create();
+        $version->updateQuietly(['verification_status' => VerificationStatus::Passed, 'last_verified_at' => now()]);
+
+        $version->refreshVerificationStatus();
+
+        expect($version->refresh())
+            ->verification_status->toBeNull()
+            ->last_verified_at->toBeNull();
     });
 });

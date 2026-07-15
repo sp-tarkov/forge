@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\VerificationStatus;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Dependency;
@@ -9,6 +10,7 @@ use App\Models\DependencyResolved;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
+use App\Models\VerificationResult;
 
 describe('version prefix stripping', function (): void {
     it('strips lowercase v prefix from version on save', function (): void {
@@ -311,5 +313,21 @@ describe('resolved dependency visibility', function (): void {
         $this->actingAs(User::factory()->admin()->create());
 
         expect($addonVersion->latestDependenciesResolved()->get())->toHaveCount(1);
+    });
+});
+
+describe('verification status refresh', function (): void {
+    it('refreshes the verification status from the latest completed result', function (): void {
+        $user = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->for($user, 'owner')->create(['published_at' => now()]);
+        $addon = Addon::factory()->for($mod)->for($user, 'owner')->published()->create();
+        $version = AddonVersion::factory()->for($addon)->create();
+        VerificationResult::factory()->forAddonVersion($version)->passed()->create();
+
+        $version->refreshVerificationStatus();
+
+        expect($version->refresh())
+            ->verification_status->toBe(VerificationStatus::Passed)
+            ->last_verified_at->not->toBeNull();
     });
 });

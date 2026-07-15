@@ -124,6 +124,23 @@ final class AddonVersion extends Model
     }
 
     /**
+     * Recompute the denormalized verification status from the latest completed verification result, clearing it when
+     * no completed results remain.
+     */
+    public function refreshVerificationStatus(): void
+    {
+        $latest = $this->verificationResults()
+            ->whereIn('status', [VerificationStatus::Passed, VerificationStatus::Failed, VerificationStatus::Error])
+            ->latest('id')
+            ->first();
+
+        $this->updateQuietly([
+            'verification_status' => $latest?->status,
+            'last_verified_at' => $latest?->completed_at,
+        ]);
+    }
+
+    /**
      * The relationship between an addon version and its dependencies.
      *
      * @return MorphMany<Dependency, $this>
