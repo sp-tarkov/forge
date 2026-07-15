@@ -198,6 +198,15 @@
                                             square="true"
                                             title="Re-verify"
                                         />
+                                        <flux:button
+                                            wire:click="deleteResult({{ $result->id }})"
+                                            wire:confirm="Are you sure you want to delete this verification result? This action cannot be undone."
+                                            variant="ghost"
+                                            size="sm"
+                                            icon="trash"
+                                            square="true"
+                                            title="Delete"
+                                        />
                                     </td>
                                 </tr>
                             @empty
@@ -381,33 +390,13 @@
                     </p>
                 </div>
 
-                {{-- Download Details --}}
-                @if ($this->selectedResult->download_ok !== null)
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="text-gray-400">Download</span>
-                            <div class="mt-1">
-                                @if ($this->selectedResult->download_ok)
-                                    <flux:badge
-                                        color="green"
-                                        size="sm"
-                                    >OK</flux:badge>
-                                @else
-                                    <flux:badge
-                                        color="red"
-                                        size="sm"
-                                    >Failed</flux:badge>
-                                @endif
-                            </div>
-                        </div>
-                        @if ($this->selectedResult->downloaded_size)
-                            <div>
-                                <span class="text-gray-400">File Size</span>
-                                <p class="mt-1 text-gray-100">
-                                    {{ \Illuminate\Support\Number::fileSize($this->selectedResult->downloaded_size, precision: 2) }}
-                                </p>
-                            </div>
-                        @endif
+                {{-- File Size --}}
+                @if ($this->selectedResult->downloaded_size)
+                    <div>
+                        <span class="text-sm text-gray-400">File Size</span>
+                        <p class="mt-1 text-sm text-gray-100">
+                            {{ Number::fileSize($this->selectedResult->downloaded_size, precision: 2) }}
+                        </p>
                     </div>
                 @endif
 
@@ -463,6 +452,14 @@
                         icon="arrow-path"
                     >
                         Re-verify
+                    </flux:button>
+                    <flux:button
+                        wire:click="deleteResult({{ $this->selectedResult->id }})"
+                        wire:confirm="Are you sure you want to delete this verification result? This action cannot be undone."
+                        variant="danger"
+                        icon="trash"
+                    >
+                        Delete
                     </flux:button>
                     <flux:button
                         wire:click="closeModal"

@@ -111,10 +111,7 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
     #[Computed]
     public function selectedChecks(): array
     {
-        return array_values(array_map(
-            VerificationCheck::fromContainer(...),
-            $this->selectedResult->checks ?? []
-        ));
+        return $this->selectedResult?->displayChecks() ?? [];
     }
 
     /**
@@ -308,6 +305,35 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
         } else {
             Flux::toast(heading: 'Already Pending', text: 'A verification is already pending for this version.', variant: 'warning');
         }
+    }
+
+    /**
+     * Delete a verification result and refresh the verifiable's denormalized verification status.
+     */
+    public function deleteResult(int $resultId): void
+    {
+        $result = VerificationResult::query()->with('verifiable')->find($resultId);
+
+        if ($result === null) {
+            Flux::toast(heading: 'Error', text: 'The verification result no longer exists.', variant: 'danger');
+
+            return;
+        }
+
+        /** @var ModVersion|AddonVersion|null $verifiable */
+        $verifiable = $result->verifiable;
+
+        $result->delete();
+
+        if ($verifiable instanceof ModVersion || $verifiable instanceof AddonVersion) {
+            $verifiable->refreshVerificationStatus();
+        }
+
+        if ($this->selectedResultId === $resultId) {
+            $this->closeModal();
+        }
+
+        Flux::toast(heading: 'Verification Deleted', text: 'The verification result has been deleted.', variant: 'success');
     }
 
     /**

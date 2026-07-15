@@ -16,6 +16,7 @@ use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Backoff;
+use Illuminate\Queue\Attributes\DeleteWhenMissingModels;
 use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Queue\Attributes\UniqueFor;
 use Illuminate\Support\Facades\Http;
@@ -30,6 +31,7 @@ use Throwable;
 #[Backoff([30, 60])]
 #[Tries(2)]
 #[UniqueFor(3600)]
+#[DeleteWhenMissingModels]
 final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
@@ -497,7 +499,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
             return ['ok' => false, 'error' => 'No downloaded file available for container'];
         }
 
-        $dockerImage = config()->string('verification.docker_image', 'ghcr.io/sp-tarkov/forge/verification:latest');
+        $dockerImage = config()->string('verification.docker_image', 'ghcr.io/sp-tarkov/forge/verification:main');
         $pullPolicy = $this->pullPolicy();
 
         if (config()->boolean('verification.build_local_image', false)) {
