@@ -39,7 +39,7 @@ describe('verification details', function (): void {
             ->assertSee('Checks')
             ->assertSee('Archive Extraction')
             ->assertSee('archive_extraction')
-            ->assertSee('Confirms your uploaded archive can be opened')
+            ->assertSee('Confirms the uploaded archive can be opened')
             ->assertSee('Manifest Present')
             ->assertSee('manifest_present')
             ->assertSee('Report only')
@@ -130,7 +130,7 @@ describe('verification details', function (): void {
             ->assertSee('Checks')
             ->assertSee('File Download')
             ->assertSee('file_download')
-            ->assertSee('Confirms your download URL serves the mod archive file directly.')
+            ->assertSee('Confirms the download URL serves the mod archive file directly.')
             ->assertSee('Download returned HTTP 404')
             ->assertSuccessful();
     });

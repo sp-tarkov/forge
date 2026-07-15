@@ -93,7 +93,7 @@ it('shows the per-check results in the modal', function (): void {
         ->assertOk()
         ->assertSee('Archive Extraction')
         ->assertSee('archive_extraction')
-        ->assertSee('Confirms your uploaded archive can be opened')
+        ->assertSee('Confirms the uploaded archive can be opened')
         ->assertSee('Manifest Present')
         ->assertSee('manifest_present')
         ->assertSee('Report only')
@@ -123,7 +123,7 @@ it('shows a failed file download check in the modal when the download failed', f
         ->assertOk()
         ->assertSee('File Download')
         ->assertSee('file_download')
-        ->assertSee('Confirms your download URL serves the mod archive file directly.')
+        ->assertSee('Confirms the download URL serves the mod archive file directly.')
         ->assertSee('Download returned HTTP 404');
 });
 
