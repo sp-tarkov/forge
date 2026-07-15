@@ -40,7 +40,7 @@ return [
     |
     */
 
-    'docker_image' => env('VERIFICATION_DOCKER_IMAGE', 'ghcr.io/sp-tarkov/forge/verification:latest'),
+    'docker_image' => env('VERIFICATION_DOCKER_IMAGE', 'ghcr.io/sp-tarkov/forge/verification:main'),
 
     /*
     |--------------------------------------------------------------------------
