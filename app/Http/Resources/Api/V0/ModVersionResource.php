@@ -39,7 +39,7 @@ final class ModVersionResource extends JsonResource
     public function toArray(Request $request): array
     {
         // For dependency tree endpoint - return only essential identifying fields
-        if ($request->routeIs('api.v0.mods.dependencies.tree')) {
+        if ($request->routeIs('api.v0.mods.dependencies')) {
             return [
                 'id' => $this->resource->id,
                 'version' => $this->resource->version,

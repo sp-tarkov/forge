@@ -140,7 +140,7 @@ final class ModCategoryController extends Controller
      * }
      */
     #[QueryParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,title,slug')]
-    public function show(Request $request, string $identifier): JsonResponse
+    public function show(Request $request, string $id): JsonResponse
     {
         $queryBuilder = (new ModCategoryQueryBuilder)
             ->withFields($request->string('fields')->explode(',')->all());
@@ -148,10 +148,10 @@ final class ModCategoryController extends Controller
         // Apply the query builder's field selection, then filter by ID or slug
         $query = $queryBuilder->apply();
 
-        if (is_numeric($identifier)) {
-            $query->where('mod_categories.id', $identifier);
+        if (is_numeric($id)) {
+            $query->where('mod_categories.id', $id);
         } else {
-            $query->where('mod_categories.slug', $identifier);
+            $query->where('mod_categories.slug', $id);
         }
 
         $category = $query->first();

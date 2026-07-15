@@ -9,6 +9,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use App\Models\VerificationResult;
 use App\Models\VirusTotalLink;
 use Illuminate\Support\Facades\Hash;
 
@@ -309,5 +310,125 @@ describe('virus total links', function (): void {
         $data = $response->json('data.0.virus_total_links');
         expect($data)->toBeArray();
         expect($data)->toHaveCount(0);
+    });
+});
+
+describe('file tree', function (): void {
+    beforeEach(function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $this->mod = Mod::factory()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $this->mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
+        $this->addon = Addon::factory()->create(['mod_id' => $this->mod->id]);
+        $this->addonVersion = AddonVersion::factory()->create(['addon_id' => $this->addon->id]);
+    });
+
+    it('returns the file tree from the latest passed verification', function (): void {
+        VerificationResult::factory()->forAddonVersion($this->addonVersion)->passed()->create([
+            'file_tree' => ['config.json', 'tracks/track01.ogg'],
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions/%d/file-tree', $this->addon->id, $this->addonVersion->id));
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.file_count', 2)
+            ->assertJsonPath('data.truncated', false)
+            ->assertJsonPath('data.files', ['config.json', 'tracks/track01.ogg']);
+
+        expect($response->json('data.verified_at'))->not->toBeNull();
+    });
+
+    it('returns the newest passed file tree when multiple passed verifications exist', function (): void {
+        VerificationResult::factory()->forAddonVersion($this->addonVersion)->passed()->create([
+            'file_tree' => ['old.ogg'],
+        ]);
+        VerificationResult::factory()->forAddonVersion($this->addonVersion)->passed()->create([
+            'file_tree' => ['new.ogg'],
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions/%d/file-tree', $this->addon->id, $this->addonVersion->id));
+
+        $response->assertOk()->assertJsonPath('data.files', ['new.ogg']);
+    });
+
+    it('ignores failed verifications that recorded a file tree', function (): void {
+        VerificationResult::factory()->forAddonVersion($this->addonVersion)->passed()->create([
+            'file_tree' => ['passed.ogg'],
+        ]);
+        VerificationResult::factory()->forAddonVersion($this->addonVersion)->failed()->create([
+            'file_tree' => ['failed.ogg'],
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions/%d/file-tree', $this->addon->id, $this->addonVersion->id));
+
+        $response->assertOk()->assertJsonPath('data.files', ['passed.ogg']);
+    });
+
+    it('marks the file tree as truncated when the verification recorded a truncated listing', function (): void {
+        VerificationResult::factory()->forAddonVersion($this->addonVersion)->passed()->create([
+            'details' => ['file_tree_truncated' => true],
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions/%d/file-tree', $this->addon->id, $this->addonVersion->id));
+
+        $response->assertOk()->assertJsonPath('data.truncated', true);
+    });
+
+    it('returns not found when the version has no passed verification', function (): void {
+        VerificationResult::factory()->forAddonVersion($this->addonVersion)->failed()->create([
+            'file_tree' => ['failed.ogg'],
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions/%d/file-tree', $this->addon->id, $this->addonVersion->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('success', false);
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+
+    it('returns not found when the only passed verification has no file tree', function (): void {
+        VerificationResult::factory()->forAddonVersion($this->addonVersion)->passed()->create([
+            'file_tree' => null,
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions/%d/file-tree', $this->addon->id, $this->addonVersion->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+
+    it('returns not found when the addon version is disabled', function (): void {
+        $disabledVersion = AddonVersion::factory()->disabled()->create(['addon_id' => $this->addon->id]);
+        VerificationResult::factory()->forAddonVersion($disabledVersion)->passed()->create();
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions/%d/file-tree', $this->addon->id, $disabledVersion->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+
+    it('returns not found when the version belongs to another addon', function (): void {
+        $otherAddon = Addon::factory()->create(['mod_id' => $this->mod->id]);
+        $otherVersion = AddonVersion::factory()->create(['addon_id' => $otherAddon->id]);
+        VerificationResult::factory()->forAddonVersion($otherVersion)->passed()->create();
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions/%d/file-tree', $this->addon->id, $otherVersion->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+
+    it('returns not found when the addon is disabled', function (): void {
+        $disabledAddon = Addon::factory()->disabled()->create(['mod_id' => $this->mod->id]);
+        $version = AddonVersion::factory()->create(['addon_id' => $disabledAddon->id]);
+        VerificationResult::factory()->forAddonVersion($version)->passed()->create();
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions/%d/file-tree', $disabledAddon->id, $version->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
     });
 });

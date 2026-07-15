@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V0;
 
+use App\Enums\Api\V0\ApiErrorCode;
+use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V0\ModVersionResource;
+use App\Http\Resources\Api\V0\VerificationFileTreeResource;
 use App\Http\Responses\Api\V0\ApiResponse;
 use App\Support\Api\V0\QueryBuilder\ModVersionQueryBuilder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Knuckles\Scribe\Attributes\QueryParam;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @group Mods
@@ -261,5 +266,58 @@ final class ModVersionController extends Controller
         $modVersions = $queryBuilder->paginate(min($request->integer('per_page', 12), 50));
 
         return ApiResponse::success(ModVersionResource::collection($modVersions));
+    }
+
+    /**
+     * Get Mod Version File Tree
+     *
+     * Retrieves the archive file listing recorded by the latest passed verification of a mod version. The
+     * <code>files</code> array contains the relative path of every file inside the version's download archive.
+     *
+     * <aside class="notice">A file tree is only available once a version has passed automated file verification. When
+     * the version has no passed verification, or the mod or version is not publicly visible, a <code>NOT_FOUND</code>
+     * response is returned. The <code>truncated</code> flag indicates that the archive contained more files than the
+     * verification system records, so the listing is incomplete.</aside>
+     *
+     * @response status=200 scenario="Success"
+     *  {
+     *      "success": true,
+     *      "data": {
+     *          "verified_at": "2026-07-01T12:00:00.000000Z",
+     *          "file_count": 3,
+     *          "truncated": false,
+     *          "files": [
+     *              "BepInEx/plugins/ExampleMod.dll",
+     *              "user/mods/example-mod/package.json",
+     *              "user/mods/example-mod/src/mod.js"
+     *          ]
+     *      }
+     *  }
+     * @response status=404 scenario="File Tree Not Available"
+     *  {
+     *      "success": false,
+     *      "code": "NOT_FOUND",
+     *      "message": "Resource not found."
+     *  }
+     */
+    public function fileTree(int $modId, int $versionId): JsonResponse
+    {
+        try {
+            $modVersion = new ModVersionQueryBuilder($modId)->findOrFail($versionId);
+        } catch (ModelNotFoundException) {
+            return ApiResponse::error('Resource not found.', Response::HTTP_NOT_FOUND, ApiErrorCode::NOT_FOUND);
+        }
+
+        $verification = $modVersion->verificationResults()
+            ->where('status', VerificationStatus::Passed)
+            ->whereNotNull('file_tree')
+            ->latest('id')
+            ->first();
+
+        if ($verification === null) {
+            return ApiResponse::error('Resource not found.', Response::HTTP_NOT_FOUND, ApiErrorCode::NOT_FOUND);
+        }
+
+        return ApiResponse::success(new VerificationFileTreeResource($verification));
     }
 }

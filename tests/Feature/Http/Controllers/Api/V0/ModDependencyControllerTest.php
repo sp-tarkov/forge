@@ -248,6 +248,50 @@ describe('resolve', function (): void {
                 ->assertJsonPath('data.0.dependencies', []);
         });
 
+        it('returns only the documented fields for the latest compatible version', function (): void {
+            $sptVersion = SptVersion::factory()->create([
+                'version' => '3.9.0',
+                'publish_date' => now()->subDay(),
+            ]);
+
+            $mainMod = Mod::factory()->create(['guid' => 'com.example.mainmod']);
+            $mainModVersion = ModVersion::factory()->create([
+                'mod_id' => $mainMod->id,
+                'version' => '1.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $mainModVersion->sptVersions()->sync([$sptVersion->id]);
+
+            $dependencyMod = Mod::factory()->create(['guid' => 'com.example.dependency']);
+            $dependencyModVersion = ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '2.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $dependencyModVersion->sptVersions()->sync([$sptVersion->id]);
+
+            $dependency = Dependency::factory()->create([
+                'dependable_id' => $mainModVersion->id,
+                'dependent_mod_id' => $dependencyMod->id,
+                'constraint' => '^2.0.0',
+            ]);
+
+            DependencyResolved::factory()->create([
+                'dependable_id' => $mainModVersion->id,
+                'dependency_id' => $dependency->id,
+                'resolved_mod_version_id' => $dependencyModVersion->id,
+            ]);
+
+            $response = $this->getJson('/api/v0/mods/dependencies?mods=com.example.mainmod:1.0.0');
+
+            $response->assertSuccessful();
+
+            expect(array_keys($response->json('data.0.latest_compatible_version')))
+                ->toBe(['id', 'version', 'link', 'content_length', 'fika_compatibility']);
+        });
+
         it('returns empty array when mod version has no dependencies', function (): void {
             $sptVersion = SptVersion::factory()->create([
                 'version' => '3.9.0',
