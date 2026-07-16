@@ -55,7 +55,7 @@ new #[Lazy] class extends Component
         $slug = $this->verifiableType === ModVersion::class ? 'mod-version' : 'addon-version';
 
         return [
-            "echo:verification.{$slug}.{$this->verifiableId},VerificationResultUpdated" => 'refreshDetails',
+            sprintf('echo:verification.%s.%d,VerificationResultUpdated', $slug, $this->verifiableId) => 'refreshDetails',
         ];
     }
 

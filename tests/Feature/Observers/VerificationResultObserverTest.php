@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\VerificationStatus;
 use App\Events\VerificationResultUpdated;
 use App\Models\ModVersion;
 use App\Models\VerificationResult;
@@ -24,7 +25,7 @@ it('dispatches VerificationResultUpdated event when a verification result is upd
     Event::fake([VerificationResultUpdated::class]);
 
     $result->update([
-        'status' => App\Enums\VerificationStatus::Running,
+        'status' => VerificationStatus::Running,
     ]);
 
     Event::assertDispatched(
@@ -62,7 +63,7 @@ it('broadcasts on correct public and private channels', function (): void {
     $verifiable = $result->verifiable;
     $slug = $result->verifiable_type === ModVersion::class ? 'mod-version' : 'addon-version';
 
-    expect($channels[0]->name)->toBe("verification.{$slug}.{$result->verifiable_id}");
+    expect($channels[0]->name)->toBe(sprintf('verification.%s.%d', $slug, $result->verifiable_id));
     expect($channels[1]->name)->toBe('private-admin.verification');
 });
 

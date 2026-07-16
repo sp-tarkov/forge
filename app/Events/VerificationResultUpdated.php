@@ -38,7 +38,7 @@ final class VerificationResultUpdated implements ShouldBroadcast
         $slug = $this->verifiableType === ModVersion::class ? 'mod-version' : 'addon-version';
 
         return [
-            new Channel("verification.{$slug}.{$this->verifiableId}"),
+            new Channel(sprintf('verification.%s.%d', $slug, $this->verifiableId)),
             new PrivateChannel('admin.verification'),
         ];
     }
