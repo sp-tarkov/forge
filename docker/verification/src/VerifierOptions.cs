@@ -11,6 +11,8 @@ public sealed record VerifierOptions(
     int MaxRatio,
     long MaxExtractedSize,
     int MaxFileTreeEntries,
+    string ModVersion,
+    string ModGuid,
     string ExtractDir)
 {
     /// <summary>Builds the options from the container environment, falling back to safe defaults.</summary>
@@ -23,6 +25,8 @@ public sealed record VerifierOptions(
             MaxRatio: int.TryParse(Environment.GetEnvironmentVariable("MAX_EXTRACTION_RATIO"), out int ratio) ? ratio : 100,
             MaxExtractedSize: long.TryParse(Environment.GetEnvironmentVariable("MAX_EXTRACTED_SIZE"), out long extractedSize) ? extractedSize : 2L * 1024 * 1024 * 1024,
             MaxFileTreeEntries: int.TryParse(Environment.GetEnvironmentVariable("MAX_FILE_TREE_ENTRIES"), out int entries) ? entries : 10000,
+            ModVersion: Environment.GetEnvironmentVariable("MOD_VERSION") ?? string.Empty,
+            ModGuid: Environment.GetEnvironmentVariable("MOD_GUID") ?? string.Empty,
             ExtractDir: "/tmp/work/extracted");
     }
 }

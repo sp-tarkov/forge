@@ -14,9 +14,9 @@ public static class CheckRegistry
     /// <summary>
     /// The version of the check set reported to the host, bumped whenever a check is added, removed, or changed.
     /// </summary>
-    public const string ChecksVersion = "1";
+    public const string ChecksVersion = "2";
 
-    private static readonly IVerificationCheck[] Checks = [];
+    private static readonly IVerificationCheck[] Checks = [new DllGuidMatchCheck(), new DllVersionMatchCheck()];
 
     /// <summary>Runs every registered check, recording a check that throws as a failure of that check.</summary>
     public static List<CheckResult> RunAll(CheckContext context)

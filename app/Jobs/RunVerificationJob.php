@@ -534,7 +534,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         $this->removeContainer();
 
         $command = sprintf(
-            'docker run --rm --pull=%s --init --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=%s --name=%s --label=%s --network=none --memory=%s --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s -e MAX_FILE_TREE_ENTRIES=%s %s',
+            'docker run --rm --pull=%s --init --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=%s --name=%s --label=%s --network=none --memory=%s --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s -e MAX_FILE_TREE_ENTRIES=%s -e MOD_VERSION=%s -e MOD_GUID=%s %s',
             escapeshellarg($pullPolicy),
             escapeshellarg((string) config()->integer('verification.container.pids_limit', 256)),
             escapeshellarg((string) $this->containerName),
@@ -546,6 +546,8 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
             escapeshellarg((string) $maxExtractionRatio),
             escapeshellarg((string) $maxExtractedSize),
             escapeshellarg((string) $maxFileTreeEntries),
+            escapeshellarg($this->verifiableVersion()),
+            escapeshellarg($this->verifiableModGuid()),
             escapeshellarg($dockerImage),
         );
 
@@ -577,6 +579,27 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         }
 
         return ['ok' => true, 'data' => $data];
+    }
+
+    /**
+     * The version string published for the verifiable, passed to the container for the DLL version check.
+     */
+    private function verifiableVersion(): string
+    {
+        /** @var ModVersion|AddonVersion|null $verifiable */
+        $verifiable = $this->verificationResult->verifiable;
+
+        return $verifiable->version ?? '';
+    }
+
+    /**
+     * The mod's registered GUID, passed to the container for the DLL GUID check. Empty for addon versions.
+     */
+    private function verifiableModGuid(): string
+    {
+        $verifiable = $this->verificationResult->verifiable;
+
+        return $verifiable instanceof ModVersion ? $verifiable->modGuid() : '';
     }
 
     /**

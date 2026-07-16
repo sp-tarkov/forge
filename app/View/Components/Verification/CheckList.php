@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\View\Components\Verification;
 
-use App\Enums\VerificationCheckStatus;
 use App\Enums\VerificationCheckType;
 use App\Support\DataTransferObjects\VerificationCheck;
 use Illuminate\View\Component;
@@ -22,8 +21,8 @@ final class CheckList extends Component
     ) {}
 
     /**
-     * Get the checks ordered for display: the file download check first, then enforcing failures, report-only
-     * failures, skipped, and passed. Checks with the same rank keep their container-reported order.
+     * Get the checks ordered for display: File Download first, then Archive Extraction, then GUID Match, then
+     * Version Match. Other checks are appended keeping their container-reported order.
      *
      * @return list<VerificationCheck>
      */
@@ -49,11 +48,11 @@ final class CheckList extends Component
      */
     private function displayRank(VerificationCheck $check): int
     {
-        return match (true) {
-            $check->name === VerificationCheckType::FileDownload->value => 0,
-            $check->failed() && $check->isEnforcing() => 1,
-            $check->failed() => 2,
-            $check->status === VerificationCheckStatus::Skipped => 3,
+        return match ($check->name) {
+            VerificationCheckType::FileDownload->value => 0,
+            VerificationCheckType::ArchiveExtraction->value => 1,
+            VerificationCheckType::DllGuidMatch->value => 2,
+            VerificationCheckType::DllVersionMatch->value => 3,
             default => 4,
         };
     }

@@ -35,7 +35,7 @@ try
 
     ArchiveInfo archive = new(scan.FileTree, scan.Truncated, scan.SymlinksRemoved);
     List<CheckResult> checks = [CheckResult.Passed(archiveExtractionCheckName)];
-    checks.AddRange(CheckRegistry.RunAll(new CheckContext(options.ExtractDir, scan.FileTree, options.ArchiveSize)));
+    checks.AddRange(CheckRegistry.RunAll(new CheckContext(options.ExtractDir, scan.FileTree, options.ArchiveSize, options.ModVersion, options.ModGuid)));
     ResultWriter.WriteResult(sha256, archive, checks);
 }
 catch (Exception ex)

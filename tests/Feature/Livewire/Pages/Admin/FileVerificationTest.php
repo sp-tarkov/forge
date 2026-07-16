@@ -70,13 +70,17 @@ it('renders the listing without selecting the large detail columns', function ()
 it('shows full detail columns in the result modal', function (): void {
     $admin = User::factory()->admin()->create();
 
-    $result = VerificationResult::factory()->failed('Download returned HTTP 500')->create();
+    $result = VerificationResult::factory()->passed()->create([
+        'download_url' => 'https://example.com/unique-download-url-12345.zip',
+        'downloaded_sha256' => 'abcde12345abcde12345abcde12345abcde12345abcde12345abcde12345abcde1',
+    ]);
 
     Livewire::actingAs($admin)
         ->test('pages::admin.file-verification')
         ->call('showDetails', $result->id)
         ->assertOk()
-        ->assertSee('Download returned HTTP 500');
+        ->assertSee('https://example.com/unique-download-url-12345.zip')
+        ->assertSee('abcde12345abcde12345abcde12345abcde12345abcde12345abcde12345abcde1');
 });
 
 it('shows the per-check results in the modal', function (): void {
@@ -229,7 +233,11 @@ it('queues a manual verification for a selected mod version', function (): void 
         ->assertSee('v'.$modVersion->version)
         ->set('queueModVersionId', $modVersion->id)
         ->call('queueSelectedVersion')
-        ->assertOk();
+        ->assertOk()
+        ->assertSet('showQueueModal', false)
+        ->assertSet('queueSearch', '')
+        ->assertSet('queueModId', null)
+        ->assertSet('queueModVersionId', null);
 
     Queue::assertPushed(RunVerificationJob::class);
 
@@ -260,7 +268,11 @@ it('does not queue a duplicate verification when one is already pending', functi
         ->call('selectQueueMod', $mod->id)
         ->set('queueModVersionId', $modVersion->id)
         ->call('queueSelectedVersion')
-        ->assertOk();
+        ->assertOk()
+        ->assertSet('showQueueModal', false)
+        ->assertSet('queueSearch', '')
+        ->assertSet('queueModId', null)
+        ->assertSet('queueModVersionId', null);
 
     Queue::assertNotPushed(RunVerificationJob::class);
     expect(VerificationResult::query()->where('verifiable_id', $modVersion->id)->count())->toBe(1);
@@ -281,7 +293,11 @@ it('does not queue a verification for a version only compatible with SPT version
         ->call('selectQueueMod', $mod->id)
         ->set('queueModVersionId', $modVersion->id)
         ->call('queueSelectedVersion')
-        ->assertOk();
+        ->assertOk()
+        ->assertSet('showQueueModal', false)
+        ->assertSet('queueSearch', '')
+        ->assertSet('queueModId', null)
+        ->assertSet('queueModVersionId', null);
 
     Queue::assertNotPushed(RunVerificationJob::class);
     expect(VerificationResult::query()->where('verifiable_id', $modVersion->id)->count())->toBe(0);

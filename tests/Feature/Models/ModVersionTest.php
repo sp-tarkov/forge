@@ -73,6 +73,13 @@ describe('verification eligibility', function (): void {
         expect($modVersion->isEligibleForVerification())->toBeFalse();
     });
 
+    it('is not eligible when the mod has no guid', function (): void {
+        $mod = Mod::factory()->create(['guid' => null]);
+        $modVersion = ModVersion::factory()->for($mod)->create(['spt_version_constraint' => '~4.0.0']);
+
+        expect($modVersion->isEligibleForVerification())->toBeFalse();
+    });
+
     it('respects the configured minimum SPT version', function (): void {
         config()->set('verification.min_spt_version', '5.0.0');
 

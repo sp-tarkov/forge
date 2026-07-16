@@ -126,7 +126,7 @@ public static class ArchiveExtractor
 
     /// <summary>
     /// Fails fast when an entry declares a path traversal or the declared uncompressed total exceeds the extraction
-    /// cap. Returns an error message, or null when the declared entries are acceptable.
+    /// cap. Returns an error message or null when the declared entries are acceptable.
     /// </summary>
     private static string? PrecheckDeclaredEntries(IArchive archive, long maxExtractedSize)
     {
@@ -165,9 +165,9 @@ public static class ArchiveExtractor
     }
 
     /// <summary>
-    /// Streams a single entry to disk, aborting the moment the running total of bytes written crosses the absolute or
-    /// ratio limit. The breaching buffer is never written, so total bytes on disk stay within one buffer of the limit
-    /// regardless of what the archive declared.
+    /// Streams a single entry to disk, aborting the moment the running total of bytes written cross the absolute or
+    /// ratio limit. The breaching buffer is never written, so total bytes on the disk stay within one buffer of the
+    /// limit regardless of what the archive declared.
     /// </summary>
     private static long ExtractEntry(
         Stream source,
@@ -212,6 +212,6 @@ public static class ArchiveExtractor
             return long.MaxValue;
         }
 
-        return maxRatio <= long.MaxValue / archiveSize ? (long)maxRatio * archiveSize : long.MaxValue;
+        return maxRatio <= long.MaxValue / archiveSize ? maxRatio * archiveSize : long.MaxValue;
     }
 }

@@ -46,6 +46,28 @@ new #[Lazy] class extends Component
     }
 
     /**
+     * Get the event listeners.
+     *
+     * @return array<string, string>
+     */
+    public function getListeners(): array
+    {
+        $slug = $this->verifiableType === ModVersion::class ? 'mod-version' : 'addon-version';
+
+        return [
+            "echo:verification.{$slug}.{$this->verifiableId},VerificationResultUpdated" => 'refreshDetails',
+        ];
+    }
+
+    /**
+     * Refresh the displayed result.
+     */
+    public function refreshDetails(): void
+    {
+        unset($this->result, $this->formattedFileSize, $this->checks, $this->fileTree, $this->fileCount, $this->hiddenFileCount, $this->isActive, $this->queuePosition);
+    }
+
+    /**
      * Submit the version for a new verification run and refresh the displayed result.
      */
     public function submit(): void

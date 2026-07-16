@@ -21,4 +21,10 @@ public sealed record CheckResult(
     {
         return new CheckResult(name, "failed", reportOnly, message, data ?? new Dictionary<string, object?>());
     }
+
+    /// <summary>Builds a skipped check.</summary>
+    public static CheckResult Skipped(string name, string message, bool reportOnly = false, Dictionary<string, object?>? data = null)
+    {
+        return new CheckResult(name, "skipped", reportOnly, message, data ?? new Dictionary<string, object?>());
+    }
 }

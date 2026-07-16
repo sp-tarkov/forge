@@ -351,13 +351,27 @@ final class ModVersion extends Model implements Trackable
     }
 
     /**
-     * Check if this mod version's SPT constraint can match the minimum SPT version required for file verification.
+     * Check if this mod version can be verified. The mod must have a registered GUID and the SPT constraint must be
+     * able to match the minimum SPT version required for file verification.
      */
     public function isEligibleForVerification(): bool
     {
+        if ($this->modGuid() === '') {
+            return false;
+        }
+
         $minimumSptVersion = config()->string('verification.min_spt_version', '4.0.0');
 
         return VersionMatcher::intersects($this->spt_version_constraint, '>='.$minimumSptVersion);
+    }
+
+    /**
+     * The mod's registered GUID, read without the mod's visibility scopes so unpublished mods resolve too. Empty when
+     * no GUID is registered.
+     */
+    public function modGuid(): string
+    {
+        return $this->mod()->withoutGlobalScopes()->first()->guid ?? '';
     }
 
     /**

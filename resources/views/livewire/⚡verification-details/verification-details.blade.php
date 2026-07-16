@@ -9,10 +9,7 @@
     </div>
 @endplaceholder
 
-<div
-    @if ($this->isActive) wire:poll.visible.10s @endif
-    class="space-y-6"
->
+<div class="space-y-6">
     @if ($this->result && $this->isActive)
         <div>
             <flux:heading size="lg">{{ __('File Verification') }}</flux:heading>

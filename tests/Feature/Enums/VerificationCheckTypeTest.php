@@ -9,6 +9,11 @@ describe('labelFor', function (): void {
         expect(VerificationCheckType::labelFor('archive_extraction'))->toBe('Archive Extraction');
     });
 
+    it('resolves the labels for the dll checks', function (): void {
+        expect(VerificationCheckType::labelFor('dll_guid_match'))->toBe('GUID Match');
+        expect(VerificationCheckType::labelFor('dll_version_match'))->toBe('Version Match');
+    });
+
     it('humanizes an unknown check name', function (): void {
         expect(VerificationCheckType::labelFor('manifest_present'))->toBe('Manifest Present');
     });

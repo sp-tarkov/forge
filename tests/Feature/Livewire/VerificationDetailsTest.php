@@ -174,7 +174,7 @@ describe('verification details', function (): void {
         Livewire::withoutLazyLoading()
             ->test('verification-details', ['verifiableId' => $version->id, 'verifiableType' => ModVersion::class])
             ->assertSee('No mod files found')
-            ->assertSeeInOrder(['file_download', 'mod_structure', 'archive_extraction'])
+            ->assertSeeInOrder(['file_download', 'archive_extraction', 'mod_structure'])
             ->assertSuccessful();
     });
 
@@ -307,7 +307,7 @@ describe('live progress', function (): void {
             ->assertSee('Position in queue')
             ->assertSee('This panel updates automatically.')
             ->assertSeeHtml('data-test="verification-progress"')
-            ->assertSeeHtml('wire:poll.visible.10s')
+            ->assertSeeHtml('echo:verification.mod-version.'.$version->id.',VerificationResultUpdated')
             ->assertDontSeeHtml('data-test="verification-submit-button"')
             ->assertSuccessful();
     });
@@ -324,7 +324,7 @@ describe('live progress', function (): void {
             ->assertSee('Running')
             ->assertSee('Started')
             ->assertDontSee('Position in queue')
-            ->assertSeeHtml('wire:poll.visible.10s')
+            ->assertSeeHtml('echo:verification.mod-version.'.$version->id.',VerificationResultUpdated')
             ->assertSuccessful();
     });
 
@@ -338,11 +338,11 @@ describe('live progress', function (): void {
             ->withoutLazyLoading()
             ->test('verification-details', ['verifiableId' => $version->id, 'verifiableType' => ModVersion::class])
             ->assertSee('Error')
-            ->assertDontSeeHtml('wire:poll.visible.10s')
+            ->assertSeeHtml('echo:verification.mod-version.'.$version->id.',VerificationResultUpdated')
             ->assertSuccessful();
     });
 
-    it('shows active runs and polling to guests', function (): void {
+    it('shows active runs and web socket channel to guests', function (): void {
         $version = ModVersion::factory()->create();
         VerificationResult::factory()->forModVersion($version)->create();
 
@@ -350,7 +350,7 @@ describe('live progress', function (): void {
             ->test('verification-details', ['verifiableId' => $version->id, 'verifiableType' => ModVersion::class])
             ->assertSee('Pending')
             ->assertSee('This panel updates automatically.')
-            ->assertSeeHtml('wire:poll.visible.10s')
+            ->assertSeeHtml('echo:verification.mod-version.'.$version->id.',VerificationResultUpdated')
             ->assertSuccessful();
     });
 });
