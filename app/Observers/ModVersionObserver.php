@@ -31,6 +31,14 @@ final readonly class ModVersionObserver
     }
 
     /**
+     * Handle the ModVersion "updated" event.
+     */
+    public function updated(ModVersion $modVersion): void
+    {
+        $this->handleLinkChange($modVersion);
+    }
+
+    /**
      * Handle the ModVersion "saved" event.
      */
     public function saved(ModVersion $modVersion): void
@@ -57,10 +65,24 @@ final readonly class ModVersionObserver
     }
 
     /**
-     * Dispatch a file verification for a newly uploaded version when automatic verification is enabled and the
-     * version has a downloadable link and is not disabled.
+     * Clear the denormalized verification status when the download link changes and queue a new verification run.
      */
-    private function dispatchVerification(ModVersion $modVersion): void
+    private function handleLinkChange(ModVersion $modVersion): void
+    {
+        if (! $modVersion->wasChanged('link')) {
+            return;
+        }
+
+        $modVersion->updateQuietly(['verification_status' => null, 'last_verified_at' => null]);
+
+        $this->dispatchVerification($modVersion, VerificationTrigger::LinkUpdated);
+    }
+
+    /**
+     * Dispatch a file verification for the version when automatic verification is enabled and the version has a
+     * downloadable link and is not disabled.
+     */
+    private function dispatchVerification(ModVersion $modVersion, VerificationTrigger $trigger = VerificationTrigger::Upload): void
     {
         if (! config()->boolean('verification.auto_enabled')) {
             return;
@@ -70,7 +92,7 @@ final readonly class ModVersionObserver
             return;
         }
 
-        VerificationResult::dispatchFor($modVersion, VerificationTrigger::Upload);
+        VerificationResult::dispatchFor($modVersion, $trigger);
     }
 
     /**

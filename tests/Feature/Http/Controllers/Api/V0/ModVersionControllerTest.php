@@ -9,6 +9,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use App\Models\VerificationResult;
 use App\Models\VirusTotalLink;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Support\Facades\Cache;
@@ -628,6 +629,137 @@ describe('visibility', function (): void {
 
         $response->assertNotFound();
         $response->assertJsonPath('success', false);
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+});
+
+describe('file tree', function (): void {
+    beforeEach(function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $this->mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+        $this->modVersion = $this->mod->versions->first();
+    });
+
+    it('returns the file tree from the latest passed verification', function (): void {
+        VerificationResult::factory()->forModVersion($this->modVersion)->passed()->create([
+            'file_tree' => ['BepInEx/plugins/Example.dll', 'user/mods/example/package.json'],
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions/%d/file-tree', $this->mod->id, $this->modVersion->id));
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.file_count', 2)
+            ->assertJsonPath('data.truncated', false)
+            ->assertJsonPath('data.files', ['BepInEx/plugins/Example.dll', 'user/mods/example/package.json']);
+
+        expect($response->json('data.verified_at'))->not->toBeNull();
+    });
+
+    it('returns the newest passed file tree when multiple passed verifications exist', function (): void {
+        VerificationResult::factory()->forModVersion($this->modVersion)->passed()->create([
+            'file_tree' => ['old.dll'],
+        ]);
+        VerificationResult::factory()->forModVersion($this->modVersion)->passed()->create([
+            'file_tree' => ['new.dll'],
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions/%d/file-tree', $this->mod->id, $this->modVersion->id));
+
+        $response->assertOk()->assertJsonPath('data.files', ['new.dll']);
+    });
+
+    it('ignores failed verifications that recorded a file tree', function (): void {
+        VerificationResult::factory()->forModVersion($this->modVersion)->passed()->create([
+            'file_tree' => ['passed.dll'],
+        ]);
+        VerificationResult::factory()->forModVersion($this->modVersion)->failed()->create([
+            'file_tree' => ['failed.dll'],
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions/%d/file-tree', $this->mod->id, $this->modVersion->id));
+
+        $response->assertOk()->assertJsonPath('data.files', ['passed.dll']);
+    });
+
+    it('skips passed verifications that have no file tree', function (): void {
+        VerificationResult::factory()->forModVersion($this->modVersion)->passed()->create([
+            'file_tree' => ['recorded.dll'],
+        ]);
+        VerificationResult::factory()->forModVersion($this->modVersion)->passed()->create([
+            'file_tree' => null,
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions/%d/file-tree', $this->mod->id, $this->modVersion->id));
+
+        $response->assertOk()->assertJsonPath('data.files', ['recorded.dll']);
+    });
+
+    it('marks the file tree as truncated when the verification recorded a truncated listing', function (): void {
+        VerificationResult::factory()->forModVersion($this->modVersion)->passed()->create([
+            'details' => ['file_tree_truncated' => true],
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions/%d/file-tree', $this->mod->id, $this->modVersion->id));
+
+        $response->assertOk()->assertJsonPath('data.truncated', true);
+    });
+
+    it('returns not found when the version has no passed verification', function (): void {
+        VerificationResult::factory()->forModVersion($this->modVersion)->failed()->create([
+            'file_tree' => ['failed.dll'],
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions/%d/file-tree', $this->mod->id, $this->modVersion->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('success', false);
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+
+    it('returns not found when the only passed verification has no file tree', function (): void {
+        VerificationResult::factory()->forModVersion($this->modVersion)->passed()->create([
+            'file_tree' => null,
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions/%d/file-tree', $this->mod->id, $this->modVersion->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+
+    it('returns not found when the version is disabled', function (): void {
+        $disabledVersion = ModVersion::factory()->disabled()->create([
+            'mod_id' => $this->mod->id,
+            'spt_version_constraint' => '3.8.0',
+        ]);
+        VerificationResult::factory()->forModVersion($disabledVersion)->passed()->create();
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions/%d/file-tree', $this->mod->id, $disabledVersion->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+
+    it('returns not found when the version belongs to another mod', function (): void {
+        $otherMod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+        $otherVersion = $otherMod->versions->first();
+        VerificationResult::factory()->forModVersion($otherVersion)->passed()->create();
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions/%d/file-tree', $this->mod->id, $otherVersion->id));
+
+        $response->assertNotFound();
+        $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
+    });
+
+    it('returns not found when the mod is disabled', function (): void {
+        $disabledMod = Mod::factory()->disabled()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+        $version = $disabledMod->versions->first();
+        VerificationResult::factory()->forModVersion($version)->passed()->create();
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions/%d/file-tree', $disabledMod->id, $version->id));
+
+        $response->assertNotFound();
         $response->assertJsonPath('code', ApiErrorCode::NOT_FOUND->value);
     });
 });

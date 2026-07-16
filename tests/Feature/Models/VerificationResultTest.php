@@ -92,6 +92,17 @@ it('creates a pending result and dispatches the verification job', function (): 
     Queue::assertPushed(RunVerificationJob::class, 1);
 });
 
+it('marks the dispatched job to run only after the database transaction commits', function (): void {
+    Queue::fake();
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['spt_version_constraint' => '>=4.0.0']);
+
+    VerificationResult::dispatchFor($modVersion, VerificationTrigger::Manual);
+
+    Queue::assertPushed(RunVerificationJob::class, fn (RunVerificationJob $job): bool => $job->afterCommit === true);
+});
+
 it('does not dispatch when a fresh pending verification exists', function (): void {
     Queue::fake();
 

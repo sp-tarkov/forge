@@ -86,7 +86,9 @@ final class VerificationResult extends Model
             'download_url' => $version->link,
         ]);
 
-        dispatch(new RunVerificationJob($result))->onQueue(config()->string('verification.queue', 'verification'));
+        dispatch(new RunVerificationJob($result))
+            ->onQueue(config()->string('verification.queue', 'verification'))
+            ->afterCommit();
 
         return $result;
     }

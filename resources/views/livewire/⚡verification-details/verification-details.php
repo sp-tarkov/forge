@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 use App\Enums\VerificationStatus;
 use App\Facades\CachedGate;
+use App\Models\AddonVersion;
 use App\Models\ModVersion;
 use App\Models\VerificationResult;
 use App\Support\DataTransferObjects\FileTreeNode;
 use App\Support\DataTransferObjects\VerificationCheck;
+use App\Traits\Livewire\SubmitsVerification;
 use Illuminate\Support\Number;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
@@ -16,6 +18,8 @@ use Livewire\Component;
 
 new #[Lazy] class extends Component
 {
+    use SubmitsVerification;
+
     private const int MAX_TREE_FILES = 1000;
 
     /**
@@ -35,31 +39,97 @@ new #[Lazy] class extends Component
      */
     public function mount(int $verifiableId, string $verifiableType): void
     {
-        abort_unless($verifiableType === ModVersion::class, 404);
+        abort_unless(in_array($verifiableType, [ModVersion::class, AddonVersion::class], true), 404);
 
         $this->verifiableId = $verifiableId;
         $this->verifiableType = $verifiableType;
     }
 
     /**
-     * Get the latest visible verification result for the verifiable model. Includes failed results for users who are
-     * authorized to see them; everyone else only ever sees passed results.
+     * Submit the version for a new verification run and refresh the displayed result.
+     */
+    public function submit(): void
+    {
+        $verifiable = $this->verifiable;
+
+        if ($verifiable === null) {
+            return;
+        }
+
+        $this->submitVerificationFor($verifiable);
+
+        unset($this->result, $this->formattedFileSize, $this->checks, $this->fileTree, $this->fileCount, $this->hiddenFileCount, $this->isActive, $this->queuePosition);
+    }
+
+    /**
+     * Get the verifiable model instance.
+     */
+    #[Computed]
+    public function verifiable(): ModVersion|AddonVersion|null
+    {
+        return match ($this->verifiableType) {
+            ModVersion::class => ModVersion::query()->find($this->verifiableId),
+            default => AddonVersion::query()->find($this->verifiableId),
+        };
+    }
+
+    /**
+     * Get the latest verification result for the verifiable model, in any status, including active runs.
      */
     #[Computed]
     public function result(): ?VerificationResult
     {
-        $statuses = [VerificationStatus::Passed];
-
-        if ($this->canViewFailedVerification()) {
-            $statuses[] = VerificationStatus::Failed;
-        }
-
         return VerificationResult::query()
             ->where('verifiable_type', $this->verifiableType)
             ->where('verifiable_id', $this->verifiableId)
-            ->whereIn('status', $statuses)
             ->latest('id')
             ->first();
+    }
+
+    /**
+     * Whether the current user is authorized to submit this version for verification.
+     */
+    #[Computed]
+    public function canSubmit(): bool
+    {
+        $verifiable = $this->verifiable;
+
+        if ($verifiable === null || $verifiable->link === '') {
+            return false;
+        }
+
+        if ($verifiable instanceof ModVersion && ! $verifiable->isEligibleForVerification()) {
+            return false;
+        }
+
+        return CachedGate::allows('submitVerification', $verifiable);
+    }
+
+    /**
+     * Whether the displayed verification run is queued or running.
+     */
+    #[Computed]
+    public function isActive(): bool
+    {
+        return in_array($this->result?->status, [VerificationStatus::Pending, VerificationStatus::Running], true);
+    }
+
+    /**
+     * Get the displayed run's position in the global verification queue, or null when it is not pending.
+     */
+    #[Computed]
+    public function queuePosition(): ?int
+    {
+        $result = $this->result;
+
+        if ($result?->status !== VerificationStatus::Pending) {
+            return null;
+        }
+
+        return 1 + VerificationResult::query()
+            ->where('status', VerificationStatus::Pending)
+            ->where('id', '<', $result->id)
+            ->count();
     }
 
     /**
@@ -111,15 +181,5 @@ new #[Lazy] class extends Component
     public function hiddenFileCount(): int
     {
         return max(0, $this->fileCount - self::MAX_TREE_FILES);
-    }
-
-    /**
-     * Whether the current user is authorized to see failed verification results for this version.
-     */
-    private function canViewFailedVerification(): bool
-    {
-        $version = ModVersion::query()->find($this->verifiableId);
-
-        return $version !== null && CachedGate::allows('viewFailedVerification', $version);
     }
 };

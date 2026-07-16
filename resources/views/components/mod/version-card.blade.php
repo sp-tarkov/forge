@@ -31,44 +31,12 @@
                             <span>{{ __('Version') }} {{ $version->version }}</span>
                         </button>
                     </flux:modal.trigger>
-                    @if ($isVerified())
-                        <flux:modal.trigger name="{{ $verificationModalName() }}">
-                            <button
-                                type="button"
-                                data-test="verification-shield"
-                                class="cursor-pointer"
-                            >
-                                <flux:tooltip
-                                    content="{{ __('View File Verification') }}"
-                                    position="right"
-                                >
-                                    <flux:icon
-                                        icon="shield-check"
-                                        variant="solid"
-                                        class="size-6 text-blue-400 transition hover:text-blue-300 hover:drop-shadow-[0_0_8px_rgba(96,165,250,0.9)]"
-                                    />
-                                </flux:tooltip>
-                            </button>
-                        </flux:modal.trigger>
-                    @elseif ($hasVisibleFailedVerification())
-                        <flux:modal.trigger name="{{ $verificationModalName() }}">
-                            <button
-                                type="button"
-                                data-test="verification-shield-failed"
-                                class="cursor-pointer"
-                            >
-                                <flux:tooltip
-                                    content="{{ __('File Verification Failed') }}"
-                                    position="right"
-                                >
-                                    <flux:icon
-                                        icon="shield-x"
-                                        class="size-6 text-red-500 transition hover:text-red-400 hover:drop-shadow-[0_0_8px_rgba(248,113,113,0.9)]"
-                                    />
-                                </flux:tooltip>
-                            </button>
-                        </flux:modal.trigger>
-                    @endif
+                    <livewire:verification-status
+                        wire:key="verification-status-mod-{{ $version->id }}"
+                        :verifiable-id="$version->id"
+                        :verifiable-type="\App\Models\ModVersion::class"
+                        :modal-name="$verificationModalName()"
+                    />
                 </div>
                 <div class="mt-3 flex flex-row flex-wrap items-center justify-start gap-2.5">
                     @if ($version->sptVersions->isNotEmpty())
@@ -310,18 +278,16 @@
         :is-latest="$isLatest()"
     />
 
-    @if ($isVerified() || $hasVisibleFailedVerification())
-        <flux:modal
-            name="{{ $verificationModalName() }}"
-            variant="flyout"
-            position="left"
-            class="md:w-[600px] lg:w-[700px]"
-        >
-            <livewire:verification-details
-                wire:key="verification-details-{{ $version->id }}"
-                :verifiable-id="$version->id"
-                :verifiable-type="\App\Models\ModVersion::class"
-            />
-        </flux:modal>
-    @endif
+    <flux:modal
+        name="{{ $verificationModalName() }}"
+        variant="flyout"
+        position="left"
+        class="md:w-[600px] lg:w-[700px]"
+    >
+        <livewire:verification-details
+            wire:key="verification-details-{{ $version->id }}"
+            :verifiable-id="$version->id"
+            :verifiable-type="\App\Models\ModVersion::class"
+        />
+    </flux:modal>
 </div>

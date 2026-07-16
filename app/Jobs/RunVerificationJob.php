@@ -460,6 +460,17 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
+     * The memory limit passed to `docker run --memory`. Falls back to the default when the configured value is not a
+     * valid Docker memory string, since an invalid value would abort every container run.
+     */
+    private function containerMemory(): string
+    {
+        $memory = config()->string('verification.container.memory', '3g');
+
+        return preg_match('/^\d+[bkmg]?$/i', $memory) === 1 ? $memory : '3g';
+    }
+
+    /**
      * Build the verification image from the local docker/verification/ Dockerfile and tag it for the run command.
      * Returns an error message on failure, or null when the image built successfully.
      */
@@ -523,11 +534,12 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         $this->removeContainer();
 
         $command = sprintf(
-            'docker run --rm --pull=%s --init --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=%s --name=%s --label=%s --network=none --memory=512m --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s -e MAX_FILE_TREE_ENTRIES=%s %s',
+            'docker run --rm --pull=%s --init --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=%s --name=%s --label=%s --network=none --memory=%s --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s -e MAX_FILE_TREE_ENTRIES=%s %s',
             escapeshellarg($pullPolicy),
             escapeshellarg((string) config()->integer('verification.container.pids_limit', 256)),
             escapeshellarg((string) $this->containerName),
             escapeshellarg(self::CONTAINER_LABEL),
+            escapeshellarg($this->containerMemory()),
             escapeshellarg((string) $this->tempFilePath),
             escapeshellarg($extension),
             escapeshellarg((string) $archiveSize),

@@ -13,7 +13,7 @@ beforeEach(function (): void {
 });
 
 describe('verification details modal', function (): void {
-    it('opens the verification modal from the shield icon and lazy loads the details', function (): void {
+    it('opens the verification modal from the status badge and lazy loads the details', function (): void {
         $mod = Mod::factory()->create();
         $version = ModVersion::factory()->recycle($mod)->create([
             'version' => '2.0.0',
@@ -34,7 +34,7 @@ describe('verification details modal', function (): void {
             ->on()->desktop()
             ->waitForText('Version 2.0.0');
 
-        $page->click('@verification-shield')
+        $page->click('@verification-status-shield')
             ->waitForText('File Verification')
             ->assertSee('Passed')
             ->assertSee('Archive SHA-256')
@@ -48,7 +48,7 @@ describe('verification details modal', function (): void {
             ->assertNoJavaScriptErrors();
     });
 
-    it('does not show a verification shield for an unverified version', function (): void {
+    it('does not show a verification status badge for an unverified version', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create([
             'version' => '2.0.0',
@@ -59,7 +59,7 @@ describe('verification details modal', function (): void {
             ->on()->desktop()
             ->waitForText('Version 2.0.0');
 
-        $page->assertNotPresent('@verification-shield')
+        $page->assertNotPresent('@verification-status-shield')
             ->assertNoJavaScriptErrors();
     });
 });

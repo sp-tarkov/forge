@@ -335,6 +335,15 @@
                                     <span
                                         class="inline-flex w-12 shrink-0 justify-center rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-emerald-400 ring-1 ring-emerald-500/20"
                                     >GET</span>
+                                    <code
+                                        class="font-mono text-sm text-gray-200">/mod/{id}/versions/{versionId}/file-tree</code>
+                                    <span class="ml-auto truncate pl-3 text-xs text-gray-400">Verified
+                                        file listing</span>
+                                </div>
+                                <div class="flex items-center gap-3 px-5 py-2.5">
+                                    <span
+                                        class="inline-flex w-12 shrink-0 justify-center rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-emerald-400 ring-1 ring-emerald-500/20"
+                                    >GET</span>
                                     <code class="font-mono text-sm text-gray-200">/mods/dependencies</code>
                                     <span class="ml-auto truncate pl-3 text-xs text-gray-400">Resolve
                                         dependencies</span>
@@ -388,6 +397,15 @@
                                     <span
                                         class="inline-flex w-12 shrink-0 justify-center rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-emerald-400 ring-1 ring-emerald-500/20"
                                     >GET</span>
+                                    <code
+                                        class="font-mono text-sm text-gray-200">/addon/{id}/versions/{versionId}/file-tree</code>
+                                    <span class="ml-auto truncate pl-3 text-xs text-gray-400">Verified
+                                        file listing</span>
+                                </div>
+                                <div class="flex items-center gap-3 px-5 py-2.5">
+                                    <span
+                                        class="inline-flex w-12 shrink-0 justify-center rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-emerald-400 ring-1 ring-emerald-500/20"
+                                    >GET</span>
                                     <code class="font-mono text-sm text-gray-200">/addons/dependencies</code>
                                     <span class="ml-auto truncate pl-3 text-xs text-gray-400">Resolve
                                         dependencies</span>
@@ -418,7 +436,7 @@
                                     <span
                                         class="inline-flex w-12 shrink-0 justify-center rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-emerald-400 ring-1 ring-emerald-500/20"
                                     >GET</span>
-                                    <code class="font-mono text-sm text-gray-200">/mod-categories/{identifier}</code>
+                                    <code class="font-mono text-sm text-gray-200">/mod-categories/{id}</code>
                                     <span class="ml-auto truncate pl-3 text-xs text-gray-400">Category
                                         details</span>
                                 </div>

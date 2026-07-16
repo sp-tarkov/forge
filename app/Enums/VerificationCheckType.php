@@ -58,8 +58,8 @@ enum VerificationCheckType: string
     public function description(): string
     {
         return match ($this) {
-            self::FileDownload => 'Confirms your download URL serves the mod archive file directly. A failure usually means the link points to a web page instead of a file, requires a login, or the file has been removed.',
-            self::ArchiveExtraction => 'Confirms your uploaded archive can be opened and its files unpacked safely. A failure usually means the file is corrupted, uses an unsupported format, or expands to an unreasonably large size.',
+            self::FileDownload => 'Confirms the download URL serves the mod archive file directly. A failure usually means the link points to a web page instead of a file, requires a login, or the file has been removed.',
+            self::ArchiveExtraction => 'Confirms the uploaded archive can be opened and its files unpacked safely. A failure usually means the file is corrupted, uses an unsupported format, or expands to an unreasonably large size.',
         };
     }
 }

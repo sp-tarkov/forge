@@ -209,6 +209,80 @@ describe('item rows', function (): void {
         $response->assertSee('1 mod');
         $response->assertSee('1 addon');
     });
+
+    it('lets the owner remove a mod that is no longer available', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        $mod = Mod::factory()->unpublished()->create();
+        $item = ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        $response = $this->actingAs($owner)->get($list->detailUrl());
+        $response->assertOk();
+        $response->assertSee('This mod is no longer available.');
+        $response->assertSee('confirmRemoveItem('.$item->id.')', false);
+
+        Livewire::actingAs($owner)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('confirmRemoveItem', $item->id)
+            ->call('removeItem')
+            ->assertSet('statusMessage', 'Item removed from list.');
+
+        expect(ModListItem::query()->find($item->id))->toBeNull();
+    });
+
+    it('hides the unavailable-mod remove button from non-owners', function (): void {
+        $list = ModList::factory()->public()->create();
+
+        $mod = Mod::factory()->unpublished()->create();
+        $item = ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee('This mod is no longer available.');
+        $response->assertDontSee('confirmRemoveItem('.$item->id.')', false);
+    });
+
+    it('lets the owner remove an addon that is no longer available', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        $mod = Mod::factory()->create();
+        $addon = Addon::factory()->unpublished()->create(['mod_id' => $mod->id]);
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+        $addonItem = ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Addon::class,
+            'listable_id' => $addon->id,
+        ]);
+
+        $response = $this->actingAs($owner)->get($list->detailUrl());
+        $response->assertOk();
+        $response->assertSee('This addon is no longer available.');
+        $response->assertSee('confirmRemoveItem('.$addonItem->id.')', false);
+
+        Livewire::actingAs($owner)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('confirmRemoveItem', $addonItem->id)
+            ->call('removeItem')
+            ->assertSet('statusMessage', 'Item removed from list.');
+
+        expect(ModListItem::query()->find($addonItem->id))->toBeNull();
+    });
 });
 
 describe('dependency badges', function (): void {

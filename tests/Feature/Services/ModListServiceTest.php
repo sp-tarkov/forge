@@ -311,6 +311,28 @@ describe('removeItem cascade', function (): void {
         expect($list->containsAddon($addonB->id))->toBeTrue();
         expect($list->containsAddon($addonA->id))->toBeFalse();
     });
+
+    it('removes unpublished addon items when their parent mod is removed', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+        $addon = Addon::factory()->unpublished()->create(['mod_id' => $mod->id]);
+
+        $modItem = ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Addon::class,
+            'listable_id' => $addon->id,
+        ]);
+
+        resolve(ModListService::class)->removeItem($list, $modItem);
+
+        expect($list->fresh()->itemCount())->toBe(0);
+    });
 });
 
 describe('toggleFavourite', function (): void {

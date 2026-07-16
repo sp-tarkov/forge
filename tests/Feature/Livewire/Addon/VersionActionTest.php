@@ -2,12 +2,17 @@
 
 declare(strict_types=1);
 
+use App\Enums\VerificationStatus;
+use App\Enums\VerificationTrigger;
+use App\Jobs\RunVerificationJob;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use App\Models\VerificationResult;
+use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -116,5 +121,79 @@ describe('version deletion from addon detail page', function (): void {
             ->assertForbidden();
 
         expect(AddonVersion::query()->find($version->id))->not->toBeNull();
+    });
+});
+
+describe('submit verification', function (): void {
+    /**
+     * Build the mount parameters for the addon version action component.
+     *
+     * @return array<string, mixed>
+     */
+    function addonVersionActionParams(AddonVersion $version): array
+    {
+        return [
+            'versionId' => $version->id,
+            'addonId' => $version->addon_id,
+            'versionNumber' => $version->version,
+            'versionDisabled' => (bool) $version->disabled,
+            'versionPublished' => (bool) $version->published_at,
+        ];
+    }
+
+    it('shows the submit item to the addon owner', function (): void {
+        $owner = User::factory()->create();
+        $addon = Addon::factory()->create(['owner_id' => $owner->id]);
+        $version = AddonVersion::factory()->recycle($addon)->create();
+
+        Livewire::actingAs($owner)
+            ->test('addon.version-action', addonVersionActionParams($version))
+            ->call('loadMenu')
+            ->assertSee('Submit for Verification');
+    });
+
+    it('shows a resubmit label when the version has a verification status', function (): void {
+        $owner = User::factory()->create();
+        $addon = Addon::factory()->create(['owner_id' => $owner->id]);
+        $version = AddonVersion::factory()->recycle($addon)->create([
+            'verification_status' => VerificationStatus::Passed,
+        ]);
+
+        Livewire::actingAs($owner)
+            ->test('addon.version-action', addonVersionActionParams($version))
+            ->call('loadMenu')
+            ->assertSee('Resubmit Verification');
+    });
+
+    it('queues a manual verification for the addon owner and notifies status badges', function (): void {
+        Queue::fake();
+        $owner = User::factory()->create();
+        $addon = Addon::factory()->create(['owner_id' => $owner->id]);
+        $version = AddonVersion::factory()->recycle($addon)->create();
+
+        Livewire::actingAs($owner)
+            ->test('addon.version-action', addonVersionActionParams($version))
+            ->call('submitVerification')
+            ->assertDispatched('verification-submitted.addon-version-'.$version->id);
+
+        Queue::assertPushed(RunVerificationJob::class);
+
+        expect(VerificationResult::query()
+            ->where('verifiable_type', AddonVersion::class)
+            ->where('verifiable_id', $version->id)
+            ->where('trigger', VerificationTrigger::Manual)
+            ->exists())->toBeTrue();
+    });
+
+    it('forbids users who are not authors of the addon', function (): void {
+        Queue::fake();
+        $version = AddonVersion::factory()->create();
+
+        Livewire::actingAs(User::factory()->create())
+            ->test('addon.version-action', addonVersionActionParams($version))
+            ->call('submitVerification')
+            ->assertForbidden();
+
+        expect(VerificationResult::query()->count())->toBe(0);
     });
 });

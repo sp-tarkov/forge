@@ -47,6 +47,23 @@ final class ModVersionPolicy
     }
 
     /**
+     * Determine whether the user can submit the mod version for verification.
+     */
+    public function submitVerification(User $user, ModVersion $modVersion): bool
+    {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        return $modVersion->mod->isAuthorOrOwner($user);
+    }
+
+    /**
      * Determine whether the user can create mod versions.
      */
     public function create(User $user, Mod $mod): bool

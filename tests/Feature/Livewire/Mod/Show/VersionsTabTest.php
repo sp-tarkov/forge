@@ -154,8 +154,8 @@ describe('versions tab', function (): void {
     });
 });
 
-describe('verification shield', function (): void {
-    it('shows a verification shield to guests when the latest verification passed', function (): void {
+describe('verification badge', function (): void {
+    it('shows a passed verification badge to guests when the latest verification passed', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
         $mod = Mod::factory()->create();
         $version = ModVersion::factory()->recycle($mod)->create([
@@ -167,11 +167,12 @@ describe('verification shield', function (): void {
 
         Livewire::withoutLazyLoading()
             ->test('mod.show.versions-tab', ['modId' => $mod->id])
-            ->assertSee('View File Verification')
+            ->assertSeeHtml('data-test="verification-status-shield"')
+            ->assertSee('Passed')
             ->assertSuccessful();
     });
 
-    it('does not show a verification shield when verification has not run', function (): void {
+    it('does not show a verification badge when verification has not run', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create([
@@ -181,11 +182,11 @@ describe('verification shield', function (): void {
 
         Livewire::withoutLazyLoading()
             ->test('mod.show.versions-tab', ['modId' => $mod->id])
-            ->assertDontSee('View File Verification')
+            ->assertDontSeeHtml('data-test="verification-status-shield"')
             ->assertSuccessful();
     });
 
-    it('does not show a verification shield or failure details when the latest verification failed', function (): void {
+    it('shows a failed verification badge to guests', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
         $mod = Mod::factory()->create();
         $version = ModVersion::factory()->recycle($mod)->create([
@@ -193,17 +194,16 @@ describe('verification shield', function (): void {
             'spt_version_constraint' => '1.0.0',
             'verification_status' => VerificationStatus::Failed,
         ]);
-        $result = VerificationResult::factory()->forModVersion($version)->failed('Download returned HTTP 404')->create();
+        VerificationResult::factory()->forModVersion($version)->failed('Download returned HTTP 404')->create();
 
         Livewire::withoutLazyLoading()
             ->test('mod.show.versions-tab', ['modId' => $mod->id])
-            ->assertDontSee('View File Verification')
-            ->assertDontSee('File Verification Failed')
-            ->assertDontSee($result->failure_reason)
+            ->assertSeeHtml('data-test="verification-status-shield"')
+            ->assertSee('Failed Verification')
             ->assertSuccessful();
     });
 
-    it('does not show a failed verification shield to regular users', function (): void {
+    it('shows a failed verification badge to regular users', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create([
@@ -215,12 +215,12 @@ describe('verification shield', function (): void {
         Livewire::withoutLazyLoading()
             ->actingAs(User::factory()->create())
             ->test('mod.show.versions-tab', ['modId' => $mod->id])
-            ->assertDontSee('File Verification Failed')
-            ->assertDontSeeHtml('data-test="verification-shield-failed"')
+            ->assertSeeHtml('data-test="verification-status-shield"')
+            ->assertSee('Failed Verification')
             ->assertSuccessful();
     });
 
-    it('shows a failed verification shield to the mod owner', function (): void {
+    it('shows a failed verification badge to the mod owner', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create([
@@ -233,12 +233,12 @@ describe('verification shield', function (): void {
         Livewire::withoutLazyLoading()
             ->actingAs($owner)
             ->test('mod.show.versions-tab', ['modId' => $mod->id])
-            ->assertSee('File Verification Failed')
-            ->assertSeeHtml('data-test="verification-shield-failed"')
+            ->assertSeeHtml('data-test="verification-status-shield"')
+            ->assertSee('Failed')
             ->assertSuccessful();
     });
 
-    it('shows a failed verification shield to an additional author', function (): void {
+    it('shows a failed verification badge to an additional author', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
         $mod = Mod::factory()->create();
         $author = User::factory()->create();
@@ -252,11 +252,12 @@ describe('verification shield', function (): void {
         Livewire::withoutLazyLoading()
             ->actingAs($author)
             ->test('mod.show.versions-tab', ['modId' => $mod->id])
-            ->assertSeeHtml('data-test="verification-shield-failed"')
+            ->assertSeeHtml('data-test="verification-status-shield"')
+            ->assertSee('Failed')
             ->assertSuccessful();
     });
 
-    it('shows a failed verification shield to moderators', function (): void {
+    it('shows a failed verification badge to moderators', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create([
@@ -268,11 +269,12 @@ describe('verification shield', function (): void {
         Livewire::withoutLazyLoading()
             ->actingAs(User::factory()->moderator()->create())
             ->test('mod.show.versions-tab', ['modId' => $mod->id])
-            ->assertSeeHtml('data-test="verification-shield-failed"')
+            ->assertSeeHtml('data-test="verification-status-shield"')
+            ->assertSee('Failed')
             ->assertSuccessful();
     });
 
-    it('shows a failed verification shield to admins', function (): void {
+    it('shows a failed verification badge to admins', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create([
@@ -284,11 +286,12 @@ describe('verification shield', function (): void {
         Livewire::withoutLazyLoading()
             ->actingAs(User::factory()->admin()->create())
             ->test('mod.show.versions-tab', ['modId' => $mod->id])
-            ->assertSeeHtml('data-test="verification-shield-failed"')
+            ->assertSeeHtml('data-test="verification-status-shield"')
+            ->assertSee('Failed')
             ->assertSuccessful();
     });
 
-    it('shows the passed verification shield to the mod owner when the latest verification passed', function (): void {
+    it('shows the passed verification badge to the mod owner when the latest verification passed', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create([
@@ -301,8 +304,8 @@ describe('verification shield', function (): void {
         Livewire::withoutLazyLoading()
             ->actingAs($owner)
             ->test('mod.show.versions-tab', ['modId' => $mod->id])
-            ->assertSee('View File Verification')
-            ->assertDontSeeHtml('data-test="verification-shield-failed"')
+            ->assertSeeHtml('data-test="verification-status-shield"')
+            ->assertSee('Passed')
             ->assertSuccessful();
     });
 });
@@ -349,6 +352,55 @@ describe('dependencies on hidden mods', function (): void {
             ->actingAs($owner)
             ->test('mod.show.versions-tab', ['modId' => $mod->id])
             ->assertSee('Hidden Dependency Mod')
+            ->assertSuccessful();
+    });
+});
+
+describe('verification status badge', function (): void {
+    it('shows the live status badge to the mod owner', function (): void {
+        SptVersion::factory()->create(['version' => '4.0.0']);
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '>=4.0.0',
+        ]);
+
+        Livewire::actingAs($owner)
+            ->withoutLazyLoading()
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertSeeHtml('data-test="verification-status-shield"')
+            ->assertSee('Unverified')
+            ->assertSuccessful();
+    });
+
+    it('does not show the badge to guests', function (): void {
+        SptVersion::factory()->create(['version' => '4.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '>=4.0.0',
+        ]);
+
+        Livewire::withoutLazyLoading()
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertDontSeeHtml('data-test="verification-status-shield"')
+            ->assertSuccessful();
+    });
+
+    it('does not show the badge for versions below the minimum SPT version', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '1.0.0',
+        ]);
+
+        Livewire::actingAs($owner)
+            ->withoutLazyLoading()
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertDontSeeHtml('data-test="verification-status-shield"')
             ->assertSuccessful();
     });
 });

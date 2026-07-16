@@ -436,7 +436,7 @@ it('uses docker run with network none flag', function (): void {
     Process::assertRan(fn ($process): bool => is_string($process->command)
         && str_contains($process->command, '--network=none')
         && str_contains($process->command, '--rm')
-        && str_contains($process->command, '--memory=512m')
+        && str_contains($process->command, "--memory='3g'")
         && str_contains($process->command, sprintf("--name='forge-verify-%d'", $result->id))
         && str_contains($process->command, "--label='forge-verification'"));
 });
@@ -638,6 +638,58 @@ it('uses the configured pids limit for the container', function (): void {
 
     Process::assertRan(fn ($process): bool => is_string($process->command)
         && str_contains($process->command, "--pids-limit='512'"));
+});
+
+it('uses the configured memory limit for the container', function (): void {
+    config()->set('verification.container.memory', '1g');
+
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: passingContainerOutput()),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_contains($process->command, "--memory='1g'"));
+});
+
+it('falls back to the default memory limit for an invalid value', function (): void {
+    config()->set('verification.container.memory', '512m; rm -rf /');
+
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: passingContainerOutput()),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create(['link' => 'https://example.com/mod.zip']);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_contains($process->command, "--memory='3g'"));
 });
 
 it('removes the named container during cleanup', function (): void {
