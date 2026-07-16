@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'auto_enabled' => env('AUTO_VERIFICATION_ENABLED', false),
+    'auto_enabled' => (bool) env('AUTO_VERIFICATION_ENABLED', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -130,6 +130,21 @@ return [
     'queue' => env('VERIFICATION_QUEUE', 'verification'),
 
     'change_detection_queue' => env('VERIFICATION_CHANGE_DETECTION_QUEUE', 'verification-detection'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Manual Submission Rate Limit
+    |--------------------------------------------------------------------------
+    |
+    | Caps how many manual verification submissions a single non-staff user can
+    | make within the decay window. Staff members are exempt from this limit.
+    |
+    */
+
+    'manual' => [
+        'max_attempts' => (int) env('VERIFICATION_MANUAL_MAX_ATTEMPTS', 5),
+        'decay_seconds' => (int) env('VERIFICATION_MANUAL_DECAY_SECONDS', 3600),
+    ],
 
     /*
     |--------------------------------------------------------------------------

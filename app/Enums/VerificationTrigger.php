@@ -25,6 +25,11 @@ enum VerificationTrigger: string
     case Upload = 'upload';
 
     /**
+     * Triggered when a version's download link is changed.
+     */
+    case LinkUpdated = 'link_updated';
+
+    /**
      * Get a human-readable label for the trigger.
      */
     public function label(): string
@@ -33,6 +38,7 @@ enum VerificationTrigger: string
             self::ChangeDetected => 'Change Detected',
             self::Manual => 'Manual',
             self::Upload => 'Upload',
+            self::LinkUpdated => 'Link Updated',
         };
     }
 }

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\View\Components\Mod;
 
-use App\Enums\VerificationStatus;
-use App\Facades\CachedGate;
 use App\Models\ModVersion;
 use Illuminate\View\Component;
 use Illuminate\View\View;
@@ -37,23 +35,6 @@ final class VersionCard extends Component
     public function modalName(): string
     {
         return 'version-download-'.$this->version->id;
-    }
-
-    /**
-     * Whether this version's latest file verification passed.
-     */
-    public function isVerified(): bool
-    {
-        return $this->version->verification_status === VerificationStatus::Passed;
-    }
-
-    /**
-     * Whether this version's latest file verification failed and the current user is allowed to see the failure.
-     */
-    public function hasVisibleFailedVerification(): bool
-    {
-        return $this->version->verification_status === VerificationStatus::Failed
-            && CachedGate::allows('viewFailedVerification', $this->version);
     }
 
     /**

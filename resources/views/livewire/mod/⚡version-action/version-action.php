@@ -6,6 +6,7 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\ModVersion;
 use App\Traits\Livewire\ModerationActionMenu;
+use App\Traits\Livewire\SubmitsVerification;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -21,6 +22,7 @@ use Livewire\Component;
 new class extends Component
 {
     use ModerationActionMenu;
+    use SubmitsVerification;
 
     /**
      * The version ID.
@@ -86,7 +88,7 @@ new class extends Component
     public function version(): ModVersion
     {
         return ModVersion::query()
-            ->select(['id', 'version', 'description', 'disabled', 'published_at', 'mod_id', 'spt_version_constraint'])
+            ->select(['id', 'version', 'description', 'link', 'verification_status', 'disabled', 'published_at', 'mod_id', 'spt_version_constraint'])
             ->with(['mod', 'mod.owner:id', 'mod.additionalAuthors:id'])
             ->findOrFail($this->versionId);
     }
@@ -127,9 +129,20 @@ new class extends Component
                 'enable' => Gate::allows('enable', $this->version),
                 'publish' => Gate::allows('publish', $this->version),
                 'unpublish' => Gate::allows('unpublish', $this->version),
+                'submitVerification' => Gate::allows('submitVerification', $this->version),
                 'isModOrAdmin' => $user->isModOrAdmin(),
             ],
         );
+    }
+
+    /**
+     * Submit the version for a manual verification run.
+     */
+    public function submitVerification(): void
+    {
+        $this->submitVerificationFor($this->version);
+
+        $this->menuOpen = false;
     }
 
     /**

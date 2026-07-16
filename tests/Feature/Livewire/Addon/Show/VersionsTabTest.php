@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\VerificationStatus;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Dependency;
@@ -9,6 +10,7 @@ use App\Models\DependencyResolved;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
+use App\Models\VerificationResult;
 use Livewire\Livewire;
 
 /**
@@ -67,6 +69,65 @@ describe('dependencies on hidden mods', function (): void {
             ->actingAs($admin)
             ->test('addon.show.versions-tab', ['addonId' => $addon->id])
             ->assertSee('Hidden Dependency Mod')
+            ->assertSuccessful();
+    });
+});
+
+describe('verification', function (): void {
+    it('shows a passed verification badge to guests when the latest verification passed', function (): void {
+        $owner = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->for($owner, 'owner')->create(['published_at' => now()]);
+        $addon = Addon::factory()->for($mod)->for($owner, 'owner')->published()->create();
+        $version = AddonVersion::factory()->for($addon)->create([
+            'verification_status' => VerificationStatus::Passed,
+        ]);
+        VerificationResult::factory()->forAddonVersion($version)->passed()->create();
+
+        Livewire::withoutLazyLoading()
+            ->test('addon.show.versions-tab', ['addonId' => $addon->id])
+            ->assertSeeHtml('data-test="verification-status-shield"')
+            ->assertSee('Passed')
+            ->assertSuccessful();
+    });
+
+    it('shows a failed verification badge to guests and the addon owner', function (): void {
+        $owner = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->for($owner, 'owner')->create(['published_at' => now()]);
+        $addon = Addon::factory()->for($mod)->for($owner, 'owner')->published()->create();
+        AddonVersion::factory()->for($addon)->create([
+            'verification_status' => VerificationStatus::Failed,
+        ]);
+
+        Livewire::withoutLazyLoading()
+            ->test('addon.show.versions-tab', ['addonId' => $addon->id])
+            ->assertSeeHtml('data-test="verification-status-shield"')
+            ->assertSee('Failed Verification')
+            ->assertSuccessful();
+
+        Livewire::actingAs($owner)
+            ->withoutLazyLoading()
+            ->test('addon.show.versions-tab', ['addonId' => $addon->id])
+            ->assertSeeHtml('data-test="verification-status-shield"')
+            ->assertSee('Failed Verification')
+            ->assertSuccessful();
+    });
+
+    it('shows the live status badge to the addon owner but not to guests', function (): void {
+        $owner = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->for($owner, 'owner')->create(['published_at' => now()]);
+        $addon = Addon::factory()->for($mod)->for($owner, 'owner')->published()->create();
+        AddonVersion::factory()->for($addon)->create();
+
+        Livewire::withoutLazyLoading()
+            ->test('addon.show.versions-tab', ['addonId' => $addon->id])
+            ->assertDontSeeHtml('data-test="verification-status-shield"')
+            ->assertSuccessful();
+
+        Livewire::actingAs($owner)
+            ->withoutLazyLoading()
+            ->test('addon.show.versions-tab', ['addonId' => $addon->id])
+            ->assertSeeHtml('data-test="verification-status-shield"')
+            ->assertSee('Unverified')
             ->assertSuccessful();
     });
 });

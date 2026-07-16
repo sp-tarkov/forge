@@ -78,3 +78,87 @@ describe('upload verification', function (): void {
         expect(VerificationResult::query()->count())->toBe(0);
     });
 });
+
+describe('link change verification', function (): void {
+    beforeEach(function (): void {
+        config()->set('verification.auto_enabled', false);
+
+        $this->version = ModVersion::factory()->for($this->mod)->create([
+            'link' => 'https://example.com/mod.zip',
+            'disabled' => false,
+            'spt_version_constraint' => '>=4.0.0',
+        ]);
+        $this->version->updateQuietly([
+            'verification_status' => VerificationStatus::Passed,
+            'last_verified_at' => now(),
+        ]);
+    });
+
+    it('clears the denormalized status and queues a run when the link changes', function (): void {
+        config()->set('verification.auto_enabled', true);
+        Queue::fake();
+
+        $this->version->update(['link' => 'https://example.com/mod-v2.zip']);
+
+        expect($this->version->refresh())
+            ->verification_status->toBeNull()
+            ->last_verified_at->toBeNull();
+
+        Queue::assertPushed(RunVerificationJob::class);
+
+        expect(VerificationResult::query()
+            ->where('verifiable_type', ModVersion::class)
+            ->where('verifiable_id', $this->version->id)
+            ->where('trigger', VerificationTrigger::LinkUpdated)
+            ->exists())->toBeTrue();
+    });
+
+    it('clears the denormalized status without queueing when automatic verification is disabled', function (): void {
+        Queue::fake();
+
+        $this->version->update(['link' => 'https://example.com/mod-v2.zip']);
+
+        expect($this->version->refresh())
+            ->verification_status->toBeNull()
+            ->last_verified_at->toBeNull();
+
+        Queue::assertNotPushed(RunVerificationJob::class);
+        expect(VerificationResult::query()->count())->toBe(0);
+    });
+
+    it('does not touch the verification status when other fields change', function (): void {
+        config()->set('verification.auto_enabled', true);
+        Queue::fake();
+
+        $this->version->update(['description' => 'Updated description']);
+
+        expect($this->version->refresh())
+            ->verification_status->toBe(VerificationStatus::Passed)
+            ->last_verified_at->not->toBeNull();
+
+        Queue::assertNotPushed(RunVerificationJob::class);
+    });
+
+    it('clears the denormalized status without queueing when the link is emptied', function (): void {
+        config()->set('verification.auto_enabled', true);
+        Queue::fake();
+
+        $this->version->update(['link' => '']);
+
+        expect($this->version->refresh())->verification_status->toBeNull();
+
+        Queue::assertNotPushed(RunVerificationJob::class);
+    });
+
+    it('clears the denormalized status without queueing for a disabled version', function (): void {
+        config()->set('verification.auto_enabled', true);
+        $this->version->updateQuietly(['disabled' => true]);
+        Queue::fake();
+
+        $this->version->update(['link' => 'https://example.com/mod-v2.zip']);
+
+        expect($this->version->refresh())->verification_status->toBeNull();
+
+        Queue::assertNotPushed(RunVerificationJob::class);
+    });
+});

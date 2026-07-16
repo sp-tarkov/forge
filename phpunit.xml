@@ -24,6 +24,7 @@
         <ini name="memory_limit" value="1G"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="AUTO_VERIFICATION_ENABLED" value="false"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="log"/>
         <env name="CACHE_STORE" value="array"/>

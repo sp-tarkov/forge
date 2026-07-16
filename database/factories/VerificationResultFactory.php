@@ -94,6 +94,17 @@ final class VerificationResultFactory extends Factory
     }
 
     /**
+     * Set the verification as running.
+     */
+    public function running(): static
+    {
+        return $this->state([
+            'status' => VerificationStatus::Running,
+            'started_at' => now()->subMinute(),
+        ]);
+    }
+
+    /**
      * Set the verification as failed.
      */
     public function failed(string $reason = 'Download returned HTTP 404'): static

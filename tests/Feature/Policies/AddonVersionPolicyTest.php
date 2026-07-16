@@ -356,3 +356,96 @@ describe('publish', function (): void {
         expect($this->policy->publish($unverified, $version))->toBeFalse();
     });
 });
+
+describe('viewFailedVerification', function (): void {
+    it('returns false for guests', function (): void {
+        $addon = Addon::factory()->create();
+        $version = AddonVersion::factory()->for($addon)->create();
+
+        expect($this->policy->viewFailedVerification(null, $version))->toBeFalse();
+    });
+
+    it('returns false for a regular user who is not the owner or author', function (): void {
+        $addon = Addon::factory()->create();
+        $version = AddonVersion::factory()->for($addon)->create();
+
+        expect($this->policy->viewFailedVerification($this->user, $version))->toBeFalse();
+    });
+
+    it('returns true for the addon owner', function (): void {
+        $addon = Addon::factory()->create(['owner_id' => $this->user->id]);
+        $version = AddonVersion::factory()->for($addon)->create();
+
+        expect($this->policy->viewFailedVerification($this->user, $version))->toBeTrue();
+    });
+
+    it('returns true for an additional author', function (): void {
+        $author = User::factory()->create();
+        $addon = Addon::factory()->create();
+        $addon->additionalAuthors()->attach($author);
+        $version = AddonVersion::factory()->for($addon)->create();
+
+        expect($this->policy->viewFailedVerification($author, $version))->toBeTrue();
+    });
+
+    it('returns true for moderators', function (): void {
+        $addon = Addon::factory()->create();
+        $version = AddonVersion::factory()->for($addon)->create();
+
+        expect($this->policy->viewFailedVerification($this->moderator, $version))->toBeTrue();
+    });
+
+    it('returns true for admins', function (): void {
+        $addon = Addon::factory()->create();
+        $version = AddonVersion::factory()->for($addon)->create();
+
+        expect($this->policy->viewFailedVerification($this->admin, $version))->toBeTrue();
+    });
+});
+
+describe('submitVerification', function (): void {
+    it('returns false for unverified users', function (): void {
+        $unverified = User::factory()->unverified()->create();
+        $addon = Addon::factory()->create(['owner_id' => $unverified->id]);
+        $version = AddonVersion::factory()->for($addon)->create();
+
+        expect($this->policy->submitVerification($unverified, $version))->toBeFalse();
+    });
+
+    it('returns true for the addon owner', function (): void {
+        $addon = Addon::factory()->create(['owner_id' => $this->user->id]);
+        $version = AddonVersion::factory()->for($addon)->create();
+
+        expect($this->policy->submitVerification($this->user, $version))->toBeTrue();
+    });
+
+    it('returns true for an additional author', function (): void {
+        $author = User::factory()->create();
+        $addon = Addon::factory()->create();
+        $addon->additionalAuthors()->attach($author);
+        $version = AddonVersion::factory()->for($addon)->create();
+
+        expect($this->policy->submitVerification($author, $version))->toBeTrue();
+    });
+
+    it('returns true for moderators', function (): void {
+        $addon = Addon::factory()->create();
+        $version = AddonVersion::factory()->for($addon)->create();
+
+        expect($this->policy->submitVerification($this->moderator, $version))->toBeTrue();
+    });
+
+    it('returns true for admins', function (): void {
+        $addon = Addon::factory()->create();
+        $version = AddonVersion::factory()->for($addon)->create();
+
+        expect($this->policy->submitVerification($this->admin, $version))->toBeTrue();
+    });
+
+    it('returns false for a regular user who is not the owner or author', function (): void {
+        $addon = Addon::factory()->create();
+        $version = AddonVersion::factory()->for($addon)->create();
+
+        expect($this->policy->submitVerification($this->user, $version))->toBeFalse();
+    });
+});

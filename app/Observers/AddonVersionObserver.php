@@ -37,6 +37,8 @@ final readonly class AddonVersionObserver
         }
 
         $this->updateRelatedAddon($addonVersion);
+
+        $this->handleLinkChange($addonVersion);
     }
 
     /**
@@ -58,10 +60,24 @@ final readonly class AddonVersionObserver
     }
 
     /**
-     * Dispatch a file verification for a newly uploaded version when automatic verification is enabled and the
-     * version has a downloadable link and is not disabled.
+     * Clear the denormalized verification status when the download link changes and queue a new verification run.
      */
-    private function dispatchVerification(AddonVersion $addonVersion): void
+    private function handleLinkChange(AddonVersion $addonVersion): void
+    {
+        if (! $addonVersion->wasChanged('link')) {
+            return;
+        }
+
+        $addonVersion->updateQuietly(['verification_status' => null, 'last_verified_at' => null]);
+
+        $this->dispatchVerification($addonVersion, VerificationTrigger::LinkUpdated);
+    }
+
+    /**
+     * Dispatch a file verification for the version when automatic verification is enabled and the version has a
+     * downloadable link and is not disabled.
+     */
+    private function dispatchVerification(AddonVersion $addonVersion, VerificationTrigger $trigger = VerificationTrigger::Upload): void
     {
         if (! config()->boolean('verification.auto_enabled')) {
             return;
@@ -71,6 +87,6 @@ final readonly class AddonVersionObserver
             return;
         }
 
-        VerificationResult::dispatchFor($addonVersion, VerificationTrigger::Upload);
+        VerificationResult::dispatchFor($addonVersion, $trigger);
     }
 }

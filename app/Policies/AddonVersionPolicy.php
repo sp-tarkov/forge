@@ -31,6 +31,39 @@ final class AddonVersionPolicy
     }
 
     /**
+     * Determine whether the user can view the addon version's failed verification details.
+     */
+    public function viewFailedVerification(?User $user, AddonVersion $addonVersion): bool
+    {
+        if (! $user instanceof User) {
+            return false;
+        }
+
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        return $addonVersion->addon->isAuthorOrOwner($user);
+    }
+
+    /**
+     * Determine whether the user can submit the addon version for verification.
+     */
+    public function submitVerification(User $user, AddonVersion $addonVersion): bool
+    {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        return $addonVersion->addon->isAuthorOrOwner($user);
+    }
+
+    /**
      * Determine whether the user can create addon versions.
      */
     public function create(User $user, Addon $addon): bool

@@ -1,5 +1,3 @@
-@props(['version', 'addon', 'showActions' => null])
-
 <div
     {{ $attributes->merge(['class' => 'relative p-4 mb-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl filter-none group hover:shadow-lg hover:bg-black']) }}>
 
@@ -24,22 +22,30 @@
 
         <div class="flex flex-col items-start sm:flex-row sm:justify-between">
             <div class="flex flex-col">
-                <a
-                    href="{{ route('addon.version.download', [$addon->id, $addon->slug, $version->version]) }}"
-                    class="inline-flex items-center text-3xl font-extrabold text-gray-200 hover:text-white hover:underline"
-                    rel="nofollow"
-                >
-                    <span>{{ __('Version') }} {{ $version->version }}</span>
-                    <flux:tooltip
-                        content="Download Addon Version"
-                        position="right"
+                <div class="flex items-center gap-2">
+                    <a
+                        href="{{ route('addon.version.download', [$addon->id, $addon->slug, $version->version]) }}"
+                        class="inline-flex items-center text-3xl font-extrabold text-gray-200 hover:text-white hover:underline"
+                        rel="nofollow"
                     >
-                        <flux:icon
-                            icon="arrow-down-on-square-stack"
-                            class="ml-2 inline-block size-6"
-                        />
-                    </flux:tooltip>
-                </a>
+                        <span>{{ __('Version') }} {{ $version->version }}</span>
+                        <flux:tooltip
+                            content="Download Addon Version"
+                            position="right"
+                        >
+                            <flux:icon
+                                icon="arrow-down-on-square-stack"
+                                class="ml-2 inline-block size-6"
+                            />
+                        </flux:tooltip>
+                    </a>
+                    <livewire:verification-status
+                        wire:key="verification-status-addon-{{ $version->id }}"
+                        :verifiable-id="$version->id"
+                        :verifiable-type="\App\Models\AddonVersion::class"
+                        :modal-name="$verificationModalName()"
+                    />
+                </div>
                 <div class="mt-3 flex flex-row flex-wrap items-center justify-start gap-2.5">
                     <div class="flex items-center gap-2.5">
                         @if ($version->formatted_file_size)
@@ -212,4 +218,17 @@
         --}}
         {!! $version->description_html !!}
     </div>
+
+    <flux:modal
+        name="{{ $verificationModalName() }}"
+        variant="flyout"
+        position="left"
+        class="md:w-[600px] lg:w-[700px]"
+    >
+        <livewire:verification-details
+            wire:key="verification-details-addon-{{ $version->id }}"
+            :verifiable-id="$version->id"
+            :verifiable-type="\App\Models\AddonVersion::class"
+        />
+    </flux:modal>
 </div>

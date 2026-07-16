@@ -21,6 +21,13 @@
                                 icon="pencil"
                             >Edit Version</flux:menu.item>
                         @endif
+                        @if (($this->permissions['submitVerification'] ?? false) && $this->version->isEligibleForVerification())
+                            <flux:menu.item
+                                wire:click="submitVerification"
+                                icon="shield-check"
+                            >{{ $this->version->verification_status === null ? 'Submit for Verification' : 'Resubmit Verification' }}
+                            </flux:menu.item>
+                        @endif
                         @if ($this->versionPublished)
                             @if ($this->permissions['unpublish'] ?? false)
                                 <flux:modal.trigger name="mod-version-action-unpublish-{{ $this->versionId }}">
@@ -51,6 +58,13 @@
                                 href="{{ route('mod.version.edit', [$this->modId, $this->versionId]) }}"
                                 icon="pencil"
                             >Edit Version</flux:menu.item>
+                        @endif
+                        @if (($this->permissions['submitVerification'] ?? false) && $this->version->isEligibleForVerification())
+                            <flux:menu.item
+                                wire:click="submitVerification"
+                                icon="shield-check"
+                            >{{ $this->version->verification_status === null ? 'Submit for Verification' : 'Resubmit Verification' }}
+                            </flux:menu.item>
                         @endif
                         @if ($this->versionDisabled)
                             @if ($this->permissions['enable'] ?? false)
