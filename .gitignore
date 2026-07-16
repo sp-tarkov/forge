@@ -1,5 +1,7 @@
 .DS_Store
 .env
+/docker/verification/src/bin
+/docker/verification/src/obj
 .env.backup
 .env.production
 /php.ini
@@ -46,3 +48,4 @@ Homestead.yaml
 /vendor
 Homestead.json
 Homestead.yaml
+docker/verification/src/.idea
