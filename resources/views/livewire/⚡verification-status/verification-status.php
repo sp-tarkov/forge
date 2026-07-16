@@ -9,7 +9,6 @@ use App\Models\ModVersion;
 use App\Models\VerificationResult;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
@@ -64,9 +63,23 @@ new class extends Component
     }
 
     /**
+     * Get the event listeners.
+     *
+     * @return array<string, string>
+     */
+    public function getListeners(): array
+    {
+        $slug = $this->verifiableType === ModVersion::class ? 'mod-version' : 'addon-version';
+
+        return [
+            "verification-submitted.{$this->eventKey}" => 'refreshStatus',
+            "echo:verification.{$slug}.{$this->verifiableId},VerificationResultUpdated" => 'refreshStatus',
+        ];
+    }
+
+    /**
      * Refresh the badge after a verification has been submitted for this version.
      */
-    #[On('verification-submitted.{eventKey}')]
     public function refreshStatus(): void
     {
         unset($this->latestResult, $this->displayStatus, $this->isActive);

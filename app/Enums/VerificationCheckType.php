@@ -8,9 +8,9 @@ use Illuminate\Support\Str;
 
 /**
  * Identifies the known checks a verification run can perform, providing the author-facing label and description for
- * each. Most checks are implemented in docker/verification/verify.cs; a new check needs a case here so the admin and
- * public check lists can present its label and description. Check names arrive as untrusted container output, so
- * unknown names resolve to a humanized fallback label.
+ * each. Most checks are implemented in the docker/verification/src project and registered in Checks/CheckRegistry.cs;
+ * a new check needs a case here so the admin and public check lists can present its label and description. Check
+ * names arrive as untrusted container output, so unknown names resolve to a humanized fallback label.
  */
 enum VerificationCheckType: string
 {
@@ -24,6 +24,18 @@ enum VerificationCheckType: string
      * The archive was downloaded and unpacked within the configured safety limits.
      */
     case ArchiveExtraction = 'archive_extraction';
+
+    /**
+     * The GUIDs declared inside the archive's client plugin and server mod DLLs match the GUID registered for the mod
+     * on the Forge, and match each other when both components exist.
+     */
+    case DllGuidMatch = 'dll_guid_match';
+
+    /**
+     * The version numbers declared inside the archive's client plugin and server mod DLLs match the version number
+     * published on the Forge.
+     */
+    case DllVersionMatch = 'dll_version_match';
 
     /**
      * Get the display label for a raw check name, humanizing unknown names.
@@ -49,6 +61,8 @@ enum VerificationCheckType: string
         return match ($this) {
             self::FileDownload => 'File Download',
             self::ArchiveExtraction => 'Archive Extraction',
+            self::DllGuidMatch => 'GUID Match',
+            self::DllVersionMatch => 'Version Match',
         };
     }
 
@@ -60,6 +74,8 @@ enum VerificationCheckType: string
         return match ($this) {
             self::FileDownload => 'Confirms the download URL serves the mod archive file directly. A failure usually means the link points to a web page instead of a file, requires a login, or the file has been removed.',
             self::ArchiveExtraction => 'Confirms the uploaded archive can be opened and its files unpacked safely. A failure usually means the file is corrupted, uses an unsupported format, or expands to an unreasonably large size.',
+            self::DllGuidMatch => 'Confirms the GUID declared inside the client and server DLLs matches the GUID registered for the mod on the Forge, and that the client and server agree with each other. A failure usually means the DLLs were built with a different GUID than the one registered.',
+            self::DllVersionMatch => 'Confirms the version numbers declared inside the client and server DLLs match the version number published on the Forge. A failure usually means the archive was built from a different version than the one published.',
         };
     }
 }

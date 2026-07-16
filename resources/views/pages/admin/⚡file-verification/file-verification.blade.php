@@ -1,4 +1,4 @@
-<div>
+<div x-on:open-queue-modal.window="$wire.openQueueModal()">
     <x-slot name="header">
         <div class="flex w-full items-center justify-between">
             <div>
@@ -6,21 +6,21 @@
                     {{ __('File Verification') }}
                 </h2>
             </div>
-        </div>
-    </x-slot>
 
-    <div class="px-6 lg:px-8">
-        <div class="space-y-6">
-            {{-- Actions --}}
-            <div class="flex justify-end">
+            <div>
                 <flux:button
-                    wire:click="openQueueModal"
+                    x-on:click="$dispatch('open-queue-modal')"
                     variant="primary"
                     icon="plus"
                 >
                     Queue Verification
                 </flux:button>
             </div>
+        </div>
+    </x-slot>
+
+    <div class="px-6 lg:px-8">
+        <div class="space-y-6">
 
             {{-- Filters Section --}}
             <div class="rounded-lg border border-gray-700 bg-gray-900 p-6 shadow-sm">
@@ -406,16 +406,6 @@
                         <span class="text-sm text-gray-400">SHA-256</span>
                         <p class="mt-1 break-all font-mono text-xs text-gray-100">
                             {{ $this->selectedResult->downloaded_sha256 }}
-                        </p>
-                    </div>
-                @endif
-
-                {{-- Failure Reason --}}
-                @if ($this->selectedResult->failure_reason)
-                    <div>
-                        <span class="text-sm text-gray-400">Failure Reason</span>
-                        <p class="mt-1 text-sm text-red-400">
-                            {{ $this->selectedResult->failure_reason }}
                         </p>
                     </div>
                 @endif

@@ -1,7 +1,4 @@
-<div
-    @if ($this->isActive) wire:poll.10s @endif
-    class="inline-flex"
->
+<div class="inline-flex">
     @if ($this->displayStatus || ($this->canManage && $this->isEligible))
         <flux:modal.trigger name="{{ $modalName }}">
             <button

@@ -45,3 +45,8 @@ Broadcast::channel('presence.conversation.{conversationHashId}', function (User 
 
     return null;
 });
+
+/*
+ * Private channel for file verification administration
+ */
+Broadcast::channel('admin.verification', fn (User $user): bool => (bool) $user->isAdmin());

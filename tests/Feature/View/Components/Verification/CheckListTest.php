@@ -38,28 +38,29 @@ describe('CheckList Blade Component', function (): void {
         $view->assertDontSee('suite');
     });
 
-    it('orders enforcing failures before report-only failures, skipped, and passed checks', function (): void {
+    it('orders checks by their type in the expected sequence: File Download, Archive Extraction, GUID Match, Version Match', function (): void {
         $checks = [
-            new VerificationCheck('passed_check', VerificationCheckStatus::Passed, false, null),
-            new VerificationCheck('skipped_check', VerificationCheckStatus::Skipped, false, null),
-            new VerificationCheck('report_only_failure', VerificationCheckStatus::Failed, true, 'Advisory'),
-            new VerificationCheck('enforcing_failure', VerificationCheckStatus::Failed, false, 'Blocking'),
-        ];
-
-        $view = $this->blade('<x-verification.check-list :checks="$checks" />', ['checks' => $checks]);
-
-        $view->assertSeeInOrder(['enforcing_failure', 'report_only_failure', 'skipped_check', 'passed_check']);
-    });
-
-    it('orders the file download check before failures regardless of its status', function (): void {
-        $checks = [
-            new VerificationCheck('enforcing_failure', VerificationCheckStatus::Failed, false, 'Blocking'),
+            new VerificationCheck('dll_version_match', VerificationCheckStatus::Passed, false, null),
+            new VerificationCheck('archive_extraction', VerificationCheckStatus::Failed, false, 'Advisory'),
+            new VerificationCheck('dll_guid_match', VerificationCheckStatus::Passed, false, null),
             new VerificationCheck('file_download', VerificationCheckStatus::Passed, false, null),
         ];
 
         $view = $this->blade('<x-verification.check-list :checks="$checks" />', ['checks' => $checks]);
 
-        $view->assertSeeInOrder(['file_download', 'enforcing_failure']);
+        $view->assertSeeInOrder(['file_download', 'archive_extraction', 'dll_guid_match', 'dll_version_match']);
+    });
+
+    it('appends other check types at the end while preserving their original order', function (): void {
+        $checks = [
+            new VerificationCheck('unknown_first', VerificationCheckStatus::Passed, false, null),
+            new VerificationCheck('file_download', VerificationCheckStatus::Passed, false, null),
+            new VerificationCheck('unknown_second', VerificationCheckStatus::Failed, false, 'Blocking'),
+        ];
+
+        $view = $this->blade('<x-verification.check-list :checks="$checks" />', ['checks' => $checks]);
+
+        $view->assertSeeInOrder(['file_download', 'unknown_first', 'unknown_second']);
     });
 
     it("separates a failed check's message from its description and renders it in red", function (): void {

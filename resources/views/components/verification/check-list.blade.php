@@ -1,7 +1,7 @@
 @if (count($checks) > 0)
     <div {{ $attributes }}>
         <span class="text-sm text-gray-400">{{ __('Checks') }}</span>
-        <div class="mt-2 max-h-96 space-y-2 overflow-y-auto">
+        <div class="mt-2 space-y-2">
             @foreach ($sortedChecks() as $check)
                 <div class="flex items-start gap-3 rounded-lg border border-gray-700 bg-gray-800 p-3">
                     <flux:badge

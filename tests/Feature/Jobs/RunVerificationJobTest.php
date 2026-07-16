@@ -6,6 +6,7 @@ use App\Enums\VerificationStatus;
 use App\Enums\VerificationTrigger;
 use App\Exceptions\DownloadSizeExceededException;
 use App\Jobs\RunVerificationJob;
+use App\Models\AddonVersion;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
@@ -1091,4 +1092,116 @@ it('sanitizes malformed and unknown-status checks from the container', function 
     expect($result->checks[1]['name'])->toBe('mystery');
     expect($result->checks[1]['status'])->toBe('failed');
     expect($result->status)->toBe(VerificationStatus::Passed);
+});
+
+it('passes the mod version and guid to the container', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: passingContainerOutput()),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create(['guid' => 'com.example.testmod']);
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+        'version' => '2.4.6',
+    ]);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_contains($process->command, "-e MOD_VERSION='2.4.6'")
+        && str_contains($process->command, "-e MOD_GUID='com.example.testmod'"));
+});
+
+it('passes an empty guid to the container for addon versions', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: passingContainerOutput()),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $addonVersion = AddonVersion::factory()->create(['link' => 'https://example.com/addon.zip']);
+
+    $result = VerificationResult::factory()->forAddonVersion($addonVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_contains($process->command, "-e MOD_GUID=''"));
+});
+
+it('stores the dll guid and version check results and fails the run', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    $finding = [
+        'path' => 'BepInEx/plugins/TestMod/TestMod.dll',
+        'kind' => 'client',
+        'guid' => 'com.other.mod',
+        'name' => 'Test Mod',
+        'version' => '1.0.0',
+        'guid_matched' => false,
+    ];
+
+    $output = json_encode([
+        'schema_version' => 2,
+        'checks_version' => '2',
+        'sha256' => 'abc',
+        'archive' => ['file_tree' => ['BepInEx/plugins/TestMod/TestMod.dll'], 'file_tree_truncated' => false, 'symlinks_removed' => 0],
+        'checks' => [
+            ['name' => 'archive_extraction', 'status' => 'passed', 'report_only' => false, 'message' => null, 'data' => []],
+            ['name' => 'dll_guid_match', 'status' => 'failed', 'report_only' => false, 'message' => "No client plugin declares the mod's GUID (com.example.testmod); found: com.other.mod.", 'data' => ['expected_guid' => 'com.example.testmod', 'findings' => [$finding]]],
+            ['name' => 'dll_version_match', 'status' => 'failed', 'report_only' => false, 'message' => "No DLL in the archive declares the mod's GUID (com.example.testmod), so the published version (2.4.6) could not be verified.", 'data' => ['expected_version' => '2.4.6', 'mod_guid' => 'com.example.testmod', 'findings' => [$finding]]],
+        ],
+        'error' => null,
+    ]);
+
+    Process::fake([
+        'docker run *' => Process::result(output: $output),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create(['guid' => 'com.example.testmod']);
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+        'version' => '2.4.6',
+    ]);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    $result->refresh();
+
+    expect($result->status)->toBe(VerificationStatus::Failed);
+    expect($result->archive_ok)->toBeFalse();
+    expect($result->checks)->toHaveCount(3);
+    expect($result->checks[1]['name'])->toBe('dll_guid_match');
+    expect($result->checks[1]['status'])->toBe('failed');
+    expect($result->checks[1]['report_only'])->toBeFalse();
+    expect($result->checks[1]['data']['expected_guid'])->toBe('com.example.testmod');
+    expect($result->checks[1]['data']['findings'][0]['guid'])->toBe('com.other.mod');
+    expect($result->checks[2]['name'])->toBe('dll_version_match');
+    expect($result->checks[2]['report_only'])->toBeFalse();
+    expect($result->checks[2]['data']['expected_version'])->toBe('2.4.6');
+    expect($result->checks_version)->toBe('2');
 });

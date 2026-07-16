@@ -37,6 +37,20 @@
             "ignoredLatestVersion": "5.0.0"
         },
         {
+            "apiModId": 2060,
+            "name": "Secure Mapbook",
+            "guid": "com.mrvibesrsa.securemapbook",
+            "localVersion": "1.5.5",
+            "ignoredLatestVersion": "1.5.6"
+        },
+        {
+            "apiModId": 2167,
+            "name": "CNN - CONTAINERS - RE-UPLOAD",
+            "guid": "com.cannuccia.cnn-containers",
+            "localVersion": "4.3.0",
+            "ignoredLatestVersion": "4.4.0"
+        },
+        {
             "apiModId": 2195,
             "name": "ECOT - Eukyre's Consortium of Things",
             "guid": "com.eukyre.ecot",
@@ -58,11 +72,25 @@
             "ignoredLatestVersion": "2.0.3"
         },
         {
+            "apiModId": 2248,
+            "name": "Separate Hostility",
+            "guid": "dk.sptplugins.separatehostility",
+            "localVersion": "1.0.0",
+            "ignoredLatestVersion": "2.0.0"
+        },
+        {
             "apiModId": 2288,
             "name": "Eco's Attachment Emporium",
             "guid": "com.wtt.ecoattachmentemporium",
             "localVersion": "2.0.6",
             "ignoredLatestVersion": "2.0.8"
+        },
+        {
+            "apiModId": 2314,
+            "name": "Season Rotator",
+            "guid": "com.turbodestroyer.season-rotator",
+            "localVersion": "1.0.0",
+            "ignoredLatestVersion": "2.0.0"
         },
         {
             "apiModId": 2329,
@@ -72,10 +100,24 @@
             "ignoredLatestVersion": "1.6.0"
         },
         {
+            "apiModId": 2390,
+            "name": "Remove FIR from Hideout",
+            "guid": "com.zas.removefir",
+            "localVersion": "1.0.0",
+            "ignoredLatestVersion": "1.0.1"
+        },
+        {
             "apiModId": 2443,
             "name": "Backdoor Bandit - NG",
             "guid": "com.raitheraichu.backdoorbanditserver",
             "localVersion": "2.0.3",
+            "ignoredLatestVersion": "2.0.4"
+        },
+        {
+            "apiModId": 2451,
+            "name": "Echoes of Tarkov - Requisitions - NG",
+            "guid": "com.crypluto.echoesoftarkov.requisitions",
+            "localVersion": "2.0.0",
             "ignoredLatestVersion": "2.0.4"
         },
         {
@@ -84,6 +126,27 @@
             "guid": "com.c11.spt22lr",
             "localVersion": "1.5.0",
             "ignoredLatestVersion": "1.6.0"
+        },
+        {
+            "apiModId": 2627,
+            "name": "Bounty Board - Dynamic PMC Contracts",
+            "guid": "com.vonbraunz.bountyboard",
+            "localVersion": "2.0.0",
+            "ignoredLatestVersion": "2.0.1"
+        },
+        {
+            "apiModId": 2639,
+            "name": "Stance Sync",
+            "guid": "hazelify.StanceSync",
+            "localVersion": "1.0.1",
+            "ignoredLatestVersion": "1.0.2"
+        },
+        {
+            "apiModId": 2657,
+            "name": "Cultist Circle Improvements",
+            "guid": "com.acidphantasm.cultistcircleimprovements",
+            "localVersion": "1.0.1",
+            "ignoredLatestVersion": "1.0.2"
         },
         {
             "apiModId": 2711,
@@ -98,6 +161,13 @@
             "guid": "com.spy.kac-ks1",
             "localVersion": "1.0.0",
             "ignoredLatestVersion": "1.0.4"
+        },
+        {
+            "apiModId": 2737,
+            "name": "Knight's Armament KS-1 + SOLGW MK1",
+            "guid": "com.spy.kac-ks1",
+            "localVersion": "1.0.0",
+            "ignoredLatestVersion": "1.0.5"
         }
     ]
 }

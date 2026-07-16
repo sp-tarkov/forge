@@ -9,9 +9,11 @@ use App\Enums\VerificationCheckType;
 use App\Enums\VerificationStatus;
 use App\Enums\VerificationTrigger;
 use App\Jobs\RunVerificationJob;
+use App\Observers\VerificationResultObserver;
 use App\Support\DataTransferObjects\VerificationCheck;
 use Carbon\CarbonImmutable;
 use Database\Factories\VerificationResultFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -41,6 +43,7 @@ use Override;
  * @property CarbonImmutable $updated_at
  * @property-read Model $verifiable
  */
+#[ObservedBy([VerificationResultObserver::class])]
 #[Table(name: 'verification_results')]
 final class VerificationResult extends Model
 {

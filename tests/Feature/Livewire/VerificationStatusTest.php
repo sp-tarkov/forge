@@ -79,7 +79,7 @@ describe('verification status badge', function (): void {
             ->assertSuccessful();
     });
 
-    it('shows the active run to guests and polls until it completes', function (): void {
+    it('shows the active run to guests and listens to the websocket channel', function (): void {
         $version = ModVersion::factory()->create();
         VerificationResult::factory()->forModVersion($version)->create();
 
@@ -90,7 +90,7 @@ describe('verification status badge', function (): void {
         ])
             ->assertSeeHtml('data-test="verification-status-shield"')
             ->assertSee('Pending')
-            ->assertSeeHtml('wire:poll.10s')
+            ->assertSeeHtml('echo:verification.mod-version.'.$version->id.',VerificationResultUpdated')
             ->assertSuccessful();
     });
 
@@ -140,7 +140,7 @@ describe('verification status badge', function (): void {
         ])
             ->assertSeeHtml('data-test="verification-status-shield"')
             ->assertSee('Passed')
-            ->assertDontSeeHtml('wire:poll.10s')
+            ->assertSeeHtml('echo:verification.mod-version.'.$version->id.',VerificationResultUpdated')
             ->assertSuccessful();
     });
 
@@ -180,30 +180,25 @@ describe('verification status badge', function (): void {
             ->assertSuccessful();
     });
 
-    it('polls while the latest run is active and stops at terminal states', function (): void {
+    it('listens to the WebSocket channel and refreshes on the verification result update event', function (): void {
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         $version = ModVersion::factory()->recycle($mod)->create();
         $result = VerificationResult::factory()->forModVersion($version)->create();
 
-        Livewire::actingAs($owner)
+        $component = Livewire::actingAs($owner)
             ->test('verification-status', [
                 'verifiableId' => $version->id,
                 'verifiableType' => ModVersion::class,
                 'modalName' => 'version-verification-'.$version->id,
             ])
-            ->assertSeeHtml('wire:poll.10s');
+            ->assertSee('Pending');
 
         $result->delete();
         VerificationResult::factory()->forModVersion($version)->passed()->create();
 
-        Livewire::actingAs($owner)
-            ->test('verification-status', [
-                'verifiableId' => $version->id,
-                'verifiableType' => ModVersion::class,
-                'modalName' => 'version-verification-'.$version->id,
-            ])
-            ->assertDontSeeHtml('wire:poll.10s');
+        $component->dispatch('echo:verification.mod-version.'.$version->id.',VerificationResultUpdated')
+            ->assertSee('Passed');
     });
 
     it('refreshes the badge when a verification is submitted for the version', function (): void {
@@ -222,8 +217,7 @@ describe('verification status badge', function (): void {
         VerificationResult::factory()->forModVersion($version)->create();
 
         $component->dispatch('verification-submitted.mod-version-'.$version->id)
-            ->assertSee('Pending')
-            ->assertSeeHtml('wire:poll.10s');
+            ->assertSee('Pending');
     });
 
     it('shows the badge to the addon owner and refreshes on the addon event', function (): void {

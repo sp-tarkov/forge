@@ -239,12 +239,14 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
 
         if ($modVersion->link === '') {
             Flux::toast(heading: 'Error', text: 'This version has no download link to verify.', variant: 'danger');
+            $this->closeQueueModal();
 
             return;
         }
 
         if (! $modVersion->isEligibleForVerification()) {
             Flux::toast(heading: 'Not Eligible', text: $this->ineligibleVersionMessage(), variant: 'warning');
+            $this->closeQueueModal();
 
             return;
         }
@@ -256,6 +258,8 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
         } else {
             Flux::toast(heading: 'Already Pending', text: 'A verification is already pending for this version.', variant: 'warning');
         }
+
+        $this->closeQueueModal();
     }
 
     /**
@@ -365,6 +369,18 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
             AddonVersion::class => 'Addon',
             default => 'Unknown',
         };
+    }
+
+    /**
+     * Get the event listeners.
+     *
+     * @return array<string, string>
+     */
+    public function getListeners(): array
+    {
+        return [
+            'echo-private:admin.verification,VerificationResultUpdated' => '$refresh',
+        ];
     }
 
     /**
