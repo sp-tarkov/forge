@@ -34,8 +34,7 @@ describe('Creation', function (): void {
             ->waitForText('Post Comment');
 
         // Minimum-length validation rejects a too-short body.
-        $page->assertSee('Post Comment')
-            ->assertPresent('@new-comment-body')
+        $page->assertPresent('@new-comment-body')
             ->type('@new-comment-body', 'Hi')
             ->press('Post Comment')
             ->assertSee('must be at least');

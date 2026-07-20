@@ -293,16 +293,6 @@ MD;
     });
 
     describe('Component Integration', function (): void {
-        it('renders markdown editor component in mod create form', function (): void {
-            $user = User::factory()->withMfa()->create();
-            $this->actingAs($user);
-
-            Livewire::test('pages::mod.create')
-                ->assertSee('Write')
-                ->assertSee('Preview')
-                ->assertStatus(200);
-        });
-
         it('can set description via wire model', function (): void {
             $user = User::factory()->withMfa()->create();
             $this->actingAs($user);

@@ -62,9 +62,10 @@ enum ApiLatencyBucket: string
     /**
      * Estimate percentile latency (in milliseconds) from a set of histogram bucket counts.
      *
-     * Walks the cumulative distribution and returns the upper bound of the bucket the target rank falls into. For the
-     * unbounded overflow bucket the previous boundary is returned as a conservative floor (the true value is only
-     * known to be at least that large). Returns null when there is no data.
+     * Walks the cumulative distribution to find the bucket containing the target rank, then linearly interpolates
+     * between that bucket's bounds based on where the rank falls among its counts (treating requests as uniformly
+     * spread within the bucket). For the unbounded overflow bucket the previous boundary is returned as a conservative
+     * floor (the true value is only known to be at least that large). Returns null when there is no data.
      *
      * @param  array<string, int>  $counts  Bucket counts keyed by column name (lat_b0..lat_b9).
      */
@@ -76,12 +77,25 @@ enum ApiLatencyBucket: string
 
         $targetRank = (int) ceil(($percentile / 100) * $total);
         $cumulative = 0;
+        $lowerBound = 0;
 
         foreach (self::cases() as $bucket) {
-            $cumulative += $counts[$bucket->column()] ?? 0;
+            $bucketCount = $counts[$bucket->column()] ?? 0;
+            $cumulative += $bucketCount;
+            $upperBound = $bucket->upperBoundMs();
 
             if ($cumulative >= $targetRank) {
-                return $bucket->upperBoundMs() ?? self::UPPER_BOUNDS_MS[$bucket->index() - 1];
+                if ($upperBound === null) {
+                    return $lowerBound;
+                }
+
+                $rankWithinBucket = $targetRank - ($cumulative - $bucketCount);
+
+                return (int) round($lowerBound + ($rankWithinBucket / $bucketCount) * ($upperBound - $lowerBound));
+            }
+
+            if ($upperBound !== null) {
+                $lowerBound = $upperBound;
             }
         }
 

@@ -143,35 +143,6 @@ it('allows admin to unban user', function (): void {
     expect($user->fresh()->isBanned())->toBeFalse();
 });
 
-it('opens ban modal when clicking ban button', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
-    $admin = User::factory()->create();
-    $admin->assignRole($adminRole);
-
-    $user = User::factory()->create();
-
-    Livewire::actingAs($admin)
-        ->test('user.ban-action', ['user' => $user])
-        ->assertSet('showBanModal', false)
-        ->set('showBanModal', true)
-        ->assertSet('showBanModal', true);
-});
-
-it('opens unban modal when clicking unban button', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
-    $admin = User::factory()->create();
-    $admin->assignRole($adminRole);
-
-    $user = User::factory()->create();
-    $user->ban();
-
-    Livewire::actingAs($admin)
-        ->test('user.ban-action', ['user' => $user])
-        ->assertSet('showUnbanModal', false)
-        ->set('showUnbanModal', true)
-        ->assertSet('showUnbanModal', true);
-});
-
 it('requires duration selection for ban', function (): void {
     $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();

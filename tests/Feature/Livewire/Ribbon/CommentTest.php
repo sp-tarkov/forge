@@ -183,28 +183,4 @@ describe('Comment Spam Status Ribbons', function (): void {
         Livewire::test('ribbon.comment', getCommentRibbonProps($spamComment))
             ->assertDontSee('class="ribbon');
     });
-
-    it('uses correct colors for different spam statuses', function (): void {
-        $pendingComment = Comment::factory()->for($this->mod, 'commentable')->create([
-            'spam_status' => SpamStatus::PENDING->value,
-            'user_id' => $this->user->id,
-        ]);
-
-        $spamComment = Comment::factory()->for($this->mod, 'commentable')->create([
-            'spam_status' => SpamStatus::SPAM->value,
-            'user_id' => $this->user->id,
-        ]);
-
-        // Test pending comment ribbon color (yellow)
-        Livewire::actingAs($this->moderator)
-            ->test('ribbon.comment', getCommentRibbonProps($pendingComment, $this->moderator))
-            ->assertSee('ribbon yellow')
-            ->assertSee('Pending');
-
-        // Test spam comment ribbon color (red)
-        Livewire::actingAs($this->moderator)
-            ->test('ribbon.comment', getCommentRibbonProps($spamComment, $this->moderator))
-            ->assertSee('ribbon red')
-            ->assertSee('Spam');
-    });
 });

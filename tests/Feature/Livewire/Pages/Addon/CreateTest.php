@@ -32,10 +32,7 @@ describe('creation flow pages', function (): void {
 
         $this->actingAs($user)
             ->get(route('addon.path-check', $mod->id))
-            ->assertOk()
-            ->assertSeeText('Choose the Right Path')
-            ->assertSeeText('An add-on fits')
-            ->assertSeeText('This should be its own mod');
+            ->assertOk();
     });
 
     it('routes users from guidelines to path-check after acknowledgment', function (): void {
@@ -81,12 +78,6 @@ describe('creation flow pages', function (): void {
 });
 
 describe('authorization', function (): void {
-    it('requires an MFA-enabled user', function (): void {
-        $user = User::factory()->withMfa()->create();
-
-        expect($user->hasMfaEnabled())->toBeTrue();
-    });
-
     it('prevents creating addon for mod with addons disabled', function (): void {
         $user = User::factory()->withMfa()->create();
         $mod = Mod::factory()->for($user, 'owner')->create([

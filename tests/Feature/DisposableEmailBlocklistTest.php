@@ -6,7 +6,6 @@ use App\Jobs\UpdateDisposableEmailBlocklist;
 use App\Models\DisposableEmailBlocklist;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function (): void {
@@ -101,14 +100,5 @@ describe('UpdateDisposableEmailBlocklist job', function (): void {
         $this->assertDatabaseHas('disposable_email_blocklist', ['domain' => 'third-new.com']);
 
         expect(DisposableEmailBlocklist::query()->count())->toBe(3);
-    });
-
-    it('is scheduled to run daily', function (): void {
-        Queue::fake();
-
-        // The schedule is defined in routes/console.php. We'll check that the job class exists and can be
-        // instantiated.
-        expect(class_exists(UpdateDisposableEmailBlocklist::class))->toBeTrue();
-        expect(new UpdateDisposableEmailBlocklist)->toBeInstanceOf(UpdateDisposableEmailBlocklist::class);
     });
 });

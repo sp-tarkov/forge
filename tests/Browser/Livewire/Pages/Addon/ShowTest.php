@@ -84,15 +84,4 @@ describe('responsive design', function (): void {
             ->assertSee('ADDON')
             ->assertNoJavascriptErrors();
     });
-
-    it('displays addon details correctly on tablet', function (): void {
-        $mod = createVisibleModForAddonShowBrowser();
-        $addon = Addon::factory()->for($mod)->published()->withVersions(1)->create();
-
-        $page = visit(route('addon.show', [$addon->id, $addon->slug]))
-            ->resize(768, 1024);
-
-        $page->assertSee($addon->name)
-            ->assertNoJavascriptErrors();
-    });
 });

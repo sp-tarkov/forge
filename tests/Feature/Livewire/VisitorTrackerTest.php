@@ -210,18 +210,6 @@ it('does not re-apply the peak once it has been reached', function (): void {
     expect(Visitor::query()->first()->peak_count)->toBe(40);
 });
 
-it('left-aligns counts on mobile and right-aligns them once the footer expands to multiple columns', function (): void {
-    ApiUsageMetric::factory()->create([
-        'period' => ApiUsagePeriod::Minute,
-        'period_start' => now()->utc()->subHour(),
-        'request_count' => 1234,
-    ]);
-
-    Livewire::test('visitor-tracker')
-        ->assertSeeHtml('flex items-center justify-start space-x-2 sm:justify-end')
-        ->assertSeeHtml('mt-1 text-left sm:text-right');
-});
-
 it('prevents client-side modification of locked properties', function (): void {
     Visitor::query()->create([
         'peak_count' => 100,

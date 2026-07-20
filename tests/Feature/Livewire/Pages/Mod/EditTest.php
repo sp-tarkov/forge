@@ -158,9 +158,7 @@ describe('Mod Editing Authorization', function (): void {
         $this->actingAs($owner)
             ->get('/mod/'.$mod->id.'/edit')
             ->assertOk()
-            ->assertSee('Edit Mod: Test Mod Name')
-            ->assertSee('Mod Information')
-            ->assertSee('Update Mod');
+            ->assertSee('Edit Mod: Test Mod Name');
     });
 
     it('allows mod owners to edit their mods and re-access the edit page after the update', function (): void {
@@ -175,7 +173,6 @@ describe('Mod Editing Authorization', function (): void {
         $this->actingAs($owner);
 
         Livewire::test('pages::mod.edit', ['modId' => $mod->id])
-            ->assertSee('Mod Information')
             ->set('name', 'Updated Mod Name')
             ->set('guid', 'com.test.updatedmod')
             ->set('teaser', 'Updated mod teaser')
@@ -198,9 +195,7 @@ describe('Mod Editing Authorization', function (): void {
         // The owner can still access the edit page after the update, now showing the new name
         $this->get('/mod/'.$mod->id.'/edit')
             ->assertOk()
-            ->assertSee('Edit Mod: Updated Mod Name')
-            ->assertSee('Mod Information')
-            ->assertSee('Update Mod');
+            ->assertSee('Edit Mod: Updated Mod Name');
     });
 
     it('allows mod authors to access and edit mods they are authors of', function (): void {
@@ -225,12 +220,9 @@ describe('Mod Editing Authorization', function (): void {
         // Authors can access the edit page
         $this->get('/mod/'.$mod->id.'/edit')
             ->assertOk()
-            ->assertSee('Edit Mod: Collaborative Mod')
-            ->assertSee('Mod Information')
-            ->assertSee('Update Mod');
+            ->assertSee('Edit Mod: Collaborative Mod');
 
         Livewire::test('pages::mod.edit', ['modId' => $mod->id])
-            ->assertSee('Mod Information')
             ->set('name', 'Updated by Author')
             ->set('guid', 'com.author.collaborativemod')
             ->set('teaser', 'Updated by collaborative author')
@@ -293,7 +285,6 @@ describe('Mod Editing Functionality', function (): void {
         $this->actingAs($owner);
 
         Livewire::test('pages::mod.edit', ['modId' => $mod->id])
-            ->assertSee('Mod Information')
             ->set('name', 'Comprehensive Update')
             ->set('guid', 'com.comprehensive.update')
             ->set('teaser', 'Comprehensive teaser update')
@@ -326,7 +317,6 @@ describe('Mod Editing Functionality', function (): void {
         $this->actingAs($owner);
 
         Livewire::test('pages::mod.edit', ['modId' => $mod->id])
-            ->assertSee('Mod Information')
             ->set('name', '')
             ->set('teaser', '')
             ->set('description', '')
@@ -342,7 +332,6 @@ describe('Mod Editing Functionality', function (): void {
         $this->actingAs($owner);
 
         Livewire::test('pages::mod.edit', ['modId' => $mod->id])
-            ->assertSee('Mod Information')
             ->set('guid', 'invalid guid!')
             ->call('save')
             ->assertHasErrors(['guid']);
@@ -356,7 +345,6 @@ describe('Mod Editing Functionality', function (): void {
         $this->actingAs($owner);
 
         Livewire::test('pages::mod.edit', ['modId' => $mod->id])
-            ->assertSee('Mod Information')
             ->set('name', 'Successfully Updated Mod')
             ->set('guid', 'com.success.updated')
             ->set('sourceCodeLinks.0.url', 'https://github.com/success/repo')

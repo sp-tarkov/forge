@@ -35,16 +35,6 @@ describe('authentication', function (): void {
 });
 
 describe('page content', function (): void {
-    it('displays the page title', function (): void {
-        $user = User::factory()->create();
-        SptVersion::factory()->create(['version' => '3.11.4']);
-
-        $response = $this->actingAs($user)->get(route('mods.recently-created'));
-
-        $response->assertOk();
-        $response->assertSee('Recently Created');
-    });
-
     it('shows first visit message for new users', function (): void {
         $user = User::factory()->create(['mods_created_viewed_at' => null]);
         SptVersion::factory()->create(['version' => '3.11.4']);

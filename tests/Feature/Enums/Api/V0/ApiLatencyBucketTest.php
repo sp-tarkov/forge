@@ -32,12 +32,18 @@ it('exposes ten ordered histogram columns', function (): void {
     ]);
 });
 
-it('estimates a percentile from histogram counts', function (): void {
-    // 95 fast requests (<=100ms) and 5 slow ones; p95 falls in the 100ms bucket.
-    $counts = histogramCounts(['lat_b4' => 95, 'lat_b9' => 5]);
-
-    expect(ApiLatencyBucket::estimatePercentileMs($counts, 100, 95))->toBe(100);
-});
+it('interpolates a percentile within the bucket it lands in', function (array $sparse, int $total, int $percentile, int $expected): void {
+    expect(ApiLatencyBucket::estimatePercentileMs(histogramCounts($sparse), $total, $percentile))->toBe($expected);
+})->with([
+    // Rank 95 of 95 in the 50-100ms bucket sits at the bucket's upper bound.
+    'rank at the top of a bucket' => [['lat_b4' => 95, 'lat_b9' => 5], 100, 95, 100],
+    // Rank 95 is the 45th of 50 counts in the 100-250ms bucket: 100 + (45/50) * 150.
+    'rank partway through a bucket' => [['lat_b4' => 50, 'lat_b5' => 50], 100, 95, 235],
+    // Rank 50 is the 50th of 100 counts in the 100-250ms bucket: 100 + (50/100) * 150.
+    'rank midway through a bucket' => [['lat_b5' => 100], 100, 50, 175],
+    // The first bucket interpolates from zero: 0 + (50/100) * 5, rounded.
+    'rank in the first bucket' => [['lat_b0' => 100], 100, 50, 3],
+]);
 
 it('returns the previous boundary when the percentile lands in the overflow bucket', function (): void {
     $counts = histogramCounts(['lat_b0' => 90, 'lat_b9' => 10]);

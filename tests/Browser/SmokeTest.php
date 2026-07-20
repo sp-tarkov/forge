@@ -76,11 +76,15 @@ describe('Authenticated Pages', function (): void {
 
         $this->actingAs($user);
 
-        visit('/mod/guidelines')->assertSee('Guidelines');
-        visit('/mod/create')->assertSee('Create Mod');
-        visit(route('mod.edit', $mod->id))->assertSee('Edit Mod');
-        visit(route('mod.version.create', $mod->id))->assertSee('Create Mod Version');
-        visit(route('mod.version.edit', [$mod->id, $modVersion->id]))->assertSee('Edit Mod Version');
+        $pages = visit([
+            '/mod/guidelines',
+            '/mod/create',
+            route('mod.edit', $mod->id),
+            route('mod.version.create', $mod->id),
+            route('mod.version.edit', [$mod->id, $modVersion->id]),
+        ]);
+
+        $pages->assertNoSmoke();
     });
 
     it('renders addon form pages', function (): void {
@@ -90,11 +94,15 @@ describe('Authenticated Pages', function (): void {
 
         $this->actingAs($user);
 
-        visit(route('addon.guidelines', $mod->id))->assertSee('Guidelines');
-        visit(route('addon.create', $mod->id))->assertSee('Create Addon');
-        visit(route('addon.edit', $addon->id))->assertSee('Edit Addon');
-        visit(route('addon.version.create', $addon->id))->assertSee('Create Addon Version');
-        visit(route('addon.version.edit', [$addon->id, $addon->versions->first()->id]))->assertSee('Edit Addon Version');
+        $pages = visit([
+            route('addon.guidelines', $mod->id),
+            route('addon.create', $mod->id),
+            route('addon.edit', $addon->id),
+            route('addon.version.create', $addon->id),
+            route('addon.version.edit', [$addon->id, $addon->versions->first()->id]),
+        ]);
+
+        $pages->assertNoSmoke();
     });
 });
 

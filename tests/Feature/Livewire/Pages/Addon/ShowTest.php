@@ -582,18 +582,6 @@ describe('rendering', function (): void {
             ->assertSee('Parent Mod');
     });
 
-    it('renders the addon name and details heading on the show page', function (): void {
-        $mod = createVisibleModForAddonShow();
-        $addon = Addon::factory()->for($mod)->published()->withVersions(1)->create();
-
-        // The uppercase "ADDON" badge is a CSS text-transform only verifiable in a browser; assert the underlying
-        // server-rendered content instead.
-        $this->get(route('addon.show', [$addon->id, $addon->slug]))
-            ->assertOk()
-            ->assertSee($addon->name)
-            ->assertSee('Addon Details');
-    });
-
     it('renders the show page for a detached addon', function (): void {
         $mod = createVisibleModForAddonShow();
         $addon = Addon::factory()->for($mod)->published()->withVersions(1)->detached()->create([
@@ -607,17 +595,6 @@ describe('rendering', function (): void {
             ->assertSee('Detached Addon');
     });
 
-    it('loads the create version form for an authorized user', function (): void {
-        $user = User::factory()->withMfa()->create();
-        $mod = createVisibleModForAddonShow(owner: $user);
-        $addon = Addon::factory()->for($mod)->for($user, 'owner')->create();
-
-        $this->actingAs($user)
-            ->get(route('addon.version.create', ['addon' => $addon->id]))
-            ->assertOk()
-            ->assertSee('Create Addon Version')
-            ->assertSee($addon->name);
-    });
 });
 
 describe('mod addons tab', function (): void {

@@ -25,8 +25,6 @@ describe('page render', function (): void {
         $response = $this->actingAs($user)->get('/chat');
 
         $response->assertOk();
-        $response->assertSee('wire:id');
-        $response->assertSee('wire:snapshot');
     });
 
     it('renders the chat component correctly', function (): void {

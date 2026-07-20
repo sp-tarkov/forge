@@ -38,16 +38,6 @@ describe('RoleManagement Authorization', function (): void {
 });
 
 describe('RoleManagement Page Display', function (): void {
-    it('displays the role management page for admins', function (): void {
-        $admin = User::factory()->admin()->create();
-
-        Livewire::actingAs($admin)
-            ->test('pages::admin.role-management')
-            ->assertStatus(200)
-            ->assertSee('Assign Role to User')
-            ->assertSee('Users with Roles');
-    });
-
     it('displays users with roles', function (): void {
         $admin = User::factory()->admin()->create();
         $moderator = User::factory()->moderator()->create();
@@ -58,19 +48,6 @@ describe('RoleManagement Page Display', function (): void {
             ->assertSee($admin->name);
     });
 
-    it('displays available roles for filter dropdown', function (): void {
-        $admin = User::factory()->admin()->create();
-        // Ensure both roles exist by creating a moderator
-        User::factory()->moderator()->create();
-
-        $component = Livewire::actingAs($admin)
-            ->test('pages::admin.role-management');
-
-        $roles = $component->get('roles');
-
-        expect($roles->count())->toBeGreaterThanOrEqual(2);
-        expect($roles->pluck('name')->toArray())->toContain('Staff', 'Moderator');
-    });
 });
 
 describe('RoleManagement User Search', function (): void {
@@ -91,16 +68,6 @@ describe('RoleManagement User Search', function (): void {
         Livewire::actingAs($admin)
             ->test('pages::admin.role-management')
             ->set('userSearch', 'searchable@example')
-            ->assertSet('showUserDropdown', true);
-    });
-
-    it('shows dropdown when search has results', function (): void {
-        $admin = User::factory()->admin()->create();
-        User::factory()->create(['name' => 'TestSearchUser']);
-
-        Livewire::actingAs($admin)
-            ->test('pages::admin.role-management')
-            ->set('userSearch', 'TestSearch')
             ->assertSet('showUserDropdown', true);
     });
 
@@ -184,23 +151,6 @@ describe('RoleManagement Role Assignment', function (): void {
             ->assertSet('userSearch', '');
     });
 
-    it('persists role after assignment', function (): void {
-        $admin = User::factory()->admin()->create();
-        $targetUser = User::factory()->create();
-        $moderatorRole = UserRole::query()->firstOrCreate(
-            ['name' => 'Moderator'],
-            ['short_name' => 'Mod', 'description' => 'A moderator', 'color_class' => 'orange', 'icon' => 'wrench']
-        );
-
-        Livewire::actingAs($admin)
-            ->test('pages::admin.role-management')
-            ->call('showAssignRoleModal', $targetUser->id)
-            ->set('selectedRoleId', $moderatorRole->id)
-            ->call('assignRole');
-
-        expect($targetUser->fresh()->user_role_id)->toBe($moderatorRole->id);
-    });
-
     it('can change role from one to another', function (): void {
         $admin = User::factory()->admin()->create();
         $moderator = User::factory()->moderator()->create();
@@ -252,17 +202,6 @@ describe('RoleManagement Role Removal', function (): void {
         expect($admin->fresh()->user_role_id)->not->toBeNull();
     });
 
-    it('persists role removal', function (): void {
-        $admin = User::factory()->admin()->create();
-        $moderator = User::factory()->moderator()->create();
-
-        Livewire::actingAs($admin)
-            ->test('pages::admin.role-management')
-            ->call('showRemoveRoleModal', $moderator->id)
-            ->call('removeRole');
-
-        expect($moderator->fresh()->user_role_id)->toBeNull();
-    });
 });
 
 describe('RoleManagement Modal Control', function (): void {

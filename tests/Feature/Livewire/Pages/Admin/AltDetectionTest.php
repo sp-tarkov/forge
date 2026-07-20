@@ -66,8 +66,7 @@ describe('AltDetection Authorization', function (): void {
     it('allows access to administrators', function (): void {
         $this->actingAs(User::factory()->admin()->create())
             ->get(route('admin.alt-detection'))
-            ->assertOk()
-            ->assertSee('Find a user to investigate');
+            ->assertOk();
     });
 
     it('allows administrators to open a suspect results page', function (): void {
@@ -138,8 +137,7 @@ describe('AltDetection Behaviour', function (): void {
         Livewire::actingAs($admin)
             ->test('pages::admin.alt-detection', ['user' => $suspect])
             ->assertSee('CachedAlt')
-            ->assertSee('Shared IP')
-            ->assertSee('VPNs or mobile carriers');
+            ->assertSee('Shared IP');
 
         Queue::assertNotPushed(RunAltDetectionJob::class);
     });

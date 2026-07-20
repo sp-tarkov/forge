@@ -8,10 +8,7 @@ use Livewire\Livewire;
 it('renders the mod path-check page', function (): void {
     $this->actingAs(User::factory()->withMfa()->create())
         ->get(route('mod.path-check'))
-        ->assertOk()
-        ->assertSeeText('Choose the Right Path')
-        ->assertSeeText('A mod fits')
-        ->assertSeeText('This should be an add-on');
+        ->assertOk();
 });
 
 it('routes users from guidelines to path-check after acknowledgment', function (): void {

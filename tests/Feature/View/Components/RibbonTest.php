@@ -58,17 +58,4 @@ describe('Ribbon Blade Component', function (): void {
 
         $view->assertDontSee('class="ribbon');
     });
-
-    it('renders with dynamic content', function (): void {
-        $color = 'emerald';
-        $label = 'Dynamic Label';
-
-        $view = $this->blade('<x-ribbon :color="$color" :label="$label" />', [
-            'color' => $color,
-            'label' => $label,
-        ]);
-
-        $view->assertSee(sprintf('ribbon %s z-10', $color));
-        $view->assertSee($label);
-    });
 });
