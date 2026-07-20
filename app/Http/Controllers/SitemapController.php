@@ -28,7 +28,8 @@ final class SitemapController extends Controller
 {
     /**
      * How long every rendered sitemap document is cached, in seconds (6 hours). New content surfaces within this
-     * window; the cache-miss cost is a handful of indexed queries over a few thousand rows.
+     * window; the cache-miss cost is a handful of indexed queries over a few thousand rows. The cache.headers
+     * middleware on these routes (see routes/web.php) advertises the same lifetime to shared caches as s-maxage.
      */
     private const int CACHE_TTL = 21600;
 

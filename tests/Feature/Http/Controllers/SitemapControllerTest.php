@@ -146,3 +146,21 @@ it('serves robots.txt with the disallow rule and sitemap directive', function ()
         ->assertSee('Disallow: /mod/download/')
         ->assertSee('Sitemap: '.route('sitemap.index'));
 });
+
+it('serves stateless, publicly cacheable responses on every crawler endpoint', function (string $routeName): void {
+    $response = $this->get(route($routeName));
+
+    $response->assertOk()
+        ->assertHeader('Cache-Control', 'max-age=3600, public, s-maxage=21600')
+        ->assertHeader('ETag');
+
+    expect($response->baseResponse->headers->getCookies())->toBeEmpty();
+})->with([
+    'sitemap.index',
+    'sitemap.pages',
+    'sitemap.mods',
+    'sitemap.addons',
+    'sitemap.authors',
+    'sitemap.lists',
+    'robots',
+]);
