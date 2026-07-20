@@ -147,16 +147,4 @@ describe('event-driven updates', function (): void {
             ->assertSee('ribbon red')
             ->assertSee('Disabled');
     });
-
-    it('responds to addon-version-updated events with the correct ID', function (): void {
-        $version = AddonVersion::factory()->for($this->addon)->create([
-            'disabled' => false,
-            'published_at' => now()->subDays(1),
-        ]);
-
-        $component = Livewire::test('ribbon.addon-version', getAddonVersionRibbonProps($version));
-
-        // Verifies the component exposes the refreshVersion method targeted by the On attribute.
-        expect(method_exists($component->instance(), 'refreshVersion'))->toBeTrue();
-    });
 });

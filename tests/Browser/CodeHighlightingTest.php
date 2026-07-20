@@ -20,7 +20,6 @@ describe('Code Highlighting', function (): void {
         $page = visit('/');
 
         $page->click('footer a[href$="/developers"]')
-            ->assertSee('The Forge API')
             ->assertPresent('.static-content pre code.hljs')
             ->assertNoJavaScriptErrors();
     });

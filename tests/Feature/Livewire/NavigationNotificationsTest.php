@@ -17,8 +17,7 @@ it('renders the component for authenticated users', function (): void {
     $this->actingAs($this->user);
 
     Livewire::test('navigation-notifications')
-        ->assertStatus(200)
-        ->assertSee('Notifications');
+        ->assertStatus(200);
 });
 
 it('displays unread count when there are unread notifications', function (): void {

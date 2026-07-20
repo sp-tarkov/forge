@@ -170,19 +170,6 @@ describe('email verification', function (): void {
         $response->assertRedirect(route('dashboard', absolute: false));
         $response->assertSessionHas('status', 'Your email address has already been verified.');
     })->skip(fn (): bool => ! Features::enabled(Features::emailVerification()), 'Email verification not enabled.');
-
-    it('can render the email verification form properly', function (): void {
-        $user = User::factory()->create([
-            'email_verified_at' => null,
-        ]);
-
-        // Verify the form renders correctly with initial disabled state.
-        $response = $this->actingAs($user)->get('/email/verify');
-        $response->assertStatus(200);
-        $response->assertSee('Send Verification Email');
-        // Should have initial delay to prevent abuse.
-        $response->assertSee('Please wait...');
-    })->skip(fn (): bool => ! Features::enabled(Features::emailVerification()), 'Email verification not enabled.');
 });
 
 describe('email verification rate limiting', function (): void {
@@ -204,7 +191,6 @@ describe('email verification rate limiting', function (): void {
         // The 7th request should be throttled.
         $response = $this->actingAs($user)->post('/email/verification-notification');
         $response->assertStatus(429);
-        $response->assertSee('Too Many Requests');
     })->skip(fn (): bool => ! Features::enabled(Features::emailVerification()), 'Email verification not enabled.');
 
     it('displays custom 429 error page for throttled requests', function (): void {

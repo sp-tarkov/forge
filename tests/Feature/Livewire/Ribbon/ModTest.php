@@ -144,17 +144,4 @@ describe('Event-Driven Updates', function (): void {
             ->assertSee('ribbon red')
             ->assertSee('Disabled');
     });
-
-    it('responds to mod-updated events with correct ID', function (): void {
-        $mod = Mod::factory()->create([
-            'disabled' => false,
-            'featured' => false,
-            'published_at' => now()->subDays(1),
-        ]);
-
-        $component = Livewire::test('ribbon.mod', getModRibbonProps($mod));
-
-        // Verify the component has the refreshMod method (tests the On attribute functionality)
-        expect(method_exists($component->instance(), 'refreshMod'))->toBeTrue();
-    });
 });

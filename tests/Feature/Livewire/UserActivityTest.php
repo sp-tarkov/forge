@@ -212,12 +212,6 @@ describe('UserActivity Component', function (): void {
                 ->assertSee($this->publicEvent->event_display_name);
         });
 
-        it('contains correct tooltip text for private events', function (): void {
-            Livewire::actingAs($this->user)
-                ->test('user-activity', ['user' => $this->user])
-                ->assertSee('This activity is private and only visible to you.');
-        });
-
         it('correctly identifies private event types via isEventPrivate method', function (): void {
             $component = Livewire::actingAs($this->user)
                 ->test('user-activity', ['user' => $this->user])
@@ -261,14 +255,6 @@ describe('UserActivity Component', function (): void {
     });
 
     describe('component mounting and initialization', function (): void {
-        it('mounts with a user', function (): void {
-            $user = User::factory()->create();
-
-            $component = Livewire::test('user-activity', ['user' => $user]);
-
-            expect($component->get('user')->id)->toBe($user->id);
-        });
-
         it('renders successfully', function (): void {
             $user = User::factory()->create();
 

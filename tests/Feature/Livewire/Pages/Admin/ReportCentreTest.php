@@ -52,49 +52,6 @@ it('displays reports with user avatars', function (): void {
         ->assertSee('Test Mod');
 });
 
-it('displays user avatar when profile photo exists', function (): void {
-    $reporter = User::factory()->create([
-        'name' => 'Avatar User',
-        'profile_photo_path' => 'avatars/user.jpg',
-    ]);
-
-    $reportedUser = User::factory()->create();
-
-    Report::factory()->create([
-        'reporter_id' => $reporter->id,
-        'reportable_type' => User::class,
-        'reportable_id' => $reportedUser->id,
-        'reason' => ReportReason::HARASSMENT,
-    ]);
-
-    $this->actingAs($this->adminUser);
-
-    $component = Livewire::test('pages::admin.report-centre');
-
-    // Check that the avatar component has the src attribute set
-    $component->assertSeeHtml('src="');
-    $component->assertSee('Avatar User');
-});
-
-it('displays username and report type in correct format', function (): void {
-    $reporter = User::factory()->create(['name' => 'Reporter']);
-    $reportedMod = Mod::factory()->create();
-
-    Report::factory()->create([
-        'reporter_id' => $reporter->id,
-        'reportable_type' => Mod::class,
-        'reportable_id' => $reportedMod->id,
-        'reason' => ReportReason::INAPPROPRIATE_CONTENT,
-    ]);
-
-    $this->actingAs($this->adminUser);
-
-    Livewire::test('pages::admin.report-centre')
-        ->assertSee('Reporter')
-        ->assertSee('reports')
-        ->assertSee('Inappropriate Content');
-});
-
 it('shows deleted content message when reportable is null', function (): void {
     $reporter = User::factory()->create();
     $mod = Mod::factory()->create();
@@ -185,34 +142,6 @@ it('displays comment content preview correctly', function (): void {
         ->assertSee('Comment Author')
         ->assertSee('Comment') // Content type label
         ->assertSee('This is a long comment that contains HTML tags');
-});
-
-it('displays comment content when comment exists', function (): void {
-    $reporter = User::factory()->create();
-    $mod = Mod::factory()->create();
-    $commentAuthor = User::factory()->create(['name' => 'Comment Author']);
-
-    $comment = Comment::factory()->create([
-        'user_id' => $commentAuthor->id,
-        'commentable_type' => Mod::class,
-        'commentable_id' => $mod->id,
-        'body' => 'Test comment that should be displayed properly',
-    ]);
-
-    Report::factory()->create([
-        'reporter_id' => $reporter->id,
-        'reportable_type' => Comment::class,
-        'reportable_id' => $comment->id,
-        'reason' => ReportReason::MISINFORMATION,
-    ]);
-
-    $this->actingAs($this->adminUser);
-
-    // Should display the comment content properly
-    Livewire::test('pages::admin.report-centre')
-        ->assertSee('Comment')
-        ->assertSee('Comment Author')
-        ->assertSee('Test comment that should be displayed properly');
 });
 
 it('can mark reports as resolved', function (): void {

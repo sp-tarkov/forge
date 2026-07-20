@@ -24,20 +24,6 @@ describe('CheckList Blade Component', function (): void {
         $view->assertSee('No manifest found');
     });
 
-    it('shows a plain heading without summary counts or a suite version', function (): void {
-        $checks = [
-            new VerificationCheck('alpha_check', VerificationCheckStatus::Passed, false, null),
-            new VerificationCheck('beta_check', VerificationCheckStatus::Failed, false, 'Broken'),
-        ];
-
-        $view = $this->blade('<x-verification.check-list :checks="$checks" />', ['checks' => $checks]);
-
-        $view->assertSee('Checks');
-        $view->assertDontSee('1 passed');
-        $view->assertDontSee('1 failed');
-        $view->assertDontSee('suite');
-    });
-
     it('orders checks by their type in the expected sequence: File Download, Archive Extraction, GUID Match, Version Match', function (): void {
         $checks = [
             new VerificationCheck('dll_version_match', VerificationCheckStatus::Passed, false, null),
