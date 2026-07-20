@@ -218,7 +218,7 @@ final class AddonQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
-        $query->where('addons.name', 'like', sprintf('%%%s%%', $name));
+        $query->whereLike('addons.name', sprintf('%%%s%%', $name));
     }
 
     /**
@@ -232,7 +232,7 @@ final class AddonQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
-        $query->where('addons.slug', 'like', sprintf('%%%s%%', $slug));
+        $query->whereLike('addons.slug', sprintf('%%%s%%', $slug));
     }
 
     /**
@@ -246,7 +246,7 @@ final class AddonQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
-        $query->where('addons.teaser', 'like', sprintf('%%%s%%', $teaser));
+        $query->whereLike('addons.teaser', sprintf('%%%s%%', $teaser));
     }
 
     /**

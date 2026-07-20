@@ -90,7 +90,7 @@ new #[Layout('layouts::base')] class extends Component
         return Report::with(['reporter', 'reportable', 'assignee', 'actions.trackingEvent', 'actions.moderator'])
             ->when($this->filterUnresolved, fn (Builder $query) => $query->where('status', ReportStatus::PENDING))
             ->when($this->filterReportId !== '', fn (Builder $query) => $query->where('id', (int) $this->filterReportId))
-            ->when($this->filterReporterUsername !== '', fn (Builder $query) => $query->whereHas('reporter', fn (Builder $q) => $q->where('name', 'like', '%'.$this->filterReporterUsername.'%')))
+            ->when($this->filterReporterUsername !== '', fn (Builder $query) => $query->whereHas('reporter', fn (Builder $q) => $q->whereLike('name', '%'.$this->filterReporterUsername.'%')))
             ->latest()
             ->paginate(10, pageName: 'reports-page');
     }

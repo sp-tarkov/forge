@@ -17,7 +17,7 @@ return new class extends Migration
         $banTable = config('ban.table');
         if (! Schema::hasColumn($banTable, 'metas')) {
             Schema::table($banTable, function (Blueprint $table): void {
-                $table->json('metas')->nullable();
+                $table->jsonb('metas')->nullable();
             });
         }
     }

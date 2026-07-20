@@ -7,6 +7,7 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 it('prevents duplicate pivot entries after migration', function (): void {
@@ -44,7 +45,7 @@ it('prevents duplicate pivot entries after migration', function (): void {
         throw new Exception('Unique constraint did not prevent duplicate entry');
     } catch (QueryException $queryException) {
         // Expected: unique constraint violation
-        expect($queryException->getCode())->toBe('23000'); // Integrity constraint violation
+        expect($queryException)->toBeInstanceOf(UniqueConstraintViolationException::class);
     }
 });
 
@@ -84,7 +85,7 @@ it('cleans up existing duplicates during migration', function (): void {
         throw new Exception('Unique constraint did not prevent duplicate entry');
     } catch (QueryException $queryException) {
         // Expected: unique constraint violation
-        expect($queryException->getCode())->toBe('23000');
+        expect($queryException)->toBeInstanceOf(UniqueConstraintViolationException::class);
     }
 });
 

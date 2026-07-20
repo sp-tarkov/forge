@@ -949,7 +949,7 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
             })
             // Don't exclude users we've blocked
             ->where(function (Builder $query) use ($search): void {
-                $query->where('name', 'like', '%'.$search.'%');
+                $query->whereLike('name', '%'.$search.'%');
             })
             ->withCount(['mods' => function (Builder $query): void {
                 $query->whereNotNull('published_at')->where('published_at', '<=', now());

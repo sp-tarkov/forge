@@ -68,8 +68,9 @@ new #[Layout('layouts::base')] class extends Component
 
         // Single query for all version counts instead of 3 separate count queries
         $versionCounts = $this->addon->versions()
+            ->reorder()
             ->selectRaw('COUNT(*) as total')
-            ->selectRaw('SUM(CASE WHEN published_at IS NOT NULL AND published_at <= NOW() THEN 1 ELSE 0 END) as published')
+            ->selectRaw('SUM(CASE WHEN published_at IS NOT NULL AND published_at <= ? THEN 1 ELSE 0 END) as published', [now()])
             ->selectRaw('SUM(CASE WHEN disabled = false THEN 1 ELSE 0 END) as enabled')
             ->first();
 

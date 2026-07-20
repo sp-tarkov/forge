@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Models\User;
 use App\Services\NotificationPresentationService;
 use App\Support\DataTransferObjects\NotificationPresentation;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -49,8 +51,8 @@ new class extends Component
             return;
         }
 
-        $notification = $user->notifications()->find($notificationId);
-        if ($notification) {
+        $notification = $this->findNotification($user, $notificationId);
+        if ($notification instanceof DatabaseNotification) {
             $notification->markAsRead();
             $this->clearUnreadCountCache();
             $this->loadUnreadCount();
@@ -83,8 +85,8 @@ new class extends Component
             return;
         }
 
-        $notification = $user->notifications()->find($notificationId);
-        if ($notification) {
+        $notification = $this->findNotification($user, $notificationId);
+        if ($notification instanceof DatabaseNotification) {
             $wasUnread = ! $notification->read_at;
             $notification->delete();
             if ($wasUnread) {
@@ -119,9 +121,9 @@ new class extends Component
             return;
         }
 
-        $notification = $user->notifications()->find($notificationId);
+        $notification = $this->findNotification($user, $notificationId);
 
-        if (! $notification) {
+        if (! $notification instanceof DatabaseNotification) {
             return;
         }
 
@@ -162,6 +164,18 @@ new class extends Component
 
         /** @var LengthAwarePaginator<int, DatabaseNotification> */
         return $user->notifications()->orderBy('created_at', 'desc')->paginate(8, pageName: 'notificationPage');
+    }
+
+    /**
+     * Find one of the user's notifications by id, returning null when the id is not a valid UUID.
+     */
+    private function findNotification(User $user, string $notificationId): ?DatabaseNotification
+    {
+        if (! Str::isUuid($notificationId)) {
+            return null;
+        }
+
+        return $user->notifications()->find($notificationId);
     }
 
     /**

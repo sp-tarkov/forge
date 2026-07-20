@@ -61,9 +61,12 @@ new #[Layout('layouts::base')] #[Title('Alt Detection - The Forge')] class exten
 
         return User::query()
             ->where(function (Builder $query) use ($term): void {
-                $query->where('name', 'like', '%'.$term.'%')
-                    ->orWhere('email', 'like', '%'.$term.'%')
-                    ->orWhere('id', $term);
+                $query->whereLike('name', '%'.$term.'%')
+                    ->orWhereLike('email', '%'.$term.'%');
+
+                if (ctype_digit($term)) {
+                    $query->orWhere('id', $term);
+                }
             })
             ->orderBy('name')
             ->limit(10)

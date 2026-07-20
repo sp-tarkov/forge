@@ -48,10 +48,16 @@ return new class extends Migration
                 }
             });
 
-        // Make the column nullable, drop the empty-string default, and revert to the database default case-insensitive
-        // collation so GUID matching and uniqueness ignore case.
+        // Make the column nullable, drop the empty-string default, and on MySQL revert to the database default
+        // case-insensitive collation so GUID matching and uniqueness ignore case.
         Schema::table('mods', function (Blueprint $table): void {
-            $table->string('guid')->charset('utf8mb4')->collation('utf8mb4_0900_ai_ci')->nullable()->default(null)->change();
+            $column = $table->string('guid')->nullable()->default(null);
+
+            if (DB::getDriverName() === 'mysql') {
+                $column->charset('utf8mb4')->collation('utf8mb4_0900_ai_ci');
+            }
+
+            $column->change();
         });
 
         // Convert legacy empty strings to null so the unique index can treat "no GUID" rows as distinct.
@@ -78,7 +84,13 @@ return new class extends Migration
         DB::table('mods')->whereNull('guid')->update(['guid' => '']);
 
         Schema::table('mods', function (Blueprint $table): void {
-            $table->string('guid')->charset('utf8mb4')->collation('utf8mb4_0900_as_cs')->default('')->change();
+            $column = $table->string('guid')->default('');
+
+            if (DB::getDriverName() === 'mysql') {
+                $column->charset('utf8mb4')->collation('utf8mb4_0900_as_cs');
+            }
+
+            $column->change();
         });
     }
 };

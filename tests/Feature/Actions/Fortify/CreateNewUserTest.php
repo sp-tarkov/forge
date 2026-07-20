@@ -109,7 +109,8 @@ describe('registration', function (): void {
             expect($validationException->errors())->toHaveKey('email');
         }
 
-        // Only the row that won the race exists; the losing registration did not create a duplicate.
-        expect(User::query()->where('email', 'race@example.com')->count())->toBe(1);
+        // The savepoint rollback discards both the losing insert and the simulated winner inserted on the same
+        // connection, so no row persists. A production winner runs on its own connection and is unaffected.
+        expect(User::query()->where('email', 'race@example.com')->count())->toBe(0);
     });
 });

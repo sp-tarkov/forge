@@ -15,6 +15,7 @@ use App\Notifications\ReportSubmittedNotification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
@@ -166,7 +167,7 @@ new class extends Component
             /** @return array<int> */
             fn () => User::query()
                 ->whereHas('role', function (Builder $query): void {
-                    $query->whereIn('name', ['moderator', 'senior moderator', 'staff']);
+                    $query->whereIn(DB::raw('LOWER(name)'), ['moderator', 'senior moderator', 'staff']);
                 })
                 ->pluck('id')
                 ->all(),

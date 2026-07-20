@@ -736,7 +736,7 @@ describe('check', function (): void {
             // The shared library's candidate version list is fetched with a `where mod_id = <library>` query; count how
             // many of those ran during the request.
             $libraryLookups = collect(DB::getQueryLog())
-                ->filter(fn (array $query): bool => str_contains((string) $query['query'], 'from `mod_versions`')
+                ->filter(fn (array $query): bool => preg_match('/from ["`]mod_versions["`]/', (string) $query['query']) === 1
                     && in_array($library->id, $query['bindings'], true))
                 ->count();
             DB::disableQueryLog();

@@ -14,12 +14,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table): void {
-            $table->json('profile_photo_variants')->nullable()->after('profile_photo_path');
-            $table->json('cover_photo_variants')->nullable()->after('cover_photo_path');
+            $table->jsonb('profile_photo_variants')->nullable()->after('profile_photo_path');
+            $table->jsonb('cover_photo_variants')->nullable()->after('cover_photo_path');
         });
 
         Schema::table('mod_lists', function (Blueprint $table): void {
-            $table->json('thumbnail_variants')->nullable()->after('thumbnail_hash');
+            $table->jsonb('thumbnail_variants')->nullable()->after('thumbnail_hash');
         });
     }
 

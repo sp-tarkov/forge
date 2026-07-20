@@ -66,7 +66,7 @@ new #[Layout('layouts::base')] class extends Component
             ->pendingSpamReview()
             ->with(['user', 'commentable', 'latestVersion'])
             ->when($this->filterType !== '', fn (Builder $query) => $query->where('commentable_type', $this->resolveCommentableType()))
-            ->when($this->filterAuthor !== '', fn (Builder $query) => $query->whereHas('user', fn (Builder $q) => $q->where('name', 'like', '%'.$this->filterAuthor.'%')))
+            ->when($this->filterAuthor !== '', fn (Builder $query) => $query->whereHas('user', fn (Builder $q) => $q->whereLike('name', '%'.$this->filterAuthor.'%')))
             ->latest()
             ->paginate(10, pageName: 'spam-page');
     }

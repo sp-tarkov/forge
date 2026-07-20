@@ -239,7 +239,7 @@ final class VisitorAnalyticsService
     private function applyTechnicalFilters(Builder $query, VisitorAnalyticsFilters $filters): void
     {
         if ($this->isActive($filters->ip)) {
-            $query->where('tracking_events.ip', 'like', '%'.$filters->ip.'%');
+            $query->whereLike('tracking_events.ip', '%'.$filters->ip.'%');
         }
 
         if ($this->isActive($filters->browser)) {
@@ -263,7 +263,7 @@ final class VisitorAnalyticsService
         }
 
         if ($this->isActive($filters->referer)) {
-            $query->where('tracking_events.referer', 'like', '%'.$filters->referer.'%');
+            $query->whereLike('tracking_events.referer', '%'.$filters->referer.'%');
         }
     }
 
@@ -275,15 +275,15 @@ final class VisitorAnalyticsService
     private function applyGeographicFilters(Builder $query, VisitorAnalyticsFilters $filters): void
     {
         if ($this->isActive($filters->country)) {
-            $query->where('tracking_events.country_name', 'like', '%'.$filters->country.'%');
+            $query->whereLike('tracking_events.country_name', '%'.$filters->country.'%');
         }
 
         if ($this->isActive($filters->region)) {
-            $query->where('tracking_events.region_name', 'like', '%'.$filters->region.'%');
+            $query->whereLike('tracking_events.region_name', '%'.$filters->region.'%');
         }
 
         if ($this->isActive($filters->city)) {
-            $query->where('tracking_events.city_name', 'like', '%'.$filters->city.'%');
+            $query->whereLike('tracking_events.city_name', '%'.$filters->city.'%');
         }
     }
 
@@ -311,8 +311,8 @@ final class VisitorAnalyticsService
 
         $userIds = User::query()
             ->where(function (Builder $userQuery) use ($term): void {
-                $userQuery->where('name', 'like', '%'.$term.'%')
-                    ->orWhere('email', 'like', '%'.$term.'%');
+                $userQuery->whereLike('name', '%'.$term.'%')
+                    ->orWhereLike('email', '%'.$term.'%');
             })
             ->pluck('id');
 

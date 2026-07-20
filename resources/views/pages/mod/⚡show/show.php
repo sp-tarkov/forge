@@ -72,6 +72,7 @@ new #[Layout('layouts::base')] class extends Component
 
         // Single query for all version counts instead of 3 separate count queries
         $versionCounts = $this->mod->versions()
+            ->reorder()
             ->selectRaw('COUNT(*) as total')
             ->selectRaw('SUM(CASE WHEN published_at IS NOT NULL THEN 1 ELSE 0 END) as published')
             ->selectRaw('SUM(CASE WHEN disabled = false THEN 1 ELSE 0 END) as enabled')

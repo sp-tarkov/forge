@@ -74,7 +74,7 @@ new class extends Component
         }
 
         $query = Mod::query()
-            ->where('name', 'like', '%'.$this->search.'%')
+            ->whereLike('name', '%'.$this->search.'%')
             ->orderBy('name')
             ->limit(10);
 

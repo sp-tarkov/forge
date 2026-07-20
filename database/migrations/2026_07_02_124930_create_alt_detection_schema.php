@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('requested_by')->nullable();
             $table->string('status')->default('pending');
-            $table->json('results')->nullable();
+            $table->jsonb('results')->nullable();
             $table->text('error')->nullable();
             $table->timestamp('started_at')->nullable();
             $table->timestamp('completed_at')->nullable();

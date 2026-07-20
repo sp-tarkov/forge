@@ -84,8 +84,9 @@ new class extends Component
 
         /** @var Collection<int, User> */
         return User::query()
-            ->where('name', 'like', $this->search.'%')
+            ->whereLike('name', $this->search.'%')
             ->whereNotIn('id', array_merge($this->selectedUsers, $this->excludeUsers))
+            ->orderBy('name')
             ->limit(10)
             ->get();
     }

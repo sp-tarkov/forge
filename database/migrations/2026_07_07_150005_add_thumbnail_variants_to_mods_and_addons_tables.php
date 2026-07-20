@@ -14,11 +14,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('mods', function (Blueprint $table): void {
-            $table->json('thumbnail_variants')->nullable()->after('thumbnail_hash');
+            $table->jsonb('thumbnail_variants')->nullable()->after('thumbnail_hash');
         });
 
         Schema::table('addons', function (Blueprint $table): void {
-            $table->json('thumbnail_variants')->nullable()->after('thumbnail_hash');
+            $table->jsonb('thumbnail_variants')->nullable()->after('thumbnail_hash');
         });
     }
 

@@ -78,7 +78,7 @@ new class extends Component
 
         return $user->modLists()
             ->withCount('items')
-            ->when($this->search !== '', fn ($q) => $q->where('title', 'like', '%'.$this->search.'%'))
+            ->when($this->search !== '', fn ($q) => $q->whereLike('title', '%'.$this->search.'%'))
             // Author opt-out: the only list the source may join is the viewer's own Favourites.
             ->when($this->sourceListsDisabled, fn ($q) => $q->where('is_default', true))
             ->orderByDesc('is_default')

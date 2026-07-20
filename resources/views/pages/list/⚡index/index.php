@@ -52,7 +52,7 @@ new #[Layout('layouts::base')] class extends Component
             ->discoverable()
             ->with(['owner:id,name', 'sptVersion'])
             ->withCount('items')
-            ->when($this->search !== '', fn (Builder $q): Builder => $q->where('title', 'like', '%'.$this->search.'%'))
+            ->when($this->search !== '', fn (Builder $q): Builder => $q->whereLike('title', '%'.$this->search.'%'))
             ->when($this->sptVersionId !== null, fn (Builder $q): Builder => $q->where('spt_version_id', $this->sptVersionId))
             ->latest('updated_at')
             ->paginate(12);
