@@ -14,25 +14,42 @@ use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Middleware\ForcePublicViewpoint;
+use App\Http\Middleware\TrackVisitorPresence;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModList;
 use App\Models\Report;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\AuthenticateSession;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Spatie\Honeypot\ProtectAgainstSpam;
 
-Route::middleware(ForcePublicViewpoint::class)->group(function (): void {
-    Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.index');
-    Route::get('/sitemap-pages.xml', [SitemapController::class, 'pages'])->name('sitemap.pages');
-    Route::get('/sitemap-mods.xml', [SitemapController::class, 'mods'])->name('sitemap.mods');
-    Route::get('/sitemap-addons.xml', [SitemapController::class, 'addons'])->name('sitemap.addons');
-    Route::get('/sitemap-authors.xml', [SitemapController::class, 'authors'])->name('sitemap.authors');
-    Route::get('/sitemap-lists.xml', [SitemapController::class, 'lists'])->name('sitemap.lists');
+// Crawler endpoints are stateless and publicly cacheable: the session, CSRF, honeypot, and presence middleware are
+// excluded so these responses never carry a Set-Cookie header, and the cache.headers middleware marks them as
+// shareable by browsers (1 hour), shared caches (6 hours, matching SitemapController::CACHE_TTL), and conditional
+// ETag revalidation.
+Route::middleware('cache.headers:public;max_age=3600;s_maxage=21600;etag')->withoutMiddleware([
+    StartSession::class,
+    ShareErrorsFromSession::class,
+    PreventRequestForgery::class,
+    ProtectAgainstSpam::class,
+    TrackVisitorPresence::class,
+])->group(function (): void {
+    Route::middleware(ForcePublicViewpoint::class)->group(function (): void {
+        Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.index');
+        Route::get('/sitemap-pages.xml', [SitemapController::class, 'pages'])->name('sitemap.pages');
+        Route::get('/sitemap-mods.xml', [SitemapController::class, 'mods'])->name('sitemap.mods');
+        Route::get('/sitemap-addons.xml', [SitemapController::class, 'addons'])->name('sitemap.addons');
+        Route::get('/sitemap-authors.xml', [SitemapController::class, 'authors'])->name('sitemap.authors');
+        Route::get('/sitemap-lists.xml', [SitemapController::class, 'lists'])->name('sitemap.lists');
+    });
+
+    Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 });
-
-Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 Route::middleware('auth.banned')->group(function (): void {
 
