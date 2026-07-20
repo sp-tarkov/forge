@@ -24,3 +24,4 @@ composer.lock
 
 # Files with complex PHP/JS that cause parser issues
 resources/views/livewire/pagination/tailwind-narrow.blade.php
+resources/markdown/
