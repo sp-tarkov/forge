@@ -6,7 +6,8 @@ namespace Verifier.Extraction;
 public static class PostExtractionScanner
 {
     /// <summary>
-    /// Scans the extraction directory and returns the capped file tree, or an error when a limit is breached.
+    /// Scans the extraction directory and returns the capped file tree, or an error when the archive contains no files
+    /// or a limit is breached.
     /// </summary>
     public static ScanResult Scan(VerifierOptions options)
     {
@@ -39,6 +40,11 @@ public static class PostExtractionScanner
 
             totalSize += new FileInfo(fullPath).Length;
             fileTree.Add(relativePath);
+        }
+
+        if (fileTree.Count == 0)
+        {
+            return new ScanResult([], 0, false, "No files could be found within the archive");
         }
 
         if (totalSize > options.MaxExtractedSize)
