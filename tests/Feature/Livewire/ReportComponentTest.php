@@ -718,11 +718,12 @@ describe('ReportComponent', function (): void {
     });
 
     describe('Notifications', function (): void {
-        it('sends notifications to moderators and administrators when report is submitted', function (): void {
+        it('sends notifications to moderators, senior moderators, and administrators when report is submitted', function (): void {
             Notification::fake();
 
             // Create users with different roles
             $moderator = User::factory()->moderator()->create();
+            $seniorModerator = User::factory()->seniorModerator()->create();
             $admin = User::factory()->admin()->create();
             $regularUser = User::factory()->create();
             $reporter = User::factory()->create();
@@ -739,8 +740,8 @@ describe('ReportComponent', function (): void {
                 ->call('submit')
                 ->assertHasNoErrors();
 
-            // Should notify moderators and administrators
-            Notification::assertSentTo([$moderator, $admin], ReportSubmittedNotification::class);
+            // Should notify moderators, senior moderators, and administrators
+            Notification::assertSentTo([$moderator, $seniorModerator, $admin], ReportSubmittedNotification::class);
 
             // Should not notify regular users
             Notification::assertNotSentTo($regularUser, ReportSubmittedNotification::class);
