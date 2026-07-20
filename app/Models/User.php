@@ -72,6 +72,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $email_reply_notifications_enabled
  * @property bool $email_announcement_notifications_enabled
  * @property bool $email_chat_notifications_enabled
+ * @property bool $email_moderation_notifications_enabled
  * @property-read string|null $cover_photo_url attribute
  * @property-read string $cover_photo_gradient attribute
  * @property-read string $cover_photo_srcset attribute
@@ -882,6 +883,7 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
             'email_reply_notifications_enabled' => 'boolean',
             'email_announcement_notifications_enabled' => 'boolean',
             'email_chat_notifications_enabled' => 'boolean',
+            'email_moderation_notifications_enabled' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

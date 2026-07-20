@@ -34,6 +34,14 @@
                     label="{{ __('Chat Notifications') }}"
                     description="{{ __('Receive email notifications when you have unread chat messages.') }}"
                 />
+                @if (auth()->user()?->isModOrAdmin())
+                    <flux:checkbox
+                        wire:model.live="emailModerationNotificationsEnabled"
+                        wire:change="updateNotificationPreferences"
+                        label="{{ __('Moderation Notifications') }}"
+                        description="{{ __('Receive email notifications for moderation activity, such as new content reports.') }}"
+                    />
+                @endif
             </flux:checkbox.group>
         </flux:field>
     </x-slot>

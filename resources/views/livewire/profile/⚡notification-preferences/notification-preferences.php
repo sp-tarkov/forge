@@ -17,6 +17,8 @@ new class extends Component
 
     public bool $emailChatNotificationsEnabled = true;
 
+    public bool $emailModerationNotificationsEnabled = true;
+
     public function mount(): void
     {
         $user = Auth::user();
@@ -24,18 +26,26 @@ new class extends Component
         $this->emailCommentNotificationsEnabled = $user->email_comment_notifications_enabled ?? true;
         $this->emailReplyNotificationsEnabled = $user->email_reply_notifications_enabled ?? true;
         $this->emailChatNotificationsEnabled = $user->email_chat_notifications_enabled ?? true;
+        $this->emailModerationNotificationsEnabled = $user->email_moderation_notifications_enabled ?? true;
     }
 
     public function updateNotificationPreferences(): void
     {
         /** @var User $user */
         $user = Auth::user();
-        $user->update([
+
+        $preferences = [
             'email_announcement_notifications_enabled' => $this->emailAnnouncementNotificationsEnabled,
             'email_comment_notifications_enabled' => $this->emailCommentNotificationsEnabled,
             'email_reply_notifications_enabled' => $this->emailReplyNotificationsEnabled,
             'email_chat_notifications_enabled' => $this->emailChatNotificationsEnabled,
-        ]);
+        ];
+
+        if ($user->isModOrAdmin()) {
+            $preferences['email_moderation_notifications_enabled'] = $this->emailModerationNotificationsEnabled;
+        }
+
+        $user->update($preferences);
 
         Flux::toast(heading: 'Preferences Saved', text: 'Your notification preferences have been saved.', variant: 'success');
     }

@@ -70,7 +70,7 @@ export default defineConfig({
             groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
             newlinesBetween: false,
         },
-        ignorePatterns: ['resources/views/mail/*'],
+        ignorePatterns: ['resources/views/mail/*', 'resources/markdown/*'],
     },
     plugins: [
         laravel({

@@ -166,7 +166,7 @@ new class extends Component
             /** @return array<int> */
             fn () => User::query()
                 ->whereHas('role', function (Builder $query): void {
-                    $query->whereIn('name', ['moderator', 'staff']);
+                    $query->whereIn('name', ['moderator', 'senior moderator', 'staff']);
                 })
                 ->pluck('id')
                 ->all(),

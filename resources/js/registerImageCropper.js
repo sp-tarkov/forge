@@ -18,7 +18,7 @@ async function isAnimatedImage(file) {
     }
 
     if (buffer[0] === 0x89 && ascii(1, 3) === 'PNG') {
-        for (let i = 8; i + 8 <= buffer.length; ) {
+        for (let i = 8; i + 8 <= buffer.length;) {
             const length = (buffer[i] << 24) | (buffer[i + 1] << 16) | (buffer[i + 2] << 8) | buffer[i + 3];
             const type = ascii(i + 4, 4);
             if (type === 'acTL') return true;
@@ -29,7 +29,7 @@ async function isAnimatedImage(file) {
     }
 
     if (ascii(0, 4) === 'RIFF' && ascii(8, 4) === 'WEBP') {
-        for (let i = 12; i + 8 <= buffer.length; ) {
+        for (let i = 12; i + 8 <= buffer.length;) {
             if (ascii(i, 4) === 'ANIM') return true;
             const length = buffer[i + 4] | (buffer[i + 5] << 8) | (buffer[i + 6] << 16) | (buffer[i + 7] << 24);
             i += 8 + length + (length % 2);

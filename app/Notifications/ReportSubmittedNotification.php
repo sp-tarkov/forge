@@ -66,7 +66,7 @@ final class ReportSubmittedNotification extends Notification implements Presenta
     {
         $channels = ['database'];
 
-        if ($notifiable instanceof User && $notifiable->email_comment_notifications_enabled) {
+        if ($notifiable instanceof User && $notifiable->email_moderation_notifications_enabled) {
             $channels[] = 'mail';
         }
 

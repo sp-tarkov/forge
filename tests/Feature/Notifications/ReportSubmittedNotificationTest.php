@@ -29,7 +29,7 @@ describe('Notification Delivery', function (): void {
         expect($channels)->toContain('database');
     });
 
-    it('sends notification via mail channel when user has email notifications enabled', function (): void {
+    it('sends notification via mail channel when user has moderation email notifications enabled', function (): void {
         $reporter = User::factory()->create();
         $mod = Mod::factory()->create();
         $report = Report::factory()->create([
@@ -39,7 +39,7 @@ describe('Notification Delivery', function (): void {
             'reason' => ReportReason::SPAM,
         ]);
 
-        $moderator = User::factory()->create(['email_comment_notifications_enabled' => true]);
+        $moderator = User::factory()->create(['email_moderation_notifications_enabled' => true]);
         $notification = new ReportSubmittedNotification($report);
 
         $channels = $notification->via($moderator);
@@ -48,7 +48,7 @@ describe('Notification Delivery', function (): void {
             ->and($channels)->toContain('mail');
     });
 
-    it('does not send mail when user has email notifications disabled', function (): void {
+    it('does not send mail when user has moderation email notifications disabled', function (): void {
         $reporter = User::factory()->create();
         $mod = Mod::factory()->create();
         $report = Report::factory()->create([
@@ -58,13 +58,34 @@ describe('Notification Delivery', function (): void {
             'reason' => ReportReason::SPAM,
         ]);
 
-        $moderator = User::factory()->create(['email_comment_notifications_enabled' => false]);
+        $moderator = User::factory()->create(['email_moderation_notifications_enabled' => false]);
         $notification = new ReportSubmittedNotification($report);
 
         $channels = $notification->via($moderator);
 
         expect($channels)->toContain('database')
             ->and($channels)->not->toContain('mail');
+    });
+
+    it('is not affected by the comment email notification preference', function (): void {
+        $reporter = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $report = Report::factory()->create([
+            'reporter_id' => $reporter->id,
+            'reportable_type' => $mod::class,
+            'reportable_id' => $mod->id,
+            'reason' => ReportReason::SPAM,
+        ]);
+
+        $moderator = User::factory()->create([
+            'email_comment_notifications_enabled' => false,
+            'email_moderation_notifications_enabled' => true,
+        ]);
+        $notification = new ReportSubmittedNotification($report);
+
+        $channels = $notification->via($moderator);
+
+        expect($channels)->toContain('mail');
     });
 });
 
