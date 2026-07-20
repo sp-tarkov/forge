@@ -72,7 +72,7 @@ new class extends Component
         $slug = $this->verifiableType === ModVersion::class ? 'mod-version' : 'addon-version';
 
         return [
-            'verification-submitted.' . $this->eventKey => 'refreshStatus',
+            'verification-submitted.'.$this->eventKey => 'refreshStatus',
             sprintf('echo:verification.%s.%d,VerificationResultUpdated', $slug, $this->verifiableId) => 'refreshStatus',
         ];
     }
