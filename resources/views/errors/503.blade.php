@@ -49,7 +49,8 @@
         <div class="w-full max-w-2xl">
             <div
                 class="rounded-lg bg-gray-900 p-8 shadow-lg md:p-12"
-                x-data="{ snarky: false }"
+                x-data="{ snarky: document.cookie.includes('maintenance_visited=') }"
+                x-init="document.cookie = 'maintenance_visited=1; max-age=60; path=/'"
             >
                 <div class="text-center">
                     <button
