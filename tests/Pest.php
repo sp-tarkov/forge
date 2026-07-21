@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
@@ -24,6 +25,12 @@ pest()->extend(TestCase::class)
         $this->freezeTime();
     })
     ->in('Browser', 'Feature', 'Unit');
+
+// Touch the database before each browser test so LazilyRefreshDatabase runs its migrations here rather than inside
+// the first in-browser page navigation, which would count against the Playwright timeout.
+pest()->beforeEach(function (): void {
+    DB::selectOne('select 1');
+})->in('Browser');
 
 // Tag every test under tests/Browser with the "browser" group so the suite can be filtered locally with
 // `--group=browser` / `--exclude-group=browser`, mirroring the dedicated browser job in CI. The directory split
