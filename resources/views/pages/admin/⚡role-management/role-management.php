@@ -106,7 +106,7 @@ new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class ext
 
         return User::query()
             ->where(function (Builder $query): void {
-                $query->where('name', 'like', '%'.$this->userSearch.'%')->orWhere('email', 'like', '%'.$this->userSearch.'%');
+                $query->whereLike('name', '%'.$this->userSearch.'%')->orWhereLike('email', '%'.$this->userSearch.'%');
             })
             ->orderBy('name')
             ->limit(10)

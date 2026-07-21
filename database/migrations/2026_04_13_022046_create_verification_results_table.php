@@ -24,8 +24,8 @@ return new class extends Migration
             $table->unsignedBigInteger('downloaded_size')->nullable();
             $table->string('downloaded_sha256')->nullable();
             $table->boolean('archive_ok')->nullable();
-            $table->json('file_tree')->nullable();
-            $table->json('details')->nullable();
+            $table->jsonb('file_tree')->nullable();
+            $table->jsonb('details')->nullable();
             $table->text('failure_reason')->nullable();
             $table->timestamp('started_at')->nullable();
             $table->timestamp('completed_at')->nullable();

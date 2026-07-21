@@ -22,7 +22,7 @@ return new class extends Migration
         // Drop columns that are no longer needed
         Schema::table('visitors', function (Blueprint $table): void {
             // Drop indexes first
-            $table->dropIndex('visitors_type_session_id_unique');
+            $table->dropUnique('visitors_type_session_id_unique');
             $table->dropIndex('visitors_type_session_id_index');
             $table->dropIndex('visitors_type_last_activity_index');
             $table->dropIndex('visitors_type_index');

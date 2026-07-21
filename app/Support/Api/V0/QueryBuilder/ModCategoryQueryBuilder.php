@@ -137,6 +137,6 @@ final class ModCategoryQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
-        $query->where('mod_categories.title', 'like', '%'.$title.'%');
+        $query->whereLike('mod_categories.title', '%'.$title.'%');
     }
 }

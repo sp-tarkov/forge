@@ -417,12 +417,9 @@ final class Conversation extends Model
     protected function otherUser(): Attribute
     {
         return Attribute::make(get: function (): ?User {
-            if (! isset($this->attributes['current_user_id'])) {
-                // Fallback to authenticated user if current_user_id is not set
-                $currentUserId = auth()->id();
-            } else {
-                $currentUserId = $this->attributes['current_user_id'];
-            }
+            // The selected current_user_id binding is returned as a string by some drivers, so normalize it to an int
+            $rawCurrentUserId = $this->attributes['current_user_id'] ?? null;
+            $currentUserId = is_numeric($rawCurrentUserId) ? (int) $rawCurrentUserId : auth()->id();
 
             if ($this->user1_id === $currentUserId) {
                 return $this->user2;
@@ -445,12 +442,9 @@ final class Conversation extends Model
     protected function unreadCount(): Attribute
     {
         return Attribute::make(get: function (): int {
-            if (! isset($this->attributes['current_user_id'])) {
-                // Fallback to authenticated user if current_user_id is not set
-                $currentUserId = auth()->id();
-            } else {
-                $currentUserId = $this->attributes['current_user_id'];
-            }
+            // The selected current_user_id binding is returned as a string by some drivers, so normalize it to an int
+            $rawCurrentUserId = $this->attributes['current_user_id'] ?? null;
+            $currentUserId = is_numeric($rawCurrentUserId) ? (int) $rawCurrentUserId : auth()->id();
 
             // If we have a cached unread_messages_count (from withCount), use it
             if (isset($this->attributes['unread_messages_count'])) {

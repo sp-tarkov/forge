@@ -336,7 +336,7 @@ final class AltDetectionService
 
         $base = User::query()
             ->where('id', '!=', $suspectId)
-            ->where('email', 'like', '%@'.$domain['domain']);
+            ->whereLike('email', '%@'.$domain['domain']);
 
         if (! $domain['disposable'] && (clone $base)->count() > self::SAME_DOMAIN_USER_THRESHOLD) {
             return [];
@@ -622,10 +622,10 @@ final class AltDetectionService
         }
 
         $rows = DB::table('tracking_events')
-            ->selectRaw('visitor_id, JSON_UNQUOTE(JSON_EXTRACT(event_data, \'$.snapshot.name\')) as snapshot_name, created_at')
+            ->select(['visitor_id', 'event_data->snapshot->name as snapshot_name', 'created_at'])
             ->whereIn('visitor_id', $ids)
             ->where('visitor_type', User::class)
-            ->whereRaw('JSON_EXTRACT(event_data, \'$.snapshot.name\') IS NOT NULL')
+            ->whereNotNull('event_data->snapshot->name')
             ->latest()
             ->get();
 

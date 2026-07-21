@@ -18,7 +18,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('verification_results', function (Blueprint $table): void {
-            $table->json('checks')->nullable()->after('file_tree');
+            $table->jsonb('checks')->nullable()->after('file_tree');
             $table->string('checks_version')->nullable()->after('checks');
         });
 

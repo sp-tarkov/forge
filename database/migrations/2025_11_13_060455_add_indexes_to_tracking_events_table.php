@@ -22,10 +22,18 @@ return new class extends Migration
             $table->index(['created_at', 'event_name']);
         });
 
-        // Add indexes on TEXT columns using raw SQL with prefix length
-        DB::statement('CREATE INDEX tracking_events_browser_index ON tracking_events (browser(191))');
-        DB::statement('CREATE INDEX tracking_events_platform_index ON tracking_events (platform(191))');
-        DB::statement('CREATE INDEX tracking_events_device_index ON tracking_events (device(191))');
+        // Add indexes on TEXT columns; MySQL requires a prefix length for TEXT indexes, Postgres does not
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('CREATE INDEX tracking_events_browser_index ON tracking_events (browser(191))');
+            DB::statement('CREATE INDEX tracking_events_platform_index ON tracking_events (platform(191))');
+            DB::statement('CREATE INDEX tracking_events_device_index ON tracking_events (device(191))');
+        } else {
+            Schema::table('tracking_events', function (Blueprint $table): void {
+                $table->index('browser', 'tracking_events_browser_index');
+                $table->index('platform', 'tracking_events_platform_index');
+                $table->index('device', 'tracking_events_device_index');
+            });
+        }
     }
 
     /**
@@ -33,12 +41,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Drop TEXT column indexes using raw SQL
-        DB::statement('DROP INDEX tracking_events_device_index ON tracking_events');
-        DB::statement('DROP INDEX tracking_events_platform_index ON tracking_events');
-        DB::statement('DROP INDEX tracking_events_browser_index ON tracking_events');
-
         Schema::table('tracking_events', function (Blueprint $table): void {
+            // Drop TEXT column indexes by name
+            $table->dropIndex('tracking_events_device_index');
+            $table->dropIndex('tracking_events_platform_index');
+            $table->dropIndex('tracking_events_browser_index');
+
             // Drop composite index
             $table->dropIndex(['created_at', 'event_name']);
 

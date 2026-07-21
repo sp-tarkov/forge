@@ -15,6 +15,7 @@ use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -240,8 +241,12 @@ new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class 
     private function applyFilters(Builder $query): void
     {
         if ($this->search !== '' && $this->search !== '0') {
-            $query->where(function (Builder $q): void {
-                $q->whereRaw('LOWER(JSON_EXTRACT(event_data, "$")) LIKE ?', ['%'.mb_strtolower($this->search).'%']);
+            // Match the search term anywhere in the serialized event payload; the cast to a plain string differs per
+            // database driver.
+            $jsonAsText = DB::getDriverName() === 'mysql' ? 'CAST(event_data AS CHAR)' : 'event_data::text';
+
+            $query->where(function (Builder $q) use ($jsonAsText): void {
+                $q->whereRaw(sprintf('LOWER(%s) LIKE ?', $jsonAsText), ['%'.mb_strtolower($this->search).'%']);
             });
         }
 

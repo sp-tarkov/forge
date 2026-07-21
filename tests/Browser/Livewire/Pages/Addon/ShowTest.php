@@ -49,7 +49,10 @@ describe('global search', function (): void {
 
         $page = visit('/');
 
-        $page->click('Search...')
+        // The search input only exists once Alpine teleports the modal into the body, so asserting it first
+        // prevents clicking the trigger before its handler attaches.
+        $page->assertScript("document.getElementById('global-search') !== null")
+            ->click('Search...')
             ->type('#global-search', 'Unique Search Test')
             ->waitForText('Unique Search Test Addon')
             ->assertSee('ADDON')
@@ -64,7 +67,10 @@ describe('global search', function (): void {
 
         $page = visit('/');
 
-        $page->click('Search...')
+        // The search input only exists once Alpine teleports the modal into the body, so asserting it first
+        // prevents clicking the trigger before its handler attaches.
+        $page->assertScript("document.getElementById('global-search') !== null")
+            ->click('Search...')
             ->type('#global-search', 'Detached Search')
             ->waitForText('Detached Search Addon')
             ->assertSee('ADDON')

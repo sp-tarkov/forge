@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('user_agent', 2048)->default('');
             $table->string('referrer', 2048)->default('');
             $table->enum('spam_status', ['pending', 'clean', 'spam'])->default('pending');
-            $table->json('spam_metadata')->nullable();
+            $table->jsonb('spam_metadata')->nullable();
             $table->timestamp('spam_checked_at')->nullable();
             $table->unsignedTinyInteger('spam_recheck_count')->default(0);
             $table->timestamp('edited_at')->nullable();

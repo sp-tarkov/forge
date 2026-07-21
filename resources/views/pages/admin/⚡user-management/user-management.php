@@ -489,9 +489,9 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
         // Search filter
         if ($this->search !== '' && $this->search !== '0') {
             $query->where(function (Builder $q): void {
-                $q->where('name', 'like', '%'.$this->search.'%')
-                    ->orWhere('email', 'like', '%'.$this->search.'%')
-                    ->orWhere('id', 'like', '%'.$this->search.'%');
+                $q->whereLike('name', '%'.$this->search.'%')
+                    ->orWhereLike('email', '%'.$this->search.'%')
+                    ->orWhereLike('id', '%'.$this->search.'%');
             });
         }
 

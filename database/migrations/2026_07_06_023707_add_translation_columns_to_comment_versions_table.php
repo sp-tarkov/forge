@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::table('comment_versions', function (Blueprint $table): void {
             $table->string('detected_language', 12)->nullable()->after('version_number');
             $table->mediumText('translated_body')->nullable()->after('detected_language');
-            $table->json('translation_metadata')->nullable()->after('translated_body');
+            $table->jsonb('translation_metadata')->nullable()->after('translated_body');
             $table->timestamp('language_detected_at')->nullable()->after('translation_metadata');
             $table->timestamp('translated_at')->nullable()->after('language_detected_at');
 

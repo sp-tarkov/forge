@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Rules\NotDisposableEmail;
 use DateTimeZone;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -33,12 +34,14 @@ final class CreateNewUser implements CreatesNewUsers
         ])->validate();
 
         try {
-            return User::query()->create([
+            // The transaction scopes the insert to a savepoint when a surrounding transaction exists, so a failed
+            // insert does not abort the outer transaction on Postgres.
+            return DB::transaction(fn (): User => User::query()->create([
                 'name' => $input['name'],
                 'email' => $input['email'],
                 'password' => Hash::make($input['password']),
                 'timezone' => $input['timezone'],
-            ]);
+            ]));
         } catch (UniqueConstraintViolationException $uniqueConstraintViolationException) {
             // A concurrent registration can claim the same name or email between the unique validation above and this
             // insert, leaving the database constraint as the final arbiter. Translate that race into the same

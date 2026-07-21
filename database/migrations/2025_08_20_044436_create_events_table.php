@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('tracking_events', function (Blueprint $table): void {
             $table->bigIncrements('id');
             $table->string('event_name')->nullable()->index();
-            $table->json('event_data')->nullable();
+            $table->jsonb('event_data')->nullable();
             $table->mediumText('url')->nullable();
             $table->mediumText('referer')->nullable();
             $table->text('languages')->nullable();

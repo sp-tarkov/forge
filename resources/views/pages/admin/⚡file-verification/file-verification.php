@@ -158,7 +158,7 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
         }
 
         return Mod::query()
-            ->where('name', 'like', '%'.$term.'%')
+            ->whereLike('name', '%'.$term.'%')
             ->whereHas('versions', fn (Builder $query): Builder => $query->where('link', '!=', ''))
             ->orderBy('name')
             ->limit(10)
