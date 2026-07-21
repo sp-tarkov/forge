@@ -182,6 +182,12 @@ return [
             'username' => env('REDIS_USERNAME'),
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
+            'context' => is_null(env('REDIS_TLS_VERIFY_PEER')) ? null : [
+                'stream' => [
+                    'verify_peer' => (bool) env('REDIS_TLS_VERIFY_PEER'),
+                    'verify_peer_name' => (bool) env('REDIS_TLS_VERIFY_PEER'),
+                ],
+            ],
             'database' => env('REDIS_DB', '0'),
         ],
 
@@ -191,6 +197,12 @@ return [
             'username' => env('REDIS_USERNAME'),
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
+            'context' => is_null(env('REDIS_TLS_VERIFY_PEER')) ? null : [
+                'stream' => [
+                    'verify_peer' => (bool) env('REDIS_TLS_VERIFY_PEER'),
+                    'verify_peer_name' => (bool) env('REDIS_TLS_VERIFY_PEER'),
+                ],
+            ],
             'database' => env('REDIS_CACHE_DB', '1'),
         ],
 
@@ -200,6 +212,12 @@ return [
             'username' => env('REDIS_USERNAME'),
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
+            'context' => is_null(env('REDIS_TLS_VERIFY_PEER')) ? null : [
+                'stream' => [
+                    'verify_peer' => (bool) env('REDIS_TLS_VERIFY_PEER'),
+                    'verify_peer_name' => (bool) env('REDIS_TLS_VERIFY_PEER'),
+                ],
+            ],
             'database' => env('REDIS_QUEUE_DB', '2'),
         ],
 
@@ -211,6 +229,12 @@ return [
             'username' => env('REDIS_USERNAME'),
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
+            'context' => is_null(env('REDIS_TLS_VERIFY_PEER')) ? null : [
+                'stream' => [
+                    'verify_peer' => (bool) env('REDIS_TLS_VERIFY_PEER'),
+                    'verify_peer_name' => (bool) env('REDIS_TLS_VERIFY_PEER'),
+                ],
+            ],
             'database' => env('REDIS_API_USAGE_DB', '3'),
         ],
 
