@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Addon;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -39,6 +40,12 @@ new class extends Component
      */
     #[Session]
     public bool $isAddonCatVisible = true;
+
+    /**
+     * The session variable for showing List category in search results.
+     */
+    #[Session]
+    public bool $isListCatVisible = true;
 
     /**
      * Toggle the visibility of a search result category.
@@ -131,6 +138,10 @@ new class extends Component
                 ->setIndexUid($prefix.new Addon()->getTable())
                 ->setQuery($query)
                 ->setShowRankingScore(true),
+            new SearchQuery()
+                ->setIndexUid($prefix.new ModList()->getTable())
+                ->setQuery($query)
+                ->setShowRankingScore(true),
             new SearchQuery()->setIndexUid($prefix.new User()->getTable())->setQuery($query),
         ];
 
@@ -143,13 +154,14 @@ new class extends Component
             // than throwing a 500 on every keystroke; the indexes reappear once reindexing finishes.
             Log::warning('Global search degraded: Meilisearch multi-search failed.', ['exception' => $apiException->getMessage()]);
 
-            return ['mod' => collect(), 'addon' => collect(), 'user' => collect()];
+            return ['mod' => collect(), 'addon' => collect(), 'list' => collect(), 'user' => collect()];
         }
 
         return [
             'mod' => $this->processModResults($response['results'][0]['hits']),
             'addon' => $this->processAddonResults($response['results'][1]['hits']),
-            'user' => collect($response['results'][2]['hits']),
+            'list' => $this->processListResults($response['results'][2]['hits']),
+            'user' => collect($response['results'][3]['hits']),
         ];
     }
 
@@ -164,6 +176,8 @@ new class extends Component
         $modHits = Mod::search($query)->get()->map->toSearchableArray()->all();
         /** @var array<int, mixed> $addonHits */
         $addonHits = Addon::search($query)->get()->map->toSearchableArray()->all();
+        /** @var array<int, mixed> $listHits */
+        $listHits = ModList::search($query)->get()->map->toSearchableArray()->all();
 
         /** @var array<int, mixed> $userHits */
         $userHits = User::search($query)->get()->map->toSearchableArray()->all();
@@ -171,6 +185,7 @@ new class extends Component
         return [
             'mod' => $this->processModResults($modHits),
             'addon' => $this->processAddonResults($addonHits),
+            'list' => $this->processListResults($listHits),
             'user' => collect($userHits),
         ];
     }
@@ -195,6 +210,17 @@ new class extends Component
      * @return Collection<int, mixed>
      */
     protected function processAddonResults(array $hits): Collection
+    {
+        return collect($hits)->sortByDesc('_rankingScore')->values();
+    }
+
+    /**
+     * Process and sort mod list search results.
+     *
+     * @param  array<int, mixed>  $hits
+     * @return Collection<int, mixed>
+     */
+    protected function processListResults(array $hits): Collection
     {
         return collect($hits)->sortByDesc('_rankingScore')->values();
     }

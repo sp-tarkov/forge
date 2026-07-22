@@ -6,6 +6,7 @@ namespace App\Jobs;
 
 use App\Models\Addon;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -33,6 +34,7 @@ final class SearchSyncJob implements ShouldBeUnique, ShouldQueue
             new ArtisanCallJob('scout:sync-index-settings'),
             new ArtisanCallJob('scout:import', ['model' => Addon::class]),
             new ArtisanCallJob('scout:import', ['model' => Mod::class]),
+            new ArtisanCallJob('scout:import', ['model' => ModList::class]),
             new ArtisanCallJob('scout:import', ['model' => User::class]),
         ])->dispatch();
     }
