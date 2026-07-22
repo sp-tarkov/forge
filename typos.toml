@@ -11,6 +11,7 @@ canceled = "canceled"
 extend-exclude = [
     "/public/vendor/",
     "/public/robots.txt",
+    "/public/exfil.html",
     "/package-lock.json",
     "/artisan",
     "/pint.json",
