@@ -46,17 +46,18 @@
 
 <body class="flex min-h-screen flex-col bg-gray-800 font-sans antialiased">
     <div class="flex flex-grow items-center justify-center px-4">
-        <div class="w-full max-w-2xl">
-            <div
-                class="rounded-lg bg-gray-900 p-8 shadow-lg md:p-12"
-                x-data="{ snarky: document.cookie.includes('maintenance_visited=') }"
-                x-init="document.cookie = 'maintenance_visited=1; max-age=60; path=/'"
-            >
+        <div
+            class="w-full max-w-2xl transition-all duration-300"
+            :class="{ 'max-w-2xl': !game, 'max-w-4xl': game }"
+            x-data="{ snarky: document.cookie.includes('maintenance_visited='), game: false }"
+            x-init="document.cookie = 'maintenance_visited=1; max-age=60; path=/'"
+        >
+            <div class="rounded-lg bg-gray-900 p-8 shadow-lg md:p-12">
                 <div class="text-center">
                     <button
                         class="mb-6 inline-flex h-16 w-16 cursor-pointer items-center justify-center rounded-full transition-colors duration-300"
                         :class="snarky ? 'bg-red-900/20' : 'bg-cyan-900/20'"
-                        @click="snarky = !snarky"
+                        @click="if (game) { game = false } else { snarky = !snarky }"
                     >
                         <svg
                             class="h-8 w-8 transition-colors duration-300"
@@ -80,17 +81,32 @@
                                 back shortly. Thanks for your patience.</p>
                         </div>
                     </template>
-                    <template x-if="snarky">
+                    <template x-if="snarky && !game">
                         <div>
                             <h1 class="mb-4 text-3xl font-bold text-white md:text-4xl">Yes, It's Still Down</h1>
                             <p class="text-lg text-gray-400">Seriously, though, you need to be patient. I don't want to
                                 see you come into our Discord server and say, "The server is down." <strong>We
                                     know.</strong> We're the ones that put it down. Be patient. Good things are coming.
-                                Seriously. Touch grass, or something, idk... <em>nerds</em>.</p>
+                                Seriously. <button
+                                    type="button"
+                                    class="cursor-pointer transition-colors duration-300 hover:text-gray-300"
+                                    @click="game = true"
+                                >Touch grass, or something,</button> idk... <em>nerds</em>.</p>
                             <!--
                             Ain't I a stinker? lul
                              - Refringe
                             -->
+                        </div>
+                    </template>
+                    <template x-if="game">
+                        <div>
+                            <h1 class="mb-4 text-3xl font-bold text-white md:text-4xl">EXFIL: Extraction Runner</h1>
+                            <iframe
+                                src="/exfil.html"
+                                title="EXFIL: Extraction Runner"
+                                class="aspect-video w-full rounded-lg"
+                            ></iframe>
+                            <p class="mt-4 text-sm text-gray-500">Grass is overrated. The wrench takes you back.</p>
                         </div>
                     </template>
                 </div>
