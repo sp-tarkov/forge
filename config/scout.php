@@ -143,14 +143,17 @@ return [
             User::class => [
                 'filterableAttributes' => [],
                 'sortableAttributes' => [],
+                'searchableAttributes' => ['name'],
             ],
             Mod::class => [
                 'filterableAttributes' => [],
                 'sortableAttributes' => [],
+                'searchableAttributes' => ['name', 'slug', 'guid', 'description'],
             ],
             Addon::class => [
                 'filterableAttributes' => [],
                 'sortableAttributes' => [],
+                'searchableAttributes' => ['name', 'slug', 'teaser', 'mod_name', 'mod_guid', 'description'],
             ],
         ],
     ],

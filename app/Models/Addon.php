@@ -274,6 +274,7 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
             'thumbnail' => $this->thumbnailUrl,
             'mod_id' => $this->mod_id,
             'mod_name' => $this->mod?->name,
+            'mod_guid' => $this->mod?->guid,
             'is_detached' => $this->isDetached(),
             'created_at' => $this->created_at?->timestamp,
             'updated_at' => $this->updated_at?->timestamp,

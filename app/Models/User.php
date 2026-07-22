@@ -15,6 +15,7 @@ use App\Traits\HasCoverPhoto;
 use App\Traits\HasProfilePhoto;
 use App\Traits\HasReports;
 use Carbon\CarbonImmutable;
+use Closure;
 use Database\Factories\UserFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -34,6 +35,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -457,34 +459,9 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
      */
     public function toSearchableArray(): array
     {
-        $this->loadCount([
-            'mods' => fn (Builder $query) => $query->where('disabled', false)
-                ->whereNotNull('published_at')
-                ->whereHas('versions', fn (Builder $q) => $q
-                    ->where('disabled', false)
-                    ->whereNotNull('published_at')
-                    ->whereHas('latestSptVersion')),
-            'modsAdditionalAuthored' => fn (Builder $query) => $query->where('disabled', false)
-                ->whereNotNull('published_at')
-                ->whereHas('versions', fn (Builder $q) => $q
-                    ->where('disabled', false)
-                    ->whereNotNull('published_at')
-                    ->whereHas('latestSptVersion')),
-            'addons' => fn (Builder $query) => $query->where('disabled', false)
-                ->whereNotNull('published_at')
-                ->where('published_at', '<=', now())
-                ->whereHas('versions', fn (Builder $q) => $q
-                    ->where('disabled', false)
-                    ->whereNotNull('published_at')
-                    ->where('published_at', '<=', now())),
-            'addonsAdditionalAuthored' => fn (Builder $query) => $query->where('disabled', false)
-                ->whereNotNull('published_at')
-                ->where('published_at', '<=', now())
-                ->whereHas('versions', fn (Builder $q) => $q
-                    ->where('disabled', false)
-                    ->whereNotNull('published_at')
-                    ->where('published_at', '<=', now())),
-        ]);
+        if (! array_key_exists('mods_count', $this->attributes)) {
+            $this->loadCount($this->searchableCounts());
+        }
 
         $modCount = ($this->mods_count ?? 0) + ($this->mods_additional_authored_count ?? 0);
         $addonCount = ($this->addons_count ?? 0) + ($this->addons_additional_authored_count ?? 0);
@@ -496,6 +473,22 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
             'mods_count' => $modCount,
             'addons_count' => $addonCount,
         ];
+    }
+
+    /**
+     * Batch-load the contribution counts for the collection of users being made searchable so a bulk sync issues a
+     * single count query per chunk rather than one per user.
+     *
+     * @param  SupportCollection<int, self>  $models
+     * @return SupportCollection<int, self>
+     */
+    public function makeSearchableUsing(SupportCollection $models): SupportCollection
+    {
+        if ($models instanceof Collection) {
+            $models->loadCount($this->searchableCounts());
+        }
+
+        return $models;
     }
 
     /**
@@ -771,6 +764,48 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
     public function getTrackingContext(): ?string
     {
         return $this->role?->name;
+    }
+
+    /**
+     * Eager-load the ban state used by the searchable filter so a bulk reindex does not issue a separate ban query
+     * per user.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    protected function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with('bans');
+    }
+
+    /**
+     * The constrained relationship counts included in the searchable data.
+     *
+     * @return array<string, Closure>
+     */
+    protected function searchableCounts(): array
+    {
+        $publishedMods = fn (Builder $query) => $query->where('disabled', false)
+            ->whereNotNull('published_at')
+            ->whereHas('versions', fn (Builder $q) => $q
+                ->where('disabled', false)
+                ->whereNotNull('published_at')
+                ->whereHas('latestSptVersion'));
+
+        $publishedAddons = fn (Builder $query) => $query->where('disabled', false)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->whereHas('versions', fn (Builder $q) => $q
+                ->where('disabled', false)
+                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now()));
+
+        return [
+            'mods' => $publishedMods,
+            'modsAdditionalAuthored' => $publishedMods,
+            'addons' => $publishedAddons,
+            'addonsAdditionalAuthored' => $publishedAddons,
+        ];
     }
 
     /**
