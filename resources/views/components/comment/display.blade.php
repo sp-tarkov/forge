@@ -1,68 +1,45 @@
 @props(['comment', 'permissions', 'manager', 'isReply' => false, 'commentable' => null])
 
-<x-comment.card
-    :comment="$comment"
-    :anchor-id="$manager->getCommentHashId($comment->id)"
->
-    <x-slot:headerTrailing>
-        @if ($comment->parent_id && $comment->parent)
-            <a
-                href="#{{ $manager->getCommentHashId($comment->parent_id) }}"
-                @class([
-                    'ml-2 text-xs text-slate-400 underline [&_span]:underline hover:text-cyan-400',
-                    'mr-10' => $permissions->can($comment->id, 'viewActions'),
-                ])
+@if ($manager->isCommentAuthorBlocked($comment))
+    <div
+        x-data="{ showBlockedComment: false }"
+        data-test="blocked-comment-{{ $comment->id }}"
+    >
+        <div
+            x-show="! showBlockedComment"
+            class="flex items-center justify-between gap-3"
+        >
+            <span class="text-sm italic text-gray-400">
+                {{ __('This comment is from a user you have blocked.') }}
+            </span>
+            <button
+                type="button"
+                x-on:click="showBlockedComment = true"
+                data-test="show-blocked-comment-{{ $comment->id }}"
+                class="cursor-pointer whitespace-nowrap text-xs text-cyan-500 hover:underline"
             >
-                {{ __('Replying to') }} @<x-user-name :user="$comment->parent->user" />
-            </a>
-        @endif
-        @if ($permissions->can($comment->id, 'viewActions'))
-            <x-comment.action-menu
+                {{ __('Show comment') }}
+            </button>
+        </div>
+        <div
+            x-show="showBlockedComment"
+            x-cloak
+        >
+            <x-comment.display-content
                 :comment="$comment"
                 :permissions="$permissions"
-                :descendants-count="$comment->isRoot() ? $manager->getDescendantCount($comment->id) : null"
+                :manager="$manager"
+                :is-reply="$isReply"
+                :commentable="$commentable"
             />
-        @endif
-    </x-slot>
-
-    <x-comment.actions
+        </div>
+    </div>
+@else
+    <x-comment.display-content
         :comment="$comment"
         :permissions="$permissions"
         :manager="$manager"
-        :show-replies-toggle="$comment->isRoot()"
+        :is-reply="$isReply"
+        :commentable="$commentable"
     />
-
-    {{-- Reply Form --}}
-    @if (
-        $manager->isFormVisible('reply', $comment->id) &&
-            CachedGate::allows('create', [App\Models\Comment::class, $comment->commentable, $comment]))
-        <div class="mt-4">
-            <flux:separator text="Reply To Comment" />
-            <div class="mt-2.5">
-                <x-comment.form
-                    form-key="formStates.reply-{{ $comment->id }}.body"
-                    data-test="reply-body-{{ $comment->id }}"
-                    submit-action="createReply({{ $comment->id }})"
-                    submit-text="{{ __('Post Reply') }}"
-                    cancel-action="toggleReplyForm({{ $comment->id }})"
-                />
-            </div>
-        </div>
-    @endif
-
-    {{-- Edit Form --}}
-    @if ($manager->isFormVisible('edit', $comment->id))
-        <div class="mt-4">
-            <flux:separator text="Edit Comment" />
-            <div class="mt-2.5">
-                <x-comment.form
-                    form-key="formStates.edit-{{ $comment->id }}.body"
-                    data-test="edit-body-{{ $comment->id }}"
-                    submit-action="updateComment({{ $comment->id }})"
-                    submit-text="{{ __('Update Comment') }}"
-                    cancel-action="toggleEditForm({{ $comment->id }})"
-                />
-            </div>
-        </div>
-    @endif
-</x-comment.card>
+@endif

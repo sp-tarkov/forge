@@ -254,6 +254,31 @@ new class extends Component
     }
 
     /**
+     * Get the IDs of users blocked by the authenticated user.
+     *
+     * @return list<int>
+     */
+    #[Computed]
+    public function blockedUserIds(): array
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return [];
+        }
+
+        /** @var list<int> */
+        return $user->blocking()->pluck('blocked_id')->all();
+    }
+
+    /**
+     * Determine if the comment's author is blocked by the authenticated user.
+     */
+    public function isCommentAuthorBlocked(Comment $comment): bool
+    {
+        return in_array($comment->user_id, $this->blockedUserIds, true);
+    }
+
+    /**
      * Create a new root comment.
      */
     public function createComment(): void
