@@ -125,6 +125,26 @@ it('filters mods by featured status', function (): void {
     expect((string) $items[0]->title)->toBe('Featured Mod');
 });
 
+it('filters mods by ai generated content status', function (): void {
+    $mod1 = Mod::factory()->create(['name' => 'AI Mod', 'contains_ai_content' => true, 'featured' => false, 'published_at' => now()]);
+    $modVersion1 = ModVersion::factory()->create(['mod_id' => $mod1->id, 'published_at' => now()]);
+    $modVersion1->sptVersions()->sync($this->sptVersion->id);
+
+    $mod2 = Mod::factory()->create(['name' => 'Human Mod', 'contains_ai_content' => false, 'featured' => false, 'published_at' => now()]);
+    $modVersion2 = ModVersion::factory()->create(['mod_id' => $mod2->id, 'published_at' => now()]);
+    $modVersion2->sptVersions()->sync($this->sptVersion->id);
+
+    $response = $this->get(route('mods.rss', ['ai' => 'exclude']));
+
+    $response->assertSuccessful();
+
+    $xml = simplexml_load_string((string) $response->getContent());
+    $items = $xml->channel->item;
+
+    expect(count($items))->toBe(1);
+    expect((string) $items[0]->title)->toBe('Human Mod');
+});
+
 it('filters mods by category', function (): void {
     $mod1 = Mod::factory()->create(['name' => 'Weapon Mod', 'category_id' => $this->category->id, 'featured' => false, 'published_at' => now()]);
     $modVersion1 = ModVersion::factory()->create(['mod_id' => $mod1->id, 'published_at' => now()]);
@@ -333,6 +353,7 @@ it('updates feed description based on filters', function (): void {
     $response = $this->get(route('mods.rss', [
         'query' => 'test',
         'featured' => 'only',
+        'ai' => 'exclude',
         'order' => 'downloaded',
     ]));
 
@@ -343,6 +364,7 @@ it('updates feed description based on filters', function (): void {
 
     expect($description)->toContain('matching "test"');
     expect($description)->toContain('featured mods only');
+    expect($description)->toContain('excluding AI generated mods');
     expect($description)->toContain('sorted by most downloaded');
 });
 

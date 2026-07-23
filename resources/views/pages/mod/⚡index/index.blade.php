@@ -319,6 +319,7 @@
                                 'order' => $order,
                                 'versions' => is_array($sptVersions) ? implode(',', $sptVersions) : $sptVersions,
                                 'featured' => $featured,
+                                'ai' => $aiContent,
                                 'category' => $category,
                             ]) }}"
                             target="_blank"
@@ -512,6 +513,27 @@
                                 <x-filter-radio
                                     id="featured-2"
                                     name="featured"
+                                    value="only"
+                                >{{ __('Only') }}</x-filter-radio>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend class="block font-semibold text-gray-100">{{ __('AI Generation') }}
+                            </legend>
+                            <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
+                                <x-filter-radio
+                                    id="aiContent-0"
+                                    name="aiContent"
+                                    value="include"
+                                >{{ __('Include') }}</x-filter-radio>
+                                <x-filter-radio
+                                    id="aiContent-1"
+                                    name="aiContent"
+                                    value="exclude"
+                                >{{ __('Exclude') }}</x-filter-radio>
+                                <x-filter-radio
+                                    id="aiContent-2"
+                                    name="aiContent"
                                     value="only"
                                 >{{ __('Only') }}</x-filter-radio>
                             </div>

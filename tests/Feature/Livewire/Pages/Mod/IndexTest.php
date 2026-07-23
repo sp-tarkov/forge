@@ -33,6 +33,26 @@ describe('Index', function (): void {
                 ->assertSee('Test Mod 1');
         });
 
+        it('filters mods by ai generated content', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $aiMod = Mod::factory()->create(['name' => 'AI Mod', 'contains_ai_content' => true]);
+            ModVersion::factory()->recycle($aiMod)->create(['spt_version_constraint' => '3.11.4']);
+
+            $humanMod = Mod::factory()->create(['name' => 'Human Mod', 'contains_ai_content' => false]);
+            ModVersion::factory()->recycle($humanMod)->create(['spt_version_constraint' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->assertSee('AI Mod')
+                ->assertSee('Human Mod')
+                ->set('aiContent', 'exclude')
+                ->assertDontSee('AI Mod')
+                ->assertSee('Human Mod')
+                ->set('aiContent', 'only')
+                ->assertSee('AI Mod')
+                ->assertDontSee('Human Mod');
+        });
+
         it('renders card thumbnails with a srcset when variants exist', function (): void {
             SptVersion::factory()->create(['version' => '3.11.4']);
             $mod = Mod::factory()->create([
@@ -323,6 +343,25 @@ describe('Index', function (): void {
             $component->assertSee('Test Mod');
         });
 
+        it('handles malformed ai parameter gracefully', function (): void {
+            // Create SPT versions and a mod
+            SptVersion::factory()->create(['version' => '3.11.4']);
+            $mod = Mod::factory()->create(['name' => 'Test Mod']);
+            ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+            // Mount component with an array passed to ai parameter
+            $component = Livewire::withQueryParams([
+                'ai' => ['invalid' => 'value'],
+            ])->test('pages::mod.index');
+
+            // Should normalize to default value
+            expect($component->get('aiContent'))->toBe('include');
+
+            // Component should still work
+            $component->assertOk();
+            $component->assertSee('Test Mod');
+        });
+
         it('handles malformed category parameter gracefully', function (): void {
             // Create SPT versions and a mod
             SptVersion::factory()->create(['version' => '3.11.4']);
@@ -551,6 +590,25 @@ describe('Index', function (): void {
             expect($chips[0]->label)->toBe('Featured: excluded');
         });
 
+        it('shows chips for the ai generation filter', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $component = Livewire::test('pages::mod.index')
+                ->set('aiContent', 'only');
+
+            $chips = $component->get('activeFilterChips');
+            expect($component->get('filterCount'))->toBe(1);
+            expect($chips[0]->label)->toBe('AI generation only');
+
+            $component->set('aiContent', 'exclude');
+            $chips = $component->get('activeFilterChips');
+            expect($chips[0]->label)->toBe('AI generation: excluded');
+
+            $component->call('clearFilter', 'ai');
+            expect($component->get('aiContent'))->toBe('include');
+            expect($component->get('filterCount'))->toBe(0);
+        });
+
         it('falls back to the raw slug for an unknown category', function (): void {
             SptVersion::factory()->create(['version' => '3.11.4']);
 
@@ -616,6 +674,18 @@ describe('Index', function (): void {
             $fresh = Livewire::test('pages::mod.index');
 
             expect($fresh->get('featured'))->toBe('include');
+            expect($fresh->get('filterCount'))->toBe(0);
+        });
+
+        it('resets the ai generation filter on a fresh visit', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->set('aiContent', 'only');
+
+            $fresh = Livewire::test('pages::mod.index');
+
+            expect($fresh->get('aiContent'))->toBe('include');
             expect($fresh->get('filterCount'))->toBe(0);
         });
 
