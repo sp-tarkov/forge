@@ -35,7 +35,7 @@
     {{-- Reply Form --}}
     @if (
         $manager->isFormVisible('reply', $comment->id) &&
-            CachedGate::allows('create', [App\Models\Comment::class, $comment->commentable]))
+            CachedGate::allows('create', [App\Models\Comment::class, $comment->commentable, $comment]))
         <div class="mt-4">
             <flux:separator text="Reply To Comment" />
             <div class="mt-2.5">

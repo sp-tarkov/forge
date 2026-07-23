@@ -591,6 +591,80 @@ describe('Replies', function (): void {
 
             expect($reply)->toBeNull();
         });
+
+        it('should not allow a user to reply to a comment from a user they have blocked', function (): void {
+            $user = User::factory()->create();
+            $author = User::factory()->create();
+            $mod = Mod::factory()->create();
+            $parentComment = Comment::factory()->create([
+                'commentable_id' => $mod->id,
+                'commentable_type' => $mod::class,
+                'user_id' => $author->id,
+            ]);
+
+            $user->block($author);
+
+            Livewire::actingAs($user)
+                ->test('comment-component', ['commentable' => $mod])
+                ->set('formStates.reply-'.$parentComment->id.'.body', 'This is a reply.')
+                ->call('createReply', $parentComment->id)
+                ->assertForbidden();
+
+            expect(Comment::query()->where('user_id', $user->id)->where('parent_id', $parentComment->id)->exists())->toBeFalse();
+        });
+
+        it('should not allow a user to reply to a comment from a user who has blocked them', function (): void {
+            $user = User::factory()->create();
+            $author = User::factory()->create();
+            $mod = Mod::factory()->create();
+            $parentComment = Comment::factory()->create([
+                'commentable_id' => $mod->id,
+                'commentable_type' => $mod::class,
+                'user_id' => $author->id,
+            ]);
+
+            $author->block($user);
+
+            Livewire::actingAs($user)
+                ->test('comment-component', ['commentable' => $mod])
+                ->set('formStates.reply-'.$parentComment->id.'.body', 'This is a reply.')
+                ->call('createReply', $parentComment->id)
+                ->assertForbidden();
+
+            expect(Comment::query()->where('user_id', $user->id)->where('parent_id', $parentComment->id)->exists())->toBeFalse();
+        });
+
+        it('should hide the reply button on comments from a blocked user', function (): void {
+            $user = User::factory()->create();
+            $author = User::factory()->create();
+            $mod = Mod::factory()->create();
+            $parentComment = Comment::factory()->create([
+                'commentable_id' => $mod->id,
+                'commentable_type' => $mod::class,
+                'user_id' => $author->id,
+            ]);
+
+            $user->block($author);
+
+            Livewire::actingAs($user)
+                ->test('comment-component', ['commentable' => $mod])
+                ->assertDontSeeHtml('data-test="reply-button-'.$parentComment->id.'"');
+        });
+
+        it('should show the reply button on comments from users with no block relationship', function (): void {
+            $user = User::factory()->create();
+            $author = User::factory()->create();
+            $mod = Mod::factory()->create();
+            $parentComment = Comment::factory()->create([
+                'commentable_id' => $mod->id,
+                'commentable_type' => $mod::class,
+                'user_id' => $author->id,
+            ]);
+
+            Livewire::actingAs($user)
+                ->test('comment-component', ['commentable' => $mod])
+                ->assertSeeHtml('data-test="reply-button-'.$parentComment->id.'"');
+        });
     });
 
     describe('validation', function (): void {

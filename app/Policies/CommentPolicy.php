@@ -134,10 +134,15 @@ final class CommentPolicy
      *
      * @param  Commentable<Mod|User>|null  $commentable
      */
-    public function create(User $user, ?Commentable $commentable = null): bool
+    public function create(User $user, ?Commentable $commentable = null, ?Comment $parentComment = null): bool
     {
         // Commentable is required
         if (! $commentable instanceof Commentable) {
+            return false;
+        }
+
+        // Check blocking for replies against the parent comment author
+        if ($parentComment instanceof Comment && $user->isBlockedMutually($parentComment->user)) {
             return false;
         }
 

@@ -285,7 +285,10 @@ new class extends Component
      */
     public function createReply(int $parentId): void
     {
-        $this->authorize('create', [Comment::class, $this->commentable]);
+        // Validate parent comment exists and belongs to this commentable.
+        $parentComment = $this->validateParentComment($parentId);
+
+        $this->authorize('create', [Comment::class, $this->commentable, $parentComment]);
         $this->protectAgainstSpam();
 
         $formKey = $this->getFormKey('reply', $parentId);
@@ -294,9 +297,6 @@ new class extends Component
         if (! $this->checkRateLimit($fieldKey)) {
             return;
         }
-
-        // Validate parent comment exists and belongs to this commentable.
-        $this->validateParentComment($parentId);
 
         $body = $this->formStates[$formKey]['body'] ?? '';
         $this->validateComment($fieldKey, 'reply');
@@ -309,11 +309,6 @@ new class extends Component
         $this->hideForm('reply', $parentId);
 
         // Update reply counts and clear loaded replies for the parent.
-        $parentComment = Comment::query()->find($parentId);
-        if (! $parentComment) {
-            return;
-        }
-
         $rootId = $parentComment->isRoot() ? $parentComment->id : $parentComment->root_id;
 
         if ($rootId) {
@@ -1391,6 +1386,7 @@ new class extends Component
     protected function validateParentComment(int $parentId): Comment
     {
         $parentComment = Comment::query()
+            ->with('user')
             ->where('id', $parentId)
             ->where('commentable_id', $this->getCommentableId())
             ->where('commentable_type', $this->commentable::class)
