@@ -403,6 +403,26 @@ describe('blocking and archiving interaction', function (): void {
         expect($conversation->isArchivedBy($this->userA))->toBeTrue();
     });
 
+    it('prevents starting a new conversation with a user who has blocked you', function (): void {
+        $this->userB->block($this->userA);
+
+        Livewire::test('pages::chat')
+            ->call('startConversation', $this->userB->id)
+            ->assertSet('selectedConversation', null);
+
+        expect(Conversation::query()->count())->toBe(0);
+    });
+
+    it('prevents starting a new conversation with a user you have blocked', function (): void {
+        $this->userA->block($this->userB);
+
+        Livewire::test('pages::chat')
+            ->call('startConversation', $this->userB->id)
+            ->assertSet('selectedConversation', null);
+
+        expect(Conversation::query()->count())->toBe(0);
+    });
+
     it('allows blocker to search for and unarchive conversations with blocked users', function (): void {
         $blocker = User::factory()->create();
         $blocked = User::factory()->create(['name' => 'UniqueBlockedUser_'.uniqid()]);
@@ -599,11 +619,8 @@ describe('blocking search behavior', function (): void {
         Livewire::test('pages::chat')
             ->call('startConversation', $this->userB->id);
 
-        // A conversation gets created, but the user can't send messages
-        expect(Conversation::query()->count())->toBe(1);
-
-        $conversation = Conversation::query()->first();
-        expect($this->userA->can('sendMessage', $conversation))->toBeFalse();
+        // No conversation is created when the target has blocked the user
+        expect(Conversation::query()->count())->toBe(0);
     });
 
     it('handles blocking when conversation does not exist', function (): void {
@@ -617,11 +634,8 @@ describe('blocking search behavior', function (): void {
         Livewire::test('pages::chat')
             ->call('startConversation', $this->userB->id);
 
-        // Conversation should be created but messaging disabled
-        expect(Conversation::query()->count())->toBe(1);
-
-        $conversation = Conversation::query()->first();
-        expect($this->userA->can('sendMessage', $conversation))->toBeFalse();
+        // No conversation is created with a blocked user
+        expect(Conversation::query()->count())->toBe(0);
     });
 });
 

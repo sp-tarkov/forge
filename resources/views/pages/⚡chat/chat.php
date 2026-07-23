@@ -458,6 +458,14 @@ new #[Layout('layouts::base')] class extends Component
             })
             ->first();
 
+        // Require initiateChat authorization when no conversation exists yet
+        if (! $existingConversation && $user->cannot('initiateChat', $otherUser)) {
+            Flux::toast(heading: 'Error', text: 'Cannot start a conversation with this user.', variant: 'danger');
+            $this->closeNewConversationModal();
+
+            return;
+        }
+
         $conversation = Conversation::findOrCreateBetween($user, $otherUser, creator: $user);
 
         // If the conversation is archived for the current user, try to unarchive it

@@ -42,15 +42,6 @@ final class ConversationPolicy
     }
 
     /**
-     * Determine whether the user can create a conversation with a specific user.
-     */
-    public function createWithUser(User $user, User $target): bool
-    {
-        // Cannot create conversation if blocked
-        return ! $user->isBlockedMutually($target);
-    }
-
-    /**
      * Determine whether the user can update the model.
      */
     public function update(User $user, Conversation $conversation): bool
