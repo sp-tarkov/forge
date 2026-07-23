@@ -983,3 +983,21 @@ describe('create Policy Method reply blocking', function (): void {
         expect($this->policy->create($this->user, $this->mod))->toBeTrue();
     });
 });
+
+describe('create Policy Method addon owner blocking', function (): void {
+    it('allows commenting on an addon when there is no block relationship with the owner', function (): void {
+        expect($this->policy->create($this->user, $this->addon))->toBeTrue();
+    });
+
+    it('denies commenting on an addon when the commenter has blocked the owner', function (): void {
+        $this->user->block($this->addon->owner);
+
+        expect($this->policy->create($this->user, $this->addon))->toBeFalse();
+    });
+
+    it('denies commenting on an addon when the owner has blocked the commenter', function (): void {
+        $this->addon->owner->block($this->user);
+
+        expect($this->policy->create($this->user, $this->addon))->toBeFalse();
+    });
+});

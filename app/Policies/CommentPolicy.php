@@ -132,7 +132,7 @@ final class CommentPolicy
      * - Must have verified email address.
      * - The commentable must allow comments.
      *
-     * @param  Commentable<Mod|User>|null  $commentable
+     * @param  Commentable<Mod|ModList|Addon|User>|null  $commentable
      */
     public function create(User $user, ?Commentable $commentable = null, ?Comment $parentComment = null): bool
     {
@@ -162,6 +162,15 @@ final class CommentPolicy
 
         // Check blocking for list comments
         if ($commentable instanceof ModList) {
+            /** @var User|null $owner */
+            $owner = $commentable->owner;
+            if ($owner !== null && $user->isBlockedMutually($owner)) {
+                return false;
+            }
+        }
+
+        // Check blocking for addon comments
+        if ($commentable instanceof Addon) {
             /** @var User|null $owner */
             $owner = $commentable->owner;
             if ($owner !== null && $user->isBlockedMutually($owner)) {
