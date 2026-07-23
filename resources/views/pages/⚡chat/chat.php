@@ -12,6 +12,7 @@ use App\Events\UserUnblocked;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
+use App\Services\UserBlockingService;
 use Flux\Flux;
 use Illuminate\Broadcasting\BroadcastException;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -872,18 +873,33 @@ new #[Layout('layouts::base')] class extends Component
         }
 
         $otherUser = $this->selectedConversation->other_user;
+        $blockingService = resolve(UserBlockingService::class);
 
         if ($this->isUserBlocked()) {
+            if ($user->cannot('unblock', $otherUser)) {
+                Flux::toast(heading: 'Error', text: 'You cannot unblock this user.', variant: 'danger');
+                $this->closeBlockModal();
+
+                return;
+            }
+
             // Unblock the user
-            $user->unblock($otherUser);
+            $blockingService->unblockUser($user, $otherUser);
             Flux::toast(heading: 'User Unblocked', text: 'The user has been successfully unblocked.', variant: 'success');
 
             // Broadcast the unblock event for real-time updates
             $this->broadcastSafely(new UserUnblocked($user, $otherUser));
             $this->dispatch('user-unblocked', userId: $otherUser->id)->to('navigation-chat');
         } else {
+            if ($user->cannot('block', $otherUser)) {
+                Flux::toast(heading: 'Error', text: 'You cannot block this user.', variant: 'danger');
+                $this->closeBlockModal();
+
+                return;
+            }
+
             // Block the user
-            $user->block($otherUser, $this->blockReason ?: null);
+            $blockingService->blockUser($user, $otherUser, $this->blockReason ?: null);
             Flux::toast(heading: 'User Blocked', text: 'The user has been successfully blocked.', variant: 'success');
 
             // Broadcast the block event for real-time updates

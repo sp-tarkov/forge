@@ -361,6 +361,34 @@ describe('blocking UI', function (): void {
 
         expect($this->userA->fresh()->hasBlocked($this->userB))->toBeFalse();
     });
+
+    it('prevents blocking a moderator from chat', function (): void {
+        $moderator = User::factory()->moderator()->create();
+        $conversation = Conversation::findOrCreateBetween($this->userA, $moderator, $this->userA);
+
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
+            ->call('confirmBlock');
+
+        expect($this->userA->hasBlocked($moderator))->toBeFalse();
+    });
+
+    it('prevents blocking an administrator from chat', function (): void {
+        $admin = User::factory()->admin()->create();
+        $conversation = Conversation::findOrCreateBetween($this->userA, $admin, $this->userA);
+
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
+            ->call('confirmBlock');
+
+        expect($this->userA->hasBlocked($admin))->toBeFalse();
+    });
+
+    it('hides the block option for conversations with staff members', function (): void {
+        $moderator = User::factory()->moderator()->create();
+        $conversation = Conversation::findOrCreateBetween($this->userA, $moderator, $this->userA);
+
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
+            ->assertDontSee('Block User');
+    });
 });
 
 describe('blocking and archiving interaction', function (): void {
