@@ -271,6 +271,11 @@
                                         filter="downloaded"
                                         :currentFilter="$order"
                                     >{{ __('Most Downloaded') }}</x-filter-menu-item>
+                                    <x-filter-menu-item
+                                        filterName="order"
+                                        filter="favourited"
+                                        :currentFilter="$order"
+                                    >{{ __('Most Favourited') }}</x-filter-menu-item>
                                 </div>
                             </div>
                         </div>
@@ -593,6 +598,7 @@
                             :mod="$mod"
                             :version="$this->getDisplayVersion($mod, $includeLegacy)"
                             :eager="$loop->index < 4"
+                            :favourites-count="$order === 'favourited' ? $mod->favourites_count : null"
                         />
                     </div>
                 @endforeach

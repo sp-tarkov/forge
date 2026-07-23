@@ -368,6 +368,21 @@ it('updates feed description based on filters', function (): void {
     expect($description)->toContain('sorted by most downloaded');
 });
 
+it('describes the feed as sorted by most favourited', function (): void {
+    $mod = Mod::factory()->create(['name' => 'Test Mod', 'published_at' => now()]);
+    $modVersion = ModVersion::factory()->create(['mod_id' => $mod->id, 'published_at' => now()]);
+    $modVersion->sptVersions()->sync($this->sptVersion->id);
+
+    $response = $this->get(route('mods.rss', ['order' => 'favourited']));
+
+    $response->assertSuccessful();
+
+    $xml = simplexml_load_string((string) $response->getContent());
+    $description = (string) $xml->channel->description;
+
+    expect($description)->toContain('sorted by most favourited');
+});
+
 it('respects mod access permissions', function (): void {
     // Test that disabled mods are not shown to regular users
     $mod1 = Mod::factory()->create(['name' => 'Enabled Mod', 'disabled' => false, 'featured' => false, 'published_at' => now()]);

@@ -6,9 +6,10 @@
     'placeholderBg' => 'bg-gray-800',
     'showActions' => null,
     'eager' => false,
+    'favouritesCount' => null,
 ])
 
-<div {{ $attributes->merge(['class' => 'mod-list-component relative mx-auto max-w-2xl h-full w-full']) }}>
+<div {{ $attributes->merge(['class' => 'mod-list-component relative isolate mx-auto max-w-2xl h-full w-full']) }}>
 
     <livewire:ribbon.mod
         wire:key="mod-card-ribbon-{{ $section }}-{{ $mod->id }}"
@@ -93,7 +94,21 @@
                 {{-- Date/downloads --}}
                 <div class="@lg:mt-0 mt-2 text-sm text-gray-300">
                     <div class="flex w-full items-center text-sm">
-                        @if (($mod->updated_at || $mod->created_at) && $version)
+                        @if ($favouritesCount !== null)
+                            <div class="flex w-full items-center">
+                                <div
+                                    class="flex items-center gap-1"
+                                    title="{{ Number::format($favouritesCount) }} {{ __(Str::plural('Favourite', $favouritesCount)) }}"
+                                >
+                                    <flux:icon.heart class="size-5 group-hover:hidden" />
+                                    <flux:icon.heart
+                                        variant="solid"
+                                        class="hidden size-5 text-rose-500 group-hover:block"
+                                    />
+                                    <span class="pt-0.5">{{ Number::format($favouritesCount) }}</span>
+                                </div>
+                            </div>
+                        @elseif (($mod->updated_at || $mod->created_at) && $version)
                             <div class="flex w-full items-center">
                                 <div class="flex items-center gap-1">
                                     <flux:icon.calendar class="size-5" />

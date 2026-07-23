@@ -739,6 +739,8 @@ describe('Index', function (): void {
                 ->assertSee('Sort: Newest')
                 ->set('order', 'downloaded')
                 ->assertSee('Sort: Most Downloaded')
+                ->set('order', 'favourited')
+                ->assertSee('Sort: Most Favourited')
                 ->set('order', 'updated')
                 ->assertSee('Sort: Recently Updated');
         });
@@ -758,6 +760,31 @@ describe('Index', function (): void {
                 ->assertSee('12 / page')
                 ->set('perPage', 24)
                 ->assertSee('24 / page');
+        });
+    });
+
+    describe('favourite counts on cards', function (): void {
+        it('shows the favourite count on cards when sorted by most favourited', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $mod = Mod::factory()->create(['name' => 'Heart Magnet', 'favourites_count' => 2]);
+            ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->set('order', 'favourited')
+                ->assertSee('Heart Magnet')
+                ->assertSee('2 Favourites');
+        });
+
+        it('does not show favourite counts for other sort orders', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $mod = Mod::factory()->create(['name' => 'Heart Magnet', 'favourites_count' => 2]);
+            ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->assertSee('Heart Magnet')
+                ->assertDontSee('2 Favourites');
         });
     });
 });

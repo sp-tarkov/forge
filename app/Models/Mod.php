@@ -51,6 +51,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int|null $license_id
  * @property int|null $category_id
  * @property int $downloads
+ * @property int $favourites_count
  * @property ModVersion|null $latestCompatibleVersion Dynamic property for dependency tree endpoint
  * @property array<int, mixed> $dependencies Dynamic property for dependency tree endpoint
  * @property bool $conflict Dynamic property for dependency tree endpoint indicating version constraint conflicts
@@ -165,6 +166,23 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
         }
 
         Cache::forever($cacheKey, $newDownloads);
+    }
+
+    /**
+     * Recalculate the denormalized favourite count for the mod: active list items on non-disabled Favourites lists.
+     */
+    public function calculateFavourites(): void
+    {
+        $favouritesCount = $this->listItems()
+            ->whereNull('tombstoned_at')
+            ->whereHas('modList', fn (Builder $query): Builder => $query
+                ->where('is_default', true)
+                ->where('disabled', false))
+            ->count();
+
+        DB::table('mods')
+            ->where('id', $this->id)
+            ->update(['favourites_count' => $favouritesCount]);
     }
 
     /**
@@ -756,6 +774,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
         return [
             'owner_id' => 'integer',
             'category_id' => 'integer',
+            'favourites_count' => 'integer',
             'thumbnail_variants' => 'array',
             'featured' => 'boolean',
             'contains_ai_content' => 'boolean',

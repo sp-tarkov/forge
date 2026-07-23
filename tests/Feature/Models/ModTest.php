@@ -1210,6 +1210,32 @@ describe('Filtering', function (): void {
                 ->and($result->first()->id)->toBe($modHigh->id)
                 ->and($result->last()->id)->toBe($modLow->id);
         });
+
+        it('orders by favourite count descending with newest first as the tiebreaker', function (): void {
+            $sptVersion = SptVersion::factory()->create(['version' => '1.0.0']);
+
+            $modUnfavourited = Mod::factory()->create(['favourites_count' => 0, 'created_at' => now()->subDays(3)]);
+            ModVersion::factory()->recycle($modUnfavourited)->create(['spt_version_constraint' => '1.0.0']);
+
+            $modFavouritedOnce = Mod::factory()->create(['favourites_count' => 1, 'created_at' => now()->subDays(2)]);
+            ModVersion::factory()->recycle($modFavouritedOnce)->create(['spt_version_constraint' => '1.0.0']);
+
+            $modFavouritedTwice = Mod::factory()->create(['favourites_count' => 2, 'created_at' => now()->subDay()]);
+            ModVersion::factory()->recycle($modFavouritedTwice)->create(['spt_version_constraint' => '1.0.0']);
+
+            $modTiedButNewer = Mod::factory()->create(['favourites_count' => 1, 'created_at' => now()->subHour()]);
+            ModVersion::factory()->recycle($modTiedButNewer)->create(['spt_version_constraint' => '1.0.0']);
+
+            $filters = ['order' => 'favourited', 'sptVersions' => [$sptVersion->version]];
+            $result = new ModFilter($filters)->apply()->get();
+
+            expect($result->pluck('id')->all())->toBe([
+                $modFavouritedTwice->id,
+                $modTiedButNewer->id,
+                $modFavouritedOnce->id,
+                $modUnfavourited->id,
+            ]);
+        });
     });
 
     describe('Fika compatibility filtering', function (): void {

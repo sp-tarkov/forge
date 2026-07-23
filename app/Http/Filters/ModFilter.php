@@ -144,8 +144,21 @@ final class ModFilter
         return match ($type) {
             'updated' => $this->orderByLatestVersionCreatedAt(),
             'downloaded' => $this->builder->orderByDesc('mods.downloads'),
+            'favourited' => $this->orderByFavouriteCount(),
             default => $this->builder->latest('mods.created_at'),
         };
+    }
+
+    /**
+     * Order mods by their denormalized favourite count, breaking ties by newest creation date.
+     *
+     * @return Builder<Mod>
+     */
+    private function orderByFavouriteCount(): Builder
+    {
+        return $this->builder
+            ->orderByDesc('mods.favourites_count')
+            ->latest('mods.created_at');
     }
 
     /**

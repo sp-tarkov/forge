@@ -27,9 +27,9 @@ final class ModController extends Controller
      *
      * Retrieves a paginated list of mods, allowing filtering, sorting, and relationship inclusion.
      *
-     * Fields available:<br /><code>hub_id, guid, name, slug, teaser, thumbnail, downloads, detail_url,
-     * fika_compatibility, featured, contains_ai_content, contains_ads, shows_profile_binding_notice, category_id,
-     * published_at, created_at, updated_at</code>
+     * Fields available:<br /><code>hub_id, guid, name, slug, teaser, thumbnail, downloads, favourites_count,
+     * detail_url, fika_compatibility, featured, contains_ai_content, contains_ads, shows_profile_binding_notice,
+     * category_id, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
@@ -58,6 +58,7 @@ final class ModController extends Controller
      *              "teaser": "Minus est minima quibusdam necessitatibus inventore iste.",
      *              "thumbnail": "",
      *              "downloads": 55212644,
+     *              "favourites_count": 1245,
      *              "owner": {
      *                  "id": 1,
      *                  "name": "ModAuthor",
@@ -90,6 +91,7 @@ final class ModController extends Controller
      *              "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",
      *              "thumbnail": "",
      *              "downloads": 219598104,
+     *              "favourites_count": 873,
      *              "owner": {
      *                  "id": 2,
      *                  "name": "AnotherAuthor",
@@ -160,6 +162,7 @@ final class ModController extends Controller
      *              "teaser": "Minus est minima quibusdam necessitatibus inventore iste.",
      *              "thumbnail": "",
      *              "downloads": 55212644,
+     *              "favourites_count": 1245,
      *              "owner": {
      *                  "id": 1,
      *                  "name": "ModAuthor",
@@ -236,6 +239,7 @@ final class ModController extends Controller
      *              "teaser": "Minus est minima quibusdam necessitatibus inventore iste.",
      *              "thumbnail": "",
      *              "downloads": 55212644,
+     *              "favourites_count": 1245,
      *              "owner": {
      *                  "id": 1,
      *                  "name": "ModAuthor",
@@ -341,7 +345,7 @@ final class ModController extends Controller
     #[QueryParam('filter[include_legacy]', description: 'Include legacy mods (mods with versions that have no SPT version constraint). By default, legacy mods are excluded from results (1, true, 0, false).', required: false, example: 'true')]
     #[QueryParam('query', description: 'Search query to filter mods using Meilisearch. This will search across name, slug, and description fields.', required: false, example: 'raid time')]
     #[QueryParam('include', description: 'Comma-separated list of relationships. Available: `versions`, `license`, `category`, `source_code_links`.', required: false, example: 'versions,category')]
-    #[QueryParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields. Allowed: `name`, `featured`, `created_at`, `updated_at`, `published_at`.', required: false, example: 'featured,-name')]
+    #[QueryParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields. Allowed: `name`, `downloads`, `favourites_count`, `featured`, `created_at`, `updated_at`, `published_at`.', required: false, example: 'featured,-name')]
     #[QueryParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
     #[QueryParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
     public function index(Request $request): JsonResponse
@@ -367,8 +371,8 @@ final class ModController extends Controller
      * Retrieves details for a single mod, allowing relationship inclusion.
      *
      * Fields available:<br /><code>hub_id, guid, name, slug, teaser, description, thumbnail, downloads,
-     * detail_url, fika_compatibility, featured, contains_ai_content, custom_ai_disclosure, contains_ads,
-     * shows_profile_binding_notice, published_at, created_at, updated_at</code>
+     * favourites_count, detail_url, fika_compatibility, featured, contains_ai_content, custom_ai_disclosure,
+     * contains_ads, shows_profile_binding_notice, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
@@ -396,6 +400,7 @@ final class ModController extends Controller
      *          "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",
      *          "thumbnail": "",
      *          "downloads": 219598104,
+     *          "favourites_count": 873,
      *          "description": "Adipisci rerum minima maiores sed. Neque totam quia libero exercitationem ullam.",
      *          "owner": {
      *              "id": 1,
@@ -434,6 +439,7 @@ final class ModController extends Controller
      *          "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",
      *          "thumbnail": "",
      *          "downloads": 219598104,
+     *          "favourites_count": 873,
      *          "description": "Adipisci rerum minima maiores sed. Neque totam quia libero exercitationem ullam.",
      *          "owner": {
      *              "id": 1,
@@ -490,6 +496,7 @@ final class ModController extends Controller
      *          "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",
      *          "thumbnail": "",
      *          "downloads": 219598104,
+     *          "favourites_count": 873,
      *          "description": "Adipisci rerum minima maiores sed. Neque totam quia libero exercitationem ullam.",
      *          "source_code_links": [
      *              {

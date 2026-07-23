@@ -97,6 +97,7 @@ final class ModQueryBuilder extends AbstractQueryBuilder
             'description',
             'thumbnail',
             'downloads',
+            'favourites_count',
             'featured',
             'contains_ai_content',
             'custom_ai_disclosure',
@@ -119,6 +120,7 @@ final class ModQueryBuilder extends AbstractQueryBuilder
         return [
             'name',
             'downloads',
+            'favourites_count',
             'featured',
             'created_at',
             'updated_at',

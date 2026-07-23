@@ -194,6 +194,8 @@ final class ModRssFeedController extends Controller
         if (isset($filters['order']) && is_string($filters['order'])) {
             if ($filters['order'] === 'downloaded') {
                 $parts[] = 'sorted by most downloaded';
+            } elseif ($filters['order'] === 'favourited') {
+                $parts[] = 'sorted by most favourited';
             } elseif ($filters['order'] === 'updated') {
                 $parts[] = 'sorted by recently updated';
             }
