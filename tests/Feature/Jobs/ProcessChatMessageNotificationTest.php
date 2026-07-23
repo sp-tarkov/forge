@@ -428,3 +428,57 @@ it('does not send notification if message is deleted', function (): void {
 
     Notification::assertNotSentTo([$recipient], NewChatMessageNotification::class);
 });
+
+it('does not send notification when the recipient has blocked the sender', function (): void {
+    Notification::fake();
+    Queue::fake();
+
+    $sender = User::factory()->create();
+    $recipient = User::factory()->create([
+        'email_chat_notifications_enabled' => true,
+    ]);
+
+    $conversation = Conversation::factory()->create([
+        'user1_id' => $sender->id,
+        'user2_id' => $recipient->id,
+    ]);
+
+    $message = Message::factory()->create([
+        'conversation_id' => $conversation->id,
+        'user_id' => $sender->id,
+        'content' => 'Message sent before the block',
+    ]);
+
+    $recipient->block($sender);
+
+    new ProcessChatMessageNotification($message)->handle();
+
+    Notification::assertNotSentTo($recipient, NewChatMessageNotification::class);
+});
+
+it('does not send notification when the sender has blocked the recipient', function (): void {
+    Notification::fake();
+    Queue::fake();
+
+    $sender = User::factory()->create();
+    $recipient = User::factory()->create([
+        'email_chat_notifications_enabled' => true,
+    ]);
+
+    $conversation = Conversation::factory()->create([
+        'user1_id' => $sender->id,
+        'user2_id' => $recipient->id,
+    ]);
+
+    $message = Message::factory()->create([
+        'conversation_id' => $conversation->id,
+        'user_id' => $sender->id,
+        'content' => 'Message sent before the block',
+    ]);
+
+    $sender->block($recipient);
+
+    new ProcessChatMessageNotification($message)->handle();
+
+    Notification::assertNotSentTo($recipient, NewChatMessageNotification::class);
+});

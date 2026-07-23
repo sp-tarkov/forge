@@ -9,6 +9,7 @@ use App\Enums\NotificationType;
 use App\Models\Comment;
 use App\Models\NotificationLog;
 use App\Models\User;
+use App\Models\UserBlock;
 use App\Notifications\CommentReplyNotification;
 use App\Notifications\NewCommentNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -35,6 +36,13 @@ final class ProcessCommentNotification implements ShouldQueue
      * @var Collection<int, int>
      */
     private Collection $notifiedUserIds;
+
+    /**
+     * IDs of users with a block relationship with the comment author, in either direction.
+     *
+     * @var list<int>
+     */
+    private array $blockedCounterpartIds = [];
 
     /**
      * Create a new job instance.
@@ -81,6 +89,8 @@ final class ProcessCommentNotification implements ShouldQueue
         $emptyCollection = collect();
         $this->notifiedUserIds = $emptyCollection;
 
+        $this->blockedCounterpartIds = $this->blockCounterpartIds($freshComment->user_id);
+
         // Step 1: Handle direct reply notification (if this is a reply to another comment)
         $this->handleReplyNotification($freshComment);
 
@@ -118,6 +128,11 @@ final class ProcessCommentNotification implements ShouldQueue
 
         // Don't notify if the parent author is the same as the comment author
         if ($parentAuthor->id === $comment->user_id) {
+            return;
+        }
+
+        // Don't notify when the parent author has a block relationship with the comment author
+        if (in_array($parentAuthor->id, $this->blockedCounterpartIds, true)) {
             return;
         }
 
@@ -207,8 +222,10 @@ final class ProcessCommentNotification implements ShouldQueue
         // Filter out:
         // 1. The comment author (they shouldn't be notified of their own comment)
         // 2. Users who have already been notified (e.g., via reply notification)
+        // 3. Users with a block relationship with the comment author
         $subscribers = $subscribers->filter(fn (User $user): bool => $user->id !== $comment->user_id
-            && $this->notifiedUserIds->doesntContain($user->id));
+            && $this->notifiedUserIds->doesntContain($user->id)
+            && ! in_array($user->id, $this->blockedCounterpartIds, true));
 
         if ($subscribers->isEmpty()) {
             return;
@@ -254,5 +271,25 @@ final class ProcessCommentNotification implements ShouldQueue
                 ]);
             }
         }
+    }
+
+    /**
+     * Get the IDs of users with a block relationship with the given user, in either direction.
+     *
+     * @return list<int>
+     */
+    private function blockCounterpartIds(int $userId): array
+    {
+        $blocks = UserBlock::query()
+            ->where('blocker_id', $userId)
+            ->orWhere('blocked_id', $userId)
+            ->get(['blocker_id', 'blocked_id']);
+
+        $counterpartIds = [];
+        foreach ($blocks as $userBlock) {
+            $counterpartIds[] = $userBlock->blocker_id === $userId ? $userBlock->blocked_id : $userBlock->blocker_id;
+        }
+
+        return array_values(array_unique($counterpartIds));
     }
 }

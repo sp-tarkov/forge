@@ -65,6 +65,11 @@ final class ProcessChatMessageNotification implements ShouldQueue
             return;
         }
 
+        // Don't notify when the recipient and the sender block each other
+        if ($recipient->isBlockedMutually($sender)) {
+            return;
+        }
+
         // Check if recipient wants chat notifications (global setting)
         if (! $recipient->email_chat_notifications_enabled) {
             return;
