@@ -106,8 +106,15 @@
                                     clip-rule="evenodd"
                                 />
                             </svg>
-                            <span class="hidden min-[400px]:inline">{{ $this->filterCount }}</span>
-                            <span class="ml-1">{{ __('Filters') }}</span>
+                            <span>{{ __('Filters') }}</span>
+                            @if ($this->filterCount > 0)
+                                <flux:badge
+                                    size="sm"
+                                    color="cyan"
+                                    rounded
+                                    class="ml-1.5 hidden min-[400px]:inline-flex"
+                                >{{ $this->filterCount }}</flux:badge>
+                            @endif
                         </button>
                     </div>
 
@@ -155,7 +162,8 @@
                                     :aria-expanded="isResultsPerPageOpen.toString()"
                                     aria-haspopup="true"
                                 >
-                                    <span class="hidden lg:inline">{{ __('Per Page') }}</span>
+                                    <span
+                                        class="hidden lg:inline">{{ __(':perPage / page', ['perPage' => $perPage]) }}</span>
                                     <span class="lg:hidden">{{ __(':perPage/p', ['perPage' => $perPage]) }}</span>
                                     <svg
                                         class="-mr-1 ml-1 h-4 w-4 shrink-0 text-gray-400 group-hover:text-gray-500 sm:h-5 sm:w-5"
@@ -215,7 +223,9 @@
                                     :aria-expanded="isSortOpen.toString()"
                                     aria-haspopup="true"
                                 >
-                                    {{ __('Sort') }}
+                                    <span
+                                        class="hidden lg:inline">{{ __('Sort: :order', ['order' => $this->orderLabel]) }}</span>
+                                    <span class="lg:hidden">{{ $this->orderLabel }}</span>
                                     <svg
                                         class="-mr-1 ml-1 h-4 w-4 shrink-0 text-gray-400 group-hover:text-gray-500 sm:h-5 sm:w-5"
                                         viewBox="0 0 20 20"
@@ -295,26 +305,14 @@
                         </div>
                     </div>
 
-                    {{-- Force line break on extra small screens before Reset/RSS --}}
+                    {{-- Force line break on extra small screens before RSS --}}
                     <div class="order-5 w-full sm:hidden"></div>
 
-                    {{-- Spacer to push Reset and RSS to the right --}}
+                    {{-- Spacer to push RSS to the right --}}
                     <div class="order-6 hidden flex-1 sm:order-5 sm:flex md:order-6"></div>
 
-                    {{-- Reset Filters Button --}}
-                    <div class="order-6 flex flex-shrink-0 items-center self-stretch sm:order-6 md:order-7">
-                        <button
-                            x-on:click="$wire.call('resetFilters')"
-                            type="button"
-                            class="whitespace-nowrap px-3 text-sm text-gray-300 hover:text-gray-200 sm:px-4 lg:px-4 xl:px-6"
-                        >
-                            {{ __('Reset Filters') }}
-                        </button>
-                    </div>
-
                     {{-- RSS Feed Link --}}
-                    <div
-                        class="order-7 flex flex-shrink-0 items-center self-stretch border-gray-700 sm:order-7 sm:border-l md:order-8">
+                    <div class="order-7 flex flex-shrink-0 items-center self-stretch sm:order-7 md:order-8">
                         <a
                             href="{{ route('mods.rss') }}?{{ http_build_query([
                                 'query' => $query,
@@ -346,6 +344,34 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Active filter chips --}}
+            @if ($this->filterCount > 0)
+                <div class="border-b border-gray-700 py-3">
+                    <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-2 text-sm">
+                        <span class="font-medium text-gray-400">{{ __('Active filters:') }}</span>
+                        @foreach ($this->activeFilterChips as $chip)
+                            <flux:badge
+                                wire:key="filter-chip-{{ $chip->key }}"
+                                size="sm"
+                                color="cyan"
+                            >
+                                {{ $chip->label }}
+                                <flux:badge.close
+                                    wire:click="{{ $chip->removeAction }}"
+                                    aria-label="{{ __('Remove filter: :label', ['label' => $chip->label]) }}"
+                                />
+                            </flux:badge>
+                        @endforeach
+                        <flux:button
+                            variant="ghost"
+                            size="sm"
+                            wire:click="resetFilters"
+                        >{{ __('Clear all') }}</flux:button>
+                    </div>
+                </div>
+            @endif
+
             <div
                 x-cloak
                 x-show="isFilterOpen"

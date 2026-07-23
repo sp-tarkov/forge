@@ -7,6 +7,7 @@ use App\Models\Mod;
 use App\Models\ModCategory;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
+use App\Support\DataTransferObjects\ActiveFilterChip;
 use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -23,6 +24,11 @@ new #[Layout('layouts::base')] class extends Component
 {
     use ModeratesMod;
     use WithPagination;
+
+    /**
+     * The maximum number of individual version chips shown before collapsing into a single summary chip.
+     */
+    private const int VERSION_CHIP_LIMIT = 5;
 
     /**
      * The search query value.
@@ -64,7 +70,6 @@ new #[Layout('layouts::base')] class extends Component
     /**
      * The featured filter value.
      */
-    #[Session]
     #[Url]
     public mixed $featured = 'include';
 
@@ -77,7 +82,6 @@ new #[Layout('layouts::base')] class extends Component
     /**
      * The Fika Compatibility filter value.
      */
-    #[Session]
     #[Url]
     public mixed $fikaCompatibility = false;
 
@@ -123,6 +127,24 @@ new #[Layout('layouts::base')] class extends Component
         $this->fikaCompatibility = false;
 
         unset($this->splitSptVersions); // Clear computed property cache
+    }
+
+    /**
+     * Clear a single filter back to its default value.
+     */
+    public function clearFilter(string $filter): void
+    {
+        match ($filter) {
+            'query' => $this->query = '',
+            'featured' => $this->featured = 'include',
+            'category' => $this->category = '',
+            'fika' => $this->fikaCompatibility = false,
+            'versions' => $this->sptVersions = $this->defaultSptVersions(),
+            default => null,
+        };
+
+        $this->resetPage();
+        unset($this->splitSptVersions); // Clear cached computed property
     }
 
     /**
@@ -228,36 +250,59 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
-     * Compute the count of active filters.
+     * Compute the dismissible chips for every active, non-default filter.
+     *
+     * @return array<int, ActiveFilterChip>
+     */
+    #[Computed]
+    public function activeFilterChips(): array
+    {
+        $chips = [];
+
+        if (is_string($this->query) && $this->query !== '') {
+            $chips[] = new ActiveFilterChip('query', __('Search: ":query"', ['query' => $this->query]), "clearFilter('query')");
+        }
+
+        $chips = [...$chips, ...$this->versionFilterChips()];
+
+        if ($this->featured === 'exclude') {
+            $chips[] = new ActiveFilterChip('featured', __('Featured: excluded'), "clearFilter('featured')");
+        } elseif ($this->featured === 'only') {
+            $chips[] = new ActiveFilterChip('featured', __('Featured only'), "clearFilter('featured')");
+        }
+
+        if ($this->fikaCompatibility === true) {
+            $chips[] = new ActiveFilterChip('fika', __('Fika compatible'), "clearFilter('fika')");
+        }
+
+        if (is_string($this->category) && $this->category !== '') {
+            $categoryTitle = $this->availableCategories->firstWhere('slug', $this->category)->title ?? $this->category;
+            $chips[] = new ActiveFilterChip('category', $categoryTitle, "clearFilter('category')");
+        }
+
+        return $chips;
+    }
+
+    /**
+     * Compute the count of active filters, matching the number of visible filter chips.
      */
     #[Computed]
     public function filterCount(): int
     {
-        $count = 0;
-        if ($this->query !== '') {
-            $count++;
-        }
+        return count($this->activeFilterChips);
+    }
 
-        if ($this->featured !== 'include') {
-            $count++;
-        }
-
-        if ($this->category !== '') {
-            $count++;
-        }
-
-        if ($this->fikaCompatibility === true) {
-            $count++;
-        }
-
-        // Count sptVersions filter if it's not 'all' and not empty
-        if (is_array($this->sptVersions)) {
-            $count += count($this->sptVersions);
-        } elseif ($this->sptVersions !== 'all' && ($this->sptVersions !== '' && $this->sptVersions !== '0')) {
-            $count++;
-        }
-
-        return $count;
+    /**
+     * Compute the display label for the current sort order, falling back to the default sort for unknown values.
+     */
+    #[Computed]
+    public function orderLabel(): string
+    {
+        return match ($this->order) {
+            'updated' => __('Recently Updated'),
+            'downloaded' => __('Most Downloaded'),
+            default => __('Newest'),
+        };
     }
 
     /**
@@ -308,6 +353,54 @@ new #[Layout('layouts::base')] class extends Component
         $this->redirectOutOfBoundsPage($paginatedMods);
 
         return ['mods' => $paginatedMods, 'includeLegacy' => $includeLegacy];
+    }
+
+    /**
+     * Build the version chips: the "all" state, a per-version list, or a summary chip when many are selected.
+     *
+     * @return array<int, ActiveFilterChip>
+     */
+    private function versionFilterChips(): array
+    {
+        if ($this->sptVersions === 'all') {
+            return [new ActiveFilterChip('versions-all', __('All SPT versions'), "toggleVersionFilter('all')")];
+        }
+
+        if ($this->isDefaultVersionSelection()) {
+            return [];
+        }
+
+        $versions = $this->ensureVersionsArray();
+
+        if (count($versions) > self::VERSION_CHIP_LIMIT) {
+            return [new ActiveFilterChip('versions-summary', __(':count SPT versions', ['count' => count($versions)]), "clearFilter('versions')")];
+        }
+
+        return array_map(
+            fn (string $version): ActiveFilterChip => new ActiveFilterChip(
+                'version-'.$version,
+                $version === 'legacy' ? __('Legacy versions') : __('SPT :version', ['version' => $version]),
+                sprintf("toggleVersionFilter('%s')", $version),
+            ),
+            $versions,
+        );
+    }
+
+    /**
+     * Determine whether the current version selection matches the default set, ignoring order.
+     */
+    private function isDefaultVersionSelection(): bool
+    {
+        if (! is_array($this->sptVersions)) {
+            return false;
+        }
+
+        $current = $this->sptVersions;
+        $default = $this->defaultSptVersions();
+        sort($current);
+        sort($default);
+
+        return $current === $default;
     }
 
     /**
