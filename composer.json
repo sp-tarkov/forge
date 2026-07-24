@@ -35,6 +35,7 @@
         "mchev/banhammer": "^2.5.0",
         "meilisearch/meilisearch-php": "^1.16.1",
         "mobiledetect/mobiledetectlib": "~4.8.10",
+        "nightowl/agent": "^1.4",
         "nitotm/efficient-language-detector": "^3.2",
         "nunomaduro/essentials": "^1.2",
         "shetabit/visitor": "^4.5.5",
