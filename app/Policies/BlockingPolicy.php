@@ -54,48 +54,4 @@ final class BlockingPolicy
 
         return Response::allow();
     }
-
-    /**
-     * Determine if the user can view the blocked users list.
-     */
-    public function viewBlockedUsers(User $user): bool
-    {
-        return true; // All users can view their own blocked list
-    }
-
-    /**
-     * Determine if the user can interact with another user.
-     */
-    public function canInteract(User $user, User $target): bool
-    {
-        // Cannot interact if there is mutual blocking
-        return ! $user->isBlockedMutually($target);
-    }
-
-    /**
-     * Determine if the user can view another user's profile.
-     */
-    public function viewProfile(User $user, User $target): bool
-    {
-        // Cannot view if blocked
-        return ! $user->isBlockedMutually($target);
-    }
-
-    /**
-     * Determine if the user can send messages to another user.
-     */
-    public function sendMessage(User $user, User $target): bool
-    {
-        // Cannot message if blocked
-        return ! $user->isBlockedMutually($target);
-    }
-
-    /**
-     * Determine if the user can comment on content owned by another user.
-     */
-    public function commentOnContent(User $user, User $owner): bool
-    {
-        // Cannot comment if blocked
-        return ! $user->isBlockedMutually($owner);
-    }
 }

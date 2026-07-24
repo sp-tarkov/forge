@@ -540,10 +540,10 @@ describe('blocking', function (): void {
             $userB = User::factory()->create();
 
             $this->actingAs($userA);
-            expect($userA->can('createWithUser', [Conversation::class, $userB]))->toBeTrue();
+            expect($userA->can('initiateChat', $userB))->toBeTrue();
 
             $userB->block($userA);
-            expect($userA->can('createWithUser', [Conversation::class, $userB]))->toBeFalse();
+            expect($userA->can('initiateChat', $userB))->toBeFalse();
         });
 
         it('prevents sending messages when users are blocked', function (): void {
