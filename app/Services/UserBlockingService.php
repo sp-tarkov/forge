@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Jobs\CleanupBlockedNotificationsJob;
 use App\Models\User;
 use App\Models\UserBlock;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,11 @@ final class UserBlockingService
      */
     public function blockUser(User $blocker, User $blocked, ?string $reason = null): UserBlock
     {
-        return DB::transaction(fn (): UserBlock => $blocker->block($blocked, $reason));
+        $userBlock = DB::transaction(fn (): UserBlock => $blocker->block($blocked, $reason));
+
+        dispatch(new CleanupBlockedNotificationsJob($blocker, $blocked));
+
+        return $userBlock;
     }
 
     /**
