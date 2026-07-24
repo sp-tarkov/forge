@@ -24,10 +24,10 @@ $wire.on('leave-conversation-presence', ({ conversationHash }) => {
 const currentUserId = $wire.currentUserId;
 if (window.Echo && currentUserId) {
     window.Echo.private(`user.${currentUserId}`)
-        .listen('UserBlocked', (e) => {
-            $wire.handleUserBlocked(e.blocker_id);
+        .listen('UserBlocked', () => {
+            $wire.handleUserBlocked();
         })
-        .listen('UserUnblocked', (e) => {
-            $wire.handleUserUnblocked(e.unblocker_id);
+        .listen('UserUnblocked', () => {
+            $wire.handleUserUnblocked();
         });
 }

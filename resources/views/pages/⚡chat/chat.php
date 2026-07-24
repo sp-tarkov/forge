@@ -5,10 +5,8 @@ declare(strict_types=1);
 use App\Events\ConversationUpdated;
 use App\Events\MessageRead;
 use App\Events\MessageSent;
-use App\Events\UserBlocked;
 use App\Events\UserStartedTyping;
 use App\Events\UserStoppedTyping;
-use App\Events\UserUnblocked;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
@@ -887,8 +885,6 @@ new #[Layout('layouts::base')] class extends Component
             $blockingService->unblockUser($user, $otherUser);
             Flux::toast(heading: 'User Unblocked', text: 'The user has been successfully unblocked.', variant: 'success');
 
-            // Broadcast the unblock event for real-time updates
-            $this->broadcastSafely(new UserUnblocked($user, $otherUser));
             $this->dispatch('user-unblocked', userId: $otherUser->id)->to('navigation-chat');
         } else {
             if ($user->cannot('block', $otherUser)) {
@@ -902,8 +898,6 @@ new #[Layout('layouts::base')] class extends Component
             $blockingService->blockUser($user, $otherUser, $this->blockReason ?: null);
             Flux::toast(heading: 'User Blocked', text: 'The user has been successfully blocked.', variant: 'success');
 
-            // Broadcast the block event for real-time updates
-            $this->broadcastSafely(new UserBlocked($user, $otherUser));
             $this->dispatch('user-blocked', userId: $otherUser->id)->to('navigation-chat');
         }
 
@@ -914,7 +908,7 @@ new #[Layout('layouts::base')] class extends Component
     /**
      * Handle user blocked event.
      */
-    public function handleUserBlocked(int $userId): void
+    public function handleUserBlocked(?int $userId = null): void
     {
         $this->dispatch('$refresh');
     }
@@ -922,7 +916,7 @@ new #[Layout('layouts::base')] class extends Component
     /**
      * Handle user unblocked event.
      */
-    public function handleUserUnblocked(int $userId): void
+    public function handleUserUnblocked(?int $userId = null): void
     {
         $this->dispatch('$refresh');
     }

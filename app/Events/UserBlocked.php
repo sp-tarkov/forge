@@ -39,15 +39,12 @@ final class UserBlocked implements ShouldBroadcast
     }
 
     /**
-     * Get the data to broadcast.
+     * Get the data to broadcast. The payload stays empty so the blocked user's client is not told who blocked them.
      *
      * @return array<string, mixed>
      */
     public function broadcastWith(): array
     {
-        return [
-            'blocker_id' => $this->blocker->id,
-            'blocked_id' => $this->blocked->id,
-        ];
+        return [];
     }
 }
