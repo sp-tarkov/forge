@@ -9,7 +9,7 @@ it('marks an anonymous mods listing as publicly cacheable', function (): void {
 
     expect($response->headers->get('Cache-Control'))
         ->toContain('public')
-        ->toContain('max-age=60');
+        ->toContain('max-age=300');
 });
 
 it('caches near-static endpoints for longer', function (): void {

@@ -195,6 +195,21 @@ describe('index', function (): void {
         $response->assertJsonPath('data.2.id', $modOld->id);
     });
 
+    it('sorts mods by favourites_count descending', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $modLow = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['favourites_count' => 3]);
+        $modHigh = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['favourites_count' => 200]);
+        $modMid = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['favourites_count' => 42]);
+
+        $response = $this->getJson('/api/v0/mods?sort=-favourites_count');
+
+        $response->assertStatus(Response::HTTP_OK)->assertJsonCount(3, 'data');
+        $response->assertJsonPath('data.0.id', $modHigh->id);
+        $response->assertJsonPath('data.1.id', $modMid->id);
+        $response->assertJsonPath('data.2.id', $modLow->id);
+    });
+
     it('always includes owner relationship', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
@@ -512,6 +527,18 @@ describe('index', function (): void {
         $response
             ->assertOk()
             ->assertJsonPath('data.0.fika_compatibility', true);
+    });
+
+    it('returns favourites_count when requested', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['favourites_count' => 7]);
+
+        $response = $this->getJson('/api/v0/mods?fields=favourites_count');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.0.favourites_count', 7);
     });
 
     it('returns thumbnail as a URL', function (): void {
@@ -969,6 +996,18 @@ describe('show', function (): void {
         $response
             ->assertOk()
             ->assertJsonPath('data.fika_compatibility', true);
+    });
+
+    it('returns favourites_count when requested', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['favourites_count' => 7]);
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%d?fields=favourites_count', $mod->id));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.favourites_count', 7);
     });
 
     it('returns custom_ai_disclosure as rendered HTML when requested', function (): void {

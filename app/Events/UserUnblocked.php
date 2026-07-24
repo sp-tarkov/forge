@@ -39,15 +39,12 @@ final class UserUnblocked implements ShouldBroadcast
     }
 
     /**
-     * Get the data to broadcast.
+     * Get the data to broadcast. The payload stays empty so the unblocked user's client is not told who unblocked them.
      *
      * @return array<string, mixed>
      */
     public function broadcastWith(): array
     {
-        return [
-            'unblocker_id' => $this->unblocker->id,
-            'unblocked_id' => $this->unblocked->id,
-        ];
+        return [];
     }
 }

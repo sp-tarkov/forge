@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Modelable;
@@ -82,13 +83,19 @@ new class extends Component
                 ->get();
         }
 
-        /** @var Collection<int, User> */
-        return User::query()
+        $query = User::query()
             ->whereLike('name', $this->search.'%')
             ->whereNotIn('id', array_merge($this->selectedUsers, $this->excludeUsers))
             ->orderBy('name')
-            ->limit(10)
-            ->get();
+            ->limit(10);
+
+        $user = Auth::user();
+        if ($user instanceof User) {
+            $query->withoutBlocked($user);
+        }
+
+        /** @var Collection<int, User> */
+        return $query->get();
     }
 
     /**

@@ -1,4 +1,4 @@
-<div {{ $attributes->merge(['class' => 'addon-list-component relative']) }}>
+<div {{ $attributes->merge(['class' => 'addon-list-component relative isolate']) }}>
 
     <livewire:ribbon.addon
         wire:key="addon-card-ribbon-{{ $addon->id }}"

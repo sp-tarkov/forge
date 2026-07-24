@@ -26,6 +26,7 @@ final class ModRssFeedController extends Controller
             'order' => $request->string('order', 'created')->toString(),
             'sptVersions' => $this->parseSptVersions($request),
             'featured' => $request->string('featured', 'include')->toString(),
+            'aiContent' => $request->string('ai', 'include')->toString(),
             'category' => $request->string('category', '')->toString(),
         ];
 
@@ -174,6 +175,14 @@ final class ModRssFeedController extends Controller
             }
         }
 
+        if (isset($filters['aiContent']) && is_string($filters['aiContent'])) {
+            if ($filters['aiContent'] === 'only') {
+                $parts[] = 'AI generated mods only';
+            } elseif ($filters['aiContent'] === 'exclude') {
+                $parts[] = 'excluding AI generated mods';
+            }
+        }
+
         if (! empty($filters['category']) && is_string($filters['category'])) {
             $parts[] = 'in category: '.$filters['category'];
         }
@@ -185,6 +194,8 @@ final class ModRssFeedController extends Controller
         if (isset($filters['order']) && is_string($filters['order'])) {
             if ($filters['order'] === 'downloaded') {
                 $parts[] = 'sorted by most downloaded';
+            } elseif ($filters['order'] === 'favourited') {
+                $parts[] = 'sorted by most favourited';
             } elseif ($filters['order'] === 'updated') {
                 $parts[] = 'sorted by recently updated';
             }

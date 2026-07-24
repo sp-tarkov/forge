@@ -75,8 +75,8 @@ new class extends Component
             $this->dispatch('user-blocked', userId: $this->user->id);
             Flux::toast(heading: 'User Blocked', text: 'You have successfully blocked '.$this->user->name.'.', variant: 'success');
 
-            // Redirect to homepage after blocking since the user profile will now be inaccessible
-            $this->redirect(route('home'), navigate: true);
+            // Reload the profile so every component reflects the new block state
+            $this->redirect(route('user.show', ['userId' => $this->user->id, 'slug' => $this->user->slug]), navigate: true);
 
             return;
         }

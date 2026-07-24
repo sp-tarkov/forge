@@ -139,7 +139,7 @@
         />
 
         @verified
-            @if (CachedGate::allows('create', [App\Models\Comment::class, $comment->commentable]))
+            @if (CachedGate::allows('create', [App\Models\Comment::class, $comment->commentable, $comment]))
                 <button
                     type="button"
                     wire:click="toggleReplyForm({{ $comment->id }})"

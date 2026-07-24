@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Addon;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Models\User;
 
 return [
@@ -143,14 +144,22 @@ return [
             User::class => [
                 'filterableAttributes' => [],
                 'sortableAttributes' => [],
+                'searchableAttributes' => ['name'],
             ],
             Mod::class => [
                 'filterableAttributes' => [],
                 'sortableAttributes' => [],
+                'searchableAttributes' => ['name', 'slug', 'guid', 'description'],
             ],
             Addon::class => [
                 'filterableAttributes' => [],
                 'sortableAttributes' => [],
+                'searchableAttributes' => ['name', 'slug', 'teaser', 'mod_name', 'mod_guid', 'description'],
+            ],
+            ModList::class => [
+                'filterableAttributes' => [],
+                'sortableAttributes' => [],
+                'searchableAttributes' => ['title', 'slug', 'owner_name', 'description'],
             ],
         ],
     ],

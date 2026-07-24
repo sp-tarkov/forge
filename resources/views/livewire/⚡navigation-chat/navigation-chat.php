@@ -109,14 +109,6 @@ new class extends Component
             return;
         }
 
-        // Check if either user has blocked the other
-        if ($user->hasBlocked($otherUser) || $user->isBlockedBy($otherUser)) {
-            Flux::toast(heading: 'Error', text: 'You cannot start a conversation with this user.', variant: 'danger');
-            $this->closeNewConversationModal();
-
-            return;
-        }
-
         $existingConversation = Conversation::query()
             ->where(function (Builder $query) use ($user, $otherUser): void {
                 $query->where('user1_id', $user->id)->where('user2_id', $otherUser->id);
@@ -126,10 +118,25 @@ new class extends Component
             })
             ->first();
 
+        // Require initiateChat authorization when no conversation exists yet
+        if (! $existingConversation && $user->cannot('initiateChat', $otherUser)) {
+            Flux::toast(heading: 'Error', text: 'You cannot start a conversation with this user.', variant: 'danger');
+            $this->closeNewConversationModal();
+
+            return;
+        }
+
         $conversation = Conversation::findOrCreateBetween($user, $otherUser, creator: $user);
 
-        // If the conversation is archived for the current user, unarchive it
+        // If the conversation is archived for the current user, try to unarchive it
         if ($conversation->isArchivedBy($user)) {
+            if ($user->cannot('unarchive', $conversation)) {
+                Flux::toast(heading: 'Error', text: 'You cannot start a conversation with this user.', variant: 'danger');
+                $this->closeNewConversationModal();
+
+                return;
+            }
+
             $conversation->unarchiveFor($user);
         }
 

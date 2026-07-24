@@ -24,6 +24,7 @@ final class ModFilter
         'query',
         'order',
         'featured',
+        'aiContent',
         'category',
         'fikaCompatibility',
         'sptVersions',
@@ -143,8 +144,21 @@ final class ModFilter
         return match ($type) {
             'updated' => $this->orderByLatestVersionCreatedAt(),
             'downloaded' => $this->builder->orderByDesc('mods.downloads'),
+            'favourited' => $this->orderByFavouriteCount(),
             default => $this->builder->latest('mods.created_at'),
         };
+    }
+
+    /**
+     * Order mods by their denormalized favourite count, breaking ties by newest creation date.
+     *
+     * @return Builder<Mod>
+     */
+    private function orderByFavouriteCount(): Builder
+    {
+        return $this->builder
+            ->orderByDesc('mods.favourites_count')
+            ->latest('mods.created_at');
     }
 
     /**
@@ -191,6 +205,24 @@ final class ModFilter
         return match ($option) {
             'exclude' => $this->builder->where('mods.featured', false),
             'only' => $this->builder->where('mods.featured', true),
+            default => $this->builder,
+        };
+    }
+
+    /**
+     * Filter the results by the AI generated content status.
+     *
+     * @return Builder<Mod>
+     */
+    private function aiContent(mixed $option): Builder
+    {
+        if (! is_string($option)) {
+            return $this->builder;
+        }
+
+        return match ($option) {
+            'exclude' => $this->builder->where('mods.contains_ai_content', false),
+            'only' => $this->builder->where('mods.contains_ai_content', true),
             default => $this->builder,
         };
     }

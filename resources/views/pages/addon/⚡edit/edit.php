@@ -8,6 +8,7 @@ use App\Jobs\GenerateThumbnailVariants;
 use App\Models\Addon;
 use App\Models\License;
 use App\Models\SourceCodeLink;
+use App\Rules\NoBlockRelationship;
 use App\Services\ThumbnailService;
 use Flux\Flux;
 use GrahamCampbell\Markdown\Facades\Markdown;
@@ -422,8 +423,19 @@ new #[Layout('layouts::base')] class extends Component
             'commentsDisabled' => 'boolean',
             'subscribeToComments' => 'boolean',
             'authorIds' => 'array|max:10',
-            'authorIds.*' => 'exists:users,id|distinct',
+            'authorIds.*' => ['exists:users,id', 'distinct', new NoBlockRelationship($this->addon->owner, $this->existingAuthorIds())],
         ];
+    }
+
+    /**
+     * Get the IDs of the currently attached additional authors.
+     *
+     * @return list<int>
+     */
+    protected function existingAuthorIds(): array
+    {
+        /** @var list<int> */
+        return $this->addon->additionalAuthors()->pluck('users.id')->all();
     }
 
     /**

@@ -21,6 +21,20 @@ use stdClass;
 final class DependencyService
 {
     /**
+     * Per-instance memo of the resolved dependency rows used by buildDependencyTree, keyed by dependable version ID.
+     *
+     * @var array<int, Collection<int, stdClass>>
+     */
+    private array $dependencyRowsByVersionId = [];
+
+    /**
+     * Per-instance memo of the mods loaded for a set of dependency version IDs, keyed by the imploded ID list.
+     *
+     * @var array<string, EloquentCollection<int, Mod>>
+     */
+    private array $dependencyModsByVersionIds = [];
+
+    /**
      * Parse mod identifier:version pairs from query parameter.
      *
      * @return Collection<int, array{identifier: string, version: string, is_mod_id: bool}>
@@ -204,8 +218,8 @@ final class DependencyService
         // Mark this version as processed
         $processedVersionIds = $processedVersionIds->push($modVersionId);
 
-        // Get the latest resolved version for each dependency by semantic version
-        $dependencies = DB::table('dependencies_resolved')
+        // Get the latest resolved version for each dependency by semantic version, memoized per instance
+        $dependencies = $this->dependencyRowsByVersionId[$modVersionId] ??= DB::table('dependencies_resolved')
             ->select(
                 'dependencies.dependent_mod_id',
                 'dependencies.constraint',
@@ -268,21 +282,9 @@ final class DependencyService
             $constraintsByModId->get($modId)?->push($constraint);
         }
 
-        // Load the actual mod versions with their mods using QueryBuilder for consistency
-        $versionIds = $dependencies->pluck('latest_version_id')->filter()->unique()->all();
-
-        // Get the mods for these versions
-        $queryBuilder = new ModDependencyTreeQueryBuilder;
-
-        // Get all mods that have a version in our version IDs list
-        $mods = $queryBuilder->apply()
-            ->whereHas('versions', function (Builder $query) use ($versionIds): void {
-                $query->whereIn('id', $versionIds);
-            })
-            ->with(['versions' => function (Relation $query) use ($versionIds): void {
-                $query->whereIn('id', $versionIds);
-            }])
-            ->get();
+        // Load the mods owning the resolved dependency versions
+        $versionIds = $this->latestVersionIdsFromRows($dependencies);
+        $mods = $this->dependencyModsForVersionIds($versionIds);
 
         // Build a map of mod_id => latest_version_id from our dependencies
         $modVersionMap = $dependencies->pluck('latest_version_id', 'dependent_mod_id');
@@ -381,21 +383,9 @@ final class DependencyService
             $constraintsByModId->get($modId)?->push($constraint);
         }
 
-        // Load the actual mod versions with their mods using QueryBuilder for consistency
-        $versionIds = $dependencies->pluck('latest_version_id')->filter()->unique()->all();
-
-        // Get the mods for these versions
-        $queryBuilder = new ModDependencyTreeQueryBuilder;
-
-        // Get all mods that have a version in our version IDs list
-        $mods = $queryBuilder->apply()
-            ->whereHas('versions', function (Builder $query) use ($versionIds): void {
-                $query->whereIn('id', $versionIds);
-            })
-            ->with(['versions' => function (Relation $query) use ($versionIds): void {
-                $query->whereIn('id', $versionIds);
-            }])
-            ->get();
+        // Load the mods owning the resolved dependency versions
+        $versionIds = $this->latestVersionIdsFromRows($dependencies);
+        $mods = $this->dependencyModsForVersionIds($versionIds);
 
         // Build a map of mod_id => latest_version_id from our dependencies
         $modVersionMap = $dependencies->pluck('latest_version_id', 'dependent_mod_id');
@@ -431,26 +421,27 @@ final class DependencyService
      */
     public function publishedVersionsForSpt(int $modId, string $sptVersion): EloquentCollection
     {
-        return ModVersion::query()
+        return $this->publishedVersionsForSptQuery($sptVersion)
             ->where('mod_id', $modId)
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->where('disabled', false)
-            ->whereHas('sptVersions', function (Builder $q) use ($sptVersion): void {
-                $q->where('version', $sptVersion)
-                    ->whereNotNull('published_at')
-                    ->where('published_at', '<=', now());
-            })
-            ->whereHas('mod', function (Builder $q): void {
-                $q->whereNotNull('published_at')
-                    ->where('published_at', '<=', now())
-                    ->where('disabled', false);
-            })
-            ->orderByDesc('version_major')
-            ->orderByDesc('version_minor')
-            ->orderByDesc('version_patch')
-            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_labels')
+            ->get();
+    }
+
+    /**
+     * Get the published, visible versions of many mods that are compatible with a specific SPT version in a single
+     * query. Versions are ordered newest first within each mod, so grouping the result by mod ID preserves the same
+     * per-mod ordering as publishedVersionsForSpt().
+     *
+     * @param  list<int>  $modIds
+     * @return EloquentCollection<int, ModVersion>
+     */
+    public function publishedVersionsForSptByModIds(array $modIds, string $sptVersion): EloquentCollection
+    {
+        if ($modIds === []) {
+            return new EloquentCollection;
+        }
+
+        return $this->publishedVersionsForSptQuery($sptVersion)
+            ->whereIn('mod_id', $modIds)
             ->get();
     }
 
@@ -486,6 +477,81 @@ final class DependencyService
             ->groupBy('dependable_id');
 
         $this->applyConstraintsFromTree($dependencyTree, $allDependencies, $constraintsByModId);
+    }
+
+    /**
+     * Extract the unique, positive latest version IDs from resolved dependency rows.
+     *
+     * @param  Collection<int, stdClass>  $dependencies
+     * @return list<int>
+     */
+    private function latestVersionIdsFromRows(Collection $dependencies): array
+    {
+        $versionIds = [];
+
+        foreach ($dependencies as $dependency) {
+            $latestVersionId = $dependency->latest_version_id;
+
+            if (! is_numeric($latestVersionId)) {
+                continue;
+            }
+
+            $latestVersionId = (int) $latestVersionId;
+
+            if ($latestVersionId > 0 && ! in_array($latestVersionId, $versionIds, true)) {
+                $versionIds[] = $latestVersionId;
+            }
+        }
+
+        return $versionIds;
+    }
+
+    /**
+     * Get the mods that have a version in the given dependency version ID list, with those versions eager loaded,
+     * memoized per instance.
+     *
+     * @param  list<int>  $versionIds
+     * @return EloquentCollection<int, Mod>
+     */
+    private function dependencyModsForVersionIds(array $versionIds): EloquentCollection
+    {
+        return $this->dependencyModsByVersionIds[implode(',', $versionIds)] ??= (new ModDependencyTreeQueryBuilder)->apply()
+            ->whereHas('versions', function (Builder $query) use ($versionIds): void {
+                $query->whereIn('id', $versionIds);
+            })
+            ->with(['versions' => function (Relation $query) use ($versionIds): void {
+                $query->whereIn('id', $versionIds);
+            }])
+            ->get();
+    }
+
+    /**
+     * Build the base query for published, visible mod versions compatible with a specific SPT version, ordered newest
+     * first.
+     *
+     * @return Builder<ModVersion>
+     */
+    private function publishedVersionsForSptQuery(string $sptVersion): Builder
+    {
+        return ModVersion::query()
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->where('disabled', false)
+            ->whereHas('sptVersions', function (Builder $q) use ($sptVersion): void {
+                $q->where('version', $sptVersion)
+                    ->whereNotNull('published_at')
+                    ->where('published_at', '<=', now());
+            })
+            ->whereHas('mod', function (Builder $q): void {
+                $q->whereNotNull('published_at')
+                    ->where('published_at', '<=', now())
+                    ->where('disabled', false);
+            })
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels');
     }
 
     /**

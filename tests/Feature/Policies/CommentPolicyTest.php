@@ -937,3 +937,67 @@ describe('pin ordering', function (): void {
         expect($comments->get(2)->id)->toBe($firstPinned->id);
     });
 });
+
+describe('create Policy Method reply blocking', function (): void {
+    it('allows replying when there is no block relationship with the parent author', function (): void {
+        $parentComment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'user_id' => $this->otherUser->id,
+        ]);
+
+        expect($this->policy->create($this->user, $this->mod, $parentComment))->toBeTrue();
+    });
+
+    it('denies replying when the replier has blocked the parent comment author', function (): void {
+        $parentComment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'user_id' => $this->otherUser->id,
+        ]);
+
+        $this->user->block($this->otherUser);
+
+        expect($this->policy->create($this->user, $this->mod, $parentComment))->toBeFalse();
+    });
+
+    it('denies replying when the parent comment author has blocked the replier', function (): void {
+        $parentComment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'user_id' => $this->otherUser->id,
+        ]);
+
+        $this->otherUser->block($this->user);
+
+        expect($this->policy->create($this->user, $this->mod, $parentComment))->toBeFalse();
+    });
+
+    it('allows replying to your own comment regardless of other block relationships', function (): void {
+        $parentComment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->user->block($this->otherUser);
+
+        expect($this->policy->create($this->user, $this->mod, $parentComment))->toBeTrue();
+    });
+
+    it('ignores block relationships for root comments without a parent', function (): void {
+        $this->user->block($this->otherUser);
+
+        expect($this->policy->create($this->user, $this->mod))->toBeTrue();
+    });
+});
+
+describe('create Policy Method addon owner blocking', function (): void {
+    it('allows commenting on an addon when there is no block relationship with the owner', function (): void {
+        expect($this->policy->create($this->user, $this->addon))->toBeTrue();
+    });
+
+    it('denies commenting on an addon when the commenter has blocked the owner', function (): void {
+        $this->user->block($this->addon->owner);
+
+        expect($this->policy->create($this->user, $this->addon))->toBeFalse();
+    });
+
+    it('denies commenting on an addon when the owner has blocked the commenter', function (): void {
+        $this->addon->owner->block($this->user);
+
+        expect($this->policy->create($this->user, $this->addon))->toBeFalse();
+    });
+});

@@ -1,7 +1,9 @@
 @props(['isFollowing'])
 
 <form>
-    @if ($isFollowing)
+    @if ($this->isBlockedFromFollowing)
+        {{-- No buttons are shown when a block relationship exists --}}
+    @elseif ($isFollowing)
         {{-- Following button --}}
         <flux:button
             wire:click="unfollow"

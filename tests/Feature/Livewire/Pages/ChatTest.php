@@ -361,6 +361,34 @@ describe('blocking UI', function (): void {
 
         expect($this->userA->fresh()->hasBlocked($this->userB))->toBeFalse();
     });
+
+    it('prevents blocking a moderator from chat', function (): void {
+        $moderator = User::factory()->moderator()->create();
+        $conversation = Conversation::findOrCreateBetween($this->userA, $moderator, $this->userA);
+
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
+            ->call('confirmBlock');
+
+        expect($this->userA->hasBlocked($moderator))->toBeFalse();
+    });
+
+    it('prevents blocking an administrator from chat', function (): void {
+        $admin = User::factory()->admin()->create();
+        $conversation = Conversation::findOrCreateBetween($this->userA, $admin, $this->userA);
+
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
+            ->call('confirmBlock');
+
+        expect($this->userA->hasBlocked($admin))->toBeFalse();
+    });
+
+    it('hides the block option for conversations with staff members', function (): void {
+        $moderator = User::factory()->moderator()->create();
+        $conversation = Conversation::findOrCreateBetween($this->userA, $moderator, $this->userA);
+
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
+            ->assertDontSee('Block User');
+    });
 });
 
 describe('blocking and archiving interaction', function (): void {
@@ -401,6 +429,26 @@ describe('blocking and archiving interaction', function (): void {
 
         // Conversation should still be archived
         expect($conversation->isArchivedBy($this->userA))->toBeTrue();
+    });
+
+    it('prevents starting a new conversation with a user who has blocked you', function (): void {
+        $this->userB->block($this->userA);
+
+        Livewire::test('pages::chat')
+            ->call('startConversation', $this->userB->id)
+            ->assertSet('selectedConversation', null);
+
+        expect(Conversation::query()->count())->toBe(0);
+    });
+
+    it('prevents starting a new conversation with a user you have blocked', function (): void {
+        $this->userA->block($this->userB);
+
+        Livewire::test('pages::chat')
+            ->call('startConversation', $this->userB->id)
+            ->assertSet('selectedConversation', null);
+
+        expect(Conversation::query()->count())->toBe(0);
     });
 
     it('allows blocker to search for and unarchive conversations with blocked users', function (): void {
@@ -599,11 +647,8 @@ describe('blocking search behavior', function (): void {
         Livewire::test('pages::chat')
             ->call('startConversation', $this->userB->id);
 
-        // A conversation gets created, but the user can't send messages
-        expect(Conversation::query()->count())->toBe(1);
-
-        $conversation = Conversation::query()->first();
-        expect($this->userA->can('sendMessage', $conversation))->toBeFalse();
+        // No conversation is created when the target has blocked the user
+        expect(Conversation::query()->count())->toBe(0);
     });
 
     it('handles blocking when conversation does not exist', function (): void {
@@ -617,11 +662,8 @@ describe('blocking search behavior', function (): void {
         Livewire::test('pages::chat')
             ->call('startConversation', $this->userB->id);
 
-        // Conversation should be created but messaging disabled
-        expect(Conversation::query()->count())->toBe(1);
-
-        $conversation = Conversation::query()->first();
-        expect($this->userA->can('sendMessage', $conversation))->toBeFalse();
+        // No conversation is created with a blocked user
+        expect(Conversation::query()->count())->toBe(0);
     });
 });
 

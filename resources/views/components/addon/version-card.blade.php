@@ -1,5 +1,5 @@
 <div
-    {{ $attributes->merge(['class' => 'relative p-4 mb-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl filter-none group hover:shadow-lg hover:bg-black']) }}>
+    {{ $attributes->merge(['class' => 'relative isolate p-4 mb-4 sm:p-6 bg-gray-950 rounded-xl shadow-md shadow-gray-950 drop-shadow-2xl filter-none group hover:shadow-lg hover:bg-black']) }}>
 
     <livewire:ribbon.addon-version
         wire:key="addon-version-show-ribbon-{{ $version->id }}"

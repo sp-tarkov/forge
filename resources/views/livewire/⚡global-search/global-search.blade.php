@@ -100,7 +100,7 @@
                     <div class="px-6 py-14 text-center">
                         <flux:icon.magnifying-glass class="mx-auto size-6 text-gray-500" />
                         <p class="mt-4 text-sm text-gray-400">
-                            {{ __('Start typing to search mods, addons, and users.') }}</p>
+                            {{ __('Start typing to search mods, addons, lists, and users.') }}</p>
                     </div>
                 @endif
 

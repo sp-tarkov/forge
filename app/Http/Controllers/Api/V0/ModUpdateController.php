@@ -210,6 +210,9 @@ final class ModUpdateController extends Controller
             ->whereIn('id', $installedModVersionIds)
             ->get();
 
+        $candidates = $this->findCandidateUpdates($installedModVersions, $sptVersionParam);
+        $this->primeDependencyVersionMemo($candidates, $sptVersionParam);
+
         // Perform update checking
         $updates = [];
         $blockedUpdates = [];
@@ -217,7 +220,8 @@ final class ModUpdateController extends Controller
         $incompatibleWithSpt = [];
 
         foreach ($installedModVersions as $currentVersion) {
-            $result = $this->checkForUpdate($currentVersion, $sptVersionParam, $installedModVersions);
+            $candidate = $candidates[$currentVersion->id] ?? null;
+            $result = $this->checkForUpdate($currentVersion, $candidate, $sptVersionParam, $installedModVersions);
 
             match ($result['status']) {
                 'update_available' => $updates[] = $result['data'],
@@ -238,17 +242,14 @@ final class ModUpdateController extends Controller
     }
 
     /**
-     * Check for updates for a single mod version.
+     * Check for updates for a single mod version using its pre-resolved update candidate.
      *
      * @param  Collection<int, ModVersion>  $installedModVersions
      * @return array{status: string, data: array<string, mixed>}
      */
-    private function checkForUpdate(ModVersion $currentVersion, string $sptVersion, Collection $installedModVersions): array
+    private function checkForUpdate(ModVersion $currentVersion, ?ModVersion $candidate, string $sptVersion, Collection $installedModVersions): array
     {
         $isPrerelease = ! empty($currentVersion->version_labels);
-
-        // Find candidate update
-        $candidate = $this->findCandidateUpdate($currentVersion, $sptVersion, $isPrerelease);
 
         if (! $candidate instanceof ModVersion) {
             // Check if current version is compatible with target SPT (use eager-loaded collection)
@@ -287,12 +288,20 @@ final class ModUpdateController extends Controller
     }
 
     /**
-     * Find a candidate update for a mod version.
+     * Find the best update candidate for every installed mod version in a single batched query. All published,
+     * SPT-compatible versions newer than any installed version of each mod are fetched at once, then the best match
+     * per installed version is selected in memory.
+     *
+     * @param  EloquentCollection<int, ModVersion>  $installedModVersions
+     * @return array<int, ModVersion> Best candidate keyed by installed mod version ID.
      */
-    private function findCandidateUpdate(ModVersion $currentVersion, string $sptVersion, bool $isPrerelease): ?ModVersion
+    private function findCandidateUpdates(EloquentCollection $installedModVersions, string $sptVersion): array
     {
-        $query = ModVersion::query()
-            ->where('mod_id', $currentVersion->mod_id)
+        if ($installedModVersions->isEmpty()) {
+            return [];
+        }
+
+        $candidateRows = ModVersion::query()
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
             ->where('disabled', false)
@@ -305,7 +314,52 @@ final class ModUpdateController extends Controller
                 $q->whereNotNull('published_at')
                     ->where('published_at', '<=', now())
                     ->where('disabled', false);
-            });
+            })
+            ->where(function (Builder $query) use ($installedModVersions): void {
+                foreach ($installedModVersions as $currentVersion) {
+                    $query->orWhere(function (Builder $q) use ($currentVersion): void {
+                        $q->where('mod_id', $currentVersion->mod_id);
+                        $this->applyNewerVersionClause($q, $currentVersion);
+                    });
+                }
+            })
+            ->with(['mod', 'dependencies', 'sptVersions'])
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
+            ->get();
+
+        /** @var array<int, list<ModVersion>> $rowsByModId */
+        $rowsByModId = [];
+
+        foreach ($candidateRows as $candidateRow) {
+            $rowsByModId[$candidateRow->mod_id][] = $candidateRow;
+        }
+
+        $candidates = [];
+
+        foreach ($installedModVersions as $currentVersion) {
+            foreach ($rowsByModId[$currentVersion->mod_id] ?? [] as $candidateRow) {
+                if ($this->isNewerThan($candidateRow, $currentVersion)) {
+                    $candidates[$currentVersion->id] = $candidateRow;
+                    break;
+                }
+            }
+        }
+
+        return $candidates;
+    }
+
+    /**
+     * Constrain a query to versions that are valid, newer replacements for the given installed version.
+     *
+     * @param  Builder<ModVersion>  $query
+     */
+    private function applyNewerVersionClause(Builder $query, ModVersion $currentVersion): void
+    {
+        $isPrerelease = ! empty($currentVersion->version_labels);
 
         // Stable versions never see prereleases
         if (! $isPrerelease) {
@@ -341,14 +395,74 @@ final class ModUpdateController extends Controller
                 });
             }
         });
+    }
 
-        return $query->with('dependencies')
-            ->orderByDesc('version_major')
-            ->orderByDesc('version_minor')
-            ->orderByDesc('version_patch')
-            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_labels')
-            ->first();
+    /**
+     * Determine whether a candidate is a valid, newer replacement for the installed version, mirroring the SQL
+     * predicate built by applyNewerVersionClause.
+     */
+    private function isNewerThan(ModVersion $candidate, ModVersion $currentVersion): bool
+    {
+        $isPrerelease = ! empty($currentVersion->version_labels);
+
+        if (! $isPrerelease && $candidate->version_labels !== '') {
+            return false;
+        }
+
+        if ($candidate->version_major > $currentVersion->version_major) {
+            return true;
+        }
+
+        if ($candidate->version_major !== $currentVersion->version_major) {
+            return false;
+        }
+
+        if ($candidate->version_minor > $currentVersion->version_minor) {
+            return true;
+        }
+
+        if ($candidate->version_minor !== $currentVersion->version_minor) {
+            return false;
+        }
+
+        if ($candidate->version_patch > $currentVersion->version_patch) {
+            return true;
+        }
+
+        if ($isPrerelease && $candidate->version_patch === $currentVersion->version_patch) {
+            return $candidate->version_labels === ''
+                || strcmp($candidate->version_labels, $currentVersion->version_labels) > 0;
+        }
+
+        return false;
+    }
+
+    /**
+     * Fill the per-request version memo for every dependency mod referenced by the update candidates in one query.
+     *
+     * @param  array<int, ModVersion>  $candidates
+     */
+    private function primeDependencyVersionMemo(array $candidates, string $sptVersion): void
+    {
+        /** @var list<int> $modIds */
+        $modIds = collect($candidates)
+            ->flatMap(fn (ModVersion $candidate) => $candidate->dependencies->pluck('dependent_mod_id'))
+            ->unique()
+            ->reject(fn (int $modId): bool => array_key_exists($modId.'@'.$sptVersion, $this->candidateVersionsForSpt))
+            ->values()
+            ->all();
+
+        if ($modIds === []) {
+            return;
+        }
+
+        foreach ($modIds as $modId) {
+            $this->candidateVersionsForSpt[$modId.'@'.$sptVersion] = new EloquentCollection;
+        }
+
+        foreach ($this->dependencyService->publishedVersionsForSptByModIds($modIds, $sptVersion) as $version) {
+            $this->candidateVersionsForSpt[$version->mod_id.'@'.$sptVersion]->push($version);
+        }
     }
 
     /**

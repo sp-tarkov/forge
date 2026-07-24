@@ -8,6 +8,7 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
+use App\Support\DataTransferObjects\ActiveFilterChip;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Livewire\Livewire;
@@ -30,6 +31,26 @@ describe('Index', function (): void {
             Livewire::test('pages::mod.index')
                 ->assertOk()
                 ->assertSee('Test Mod 1');
+        });
+
+        it('filters mods by ai generated content', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $aiMod = Mod::factory()->create(['name' => 'AI Mod', 'contains_ai_content' => true]);
+            ModVersion::factory()->recycle($aiMod)->create(['spt_version_constraint' => '3.11.4']);
+
+            $humanMod = Mod::factory()->create(['name' => 'Human Mod', 'contains_ai_content' => false]);
+            ModVersion::factory()->recycle($humanMod)->create(['spt_version_constraint' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->assertSee('AI Mod')
+                ->assertSee('Human Mod')
+                ->set('aiContent', 'exclude')
+                ->assertDontSee('AI Mod')
+                ->assertSee('Human Mod')
+                ->set('aiContent', 'only')
+                ->assertSee('AI Mod')
+                ->assertDontSee('Human Mod');
         });
 
         it('renders card thumbnails with a srcset when variants exist', function (): void {
@@ -322,6 +343,25 @@ describe('Index', function (): void {
             $component->assertSee('Test Mod');
         });
 
+        it('handles malformed ai parameter gracefully', function (): void {
+            // Create SPT versions and a mod
+            SptVersion::factory()->create(['version' => '3.11.4']);
+            $mod = Mod::factory()->create(['name' => 'Test Mod']);
+            ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+            // Mount component with an array passed to ai parameter
+            $component = Livewire::withQueryParams([
+                'ai' => ['invalid' => 'value'],
+            ])->test('pages::mod.index');
+
+            // Should normalize to default value
+            expect($component->get('aiContent'))->toBe('include');
+
+            // Component should still work
+            $component->assertOk();
+            $component->assertSee('Test Mod');
+        });
+
         it('handles malformed category parameter gracefully', function (): void {
             // Create SPT versions and a mod
             SptVersion::factory()->create(['version' => '3.11.4']);
@@ -390,6 +430,361 @@ describe('Index', function (): void {
             expect($final['3.11.4_checked'])->toBeFalse();
             expect($final['3.10.5_checked'])->toBeFalse();
             expect($final['legacy_checked'])->toBeFalse();
+        });
+    });
+
+    describe('active filter chips', function (): void {
+        it('reports zero active filters in the default state', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.0']);
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $component = Livewire::test('pages::mod.index');
+
+            expect($component->get('filterCount'))->toBe(0);
+            expect($component->get('activeFilterChips'))->toBe([]);
+
+            $component->assertDontSee('Active filters:');
+            $component->assertDontSee('Clear all');
+            $component->assertDontSee('Reset Filters');
+        });
+
+        it('counts the search query as a single removable filter', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $component = Livewire::test('pages::mod.index')
+                ->set('query', 'stash');
+
+            $chips = $component->get('activeFilterChips');
+            expect($component->get('filterCount'))->toBe(1);
+            expect($chips)->toHaveCount(1);
+            expect($chips[0]->key)->toBe('query');
+            expect($chips[0]->label)->toContain('stash');
+            expect($chips[0]->removeAction)->toBe("clearFilter('query')");
+
+            $component->assertSee('Active filters:');
+
+            $component->call('clearFilter', 'query');
+
+            expect($component->get('query'))->toBe('');
+            expect($component->get('filterCount'))->toBe(0);
+        });
+
+        it('shows an all versions chip when all versions is selected', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $component = Livewire::test('pages::mod.index')
+                ->call('toggleVersionFilter', 'all');
+
+            $chips = $component->get('activeFilterChips');
+            expect($component->get('filterCount'))->toBe(1);
+            expect($chips[0]->key)->toBe('versions-all');
+            expect($chips[0]->label)->toBe('All SPT versions');
+            expect($chips[0]->removeAction)->toBe("toggleVersionFilter('all')");
+
+            $component->call('toggleVersionFilter', 'all');
+            expect($component->get('filterCount'))->toBe(0);
+        });
+
+        it('treats the default version selection as zero filters regardless of order', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.0']);
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $component = Livewire::withQueryParams(['versions' => ['3.11.0', '3.11.4']])
+                ->test('pages::mod.index');
+
+            expect($component->get('filterCount'))->toBe(0);
+        });
+
+        it('shows one chip per selected version when the selection is not default', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+            SptVersion::factory()->create(['version' => '3.10.5']);
+
+            $component = Livewire::withQueryParams(['versions' => ['3.10.5']])
+                ->test('pages::mod.index');
+
+            $chips = $component->get('activeFilterChips');
+            expect($component->get('filterCount'))->toBe(1);
+            expect($chips[0]->key)->toBe('version-3.10.5');
+            expect($chips[0]->label)->toBe('SPT 3.10.5');
+            expect($chips[0]->removeAction)->toBe("toggleVersionFilter('3.10.5')");
+        });
+
+        it('replaces the last version chip with the all versions chip when removed', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+            SptVersion::factory()->create(['version' => '3.10.5']);
+
+            $component = Livewire::withQueryParams(['versions' => ['3.10.5']])
+                ->test('pages::mod.index')
+                ->call('toggleVersionFilter', '3.10.5');
+
+            expect($component->get('sptVersions'))->toBe('all');
+
+            $chips = $component->get('activeFilterChips');
+            expect($component->get('filterCount'))->toBe(1);
+            expect($chips[0]->key)->toBe('versions-all');
+        });
+
+        it('labels the legacy selection chip', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $component = Livewire::withQueryParams(['versions' => ['legacy']])
+                ->test('pages::mod.index');
+
+            $chips = $component->get('activeFilterChips');
+            expect($component->get('filterCount'))->toBe(1);
+            expect($chips[0]->label)->toBe('Legacy versions');
+        });
+
+        it('collapses more than five selected versions into a summary chip', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $component = Livewire::withQueryParams([
+                'versions' => ['3.10.0', '3.10.1', '3.10.2', '3.10.3', '3.10.4', '3.10.5'],
+            ])->test('pages::mod.index');
+
+            $chips = $component->get('activeFilterChips');
+            expect($chips)->toHaveCount(1);
+            expect($chips[0]->key)->toBe('versions-summary');
+            expect($chips[0]->label)->toBe('6 SPT versions');
+            expect($chips[0]->removeAction)->toBe("clearFilter('versions')");
+
+            $component->call('clearFilter', 'versions');
+            expect($component->get('filterCount'))->toBe(0);
+            expect($component->get('sptVersions'))->toContain('3.11.4');
+        });
+
+        it('shows chips for featured, fika, and category filters', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+            ModCategory::factory()->create(['title' => 'Weapons', 'slug' => 'weapons']);
+
+            $component = Livewire::test('pages::mod.index')
+                ->set('featured', 'only')
+                ->set('fikaCompatibility', true)
+                ->set('category', 'weapons');
+
+            $chips = $component->get('activeFilterChips');
+            expect($component->get('filterCount'))->toBe(3);
+
+            $labels = array_map(fn (ActiveFilterChip $chip): string => $chip->label, $chips);
+            expect($labels)->toBe(['Featured only', 'Fika compatible', 'Weapons']);
+
+            $component->call('clearFilter', 'featured');
+            expect($component->get('featured'))->toBe('include');
+
+            $component->call('clearFilter', 'fika');
+            expect($component->get('fikaCompatibility'))->toBeFalse();
+
+            $component->call('clearFilter', 'category');
+            expect($component->get('category'))->toBe('');
+            expect($component->get('filterCount'))->toBe(0);
+        });
+
+        it('labels the excluded featured chip', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $component = Livewire::test('pages::mod.index')
+                ->set('featured', 'exclude');
+
+            $chips = $component->get('activeFilterChips');
+            expect($component->get('filterCount'))->toBe(1);
+            expect($chips[0]->label)->toBe('Featured: excluded');
+        });
+
+        it('shows chips for the ai generation filter', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $component = Livewire::test('pages::mod.index')
+                ->set('aiContent', 'only');
+
+            $chips = $component->get('activeFilterChips');
+            expect($component->get('filterCount'))->toBe(1);
+            expect($chips[0]->label)->toBe('AI generation only');
+
+            $component->set('aiContent', 'exclude');
+            $chips = $component->get('activeFilterChips');
+            expect($chips[0]->label)->toBe('AI generation: excluded');
+
+            $component->call('clearFilter', 'ai');
+            expect($component->get('aiContent'))->toBe('include');
+            expect($component->get('filterCount'))->toBe(0);
+        });
+
+        it('falls back to the raw slug for an unknown category', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $component = Livewire::test('pages::mod.index')
+                ->set('category', 'nonexistent');
+
+            $chips = $component->get('activeFilterChips');
+            expect($component->get('filterCount'))->toBe(1);
+            expect($chips[0]->label)->toBe('nonexistent');
+        });
+
+        it('ignores unknown filter names in clearFilter', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $component = Livewire::test('pages::mod.index')
+                ->set('query', 'still here')
+                ->call('clearFilter', 'bogus')
+                ->assertOk();
+
+            expect($component->get('query'))->toBe('still here');
+            expect($component->get('filterCount'))->toBe(1);
+        });
+
+        it('clears every chip with the clear all action', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+            SptVersion::factory()->create(['version' => '3.10.5']);
+
+            $component = Livewire::withQueryParams(['versions' => ['3.10.5']])
+                ->test('pages::mod.index')
+                ->set('query', 'stash')
+                ->set('fikaCompatibility', true);
+
+            expect($component->get('filterCount'))->toBe(3);
+
+            $component->call('resetFilters');
+
+            expect($component->get('filterCount'))->toBe(0);
+            expect($component->get('activeFilterChips'))->toBe([]);
+        });
+    });
+
+    describe('filter persistence', function (): void {
+        it('resets the version selection on a fresh visit', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+            SptVersion::factory()->create(['version' => '3.10.5']);
+
+            Livewire::test('pages::mod.index')
+                ->call('toggleVersionFilter', 'all')
+                ->call('toggleVersionFilter', '3.10.5');
+
+            $fresh = Livewire::test('pages::mod.index');
+
+            expect($fresh->get('sptVersions'))->toContain('3.11.4');
+            expect($fresh->get('filterCount'))->toBe(0);
+        });
+
+        it('resets the featured filter on a fresh visit', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->set('featured', 'only');
+
+            $fresh = Livewire::test('pages::mod.index');
+
+            expect($fresh->get('featured'))->toBe('include');
+            expect($fresh->get('filterCount'))->toBe(0);
+        });
+
+        it('resets the ai generation filter on a fresh visit', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->set('aiContent', 'only');
+
+            $fresh = Livewire::test('pages::mod.index');
+
+            expect($fresh->get('aiContent'))->toBe('include');
+            expect($fresh->get('filterCount'))->toBe(0);
+        });
+
+        it('resets the fika filter on a fresh visit', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->set('fikaCompatibility', true);
+
+            $fresh = Livewire::test('pages::mod.index');
+
+            expect($fresh->get('fikaCompatibility'))->toBeFalse();
+            expect($fresh->get('filterCount'))->toBe(0);
+        });
+
+        it('persists the sort order and per page on a fresh visit', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->set('order', 'downloaded')
+                ->set('perPage', 24);
+
+            $fresh = Livewire::test('pages::mod.index');
+
+            expect($fresh->get('order'))->toBe('downloaded');
+            expect($fresh->get('perPage'))->toBe(24);
+            expect($fresh->get('filterCount'))->toBe(0);
+        });
+
+        it('keeps tracking new releases when versions were customized', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->call('toggleVersionFilter', 'all');
+
+            SptVersion::factory()->create(['version' => '3.12.0']);
+            Cache::flush();
+
+            $fresh = Livewire::test('pages::mod.index');
+
+            expect($fresh->get('sptVersions'))->toContain('3.12.0');
+            expect($fresh->get('filterCount'))->toBe(0);
+        });
+    });
+
+    describe('sort and per page labels', function (): void {
+        it('shows the current sort label on the sort dropdown trigger', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->assertSee('Sort: Newest')
+                ->set('order', 'downloaded')
+                ->assertSee('Sort: Most Downloaded')
+                ->set('order', 'favourited')
+                ->assertSee('Sort: Most Favourited')
+                ->set('order', 'updated')
+                ->assertSee('Sort: Recently Updated');
+        });
+
+        it('labels an unknown sort order as the default sort', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            Livewire::withQueryParams(['order' => 'banana'])
+                ->test('pages::mod.index')
+                ->assertSee('Sort: Newest');
+        });
+
+        it('shows the current per page value on the per page dropdown trigger', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->assertSee('12 / page')
+                ->set('perPage', 24)
+                ->assertSee('24 / page');
+        });
+    });
+
+    describe('favourite counts on cards', function (): void {
+        it('shows the favourite count on cards when sorted by most favourited', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $mod = Mod::factory()->create(['name' => 'Heart Magnet', 'favourites_count' => 2]);
+            ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->set('order', 'favourited')
+                ->assertSee('Heart Magnet')
+                ->assertSee('2 Favourites');
+        });
+
+        it('does not show favourite counts for other sort orders', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $mod = Mod::factory()->create(['name' => 'Heart Magnet', 'favourites_count' => 2]);
+            ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+            Livewire::test('pages::mod.index')
+                ->assertSee('Heart Magnet')
+                ->assertDontSee('2 Favourites');
         });
     });
 });

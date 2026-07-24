@@ -11,6 +11,7 @@ use App\Models\Mod;
 use App\Models\ModCategory;
 use App\Models\SourceCodeLink;
 use App\Models\SptVersion;
+use App\Rules\NoBlockRelationship;
 use App\Services\ThumbnailService;
 use App\Support\VersionMatcher;
 use Flux\Flux;
@@ -478,12 +479,23 @@ new #[Layout('layouts::base')] class extends Component
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
             'authorIds' => 'array|max:10',
-            'authorIds.*' => 'exists:users,id|distinct',
+            'authorIds.*' => ['exists:users,id', 'distinct', new NoBlockRelationship($this->mod->owner, $this->existingAuthorIds())],
             'disableProfileBindingNotice' => 'boolean',
             'cheatNotice' => 'boolean',
             'addonsDisabled' => 'boolean',
             'listsDisabled' => 'boolean',
         ];
+    }
+
+    /**
+     * Get the IDs of the currently attached additional authors.
+     *
+     * @return list<int>
+     */
+    protected function existingAuthorIds(): array
+    {
+        /** @var list<int> */
+        return $this->mod->additionalAuthors()->pluck('users.id')->all();
     }
 
     /**

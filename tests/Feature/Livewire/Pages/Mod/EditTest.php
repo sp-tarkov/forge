@@ -105,6 +105,64 @@ describe('Mod Edit Form', function (): void {
                 ->assertRedirect();
         });
     });
+
+    describe('Author Blocking Validation', function (): void {
+        it('rejects adding an author with a block relationship with the owner', function (): void {
+            $license = License::factory()->create();
+            $user = User::factory()->create();
+            $blockingAuthor = User::factory()->create();
+            $mod = Mod::factory()->recycle($user)->create();
+
+            $blockingAuthor->block($user);
+
+            $this->actingAs($user);
+
+            Livewire::test('pages::mod.edit', ['modId' => $mod->id])
+                ->set('name', 'Updated Mod Name')
+                ->set('guid', $mod->guid)
+                ->set('teaser', 'Updated teaser')
+                ->set('description', 'Updated description')
+                ->set('license', (string) $license->id)
+                ->set('sourceCodeLinks.0.url', 'https://github.com/example/updated')
+                ->set('sourceCodeLinks.0.label', '')
+                ->set('containsAiContent', false)
+                ->set('containsAds', false)
+                ->set('authorIds', [$blockingAuthor->id])
+                ->call('save')
+                ->assertHasErrors(['authorIds.0']);
+
+            expect($mod->fresh()->additionalAuthors->pluck('id')->all())->toBe([]);
+        });
+
+        it('keeps an existing author who blocked the owner after being added', function (): void {
+            $license = License::factory()->create();
+            $user = User::factory()->create();
+            $existingAuthor = User::factory()->create();
+            $mod = Mod::factory()->recycle($user)->create();
+            $mod->additionalAuthors()->attach($existingAuthor->id);
+
+            $existingAuthor->block($user);
+
+            $this->actingAs($user);
+
+            Livewire::test('pages::mod.edit', ['modId' => $mod->id])
+                ->set('name', 'Updated Mod Name')
+                ->set('guid', $mod->guid)
+                ->set('teaser', 'Updated teaser')
+                ->set('description', 'Updated description')
+                ->set('license', (string) $license->id)
+                ->set('sourceCodeLinks.0.url', 'https://github.com/example/updated')
+                ->set('sourceCodeLinks.0.label', '')
+                ->set('containsAiContent', false)
+                ->set('containsAds', false)
+                ->set('authorIds', [$existingAuthor->id])
+                ->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+
+            expect($mod->fresh()->additionalAuthors->pluck('id')->all())->toBe([$existingAuthor->id]);
+        });
+    });
 });
 
 describe('Published At Handling', function (): void {

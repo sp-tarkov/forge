@@ -42,6 +42,34 @@ describe('search results', function (): void {
             ->assertSee('ExampleUser');
     });
 
+    it('excludes users who have blocked the searcher', function (): void {
+        $searcher = User::factory()->create();
+        $blocker = User::factory()->create(['name' => 'BlockerAuthor']);
+        User::factory()->create(['name' => 'BlockfreeAuthor']);
+
+        $blocker->block($searcher);
+
+        Livewire::actingAs($searcher)
+            ->test('form.user-select')
+            ->set('search', 'Block')
+            ->assertDontSee('BlockerAuthor')
+            ->assertSee('BlockfreeAuthor');
+    });
+
+    it('excludes users the searcher has blocked', function (): void {
+        $searcher = User::factory()->create();
+        $blocked = User::factory()->create(['name' => 'BlockedAuthor']);
+        User::factory()->create(['name' => 'BlockfreeAuthor']);
+
+        $searcher->block($blocked);
+
+        Livewire::actingAs($searcher)
+            ->test('form.user-select')
+            ->set('search', 'Block')
+            ->assertDontSee('BlockedAuthor')
+            ->assertSee('BlockfreeAuthor');
+    });
+
     it('excludes already selected users from results', function (): void {
         $selectedUser = User::factory()->create(['name' => 'SelectedUser']);
         $availableUser = User::factory()->create(['name' => 'SelectableUser']);

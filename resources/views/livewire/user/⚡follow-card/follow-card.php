@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
@@ -68,7 +69,7 @@ new class extends Component
     }
 
     /**
-     * The profile user's followers (or following).
+     * The profile user's followers (or following), excluding users who have blocked the viewer.
      *
      * @return Collection<int, User>
      */
@@ -77,6 +78,11 @@ new class extends Component
     {
         /** @var BelongsToMany<User, User> $relation */
         $relation = $this->profileUser->{$this->relationship}();
+
+        $viewer = auth()->user();
+        if ($viewer instanceof User) {
+            $relation->whereNotBlocking($viewer);
+        }
 
         /** @var Collection<int, User> */
         return $relation->get();
@@ -116,6 +122,12 @@ new class extends Component
     {
         $user = auth()->user();
         if (! $user) {
+            return;
+        }
+
+        if ($user->hasBlocked($userId) || $user->isBlockedBy($userId)) {
+            Flux::toast(heading: 'Error', text: 'You cannot follow this user.', variant: 'danger');
+
             return;
         }
 

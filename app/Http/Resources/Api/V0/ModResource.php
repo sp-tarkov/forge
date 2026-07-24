@@ -106,6 +106,10 @@ final class ModResource extends JsonResource
             $data['downloads'] = $this->resource->downloads;
         }
 
+        if ($this->shouldInclude('favourites_count')) {
+            $data['favourites_count'] = $this->resource->favourites_count;
+        }
+
         if ($this->shouldInclude('description')) {
             $data['description'] = $this->when(
                 $request->routeIs('api.v0.mods.show'),

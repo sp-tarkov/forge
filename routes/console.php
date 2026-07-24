@@ -13,15 +13,19 @@ use App\Jobs\CleanupVerificationArtifactsJob;
 use App\Jobs\DetectDownloadChangesJob;
 use App\Jobs\FetchCloudflareApiAnalyticsJob;
 use App\Jobs\ProcessPinnedModVersionPublishDates;
+use App\Jobs\SearchSyncJob;
 use App\Jobs\SendDiscordNotifications;
 use App\Jobs\UpdateDisposableEmailBlocklist;
+use App\Jobs\UpdateFavouritesJob;
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('horizon:snapshot')->everyFiveMinutes()->onOneServer();
 Schedule::command(CleanupOldNotificationLogs::class)->daily()->onOneServer();
 Schedule::command(EnsureFavouritesLists::class)->daily()->onOneServer();
+Schedule::job(new UpdateFavouritesJob)->hourly()->onOneServer()->withoutOverlapping();
 
 Schedule::command(UpdateGeoLiteDatabase::class)->daily()->at('02:00')->onOneServer()->runInBackground()->environments('production');
+Schedule::job(new SearchSyncJob)->daily()->at('03:00')->onOneServer()->environments('production');
 Schedule::job(new UpdateDisposableEmailBlocklist)->daily()->at('04:00')->onOneServer()->environments('production');
 
 Schedule::job(new SendDiscordNotifications)->everyMinute()->onOneServer()->withoutOverlapping()->environments('production');

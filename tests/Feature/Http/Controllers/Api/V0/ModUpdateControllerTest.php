@@ -746,6 +746,55 @@ describe('check', function (): void {
             // Memoized per request, so the library is resolved once rather than once per dependent mod.
             expect($libraryLookups)->toBe(1);
         });
+
+        it('resolves update candidates for all mods in a single batched query', function (): void {
+            $sptVersion = SptVersion::factory()->create([
+                'version' => '3.11.5',
+                'publish_date' => now()->subDays(1),
+            ]);
+
+            $installed = [];
+            foreach (range(1, 3) as $index) {
+                $mod = Mod::factory()->create(['guid' => 'com.example.batch'.$index, 'published_at' => now()->subDays(10)]);
+
+                $current = ModVersion::factory()->create([
+                    'mod_id' => $mod->id,
+                    'version' => '1.0.0',
+                    'version_major' => 1,
+                    'version_minor' => 0,
+                    'version_patch' => 0,
+                    'version_labels' => '',
+                    'published_at' => now()->subDays(10),
+                ]);
+                $current->sptVersions()->syncWithoutDetaching([$sptVersion->id]);
+
+                $candidate = ModVersion::factory()->create([
+                    'mod_id' => $mod->id,
+                    'version' => '1.5.0',
+                    'version_major' => 1,
+                    'version_minor' => 5,
+                    'version_patch' => 0,
+                    'version_labels' => '',
+                    'published_at' => now()->subDays(5),
+                ]);
+                $candidate->sptVersions()->syncWithoutDetaching([$sptVersion->id]);
+
+                $installed[] = $mod->id.':1.0.0';
+            }
+
+            DB::enableQueryLog();
+            $response = $this->getJson(sprintf('/api/v0/mods/updates?mods=%s&spt_version=3.11.5', implode(',', $installed)));
+            // Candidate lookups are the only queries comparing version_major with `>`; count how many ran.
+            $candidateLookups = collect(DB::getQueryLog())
+                ->filter(fn (array $query): bool => preg_match('/["`]version_major["`] >/', (string) $query['query']) === 1)
+                ->count();
+            DB::disableQueryLog();
+
+            $response->assertSuccessful()->assertJsonCount(3, 'data.updates');
+
+            // All mods share one batched candidate query rather than one query per installed mod.
+            expect($candidateLookups)->toBe(1);
+        });
     });
 
     describe('visibility constraints', function (): void {
