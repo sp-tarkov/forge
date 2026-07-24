@@ -72,6 +72,26 @@ it('hides followed users who have blocked the viewer from the following list', f
         ->assertDontSee('Blocking Followed');
 });
 
+it('does not follow a listed user with a block relationship', function (): void {
+    $viewer = User::factory()->create();
+    $profileUser = User::factory()->create();
+    $blockedFollower = User::factory()->create(['name' => 'Blocked Follower']);
+    $blockedFollower->follow($profileUser);
+
+    $viewer->block($blockedFollower);
+
+    Livewire::actingAs($viewer)
+        ->test('user.follow-card', [
+            'relationship' => 'followers',
+            'profileUser' => $profileUser,
+            'authFollowIds' => collect(),
+        ])
+        ->call('followUser', $blockedFollower->id)
+        ->assertSet('authFollowIds', collect());
+
+    expect($viewer->isFollowing($blockedFollower))->toBeFalse();
+});
+
 it('shows all followers to guests regardless of blocks', function (): void {
     $someUser = User::factory()->create();
     $profileUser = User::factory()->create();

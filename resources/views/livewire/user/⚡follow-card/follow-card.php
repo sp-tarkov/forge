@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
@@ -121,6 +122,12 @@ new class extends Component
     {
         $user = auth()->user();
         if (! $user) {
+            return;
+        }
+
+        if ($user->hasBlocked($userId) || $user->isBlockedBy($userId)) {
+            Flux::toast(heading: 'Error', text: 'You cannot follow this user.', variant: 'danger');
+
             return;
         }
 
