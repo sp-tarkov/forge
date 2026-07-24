@@ -8,6 +8,7 @@ use App\Jobs\GenerateThumbnailVariants;
 use App\Models\Addon;
 use App\Models\License;
 use App\Models\Mod;
+use App\Rules\NoBlockRelationship;
 use Flux\Flux;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Collection;
@@ -308,7 +309,7 @@ new #[Layout('layouts::base')] class extends Component
             'commentsDisabled' => 'boolean',
             'subscribeToComments' => 'boolean',
             'authorIds' => 'array|max:10',
-            'authorIds.*' => 'exists:users,id|distinct',
+            'authorIds.*' => ['exists:users,id', 'distinct', new NoBlockRelationship(auth()->user())],
         ];
     }
 

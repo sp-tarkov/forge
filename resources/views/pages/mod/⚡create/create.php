@@ -9,6 +9,7 @@ use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
+use App\Rules\NoBlockRelationship;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
@@ -341,7 +342,7 @@ new #[Layout('layouts::base')] class extends Component
             'addonsDisabled' => 'boolean',
             'subscribeToComments' => 'boolean',
             'authorIds' => 'array|max:10',
-            'authorIds.*' => 'exists:users,id|distinct',
+            'authorIds.*' => ['exists:users,id', 'distinct', new NoBlockRelationship(auth()->user())],
             'disableProfileBindingNotice' => 'boolean',
             'cheatNotice' => 'boolean',
         ];
