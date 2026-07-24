@@ -7,6 +7,7 @@ use App\Models\Mod;
 use App\Models\ModList;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -161,7 +162,7 @@ new class extends Component
             'mod' => $this->processModResults($response['results'][0]['hits']),
             'addon' => $this->processAddonResults($response['results'][1]['hits']),
             'list' => $this->processListResults($response['results'][2]['hits']),
-            'user' => collect($response['results'][3]['hits']),
+            'user' => $this->processUserResults($response['results'][3]['hits']),
         ];
     }
 
@@ -186,7 +187,7 @@ new class extends Component
             'mod' => $this->processModResults($modHits),
             'addon' => $this->processAddonResults($addonHits),
             'list' => $this->processListResults($listHits),
-            'user' => collect($userHits),
+            'user' => $this->processUserResults($userHits),
         ];
     }
 
@@ -223,5 +224,37 @@ new class extends Component
     protected function processListResults(array $hits): Collection
     {
         return collect($hits)->sortByDesc('_rankingScore')->values();
+    }
+
+    /**
+     * Process user search results, removing users who have blocked the current user.
+     *
+     * @param  array<int, mixed>  $hits
+     * @return Collection<int, mixed>
+     */
+    protected function processUserResults(array $hits): Collection
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return collect($hits);
+        }
+
+        /** @var list<int> $blockerIds */
+        $blockerIds = $user->blockedBy()->pluck('blocker_id')->all();
+        if ($blockerIds === []) {
+            return collect($hits);
+        }
+
+        return collect($hits)
+            ->reject(function (mixed $hit) use ($blockerIds): bool {
+                if (! is_array($hit)) {
+                    return false;
+                }
+
+                $id = $hit['id'] ?? null;
+
+                return is_numeric($id) && in_array((int) $id, $blockerIds, true);
+            })
+            ->values();
     }
 };

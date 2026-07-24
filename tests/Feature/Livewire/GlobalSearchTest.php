@@ -64,3 +64,40 @@ it('excludes default favourites lists from the search results', function (): voi
         ->set('query', 'Favourites Stockpile')
         ->assertDontSee('Favourites Stockpile');
 });
+
+it('excludes users who have blocked the searcher from user search results', function (): void {
+    $searcher = User::factory()->create();
+    $blocker = User::factory()->create(['name' => 'Blockingsearch Person']);
+    User::factory()->create(['name' => 'Blockingsearch Friend']);
+
+    $blocker->block($searcher);
+
+    Livewire::actingAs($searcher)
+        ->test('global-search')
+        ->set('query', 'Blockingsearch')
+        ->assertSee('Blockingsearch Friend')
+        ->assertDontSee('Blockingsearch Person');
+});
+
+it('includes users the searcher has blocked in user search results', function (): void {
+    $searcher = User::factory()->create();
+    $blocked = User::factory()->create(['name' => 'Blockedsearch Person']);
+
+    $searcher->block($blocked);
+
+    Livewire::actingAs($searcher)
+        ->test('global-search')
+        ->set('query', 'Blockedsearch')
+        ->assertSee('Blockedsearch Person');
+});
+
+it('shows all users to guests regardless of blocks', function (): void {
+    $someUser = User::factory()->create();
+    $blocker = User::factory()->create(['name' => 'Guestsearch Person']);
+
+    $blocker->block($someUser);
+
+    Livewire::test('global-search')
+        ->set('query', 'Guestsearch')
+        ->assertSee('Guestsearch Person');
+});

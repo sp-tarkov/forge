@@ -68,7 +68,7 @@ new class extends Component
     }
 
     /**
-     * The profile user's followers (or following).
+     * The profile user's followers (or following), excluding users who have blocked the viewer.
      *
      * @return Collection<int, User>
      */
@@ -77,6 +77,11 @@ new class extends Component
     {
         /** @var BelongsToMany<User, User> $relation */
         $relation = $this->profileUser->{$this->relationship}();
+
+        $viewer = auth()->user();
+        if ($viewer instanceof User) {
+            $relation->whereNotBlocking($viewer);
+        }
 
         /** @var Collection<int, User> */
         return $relation->get();
