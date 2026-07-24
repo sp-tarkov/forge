@@ -57,15 +57,16 @@
                                     {{ __('What happens when you block someone:') }}
                                 </flux:text>
                                 <ul class="ml-2 list-inside list-disc space-y-1 text-sm text-gray-300">
-                                    <li>{{ __('You won\'t see their comments or messages') }}</li>
+                                    <li>{{ __('Their comments will be collapsed and hidden from you') }}</li>
                                     <li>{{ __('They can\'t send you messages or comment on your content') }}</li>
-                                    <li>{{ __('Any existing conversations will be archived') }}</li>
+                                    <li>{{ __('They won\'t be able to view your profile') }}</li>
                                     <li>{{ __('You both will be unfollowed from each other') }}</li>
+                                    <li>{{ __('You\'ll no longer receive notifications from them') }}</li>
                                 </ul>
                             </div>
 
                             <flux:text class="text-sm text-gray-300">
-                                {{ __('You can optionally provide a reason for blocking (only visible to moderators):') }}
+                                {{ __('You can optionally provide a reason for blocking (only visible to you in your blocked users list):') }}
                             </flux:text>
 
                             <flux:textarea

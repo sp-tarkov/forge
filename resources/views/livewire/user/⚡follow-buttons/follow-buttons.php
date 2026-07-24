@@ -35,9 +35,11 @@ new class extends Component
         if (! $user) {
             return false;
         }
+
         if ($user->hasBlocked($this->profileUserId)) {
             return true;
         }
+
         return (bool) $user->isBlockedBy($this->profileUserId);
     }
 

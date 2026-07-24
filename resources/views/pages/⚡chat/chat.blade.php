@@ -798,7 +798,7 @@
                             <ul class="ml-2 list-inside list-disc space-y-1 text-sm text-gray-300">
                                 <li>{{ __('You won\'t be able to send messages to each other') }}</li>
                                 <li>{{ __('They won\'t be able to see your profile') }}</li>
-                                <li>{{ __('They can\'t comment on your mods') }}</li>
+                                <li>{{ __('They can\'t comment on your content') }}</li>
                                 <li>{{ __('You can unblock them anytime') }}</li>
                             </ul>
                         </div>
