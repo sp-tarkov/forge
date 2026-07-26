@@ -58,3 +58,5 @@ if (config('services.cloudflare.analytics_token') && config('services.cloudflare
 if (app()->isLocal() && config('telescope.enabled')) {
     Schedule::command('telescope:prune --hours=48')->daily();
 }
+
+Schedule::command('nightowl:prune')->daily()->at('05:00')->onOneServer()->withoutOverlapping()->runInBackground()->environments('production');
