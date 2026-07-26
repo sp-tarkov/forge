@@ -12,6 +12,7 @@ use App\Jobs\CleanupStaleVerificationsJob;
 use App\Jobs\CleanupVerificationArtifactsJob;
 use App\Jobs\DetectDownloadChangesJob;
 use App\Jobs\FetchCloudflareApiAnalyticsJob;
+use App\Jobs\FetchCloudflareVisitorStatsJob;
 use App\Jobs\ProcessPinnedModVersionPublishDates;
 use App\Jobs\SearchSyncJob;
 use App\Jobs\SendDiscordNotifications;
@@ -48,11 +49,10 @@ if (config('api.usage.enabled')) {
     Schedule::job(new AggregateApiUsageDailyJob)->dailyAt('00:15')->onOneServer();
 }
 
-// Refresh the Cloudflare edge request totals shown in the footer. Origin counters miss everything Cloudflare serves
-// from cache, so this fills in the full picture. Scheduled whenever the analytics credentials are present, regardless
-// of environment, so any environment pointed at a Cloudflare zone reflects real edge traffic.
+// Refresh the footer's Cloudflare figures: the open API's edge request totals and the recent-visitor count.
 if (config('services.cloudflare.analytics_token') && config('services.cloudflare.zone_id')) {
     Schedule::job(new FetchCloudflareApiAnalyticsJob)->everyFiveMinutes()->onOneServer()->withoutOverlapping();
+    Schedule::job(new FetchCloudflareVisitorStatsJob)->everyFiveMinutes()->onOneServer()->withoutOverlapping();
 }
 
 if (app()->isLocal() && config('telescope.enabled')) {

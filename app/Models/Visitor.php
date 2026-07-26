@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\Date;
 use Override;
 
 /**
- * Model for tracking peak visitor statistics.
- * This model now only stores peak visitor counts, not individual visitor tracking.
+ * Stores the all-time peak visitor count and the date it was reached.
  *
  * @property int $id
  * @property int|null $peak_count
@@ -29,26 +28,35 @@ final class Visitor extends Model
     use HasFactory;
 
     /**
-     * Update the peak visitor count.
+     * Record an observed visitor count, storing it only when it beats the stored peak.
      *
-     * @param  int  $count  The new peak count
+     * @param  int  $count  The freshly observed visitor count
+     * @return bool Whether the count set a new peak
      */
-    public static function updatePeak(int $count): void
+    public static function recordPeak(int $count): bool
     {
         /** @var self|null $peak */
         $peak = self::query()->first();
 
-        if ($peak) {
-            $peak->update([
-                'peak_count' => $count,
-                'peak_date' => Date::now(),
-            ]);
-        } else {
+        if ($peak === null) {
             self::query()->create([
                 'peak_count' => $count,
                 'peak_date' => Date::now(),
             ]);
+
+            return true;
         }
+
+        if ($count <= ($peak->peak_count ?? 0)) {
+            return false;
+        }
+
+        $peak->update([
+            'peak_count' => $count,
+            'peak_date' => Date::now(),
+        ]);
+
+        return true;
     }
 
     /**
@@ -62,7 +70,6 @@ final class Visitor extends Model
         $peak = self::query()->first();
 
         if (! $peak) {
-            // Don't create a peak record, just return empty stats
             return [
                 'count' => 0,
                 'date' => null,
