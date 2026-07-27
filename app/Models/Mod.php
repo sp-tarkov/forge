@@ -476,7 +476,8 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
             ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_labels');
+            ->orderBy('version_labels')
+            ->limit(1);
     }
 
     /**
@@ -495,7 +496,8 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
             ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_labels');
+            ->orderBy('version_labels')
+            ->limit(1);
     }
 
     /**

@@ -176,7 +176,8 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
             ->orderByRaw('CASE WHEN version_pre_release = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_pre_release');
+            ->orderBy('version_pre_release')
+            ->limit(1);
     }
 
     /**

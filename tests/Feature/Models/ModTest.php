@@ -405,6 +405,55 @@ describe('Mod model', function (): void {
             $latestVersion = $mod->latestVersion;
             expect($latestVersion->version)->toBe('1.0.0-alpha');
         });
+
+        it('eager loads the correct latest version for each mod when loading multiple mods', function (): void {
+            SptVersion::factory()->create(['version' => '3.8.0']);
+
+            $modA = Mod::factory()->create();
+            ModVersion::factory()->recycle($modA)->create([
+                'version' => '2.0.0-beta',
+                'version_major' => 2,
+                'version_minor' => 0,
+                'version_patch' => 0,
+                'version_labels' => '-beta',
+                'spt_version_constraint' => '3.8.0',
+            ]);
+            ModVersion::factory()->recycle($modA)->create([
+                'version' => '2.0.0',
+                'version_major' => 2,
+                'version_minor' => 0,
+                'version_patch' => 0,
+                'version_labels' => '',
+                'spt_version_constraint' => '3.8.0',
+            ]);
+
+            $modB = Mod::factory()->create();
+            ModVersion::factory()->recycle($modB)->create([
+                'version' => '1.0.0',
+                'version_major' => 1,
+                'version_minor' => 0,
+                'version_patch' => 0,
+                'version_labels' => '',
+                'spt_version_constraint' => '3.8.0',
+            ]);
+            ModVersion::factory()->recycle($modB)->create([
+                'version' => '1.1.0',
+                'version_major' => 1,
+                'version_minor' => 1,
+                'version_patch' => 0,
+                'version_labels' => '',
+                'spt_version_constraint' => '3.8.0',
+            ]);
+
+            $mods = Mod::query()
+                ->whereIn('id', [$modA->id, $modB->id])
+                ->with('latestVersion')
+                ->get()
+                ->keyBy('id');
+
+            expect($mods->get($modA->id)->latestVersion->version)->toBe('2.0.0');
+            expect($mods->get($modB->id)->latestVersion->version)->toBe('1.1.0');
+        });
     });
 
     describe('mod GUID validation', function (): void {

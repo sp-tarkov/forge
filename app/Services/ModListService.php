@@ -23,10 +23,14 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use LogicException;
 
 final class ModListService
 {
+    /**
+     * Window expression ranking each mod's versions from newest to oldest, stable releases before pre-releases.
+     */
+    private const string VERSION_RANK_WINDOW = "row_number() over (partition by mod_id order by version_major desc, version_minor desc, version_patch desc, case when version_labels = '' then 0 else 1 end, version_labels) as version_rank";
+
     /**
      * Create (or return the existing) immutable default Favourites list for a user.
      *
@@ -629,18 +633,14 @@ final class ModListService
      */
     private function bulkExactMatches(array $modIds, int $sptVersionId): Collection
     {
-        return ModVersion::query()
+        $ranked = ModVersion::query()
             ->where('disabled', false)
             ->whereIn('mod_id', $modIds)
             ->whereHas('sptVersions', fn (Builder $q): Builder => $q->where('spt_versions.id', $sptVersionId))
-            ->orderByDesc('version_major')
-            ->orderByDesc('version_minor')
-            ->orderByDesc('version_patch')
-            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_labels')
-            ->get()
-            ->groupBy('mod_id')
-            ->map(fn (Collection $versions): ModVersion => $versions->first() ?? throw new LogicException('Grouped collection cannot be empty'));
+            ->select('mod_versions.*')
+            ->selectRaw(self::VERSION_RANK_WINDOW);
+
+        return $this->firstRankedVersionPerMod($ranked);
     }
 
     /**
@@ -652,21 +652,36 @@ final class ModListService
      */
     private function bulkClosestMatches(array $modIds, SptVersion $target): Collection
     {
-        return ModVersion::query()
+        $ranked = ModVersion::query()
             ->where('disabled', false)
             ->whereIn('mod_id', $modIds)
             ->whereHas('latestSptVersion', fn (Builder $q): Builder => $q->whereRaw(
                 '(spt_versions.version_major, spt_versions.version_minor, spt_versions.version_patch) <= (?, ?, ?)',
                 [$target->version_major, $target->version_minor, $target->version_patch],
             ))
-            ->orderByDesc('version_major')
-            ->orderByDesc('version_minor')
-            ->orderByDesc('version_patch')
-            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_labels')
+            ->select('mod_versions.*')
+            ->selectRaw(self::VERSION_RANK_WINDOW);
+
+        return $this->firstRankedVersionPerMod($ranked);
+    }
+
+    /**
+     * Hydrate the top-ranked version of each mod from a ranked subquery, keyed by mod id.
+     *
+     * @param  Builder<ModVersion>  $ranked
+     * @return Collection<int, ModVersion>
+     */
+    private function firstRankedVersionPerMod(Builder $ranked): Collection
+    {
+        return ModVersion::query()
+            ->withoutGlobalScopes()
+            ->fromSub($ranked, 'mod_versions')
+            ->where('version_rank', 1)
             ->get()
-            ->groupBy('mod_id')
-            ->map(fn (Collection $versions): ModVersion => $versions->first() ?? throw new LogicException('Grouped collection cannot be empty'));
+            ->each(function (ModVersion $version): void {
+                unset($version->version_rank);
+            })
+            ->keyBy('mod_id');
     }
 
     /**
