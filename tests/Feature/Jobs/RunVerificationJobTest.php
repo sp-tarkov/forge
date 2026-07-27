@@ -1205,3 +1205,58 @@ it('stores the dll guid and version check results and fails the run', function (
     expect($result->checks[2]['data']['expected_version'])->toBe('2.4.6');
     expect($result->checks_version)->toBe('2');
 });
+
+it('passes the spt generation to the container', function (string $constraint, string $generation): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: passingContainerOutput()),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+        'spt_version_constraint' => $constraint,
+    ]);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_contains($process->command, sprintf("-e SPT_GENERATION='%s'", $generation)));
+})->with([
+    '4.0.x constraint' => ['~4.0.0', '4.0'],
+    '4.1 and newer constraint' => ['>=4.1.0', '4.1'],
+    'constraint spanning both generations' => ['>=4.0.0', 'mixed'],
+    'legacy constraint' => ['<4.0.0', 'unknown'],
+]);
+
+it('passes an unknown spt generation to the container for addon versions', function (): void {
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: passingContainerOutput()),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $addonVersion = AddonVersion::factory()->create(['link' => 'https://example.com/addon.zip']);
+
+    $result = VerificationResult::factory()->forAddonVersion($addonVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    Process::assertRan(fn ($process): bool => is_string($process->command)
+        && str_contains($process->command, "-e SPT_GENERATION='unknown'"));
+});

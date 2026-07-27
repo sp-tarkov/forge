@@ -14,6 +14,11 @@ describe('labelFor', function (): void {
         expect(VerificationCheckType::labelFor('dll_version_match'))->toBe('Version Match');
     });
 
+    it('resolves the labels for the location checks', function (): void {
+        expect(VerificationCheckType::labelFor('client_plugin_location'))->toBe('Plugin Location');
+        expect(VerificationCheckType::labelFor('server_mod_location'))->toBe('Server Mod Location');
+    });
+
     it('humanizes an unknown check name', function (): void {
         expect(VerificationCheckType::labelFor('manifest_present'))->toBe('Manifest Present');
     });

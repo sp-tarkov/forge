@@ -87,15 +87,58 @@ describe('verification details', function (): void {
             ->assertSuccessful();
     });
 
-    it('shows the pending run to guests when a newer pending run exists', function (): void {
+    it('keeps the completed result visible to guests when a newer pending run exists', function (): void {
         $version = ModVersion::factory()->create();
+        $passed = VerificationResult::factory()->forModVersion($version)->passed()->create();
+        VerificationResult::factory()->forModVersion($version)->create();
+
+        Livewire::withoutLazyLoading()
+            ->test('verification-details', ['verifiableId' => $version->id, 'verifiableType' => ModVersion::class])
+            ->assertSee('Passed')
+            ->assertSee($passed->downloaded_sha256)
+            ->assertSee('A new verification run is queued at position 1.')
+            ->assertSuccessful();
+    });
+
+    it('shows an in-progress banner with the completed result while a re-run is running', function (): void {
+        $version = ModVersion::factory()->create();
+        $passed = VerificationResult::factory()->forModVersion($version)->passed()->create();
+        VerificationResult::factory()->forModVersion($version)->running()->create();
+
+        Livewire::withoutLazyLoading()
+            ->test('verification-details', ['verifiableId' => $version->id, 'verifiableType' => ModVersion::class])
+            ->assertSee('Passed')
+            ->assertSee($passed->downloaded_sha256)
+            ->assertSee('A new verification run is in progress.')
+            ->assertSuccessful();
+    });
+
+    it('hides the resubmit button from the mod owner while a re-run is active', function (): void {
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        $version = ModVersion::factory()->recycle($mod)->create();
         VerificationResult::factory()->forModVersion($version)->passed()->create();
+        VerificationResult::factory()->forModVersion($version)->create();
+
+        $this->actingAs($owner);
+
+        Livewire::withoutLazyLoading()
+            ->test('verification-details', ['verifiableId' => $version->id, 'verifiableType' => ModVersion::class])
+            ->assertSee('Passed')
+            ->assertDontSee('Resubmit Verification')
+            ->assertSuccessful();
+    });
+
+    it('shows the pending run instead of a completed result for a different download link', function (): void {
+        $version = ModVersion::factory()->create();
+        $passed = VerificationResult::factory()->forModVersion($version)->passed()->create(['download_url' => 'https://example.com/old-file.zip']);
         VerificationResult::factory()->forModVersion($version)->create();
 
         Livewire::withoutLazyLoading()
             ->test('verification-details', ['verifiableId' => $version->id, 'verifiableType' => ModVersion::class])
             ->assertSee('Pending')
             ->assertSee('This panel updates automatically.')
+            ->assertDontSee($passed->downloaded_sha256)
             ->assertSuccessful();
     });
 

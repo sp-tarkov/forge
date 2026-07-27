@@ -330,4 +330,12 @@ describe('verification status refresh', function (): void {
             ->verification_status->toBe(VerificationStatus::Passed)
             ->last_verified_at->not->toBeNull();
     });
+
+    it('resolves the latest completed verification result, skipping newer incomplete runs', function (): void {
+        $version = AddonVersion::factory()->create();
+        $completed = VerificationResult::factory()->forAddonVersion($version)->passed()->create();
+        VerificationResult::factory()->forAddonVersion($version)->create();
+
+        expect($version->latestCompletedVerificationResult?->id)->toBe($completed->id);
+    });
 });

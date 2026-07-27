@@ -12,6 +12,7 @@ use App\Models\ModVersion;
 use App\Models\VerificationResult;
 use App\Services\Verification\DownloadSafetyService;
 use App\Support\DataTransferObjects\VerificationCheck;
+use App\Support\VersionMatcher;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -534,7 +535,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         $this->removeContainer();
 
         $command = sprintf(
-            'docker run --rm --pull=%s --init --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=%s --name=%s --label=%s --network=none --memory=%s --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s -e MAX_FILE_TREE_ENTRIES=%s -e MOD_VERSION=%s -e MOD_GUID=%s %s',
+            'docker run --rm --pull=%s --init --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=%s --name=%s --label=%s --network=none --memory=%s --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s -e MAX_FILE_TREE_ENTRIES=%s -e MOD_VERSION=%s -e MOD_GUID=%s -e SPT_GENERATION=%s %s',
             escapeshellarg($pullPolicy),
             escapeshellarg((string) config()->integer('verification.container.pids_limit', 256)),
             escapeshellarg((string) $this->containerName),
@@ -548,6 +549,7 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
             escapeshellarg((string) $maxFileTreeEntries),
             escapeshellarg($this->verifiableVersion()),
             escapeshellarg($this->verifiableModGuid()),
+            escapeshellarg($this->verifiableSptGeneration()),
             escapeshellarg($dockerImage),
         );
 
@@ -600,6 +602,28 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         $verifiable = $this->verificationResult->verifiable;
 
         return $verifiable instanceof ModVersion ? $verifiable->modGuid() : '';
+    }
+
+    /**
+     * The SPT minor version based on its version constraints. Passed to container for server mod location verification.
+     */
+    private function verifiableSptGeneration(): string
+    {
+        $verifiable = $this->verificationResult->verifiable;
+
+        if (! $verifiable instanceof ModVersion) {
+            return 'unknown';
+        }
+
+        $targets40 = VersionMatcher::intersects($verifiable->spt_version_constraint, '>=4.0.0 <4.1.0');
+        $targets41 = VersionMatcher::intersects($verifiable->spt_version_constraint, '>=4.1.0');
+
+        return match (true) {
+            $targets40 && $targets41 => 'mixed',
+            $targets40 => '4.0',
+            $targets41 => '4.1',
+            default => 'unknown',
+        };
     }
 
     /**

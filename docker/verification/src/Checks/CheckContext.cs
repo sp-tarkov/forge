@@ -8,7 +8,8 @@ public sealed record CheckContext(
     List<string> FileTree,
     long ArchiveSize,
     string ModVersion,
-    string ModGuid)
+    string ModGuid,
+    string SptGeneration)
 {
     private DllScanSummary? _dllScan;
 

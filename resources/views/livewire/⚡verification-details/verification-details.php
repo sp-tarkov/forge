@@ -64,7 +64,7 @@ new #[Lazy] class extends Component
      */
     public function refreshDetails(): void
     {
-        unset($this->result, $this->formattedFileSize, $this->checks, $this->fileTree, $this->fileCount, $this->hiddenFileCount, $this->isActive, $this->queuePosition);
+        unset($this->verifiable, $this->activeResult, $this->displayResult, $this->formattedFileSize, $this->checks, $this->fileTree, $this->fileCount, $this->hiddenFileCount, $this->queuePosition);
     }
 
     /**
@@ -80,7 +80,7 @@ new #[Lazy] class extends Component
 
         $this->submitVerificationFor($verifiable);
 
-        unset($this->result, $this->formattedFileSize, $this->checks, $this->fileTree, $this->fileCount, $this->hiddenFileCount, $this->isActive, $this->queuePosition);
+        unset($this->verifiable, $this->activeResult, $this->displayResult, $this->formattedFileSize, $this->checks, $this->fileTree, $this->fileCount, $this->hiddenFileCount, $this->queuePosition);
     }
 
     /**
@@ -96,16 +96,40 @@ new #[Lazy] class extends Component
     }
 
     /**
-     * Get the latest verification result for the verifiable model, in any status, including active runs.
+     * Get the latest queued or running verification run, or null when no run is active.
      */
     #[Computed]
-    public function result(): ?VerificationResult
+    public function activeResult(): ?VerificationResult
     {
-        return VerificationResult::query()
+        $latest = VerificationResult::query()
             ->where('verifiable_type', $this->verifiableType)
             ->where('verifiable_id', $this->verifiableId)
             ->latest('id')
             ->first();
+
+        return in_array($latest?->status, [VerificationStatus::Pending, VerificationStatus::Running], true) ? $latest : null;
+    }
+
+    /**
+     * Get the completed verification result to display: the latest passed, failed, or errored run, kept visible while a
+     * newer run is queued or running. Null when the version has no completed result for its current download link.
+     */
+    #[Computed]
+    public function displayResult(): ?VerificationResult
+    {
+        $verifiable = $this->verifiable;
+
+        if ($verifiable === null) {
+            return null;
+        }
+
+        $completed = $verifiable->latestCompletedVerificationResult;
+
+        if ($completed === null || $completed->download_url !== $verifiable->link) {
+            return null;
+        }
+
+        return $completed;
     }
 
     /**
@@ -128,29 +152,20 @@ new #[Lazy] class extends Component
     }
 
     /**
-     * Whether the displayed verification run is queued or running.
-     */
-    #[Computed]
-    public function isActive(): bool
-    {
-        return in_array($this->result?->status, [VerificationStatus::Pending, VerificationStatus::Running], true);
-    }
-
-    /**
-     * Get the displayed run's position in the global verification queue, or null when it is not pending.
+     * Get the active run's position in the global verification queue, or null when it is not pending.
      */
     #[Computed]
     public function queuePosition(): ?int
     {
-        $result = $this->result;
+        $active = $this->activeResult;
 
-        if ($result?->status !== VerificationStatus::Pending) {
+        if ($active?->status !== VerificationStatus::Pending) {
             return null;
         }
 
         return 1 + VerificationResult::query()
             ->where('status', VerificationStatus::Pending)
-            ->where('id', '<', $result->id)
+            ->where('id', '<', $active->id)
             ->count();
     }
 
@@ -160,20 +175,20 @@ new #[Lazy] class extends Component
     #[Computed]
     public function formattedFileSize(): ?string
     {
-        $size = $this->result?->downloaded_size;
+        $size = $this->displayResult?->downloaded_size;
 
         return $size === null ? null : Number::fileSize($size, precision: 2);
     }
 
     /**
-     * Get the result's checks as value objects for display.
+     * Get the displayed result's checks as value objects for display.
      *
      * @return list<VerificationCheck>
      */
     #[Computed]
     public function checks(): array
     {
-        return $this->result?->displayChecks() ?? [];
+        return $this->displayResult?->displayChecks() ?? [];
     }
 
     /**
@@ -184,7 +199,7 @@ new #[Lazy] class extends Component
     #[Computed]
     public function fileTree(): array
     {
-        return FileTreeNode::buildTree(array_slice($this->result->file_tree ?? [], 0, self::MAX_TREE_FILES));
+        return FileTreeNode::buildTree(array_slice($this->displayResult->file_tree ?? [], 0, self::MAX_TREE_FILES));
     }
 
     /**
@@ -193,7 +208,7 @@ new #[Lazy] class extends Component
     #[Computed]
     public function fileCount(): int
     {
-        return count($this->result->file_tree ?? []);
+        return count($this->displayResult->file_tree ?? []);
     }
 
     /**
