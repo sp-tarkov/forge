@@ -383,6 +383,64 @@ it('describes the feed as sorted by most favourited', function (): void {
     expect($description)->toContain('sorted by most favourited');
 });
 
+it('serves the cached feed to guests within the cache window', function (): void {
+    $mod = Mod::factory()->create(['name' => 'Original Mod', 'featured' => false, 'published_at' => now()]);
+    ModVersion::factory()->create(['mod_id' => $mod->id, 'published_at' => now(), 'spt_version_constraint' => '3.9.0']);
+
+    $firstResponse = $this->get(route('mods.rss'));
+    $firstResponse->assertSuccessful()
+        ->assertHeader('Cache-Control', 'max-age=300, public');
+    expect((string) $firstResponse->getContent())->toContain('Original Mod');
+
+    $newMod = Mod::factory()->create(['name' => 'Newer Mod', 'featured' => false, 'published_at' => now()]);
+    ModVersion::factory()->create(['mod_id' => $newMod->id, 'published_at' => now(), 'spt_version_constraint' => '3.9.0']);
+
+    $secondResponse = $this->get(route('mods.rss'));
+
+    $secondResponse->assertSuccessful();
+    expect((string) $secondResponse->getContent())->toBe((string) $firstResponse->getContent())
+        ->not->toContain('Newer Mod');
+});
+
+it('caches the feed separately per query string', function (): void {
+    $mod1 = Mod::factory()->create(['name' => 'Weapon Pack', 'featured' => false, 'published_at' => now()]);
+    ModVersion::factory()->create(['mod_id' => $mod1->id, 'published_at' => now(), 'spt_version_constraint' => '3.9.0']);
+
+    $mod2 = Mod::factory()->create(['name' => 'Armor Set', 'featured' => false, 'published_at' => now()]);
+    ModVersion::factory()->create(['mod_id' => $mod2->id, 'published_at' => now(), 'spt_version_constraint' => '3.9.0']);
+
+    $this->get(route('mods.rss'))->assertSuccessful();
+
+    $filteredResponse = $this->get(route('mods.rss', ['query' => 'Weapon']));
+
+    $filteredResponse->assertSuccessful();
+    expect((string) $filteredResponse->getContent())->toContain('Weapon Pack')
+        ->not->toContain('Armor Set');
+});
+
+it('bypasses the feed cache for moderators without writing to it', function (): void {
+    $enabledMod = Mod::factory()->create(['name' => 'Enabled Mod', 'disabled' => false, 'featured' => false, 'published_at' => now()]);
+    ModVersion::factory()->create(['mod_id' => $enabledMod->id, 'published_at' => now(), 'spt_version_constraint' => '3.9.0']);
+
+    $disabledMod = Mod::factory()->create(['name' => 'Disabled Mod', 'disabled' => true, 'featured' => false, 'published_at' => now()]);
+    ModVersion::factory()->create(['mod_id' => $disabledMod->id, 'published_at' => now(), 'spt_version_constraint' => '3.9.0']);
+
+    $moderator = User::factory()->moderator()->create();
+    $moderatorResponse = $this->actingAs($moderator)->get(route('mods.rss'));
+
+    $moderatorResponse->assertSuccessful()
+        ->assertHeader('Cache-Control', 'no-cache, private');
+    expect((string) $moderatorResponse->getContent())->toContain('Disabled Mod');
+
+    auth()->logout();
+
+    $guestResponse = $this->get(route('mods.rss'));
+
+    $guestResponse->assertSuccessful();
+    expect((string) $guestResponse->getContent())->toContain('Enabled Mod')
+        ->not->toContain('Disabled Mod');
+});
+
 it('respects mod access permissions', function (): void {
     // Test that disabled mods are not shown to regular users
     $mod1 = Mod::factory()->create(['name' => 'Enabled Mod', 'disabled' => false, 'featured' => false, 'published_at' => now()]);
