@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
-use App\Models\ModVersion;
 use App\Services\SptVersionService;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
 final readonly class SptVersionObserver
@@ -55,10 +53,6 @@ final readonly class SptVersionObserver
      */
     private function resolveSptVersion(): void
     {
-        ModVersion::query()->chunk(200, function (Collection $modVersions): void {
-            foreach ($modVersions as $modVersion) {
-                $this->sptVersionService->resolve($modVersion);
-            }
-        });
+        $this->sptVersionService->resolveAll();
     }
 }

@@ -54,6 +54,21 @@ it('does not dispatch check jobs for versions without download links', function 
     Queue::assertNotPushed(CheckDownloadLinkJob::class);
 });
 
+it('dispatches check jobs on the configured change detection queue', function (): void {
+    Queue::fake([CheckDownloadLinkJob::class]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+        'published_at' => now(),
+        'disabled' => false,
+    ]);
+
+    (new DetectDownloadChangesJob)->handle();
+
+    Queue::assertPushedOn('verification-detection', CheckDownloadLinkJob::class);
+});
+
 it('dispatches check jobs for multiple versions', function (): void {
     Queue::fake([CheckDownloadLinkJob::class]);
 

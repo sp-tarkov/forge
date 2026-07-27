@@ -169,23 +169,6 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
-     * Recalculate the denormalized favourite count for the mod: active list items on non-disabled Favourites lists.
-     */
-    public function calculateFavourites(): void
-    {
-        $favouritesCount = $this->listItems()
-            ->whereNull('tombstoned_at')
-            ->whereHas('modList', fn (Builder $query): Builder => $query
-                ->where('is_default', true)
-                ->where('disabled', false))
-            ->count();
-
-        DB::table('mods')
-            ->where('id', $this->id)
-            ->update(['favourites_count' => $favouritesCount]);
-    }
-
-    /**
      * Build the URL to download the latest version of this mod.
      */
     public function downloadUrl(bool $absolute = false): ?string

@@ -14,6 +14,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Timeout;
 use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Throwable;
 
 /**
@@ -27,12 +28,15 @@ final class DetectDownloadChangesJob implements ShouldBeUnique, ShouldQueue
 
     public function handle(): void
     {
+        $queue = config()->string('verification.change_detection_queue', 'verification-detection');
+
         $this->dispatchChecks(
             ModVersion::query()
                 ->whereNotNull('published_at')
                 ->where('disabled', false)
                 ->where('link', '!=', ''),
             ModVersion::class,
+            $queue,
         );
 
         $this->dispatchChecks(
@@ -41,6 +45,7 @@ final class DetectDownloadChangesJob implements ShouldBeUnique, ShouldQueue
                 ->where('disabled', false)
                 ->where('link', '!=', ''),
             AddonVersion::class,
+            $queue,
         );
     }
 
@@ -55,19 +60,19 @@ final class DetectDownloadChangesJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
-     * Dispatch CheckDownloadLinkJob for each version matching the query.
+     * Push a CheckDownloadLinkJob for each version matching the query onto the queue in per-chunk bulk batches.
      *
      * @param  Builder<ModVersion>|Builder<AddonVersion>  $query
      * @param  class-string<ModVersion>|class-string<AddonVersion>  $modelClass
      */
-    private function dispatchChecks(Builder $query, string $modelClass): void
+    private function dispatchChecks(Builder $query, string $modelClass, string $queue): void
     {
-        $query->select('id')->chunkById(100, function (Collection $versions) use ($modelClass): void {
-            /** @var ModVersion|AddonVersion $version */
-            foreach ($versions as $version) {
-                dispatch(new CheckDownloadLinkJob($modelClass, $version->id))
-                    ->onQueue(config()->string('verification.change_detection_queue', 'verification-detection'));
-            }
+        $query->select('id')->chunkById(500, function (Collection $versions) use ($modelClass, $queue): void {
+            $jobs = $versions
+                ->map(fn (ModVersion|AddonVersion $version): CheckDownloadLinkJob => new CheckDownloadLinkJob($modelClass, $version->id))
+                ->all();
+
+            Queue::bulk($jobs, '', $queue);
         });
     }
 }
