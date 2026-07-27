@@ -83,7 +83,8 @@ final class ModFilter
 
         return Mod::query()
             ->select('mods.*')
-            ->unless($showDisabled, fn (Builder $query) => $query->where('mods.disabled', false));
+            ->unless($showDisabled, fn (Builder $query) => $query->where('mods.disabled', false))
+            ->when($showDisabled, fn (Builder $query) => $query->withVisibilityFlags());
     }
 
     /**

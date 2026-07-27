@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\Mod;
 use App\Models\User;
 use App\Traits\Livewire\ModeratesMod;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
@@ -46,8 +47,12 @@ new #[Lazy] class extends Component
     #[Computed]
     public function mods(): LengthAwarePaginator
     {
-        $query = $this->user->visibleModsFor(auth()->user())
+        $viewer = auth()->user();
+        $viewerCanSeeWarnings = $viewer !== null && ($viewer->isModOrAdmin() || $viewer->id === $this->userId);
+
+        $query = $this->user->visibleModsFor($viewer)
             ->with(['owner:id,name', 'additionalAuthors:id,name', 'latestVersion', 'latestVersion.latestSptVersion'])
+            ->when($viewerCanSeeWarnings, fn (Builder $query): Builder => $query->withVisibilityFlags())
             ->latest();
 
         // Total using mods.id so the LEFT JOIN against additional_authors doesn't inflate the paginator total.

@@ -111,7 +111,7 @@
                     :addon-id="$addon->id"
                     :disabled="$addon->disabled"
                     :published-at="$addon->published_at?->toISOString()"
-                    :publicly-visible="$addon->isPubliclyVisible()"
+                    :publicly-visible="$addon->publiclyVisibleWithoutQuery()"
                 />
 
                 <div class="flex flex-col gap-4 sm:flex-row sm:gap-6">

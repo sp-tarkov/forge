@@ -12,6 +12,7 @@ use Livewire\Component;
 /**
  * @property-read array<string, string>|null $ribbonData
  * @property-read bool $canSeeWarnings
+ * @property-read AddonModel|null $addon
  */
 new class extends Component
 {
@@ -34,10 +35,10 @@ new class extends Component
     public ?string $publishedAt = null;
 
     /**
-     * Whether the addon is publicly visible.
+     * Whether the addon is publicly visible. Null until it has been resolved.
      */
     #[Locked]
-    public bool $publiclyVisible = false;
+    public ?bool $publiclyVisible = null;
 
     /**
      * Refresh the addon data when it's updated.
@@ -45,7 +46,7 @@ new class extends Component
     #[On('addon-updated.{addonId}')]
     public function refreshAddon(): void
     {
-        $addon = AddonModel::query()->with('versions')->find($this->addonId);
+        $addon = AddonModel::query()->find($this->addonId);
 
         if ($addon) {
             $hasChanges = false;
@@ -76,6 +77,15 @@ new class extends Component
     }
 
     /**
+     * The addon this ribbon describes.
+     */
+    #[Computed]
+    public function addon(): ?AddonModel
+    {
+        return AddonModel::query()->find($this->addonId);
+    }
+
+    /**
      * Check if the current user can see visibility warnings.
      */
     #[Computed]
@@ -87,14 +97,14 @@ new class extends Component
             return false;
         }
 
-        $addon = AddonModel::query()->find($this->addonId);
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        $addon = $this->addon;
 
         if (! $addon) {
             return false;
-        }
-
-        if ($user->isModOrAdmin()) {
-            return true;
         }
 
         return $addon->isAuthorOrOwner($user);
@@ -121,12 +131,19 @@ new class extends Component
             return ['color' => 'emerald', 'label' => __('Scheduled')];
         }
 
-        // Check if addon is not publicly visible due to missing or unpublished versions
-        // Only show this to privileged users who can see warnings
-        if (! $this->publiclyVisible && $this->canSeeWarnings) {
+        // Shows the unpublished warning to privileged users when the addon is not publicly visible
+        if ($this->canSeeWarnings && ! $this->resolvePubliclyVisible()) {
             return ['color' => 'amber', 'label' => __('Unpublished')];
         }
 
         return null;
+    }
+
+    /**
+     * Resolve whether the addon is publicly visible, storing the result on the component after the first lookup.
+     */
+    protected function resolvePubliclyVisible(): bool
+    {
+        return $this->publiclyVisible ??= (bool) $this->addon?->isPubliclyVisible();
     }
 };

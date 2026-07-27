@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Models\Mod;
+use App\Models\ModVersion;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -122,6 +124,70 @@ describe('Mod Ribbon States', function (): void {
             ->assertSee('ribbon emerald')
             ->assertSee('Scheduled')
             ->assertDontSee('Featured');
+    });
+});
+
+describe('Lazy Visibility Resolution', function (): void {
+    it('runs no mod version queries for guests', function (): void {
+        $mod = Mod::factory()->create(['published_at' => now()->subDay()]);
+
+        DB::enableQueryLog();
+        Livewire::test('ribbon.mod', getModRibbonProps($mod))
+            ->assertDontSee('class="ribbon');
+        $versionQueries = collect(DB::getQueryLog())
+            ->filter(fn (array $query): bool => str_contains($query['query'], 'mod_versions'));
+        DB::disableQueryLog();
+
+        expect($versionQueries)->toBeEmpty();
+    });
+
+    it('shows the unpublished warning to the owner when the mod has no visible versions', function (): void {
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => now()->subDay()]);
+
+        Livewire::actingAs($owner)
+            ->test('ribbon.mod', getModRibbonProps($mod))
+            ->assertSee('ribbon amber')
+            ->assertSee('Unpublished');
+    });
+
+    it('shows no warning to the owner when the mod has a visible legacy version', function (): void {
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => now()->subDay()]);
+        ModVersion::factory()->recycle($mod)->create([
+            'spt_version_constraint' => '',
+            'published_at' => now()->subDay(),
+            'disabled' => false,
+        ]);
+
+        Livewire::actingAs($owner)
+            ->test('ribbon.mod', getModRibbonProps($mod))
+            ->assertDontSee('class="ribbon');
+    });
+
+    it('uses a passed publicly-visible value without querying mod versions', function (): void {
+        $admin = User::factory()->admin()->create();
+        $mod = Mod::factory()->create(['published_at' => now()->subDay()]);
+
+        DB::enableQueryLog();
+        Livewire::actingAs($admin)
+            ->test('ribbon.mod', [...getModRibbonProps($mod), 'publiclyVisible' => true])
+            ->assertDontSee('class="ribbon');
+        $versionQueries = collect(DB::getQueryLog())
+            ->filter(fn (array $query): bool => str_contains($query['query'], 'mod_versions'));
+        DB::disableQueryLog();
+
+        expect($versionQueries)->toBeEmpty();
+    });
+
+    it('resolves visibility for an admin when no publicly-visible value is passed', function (): void {
+        $admin = User::factory()->admin()->create();
+        $mod = Mod::factory()->create(['published_at' => now()->subDay()]);
+
+        Livewire::actingAs($admin)
+            ->test('ribbon.mod', getModRibbonProps($mod))
+            ->assertSee('ribbon amber')
+            ->assertSee('Unpublished');
     });
 });
 

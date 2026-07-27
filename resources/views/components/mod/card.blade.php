@@ -18,7 +18,7 @@
         :published-at="$mod->published_at?->toISOString()"
         :featured="$mod->featured"
         :homepage-featured="$homepageFeatured"
-        :publicly-visible="$mod->isPubliclyVisible()"
+        :publicly-visible="$mod->publiclyVisibleWithoutQuery()"
     />
 
     <a

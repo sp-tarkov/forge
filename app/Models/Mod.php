@@ -17,6 +17,7 @@ use Database\Factories\ModFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -384,20 +385,73 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
             return false;
         }
 
-        // Check for modern versions with SPT compatibility
-        $hasModernVersion = $this->versions()
-            ->publiclyVisible()
-            ->whereHas('latestSptVersion')
-            ->exists();
-
-        if ($hasModernVersion) {
+        if ($this->hasPubliclyVisibleVersion()) {
             return true;
         }
 
-        // Check for legacy versions (no SPT constraint)
-        return $this->versions()
-            ->legacyPubliclyVisible()
-            ->exists();
+        return $this->hasLegacyPubliclyVisibleVersion();
+    }
+
+    /**
+     * The publicly-visible state derived only from data already on the instance: the mod's own attributes and the
+     * flags selected by withVisibilityFlags(). Null when answering would require a query.
+     */
+    public function publiclyVisibleWithoutQuery(): ?bool
+    {
+        if ($this->disabled || ! $this->isPublished()) {
+            return false;
+        }
+
+        $hasModernVersion = $this->publiclyVisibleVersionFlag();
+        $hasLegacyVersion = $this->legacyPubliclyVisibleVersionFlag();
+
+        if ($hasModernVersion === true || $hasLegacyVersion === true) {
+            return true;
+        }
+
+        if ($hasModernVersion === false && $hasLegacyVersion === false) {
+            return false;
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if the mod has at least one publicly visible version with SPT compatibility.
+     */
+    public function hasPubliclyVisibleVersion(): bool
+    {
+        return $this->publiclyVisibleVersionFlag()
+            ?? $this->publiclyVisibleVersions()->exists();
+    }
+
+    /**
+     * Check if the mod has at least one publicly visible legacy version (no SPT constraint).
+     */
+    public function hasLegacyPubliclyVisibleVersion(): bool
+    {
+        return $this->legacyPubliclyVisibleVersionFlag()
+            ?? $this->legacyPubliclyVisibleVersions()->exists();
+    }
+
+    /**
+     * Versions of this mod that are published, enabled, and tagged with a published SPT version.
+     *
+     * @return HasMany<ModVersion, $this>
+     */
+    public function publiclyVisibleVersions(): HasMany
+    {
+        return $this->hasMany(ModVersion::class)->publiclyVisible();
+    }
+
+    /**
+     * Versions of this mod that are published, enabled, and carry no SPT version constraint.
+     *
+     * @return HasMany<ModVersion, $this>
+     */
+    public function legacyPubliclyVisibleVersions(): HasMany
+    {
+        return $this->hasMany(ModVersion::class)->legacyPubliclyVisible();
     }
 
     /**
@@ -405,17 +459,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
      */
     public function hasOnlyLegacyVersions(): bool
     {
-        // Has at least one legacy version that's publicly visible
-        $hasLegacyVersion = $this->versions()
-            ->legacyPubliclyVisible()
-            ->exists();
-
-        // Has no versions with SPT versions
-        $hasModernVersion = $this->versions()
-            ->publiclyVisible()
-            ->exists();
-
-        return $hasLegacyVersion && ! $hasModernVersion;
+        return $this->hasLegacyPubliclyVisibleVersion() && ! $this->hasPubliclyVisibleVersion();
     }
 
     /**
@@ -645,6 +689,22 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
+     * Select the has_publicly_visible_version and has_legacy_publicly_visible_version flags for every mod row in a
+     * single query via withExists().
+     *
+     * @param  Builder<Mod>  $query
+     * @return Builder<Mod>
+     */
+    #[Scope]
+    protected function withVisibilityFlags(Builder $query): Builder
+    {
+        return $query->withExists([
+            'publiclyVisibleVersions as has_publicly_visible_version',
+            'legacyPubliclyVisibleVersions as has_legacy_publicly_visible_version',
+        ]);
+    }
+
+    /**
      * Determine if the mod has any published version that is Fika compatible.
      *
      * When the fikaCompatibleVersions relationship has been eager-loaded (as the API query builder does), the flag is
@@ -847,6 +907,26 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
                 return $clean;
             }
         )->shouldCache();
+    }
+
+    /**
+     * Read the publicly-visible-version flag selected by withVisibilityFlags(), or null when it is absent.
+     */
+    private function publiclyVisibleVersionFlag(): ?bool
+    {
+        return $this->hasAttribute('has_publicly_visible_version')
+            ? (bool) $this->getAttribute('has_publicly_visible_version')
+            : null;
+    }
+
+    /**
+     * Read the legacy-visible-version flag selected by withVisibilityFlags(), or null when it is absent.
+     */
+    private function legacyPubliclyVisibleVersionFlag(): ?bool
+    {
+        return $this->hasAttribute('has_legacy_publicly_visible_version')
+            ? (bool) $this->getAttribute('has_legacy_publicly_visible_version')
+            : null;
     }
 
     /**
