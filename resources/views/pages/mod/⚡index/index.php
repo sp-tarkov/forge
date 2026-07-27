@@ -507,8 +507,7 @@ new #[Layout('layouts::base')] class extends Component
             return null;
         }
 
-        /** @var int */
-        return Cache::flexible(
+        return (int) Cache::flexible(
             $cacheKey,
             [5 * 60, 10 * 60], // 5 minutes stale, 10 minutes expire
             fn (): int => $builder->toBase()->getCountForPagination(),

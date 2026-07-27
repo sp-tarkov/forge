@@ -820,6 +820,23 @@ describe('Index', function (): void {
             expect($component->viewData('mods')->total())->toBe(2);
         });
 
+        it('casts a string total from the cache store to an integer', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $mod = Mod::factory()->create();
+            ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+            $component = Livewire::test('pages::mod.index');
+            expect($component->viewData('mods')->total())->toBe(1);
+
+            $cacheKey = (fn (): ?string => $this->modTotalCacheKey())->call($component->instance());
+            expect($cacheKey)->not->toBeNull();
+            Cache::put($cacheKey, '5', 600);
+
+            $component->call('$refresh');
+            expect($component->viewData('mods')->total())->toBe(5);
+        });
+
         it('caches the total separately per viewer role', function (): void {
             SptVersion::factory()->create(['version' => '3.11.4']);
 
