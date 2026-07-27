@@ -74,6 +74,8 @@ final class SiteStats extends Component
      */
     private function readOnlineCount(): void
     {
+        $this->onlineCount = null;
+
         $visitors = Cache::get(FetchCloudflareVisitorStatsJob::CACHE_KEY);
 
         if (! is_array($visitors) || ! isset($visitors['count']) || ! is_int($visitors['count'])) {
