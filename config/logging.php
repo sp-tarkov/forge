@@ -120,6 +120,14 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'deprecations' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/deprecations.log'),
+            'level' => 'warning',
+            'days' => 7,
+            'replace_placeholders' => true,
+        ],
+
         'null' => [
             'driver' => 'monolog',
             'handler' => NullHandler::class,
