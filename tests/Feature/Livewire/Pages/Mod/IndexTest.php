@@ -880,6 +880,27 @@ describe('Index', function (): void {
                 ->assertDontSee('2 Favourites');
         });
     });
+
+    describe('loading skeleton', function (): void {
+        it('renders an animated skeleton grid toggled by the loading state', function (): void {
+            $html = Livewire::test('pages::mod.index')->html();
+
+            expect($html)->toContain('wire:loading.grid')
+                ->toContain('wire:loading.remove')
+                ->toContain('data-flux-skeleton-group')
+                ->toContain('flux-shimmer');
+        });
+
+        it('renders one skeleton card per result on the page', function (): void {
+            $component = Livewire::test('pages::mod.index');
+
+            expect(mb_substr_count($component->html(), 'data-flux-skeleton-group'))->toBe(12);
+
+            $component->set('perPage', 24);
+
+            expect(mb_substr_count($component->html(), 'data-flux-skeleton-group'))->toBe(24);
+        });
+    });
 });
 
 describe('Filter Options', function (): void {

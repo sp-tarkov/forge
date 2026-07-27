@@ -589,39 +589,79 @@
 
         {{ $mods->onEachSide(1)->links() }}
 
+        {{-- Loading skeleton --}}
+        <div
+            wire:loading.grid
+            class="my-8 hidden grid-cols-1 gap-6 lg:grid-cols-2"
+        >
+            @for ($i = 0; $i < $perPage; $i++)
+                <div class="@container mx-auto h-full w-full max-w-2xl">
+                    <flux:skeleton.group
+                        animate="shimmer"
+                        class="flex h-full w-full flex-col overflow-hidden rounded-xl bg-gray-950 shadow-md shadow-gray-950 drop-shadow-2xl"
+                    >
+                        <div class="flex flex-row">
+                            <div class="@lg:m-4 m-3 mr-0 shrink-0">
+                                <flux:skeleton class="@lg:size-48 size-32 rounded-lg" />
+                            </div>
+                            <div class="@lg:p-4 @lg:pl-0 flex w-full flex-col p-3">
+                                <flux:skeleton class="h-5 w-3/4 rounded" />
+                                <flux:skeleton class="mt-2 h-4 w-1/2 rounded" />
+                                <flux:skeleton class="mt-2.5 h-6 w-16 rounded-md" />
+                                <div class="@lg:block mt-2.5 hidden space-y-2">
+                                    <flux:skeleton class="h-4 w-full rounded" />
+                                    <flux:skeleton class="h-4 w-5/6 rounded" />
+                                </div>
+                                <div class="mt-auto flex items-center justify-between pt-2">
+                                    <flux:skeleton class="h-4 w-24 rounded" />
+                                    <flux:skeleton class="h-4 w-16 rounded" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="@lg:hidden space-y-2 px-3 pb-3">
+                            <flux:skeleton class="h-4 w-full rounded" />
+                            <flux:skeleton class="h-4 w-5/6 rounded" />
+                        </div>
+                    </flux:skeleton.group>
+                </div>
+            @endfor
+        </div>
+
         {{-- Mod Listing --}}
-        @if ($mods->isNotEmpty())
-            <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                @foreach ($mods as $mod)
-                    <div wire:key="mod-index-{{ $mod->id }}">
-                        <x-mod.card
-                            :mod="$mod"
-                            :version="$this->getDisplayVersion($mod, $includeLegacy)"
-                            :eager="$loop->index < 4"
-                            :favourites-count="$order === 'favourited' ? $mod->favourites_count : null"
+        <div wire:loading.remove>
+            @if ($mods->isNotEmpty())
+                <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    @foreach ($mods as $mod)
+                        <div wire:key="mod-index-{{ $mod->id }}">
+                            <x-mod.card
+                                :mod="$mod"
+                                :version="$this->getDisplayVersion($mod, $includeLegacy)"
+                                :eager="$loop->index < 4"
+                                :favourites-count="$order === 'favourited' ? $mod->favourites_count : null"
+                            />
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-center text-gray-300">
+                    <p>{{ __('There were no mods found with those filters applied. ') }}</p>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="mx-auto h-6 w-6"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.182 16.318A4.486 4.486 0 0 0 12.016 15a4.486 4.486 0 0 0-3.198 1.318M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z"
                         />
-                    </div>
-                @endforeach
-            </div>
-        @else
-            <div class="text-center text-gray-300">
-                <p>{{ __('There were no mods found with those filters applied. ') }}</p>
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="mx-auto h-6 w-6"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M15.182 16.318A4.486 4.486 0 0 0 12.016 15a4.486 4.486 0 0 0-3.198 1.318M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z"
-                    />
-                </svg>
-            </div>
-        @endif
+                    </svg>
+                </div>
+            @endif
+        </div>
 
         {{ $mods->onEachSide(1)->links() }}
     </div>
