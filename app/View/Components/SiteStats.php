@@ -21,7 +21,7 @@ final class SiteStats extends Component
     /**
      * The number of people who loaded a page within the trailing window, or null when no recent figure is cached.
      */
-    public ?int $onlineCount = null;
+    public ?int $onlineCount;
 
     /**
      * The length in minutes of the window the online count covers.
@@ -31,17 +31,17 @@ final class SiteStats extends Component
     /**
      * The all-time peak online count.
      */
-    public int $peakCount = 0;
+    public int $peakCount;
 
     /**
      * The formatted date on which the all-time peak was reached.
      */
-    public ?string $peakDate = null;
+    public ?string $peakDate;
 
     /**
      * The number of API requests served in the trailing 24 hours, counted at the origin.
      */
-    public int $apiRequests24h = 0;
+    public int $apiRequests24h;
 
     /**
      * The total API requests Cloudflare handled at the edge in the trailing 24 hours, or zero when Cloudflare analytics
