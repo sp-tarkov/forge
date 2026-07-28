@@ -27,11 +27,15 @@ final class UserName extends Component
     {
         $role = $this->user->role ?? null;
 
-        if ($role && $role->color_class) {
-            return sprintf('text-%s-400', $role->color_class);
-        }
-
-        return '';
+        return match ($role?->color_class) {
+            'red' => 'text-red-400',
+            'orange' => 'text-orange-400',
+            'lime' => 'text-lime-400',
+            'green' => 'text-green-400',
+            'emerald' => 'text-emerald-400',
+            'sky' => 'text-sky-400',
+            default => '',
+        };
     }
 
     /**
