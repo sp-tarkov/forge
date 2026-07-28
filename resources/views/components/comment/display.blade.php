@@ -1,3 +1,5 @@
+@blaze
+
 @props(['comment', 'permissions', 'manager', 'isReply' => false, 'commentable' => null])
 
 @if ($manager->isCommentAuthorBlocked($comment))
