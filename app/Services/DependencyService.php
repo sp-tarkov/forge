@@ -562,6 +562,7 @@ final class DependencyService
             if ($modId === 0) {
                 continue;
             }
+
             if (isset($renderedModIds[$modId])) {
                 continue;
             }
