@@ -72,6 +72,14 @@ describe('helpers', function (): void {
         expect($failed->passed())->toBeFalse();
     });
 
+    it('reports skipped from status', function (): void {
+        $skipped = new VerificationCheck('x', VerificationCheckStatus::Skipped, false, null);
+        $passed = new VerificationCheck('x', VerificationCheckStatus::Passed, false, null);
+
+        expect($skipped->skipped())->toBeTrue();
+        expect($passed->skipped())->toBeFalse();
+    });
+
     it('resolves the display label and description from the check name', function (): void {
         $known = new VerificationCheck('archive_extraction', VerificationCheckStatus::Passed, false, null);
         $unknown = new VerificationCheck('mystery_check', VerificationCheckStatus::Passed, false, null);

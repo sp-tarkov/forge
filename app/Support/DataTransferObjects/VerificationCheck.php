@@ -96,6 +96,14 @@ final readonly class VerificationCheck
     }
 
     /**
+     * Whether the check was skipped.
+     */
+    public function skipped(): bool
+    {
+        return $this->status === VerificationCheckStatus::Skipped;
+    }
+
+    /**
      * Convert the check to a plain array for JSON storage.
      *
      * @return array{name: string, status: string, report_only: bool, message: string|null, data: array<string, mixed>}
