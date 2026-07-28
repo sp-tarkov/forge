@@ -18,6 +18,7 @@ use App\Mixins\CarbonMixin;
 use App\Models\Ban;
 use App\Models\User;
 use App\Observers\BanObserver;
+use App\Observers\DatabaseNotificationObserver;
 use App\Policies\BlockingPolicy;
 use App\Services\ClaudeCommentTranslationService;
 use App\Services\CommentSpamService;
@@ -36,6 +37,7 @@ use Illuminate\Broadcasting\BroadcastController;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
@@ -139,8 +141,9 @@ final class AppServiceProvider extends ServiceProvider
             AuthBanned::class,
         ]);
 
-        // Invalidate the cached per-user ban state when the underlying rows change.
+        // Invalidate the cached per-user ban state and notifications change token when the underlying rows change.
         Ban::observe(BanObserver::class);
+        DatabaseNotification::observe(DatabaseNotificationObserver::class);
 
         // Register the broadcasting.auth endpoint. Every remaining channel (chat conversations, user notifications,
         // online/typing presence) requires an authenticated user, so the framework's default controller is sufficient.
