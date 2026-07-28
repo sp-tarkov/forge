@@ -952,6 +952,274 @@ describe('resolve', function (): void {
         });
     });
 
+    describe('required_by attribution', function (): void {
+        it('includes required_by on top-level dependencies but not nested ones', function (): void {
+            $sptVersion = SptVersion::factory()->create([
+                'version' => '3.9.0',
+                'publish_date' => now()->subDay(),
+            ]);
+
+            $mainMod = Mod::factory()->create(['name' => 'Main Mod']);
+            $mainModVersion = ModVersion::factory()->create([
+                'mod_id' => $mainMod->id,
+                'version' => '1.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $mainModVersion->sptVersions()->sync([$sptVersion->id]);
+
+            $level1Mod = Mod::factory()->create(['name' => 'Level 1 Dependency']);
+            $level1Version = ModVersion::factory()->create([
+                'mod_id' => $level1Mod->id,
+                'version' => '1.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $level1Version->sptVersions()->sync([$sptVersion->id]);
+
+            $level2Mod = Mod::factory()->create(['name' => 'Level 2 Dependency']);
+            $level2Version = ModVersion::factory()->create([
+                'mod_id' => $level2Mod->id,
+                'version' => '1.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $level2Version->sptVersions()->sync([$sptVersion->id]);
+
+            $dep1 = Dependency::factory()->create([
+                'dependable_id' => $mainModVersion->id,
+                'dependent_mod_id' => $level1Mod->id,
+            ]);
+            DependencyResolved::factory()->create([
+                'dependable_id' => $mainModVersion->id,
+                'dependency_id' => $dep1->id,
+                'resolved_mod_version_id' => $level1Version->id,
+            ]);
+
+            $dep2 = Dependency::factory()->create([
+                'dependable_id' => $level1Version->id,
+                'dependent_mod_id' => $level2Mod->id,
+            ]);
+            DependencyResolved::factory()->create([
+                'dependable_id' => $level1Version->id,
+                'dependency_id' => $dep2->id,
+                'resolved_mod_version_id' => $level2Version->id,
+            ]);
+
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $mainMod->id));
+
+            $response->assertSuccessful()
+                ->assertJsonCount(1, 'data')
+                ->assertJsonPath('data.0.required_by', [(string) $mainMod->id])
+                ->assertJsonMissingPath('data.0.dependencies.0.required_by');
+        });
+
+        it('echoes GUID identifiers in required_by exactly as provided', function (): void {
+            $sptVersion = SptVersion::factory()->create([
+                'version' => '3.9.0',
+                'publish_date' => now()->subDay(),
+            ]);
+
+            $mainMod = Mod::factory()->create(['guid' => 'com.example.mainmod']);
+            $mainModVersion = ModVersion::factory()->create([
+                'mod_id' => $mainMod->id,
+                'version' => '1.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $mainModVersion->sptVersions()->sync([$sptVersion->id]);
+
+            $dependencyMod = Mod::factory()->create(['name' => 'Dependency Mod']);
+            $dependencyModVersion = ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '2.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $dependencyModVersion->sptVersions()->sync([$sptVersion->id]);
+
+            $dependency = Dependency::factory()->create([
+                'dependable_id' => $mainModVersion->id,
+                'dependent_mod_id' => $dependencyMod->id,
+                'constraint' => '^2.0.0',
+            ]);
+            DependencyResolved::factory()->create([
+                'dependable_id' => $mainModVersion->id,
+                'dependency_id' => $dependency->id,
+                'resolved_mod_version_id' => $dependencyModVersion->id,
+            ]);
+
+            $response = $this->getJson('/api/v0/mods/dependencies?mods=Com.Example.MainMod:1.0.0');
+
+            $response->assertSuccessful()
+                ->assertJsonCount(1, 'data')
+                ->assertJsonPath('data.0.required_by', ['Com.Example.MainMod']);
+        });
+
+        it('unions required_by for shared dependencies and keeps unique dependencies attributed separately', function (): void {
+            $sptVersion = SptVersion::factory()->create([
+                'version' => '3.9.0',
+                'publish_date' => now()->subDay(),
+            ]);
+
+            $mod1 = Mod::factory()->create(['name' => 'Queried Mod 1']);
+            $mod1Version = ModVersion::factory()->create([
+                'mod_id' => $mod1->id,
+                'version' => '1.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $mod1Version->sptVersions()->sync([$sptVersion->id]);
+
+            $mod2 = Mod::factory()->create([
+                'name' => 'Queried Mod 2',
+                'guid' => 'com.example.mod2',
+            ]);
+            $mod2Version = ModVersion::factory()->create([
+                'mod_id' => $mod2->id,
+                'version' => '2.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $mod2Version->sptVersions()->sync([$sptVersion->id]);
+
+            $sharedDep = Mod::factory()->create(['name' => 'Shared Dependency']);
+            $sharedDepVersion = ModVersion::factory()->create([
+                'mod_id' => $sharedDep->id,
+                'version' => '1.5.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $sharedDepVersion->sptVersions()->sync([$sptVersion->id]);
+
+            $uniqueDep = Mod::factory()->create(['name' => 'Unique Dependency']);
+            $uniqueDepVersion = ModVersion::factory()->create([
+                'mod_id' => $uniqueDep->id,
+                'version' => '1.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $uniqueDepVersion->sptVersions()->sync([$sptVersion->id]);
+
+            $dep1Shared = Dependency::factory()->create([
+                'dependable_id' => $mod1Version->id,
+                'dependent_mod_id' => $sharedDep->id,
+            ]);
+            DependencyResolved::factory()->create([
+                'dependable_id' => $mod1Version->id,
+                'dependency_id' => $dep1Shared->id,
+                'resolved_mod_version_id' => $sharedDepVersion->id,
+            ]);
+
+            $dep1Unique = Dependency::factory()->create([
+                'dependable_id' => $mod1Version->id,
+                'dependent_mod_id' => $uniqueDep->id,
+            ]);
+            DependencyResolved::factory()->create([
+                'dependable_id' => $mod1Version->id,
+                'dependency_id' => $dep1Unique->id,
+                'resolved_mod_version_id' => $uniqueDepVersion->id,
+            ]);
+
+            $dep2Shared = Dependency::factory()->create([
+                'dependable_id' => $mod2Version->id,
+                'dependent_mod_id' => $sharedDep->id,
+            ]);
+            DependencyResolved::factory()->create([
+                'dependable_id' => $mod2Version->id,
+                'dependency_id' => $dep2Shared->id,
+                'resolved_mod_version_id' => $sharedDepVersion->id,
+            ]);
+
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0,com.example.mod2:2.0.0', $mod1->id));
+
+            $response->assertSuccessful()
+                ->assertJsonCount(2, 'data');
+
+            $data = collect($response->json('data'));
+
+            expect($data->firstWhere('name', 'Shared Dependency')['required_by'])
+                ->toEqualCanonicalizing([(string) $mod1->id, 'com.example.mod2'])
+                ->and($data->firstWhere('name', 'Unique Dependency')['required_by'])
+                ->toBe([(string) $mod1->id]);
+        });
+
+        it('lists every requiring queried mod on each conflicting entry', function (): void {
+            $sptVersion = SptVersion::factory()->create([
+                'version' => '3.9.0',
+                'publish_date' => now()->subDay(),
+            ]);
+
+            $mod1 = Mod::factory()->create(['name' => 'Queried Mod 1']);
+            $mod1Version = ModVersion::factory()->create([
+                'mod_id' => $mod1->id,
+                'version' => '1.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $mod1Version->sptVersions()->sync([$sptVersion->id]);
+
+            $mod2 = Mod::factory()->create(['name' => 'Queried Mod 2']);
+            $mod2Version = ModVersion::factory()->create([
+                'mod_id' => $mod2->id,
+                'version' => '2.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $mod2Version->sptVersions()->sync([$sptVersion->id]);
+
+            $sharedDep = Mod::factory()->create(['name' => 'Shared Dependency']);
+            $sharedDepVersion1 = ModVersion::factory()->create([
+                'mod_id' => $sharedDep->id,
+                'version' => '1.0.0',
+                'published_at' => now()->subDays(2),
+                'disabled' => false,
+            ]);
+            $sharedDepVersion1->sptVersions()->sync([$sptVersion->id]);
+
+            $sharedDepVersion2 = ModVersion::factory()->create([
+                'mod_id' => $sharedDep->id,
+                'version' => '2.0.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $sharedDepVersion2->sptVersions()->sync([$sptVersion->id]);
+
+            $dep1 = Dependency::factory()->create([
+                'dependable_id' => $mod1Version->id,
+                'dependent_mod_id' => $sharedDep->id,
+                'constraint' => '^1.0.0',
+            ]);
+            DependencyResolved::factory()->create([
+                'dependable_id' => $mod1Version->id,
+                'dependency_id' => $dep1->id,
+                'resolved_mod_version_id' => $sharedDepVersion1->id,
+            ]);
+
+            $dep2 = Dependency::factory()->create([
+                'dependable_id' => $mod2Version->id,
+                'dependent_mod_id' => $sharedDep->id,
+                'constraint' => '^2.0.0',
+            ]);
+            DependencyResolved::factory()->create([
+                'dependable_id' => $mod2Version->id,
+                'dependency_id' => $dep2->id,
+                'resolved_mod_version_id' => $sharedDepVersion2->id,
+            ]);
+
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0,%d:2.0.0', $mod1->id, $mod2->id));
+
+            $response->assertSuccessful()
+                ->assertJsonCount(2, 'data');
+
+            foreach ($response->json('data') as $entry) {
+                expect($entry['conflict'])->toBeTrue()
+                    ->and($entry['required_by'])
+                    ->toEqualCanonicalizing([(string) $mod1->id, (string) $mod2->id]);
+            }
+        });
+    });
+
     describe('edge cases', function (): void {
         it('handles whitespace in comma-separated mods parameter', function (): void {
             $sptVersion = SptVersion::factory()->create([
