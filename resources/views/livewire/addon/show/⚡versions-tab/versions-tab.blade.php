@@ -29,11 +29,12 @@
 
 <div>
     @forelse($this->versions as $version)
-        <x-addon.version-card
-            wire:key="addon-show-version-{{ $this->addon->id }}-{{ $version->id }}"
-            :version="$version"
-            :addon="$this->addon"
-        />
+        <div wire:key="addon-show-version-{{ $this->addon->id }}-{{ $version->id }}">
+            <x-addon.version-card
+                :version="$version"
+                :addon="$this->addon"
+            />
+        </div>
     @empty
         <div class="rounded-xl bg-gray-950 p-4 shadow-md shadow-gray-950 drop-shadow-2xl sm:p-6">
             <div class="py-8 text-center">

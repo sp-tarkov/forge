@@ -1,3 +1,5 @@
+@blaze
+
 @props(['id', 'name', 'value'])
 
 <div class="flex items-center text-base sm:text-sm">

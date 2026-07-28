@@ -12,6 +12,7 @@ use App\Models\ModVersion;
 use App\Models\VerificationResult;
 use App\Services\AddonVersionService;
 use App\Services\SptVersionService;
+use App\Support\HomepageSectionCache;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class ModVersionObserver
@@ -28,6 +29,8 @@ final readonly class ModVersionObserver
     public function created(ModVersion $modVersion): void
     {
         $this->dispatchVerification($modVersion);
+
+        HomepageSectionCache::flushModSections();
     }
 
     /**
@@ -50,6 +53,10 @@ final readonly class ModVersionObserver
         $this->updateRelatedSptVersions($modVersion); // After resolving SPT versions.
         $this->updateRelatedMod($modVersion);
         $this->resolveRelatedAddonVersions($modVersion);
+
+        if ($modVersion->wasChanged(['published_at', 'disabled'])) {
+            HomepageSectionCache::flushModSections();
+        }
     }
 
     /**
@@ -62,6 +69,8 @@ final readonly class ModVersionObserver
         $this->updateRelatedSptVersions($modVersion); // After resolving SPT versions.
         $this->updateRelatedMod($modVersion);
         $this->resolveRelatedAddonVersions($modVersion);
+
+        HomepageSectionCache::flushModSections();
     }
 
     /**

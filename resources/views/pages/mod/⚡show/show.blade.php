@@ -119,6 +119,7 @@
                     :published-at="$mod->published_at?->toISOString()"
                     :featured="$mod->featured"
                     :publicly-visible="$mod->publiclyVisibleWithoutQuery()"
+                    :can-see-warnings="auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user())"
                 />
 
                 <div class="flex flex-col gap-4 sm:flex-row sm:gap-6">

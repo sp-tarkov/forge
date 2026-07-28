@@ -36,6 +36,14 @@ final class CheckList extends Component
     }
 
     /**
+     * Whether a separator is rendered between the check's description and its message.
+     */
+    public function showsMessageSeparator(VerificationCheck $check): bool
+    {
+        return ($check->failed() || $check->skipped()) && $check->description() !== null;
+    }
+
+    /**
      * Get the view / contents that represent the component.
      */
     public function render(): View

@@ -1,3 +1,5 @@
+@blaze
+
 @props(['comment', 'permissions', 'manager', 'showRepliesToggle' => false])
 
 <div class="mt-4 flex items-center gap-6 text-slate-400">

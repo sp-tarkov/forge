@@ -18,11 +18,11 @@ use Illuminate\Support\Facades\Queue;
 use Throwable;
 
 /**
- * Dispatches individual CheckDownloadLinkJob instances for all published mod/addon versions.
+ * Dispatches individual CheckVersionForVerificationJob instances for all published mod/addon versions.
  */
 #[Timeout(120)]
 #[Tries(3)]
-final class DetectDownloadChangesJob implements ShouldBeUnique, ShouldQueue
+final class VerificationSweepJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
@@ -54,13 +54,14 @@ final class DetectDownloadChangesJob implements ShouldBeUnique, ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
-        Log::error('DetectDownloadChangesJob failed', [
+        Log::error('VerificationSweepJob failed', [
             'error' => $exception?->getMessage(),
         ]);
     }
 
     /**
-     * Push a CheckDownloadLinkJob for each version matching the query onto the queue in per-chunk bulk batches.
+     * Push a CheckVersionForVerificationJob for each version matching the query onto the queue in per-chunk bulk
+     * batches.
      *
      * @param  Builder<ModVersion>|Builder<AddonVersion>  $query
      * @param  class-string<ModVersion>|class-string<AddonVersion>  $modelClass
@@ -69,7 +70,7 @@ final class DetectDownloadChangesJob implements ShouldBeUnique, ShouldQueue
     {
         $query->select('id')->chunkById(500, function (Collection $versions) use ($modelClass, $queue): void {
             $jobs = $versions
-                ->map(fn (ModVersion|AddonVersion $version): CheckDownloadLinkJob => new CheckDownloadLinkJob($modelClass, $version->id))
+                ->map(fn (ModVersion|AddonVersion $version): CheckVersionForVerificationJob => new CheckVersionForVerificationJob($modelClass, $version->id))
                 ->all();
 
             Queue::bulk($jobs, '', $queue);

@@ -26,6 +26,7 @@
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="AUTO_VERIFICATION_ENABLED" value="false"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="BLAZE_DEBUG" value="false"/>
         <env name="BROADCAST_CONNECTION" value="log"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_DATABASE" value="testing"/>
@@ -36,6 +37,7 @@
         <env name="SESSION_DRIVER" value="array"/>
         <env name="SCOUT_DRIVER" value="collection"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="VIEW_COMPILED_PATH" value="storage/framework/views/testing"/>
         <env name="HONEYPOT_ENABLED" value="false"/>
         <env name="AKISMET_ENABLED" value="false"/>
         <env name="COMMENT_TRANSLATION_ENABLED" value="false"/>

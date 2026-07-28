@@ -7,6 +7,7 @@
                     <flux:badge
                         :color="$check->status->color()"
                         size="sm"
+                        class="w-16 shrink-0 justify-center"
                     >{{ $check->status->label() }}</flux:badge>
                     <div class="min-w-0 flex-1">
                         <div class="flex flex-wrap items-center gap-2">
@@ -23,11 +24,11 @@
                             <p class="mt-1 text-xs text-gray-400">{{ $check->description() }}</p>
                         @endif
                         @if ($check->message)
-                            @if ($check->failed() && $check->description())
-                                <flux:separator class="my-2" />
+                            @if ($showsMessageSeparator($check))
+                                <flux:separator class="mb-1.5 mt-2" />
                             @endif
                             <p
-                                class="{{ $check->failed() ? 'text-red-400' : 'text-gray-300' }} mt-1 break-words text-xs">
+                                class="{{ $check->failed() ? 'text-red-400' : 'text-gray-300' }} {{ $showsMessageSeparator($check) ? '' : 'mt-1' }} break-words text-xs">
                                 {{ $check->message }}
                             </p>
                         @endif

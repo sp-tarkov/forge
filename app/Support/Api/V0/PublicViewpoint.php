@@ -36,4 +36,26 @@ final class PublicViewpoint
     {
         return request()->attributes->getBoolean(self::ATTRIBUTE);
     }
+
+    /**
+     * Run the given callback with the current request pinned to the public viewpoint, restoring the previous pin state
+     * afterwards. The callback's queries resolve guest-visible results regardless of the authenticated user.
+     *
+     * @template TReturn
+     *
+     * @param  callable(): TReturn  $callback
+     * @return TReturn
+     */
+    public static function run(callable $callback): mixed
+    {
+        $request = request();
+        $wasForced = $request->attributes->getBoolean(self::ATTRIBUTE);
+        $request->attributes->set(self::ATTRIBUTE, true);
+
+        try {
+            return $callback();
+        } finally {
+            $request->attributes->set(self::ATTRIBUTE, $wasForced);
+        }
+    }
 }

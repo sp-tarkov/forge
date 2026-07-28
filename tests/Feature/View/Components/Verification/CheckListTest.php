@@ -63,6 +63,18 @@ describe('CheckList Blade Component', function (): void {
         $view->assertSee('Broken archive');
     });
 
+    it("separates a skipped check's message from its description without red styling", function (): void {
+        $checks = [
+            new VerificationCheck('client_plugin_location', VerificationCheckStatus::Skipped, false, 'The archive contains no client mods.'),
+        ];
+
+        $view = $this->blade('<x-verification.check-list :checks="$checks" />', ['checks' => $checks]);
+
+        $view->assertSeeHtml('data-flux-separator');
+        $view->assertDontSeeHtml('text-red-400');
+        $view->assertSee('The archive contains no client mods.');
+    });
+
     it("renders a passed check's message without a divider or red styling", function (): void {
         $checks = [
             new VerificationCheck('archive_extraction', VerificationCheckStatus::Passed, false, 'Extracted 12 files'),

@@ -10,6 +10,7 @@ use App\Models\Mod;
 use App\Models\ModListItem;
 use App\Models\SptVersion;
 use App\Services\ThumbnailService;
+use App\Support\HomepageSectionCache;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,6 +20,14 @@ final readonly class ModObserver
         private DependencyResolver $dependencyVersionService,
         private ThumbnailService $thumbnailService,
     ) {}
+
+    /**
+     * Handle the Mod "created" event.
+     */
+    public function created(): void
+    {
+        HomepageSectionCache::flushModSections();
+    }
 
     /**
      * Handle the Mod "saved" event.
@@ -36,6 +45,10 @@ final readonly class ModObserver
         if ($mod->wasChanged('lists_disabled') && $mod->lists_disabled === true) {
             dispatch(new TombstoneModInListsJob($mod->id));
         }
+
+        if ($mod->wasChanged(['featured', 'disabled', 'published_at'])) {
+            HomepageSectionCache::flushModSections();
+        }
     }
 
     /**
@@ -44,6 +57,8 @@ final readonly class ModObserver
     public function deleted(Mod $mod): void
     {
         $this->updateRelatedSptVersions($mod);
+
+        HomepageSectionCache::flushModSections();
     }
 
     /**

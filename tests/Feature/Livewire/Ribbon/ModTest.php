@@ -189,6 +189,37 @@ describe('Lazy Visibility Resolution', function (): void {
             ->assertSee('ribbon amber')
             ->assertSee('Unpublished');
     });
+
+    it('uses a passed can-see-warnings value without querying the mod or its authors', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create(['published_at' => now()->subDay()]);
+
+        DB::enableQueryLog();
+        Livewire::actingAs($user)
+            ->test('ribbon.mod', [...getModRibbonProps($mod), 'canSeeWarnings' => false])
+            ->assertDontSee('class="ribbon');
+        $modQueries = collect(DB::getQueryLog())
+            ->filter(fn (array $query): bool => str_contains($query['query'], 'mods') || str_contains($query['query'], 'additional_authors'));
+        DB::disableQueryLog();
+
+        expect($modQueries)->toBeEmpty();
+    });
+
+    it('shows the unpublished warning without queries when can-see-warnings and publicly-visible are passed', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create(['published_at' => now()->subDay()]);
+
+        DB::enableQueryLog();
+        Livewire::actingAs($user)
+            ->test('ribbon.mod', [...getModRibbonProps($mod), 'canSeeWarnings' => true, 'publiclyVisible' => false])
+            ->assertSee('ribbon amber')
+            ->assertSee('Unpublished');
+        $modQueries = collect(DB::getQueryLog())
+            ->filter(fn (array $query): bool => str_contains($query['query'], 'mods') || str_contains($query['query'], 'additional_authors'));
+        DB::disableQueryLog();
+
+        expect($modQueries)->toBeEmpty();
+    });
 });
 
 describe('Event-Driven Updates', function (): void {

@@ -9,6 +9,8 @@ use App\Jobs\CheckCommentForSpam;
 use App\Jobs\ProcessCommentNotification;
 use App\Jobs\TranslateComment;
 use App\Models\Comment;
+use App\Models\Mod;
+use App\Support\HomepageSectionCache;
 
 final class CommentObserver
 {
@@ -37,6 +39,8 @@ final class CommentObserver
 
         // Dispatch the comment notification job.
         dispatch(new ProcessCommentNotification($comment));
+
+        $this->flushHomepageSections($comment);
     }
 
     /**
@@ -51,6 +55,10 @@ final class CommentObserver
 
         // Clear cached gate permissions for this comment when it's updated
         CachedGate::clearForModel($comment);
+
+        if ($comment->wasChanged('spam_status')) {
+            $this->flushHomepageSections($comment);
+        }
     }
 
     /**
@@ -60,6 +68,8 @@ final class CommentObserver
     {
         // Clear cached gate permissions for this comment when it's deleted
         CachedGate::clearForModel($comment);
+
+        $this->flushHomepageSections($comment);
     }
 
     /**
@@ -69,5 +79,17 @@ final class CommentObserver
     {
         // Clear cached gate permissions for this comment when it's restored
         CachedGate::clearForModel($comment);
+
+        $this->flushHomepageSections($comment);
+    }
+
+    /**
+     * Flush the cached homepage comment feed when the comment belongs to a mod.
+     */
+    private function flushHomepageSections(Comment $comment): void
+    {
+        if ($comment->commentable_type === Mod::class) {
+            HomepageSectionCache::flushComments();
+        }
     }
 }

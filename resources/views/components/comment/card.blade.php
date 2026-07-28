@@ -1,3 +1,5 @@
+@blaze
+
 @props(['comment', 'anchorId' => null])
 
 <div class="relative">

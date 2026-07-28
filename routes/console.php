@@ -10,7 +10,6 @@ use App\Jobs\AggregateApiUsageDailyJob;
 use App\Jobs\AggregateApiUsageJob;
 use App\Jobs\CleanupStaleVerificationsJob;
 use App\Jobs\CleanupVerificationArtifactsJob;
-use App\Jobs\DetectDownloadChangesJob;
 use App\Jobs\FetchCloudflareApiAnalyticsJob;
 use App\Jobs\FetchCloudflareVisitorStatsJob;
 use App\Jobs\ProcessPinnedModVersionPublishDates;
@@ -18,6 +17,7 @@ use App\Jobs\SearchSyncJob;
 use App\Jobs\SendDiscordNotifications;
 use App\Jobs\UpdateDisposableEmailBlocklist;
 use App\Jobs\UpdateFavouritesJob;
+use App\Jobs\VerificationSweepJob;
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('horizon:snapshot')->everyFiveMinutes()->onOneServer();
@@ -37,7 +37,7 @@ if (config('app.forge_heartbeat_url')) {
 }
 
 if (config('verification.auto_enabled')) {
-    Schedule::job(new DetectDownloadChangesJob)->twiceDaily(6, 18)->onOneServer()->withoutOverlapping();
+    Schedule::job(new VerificationSweepJob)->twiceDaily(6, 18)->onOneServer()->withoutOverlapping();
     Schedule::job(new CleanupStaleVerificationsJob)->hourly()->onOneServer()->withoutOverlapping();
     Schedule::job(new CleanupVerificationArtifactsJob)->hourly()->onOneServer()->withoutOverlapping();
 }

@@ -87,11 +87,12 @@
     @if ($this->lists->total() > 0)
         <div class="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 sm:px-0 lg:grid-cols-3">
             @foreach ($this->lists as $list)
-                <x-list.card
-                    wire:key="list-index-card-{{ $list->id }}"
-                    :list="$list"
-                    :show-owner="true"
-                />
+                <div wire:key="list-index-card-{{ $list->id }}">
+                    <x-list.card
+                        :list="$list"
+                        :show-owner="true"
+                    />
+                </div>
             @endforeach
         </div>
         <div class="px-4 sm:px-0">

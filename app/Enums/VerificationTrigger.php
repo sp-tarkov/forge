@@ -10,7 +10,7 @@ namespace App\Enums;
 enum VerificationTrigger: string
 {
     /**
-     * Triggered by the scheduled change detection job.
+     * Triggered by the scheduled verification sweep when a version's download file has changed.
      */
     case ChangeDetected = 'change_detected';
 
@@ -30,6 +30,11 @@ enum VerificationTrigger: string
     case LinkUpdated = 'link_updated';
 
     /**
+     * Triggered when the latest completed verification ran under an older checks version than the current one.
+     */
+    case ChecksUpdated = 'checks_updated';
+
+    /**
      * Get a human-readable label for the trigger.
      */
     public function label(): string
@@ -39,6 +44,7 @@ enum VerificationTrigger: string
             self::Manual => 'Manual',
             self::Upload => 'Upload',
             self::LinkUpdated => 'Link Updated',
+            self::ChecksUpdated => 'Checks Updated',
         };
     }
 }

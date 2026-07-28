@@ -2588,4 +2588,37 @@ describe('Cheat Notice', function (): void {
                 ->toThrow(QueryException::class);
         });
     });
+
+    describe('author and owner checks', function (): void {
+        it('identifies the owner and additional authors', function (): void {
+            $owner = User::factory()->create();
+            $author = User::factory()->create();
+            $other = User::factory()->create();
+            $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+            $mod->additionalAuthors()->attach($author);
+
+            expect($mod->isAuthorOrOwner($owner))->toBeTrue()
+                ->and($mod->isAuthorOrOwner($author))->toBeTrue()
+                ->and($mod->isAuthorOrOwner($other))->toBeFalse()
+                ->and($mod->isAuthorOrOwner(null))->toBeFalse();
+        });
+
+        it('resolves additional authors from the loaded relation without querying', function (): void {
+            $author = User::factory()->create();
+            $other = User::factory()->create();
+            $mod = Mod::factory()->create();
+            $mod->additionalAuthors()->attach($author);
+
+            $mod->load('additionalAuthors');
+
+            DB::enableQueryLog();
+            $isAuthor = $mod->isAuthorOrOwner($author);
+            $isOther = $mod->isAuthorOrOwner($other);
+            DB::disableQueryLog();
+
+            expect($isAuthor)->toBeTrue()
+                ->and($isOther)->toBeFalse()
+                ->and(DB::getQueryLog())->toBeEmpty();
+        });
+    });
 });

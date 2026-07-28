@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use App\Jobs\CheckDownloadLinkJob;
-use App\Jobs\DetectDownloadChangesJob;
+use App\Jobs\CheckVersionForVerificationJob;
+use App\Jobs\VerificationSweepJob;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
 use Illuminate\Support\Facades\Queue;
 
 it('dispatches check jobs for published versions with download links', function (): void {
-    Queue::fake([CheckDownloadLinkJob::class]);
+    Queue::fake([CheckVersionForVerificationJob::class]);
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
     ModVersion::factory()->for($mod)->create([
@@ -19,13 +19,13 @@ it('dispatches check jobs for published versions with download links', function 
         'disabled' => false,
     ]);
 
-    (new DetectDownloadChangesJob)->handle();
+    (new VerificationSweepJob)->handle();
 
-    Queue::assertPushed(CheckDownloadLinkJob::class, 1);
+    Queue::assertPushed(CheckVersionForVerificationJob::class, 1);
 });
 
 it('does not dispatch check jobs for disabled versions', function (): void {
-    Queue::fake([CheckDownloadLinkJob::class]);
+    Queue::fake([CheckVersionForVerificationJob::class]);
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
     ModVersion::factory()->for($mod)->create([
@@ -34,13 +34,13 @@ it('does not dispatch check jobs for disabled versions', function (): void {
         'disabled' => true,
     ]);
 
-    (new DetectDownloadChangesJob)->handle();
+    (new VerificationSweepJob)->handle();
 
-    Queue::assertNotPushed(CheckDownloadLinkJob::class);
+    Queue::assertNotPushed(CheckVersionForVerificationJob::class);
 });
 
 it('does not dispatch check jobs for versions without download links', function (): void {
-    Queue::fake([CheckDownloadLinkJob::class]);
+    Queue::fake([CheckVersionForVerificationJob::class]);
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
     ModVersion::factory()->for($mod)->create([
@@ -49,13 +49,13 @@ it('does not dispatch check jobs for versions without download links', function 
         'disabled' => false,
     ]);
 
-    (new DetectDownloadChangesJob)->handle();
+    (new VerificationSweepJob)->handle();
 
-    Queue::assertNotPushed(CheckDownloadLinkJob::class);
+    Queue::assertNotPushed(CheckVersionForVerificationJob::class);
 });
 
 it('dispatches check jobs on the configured change detection queue', function (): void {
-    Queue::fake([CheckDownloadLinkJob::class]);
+    Queue::fake([CheckVersionForVerificationJob::class]);
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
     ModVersion::factory()->for($mod)->create([
@@ -64,13 +64,13 @@ it('dispatches check jobs on the configured change detection queue', function ()
         'disabled' => false,
     ]);
 
-    (new DetectDownloadChangesJob)->handle();
+    (new VerificationSweepJob)->handle();
 
-    Queue::assertPushedOn('verification-detection', CheckDownloadLinkJob::class);
+    Queue::assertPushedOn('verification-detection', CheckVersionForVerificationJob::class);
 });
 
 it('dispatches check jobs for multiple versions', function (): void {
-    Queue::fake([CheckDownloadLinkJob::class]);
+    Queue::fake([CheckVersionForVerificationJob::class]);
 
     $mod = Mod::factory()->for(User::factory(), 'owner')->create();
     ModVersion::factory()->for($mod)->count(5)->create([
@@ -79,7 +79,7 @@ it('dispatches check jobs for multiple versions', function (): void {
         'disabled' => false,
     ]);
 
-    (new DetectDownloadChangesJob)->handle();
+    (new VerificationSweepJob)->handle();
 
-    Queue::assertPushed(CheckDownloadLinkJob::class, 5);
+    Queue::assertPushed(CheckVersionForVerificationJob::class, 5);
 });
