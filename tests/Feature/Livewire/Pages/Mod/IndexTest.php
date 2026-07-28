@@ -9,6 +9,7 @@ use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
 use App\Support\DataTransferObjects\ActiveFilterChip;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Livewire\Livewire;
@@ -1021,6 +1022,38 @@ describe('Filter Options', function (): void {
             $component2 = Livewire::test('pages::mod.index');
             $versions2 = $component2->get('availableSptVersions')->pluck('version')->toArray();
             expect($versions2)->toContain('4.0.0');
+        });
+    });
+
+    describe('card eager loading', function (): void {
+        it('eager loads the relationships the mod cards render', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+            $mods = Mod::factory()->count(3)->create();
+            $mods->each(function (Mod $mod): void {
+                ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+            });
+
+            Livewire::test('pages::mod.index')
+                ->assertViewHas('mods', fn (LengthAwarePaginator $mods): bool => $mods->count() === 3
+                    && $mods->getCollection()->every(fn (Mod $mod): bool => $mod->relationLoaded('owner')
+                        && $mod->relationLoaded('additionalAuthors')
+                        && $mod->relationLoaded('latestVersion')
+                        && ($mod->latestVersion === null || $mod->latestVersion->relationLoaded('latestSptVersion'))));
+        });
+
+        it('eager loads legacy versions when the filter includes them', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+            $modernMod = Mod::factory()->create();
+            ModVersion::factory()->recycle($modernMod)->create(['spt_version_constraint' => '3.11.4']);
+            $legacyMod = Mod::factory()->create();
+            ModVersion::factory()->recycle($legacyMod)->create(['spt_version_constraint' => '']);
+
+            Livewire::test('pages::mod.index')
+                ->call('toggleVersionFilter', 'all')
+                ->call('toggleVersionFilter', 'legacy')
+                ->assertViewHas('mods', fn (LengthAwarePaginator $mods): bool => $mods->count() === 1
+                    && $mods->getCollection()->every(fn (Mod $mod): bool => $mod->relationLoaded('latestLegacyVersion')
+                        && ($mod->latestLegacyVersion === null || $mod->latestLegacyVersion->relationLoaded('latestSptVersion'))));
         });
     });
 });

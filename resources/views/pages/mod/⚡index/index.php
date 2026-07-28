@@ -363,14 +363,15 @@ new #[Layout('layouts::base')] class extends Component
         // Determine if we should load legacy versions
         $includeLegacy = $this->sptVersions === 'all' || (is_array($this->sptVersions) && in_array('legacy', $this->sptVersions)) || $this->sptVersions === 'legacy';
 
-        // Eager load appropriate version relationship
+        // Eager load the relationships the mod cards render
         /** @var Collection<int, Mod> $modCollection */
         $modCollection = $paginatedMods->getCollection();
+        $relations = ['latestVersion.latestSptVersion', 'owner:id,name', 'additionalAuthors:id,name'];
         if ($includeLegacy) {
-            $modCollection->loadMissing(['latestVersion', 'latestLegacyVersion']);
-        } else {
-            $modCollection->loadMissing('latestVersion');
+            $relations[] = 'latestLegacyVersion.latestSptVersion';
         }
+
+        $modCollection->loadMissing($relations);
 
         $this->redirectOutOfBoundsPage($paginatedMods);
 

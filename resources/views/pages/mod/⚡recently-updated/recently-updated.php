@@ -117,7 +117,7 @@ new #[Layout('layouts::base')] class extends Component
                     ->latest('mod_versions.created_at')
                     ->limit(1);
             }])
-            ->with(['owner:id,name', 'latestVersion.latestSptVersion'])
+            ->with(['owner:id,name', 'additionalAuthors:id,name', 'latestVersion.latestSptVersion'])
             ->when($showDisabled, fn (Builder $query) => $query->withVisibilityFlags())
             ->unless($showDisabled, fn (Builder $query) => $query->where('mods.disabled', false))
             ->whereExists(function (QueryBuilder $query) use ($showDisabled): void {
