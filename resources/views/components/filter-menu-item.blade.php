@@ -1,3 +1,5 @@
+@blaze
+
 @props(['filterName', 'filter', 'currentFilter'])
 
 <a

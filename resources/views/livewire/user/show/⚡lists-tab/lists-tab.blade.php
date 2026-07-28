@@ -41,11 +41,12 @@
     @if ($this->lists->total() > 0)
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @foreach ($this->lists as $list)
-                <x-list.card
-                    wire:key="user-lists-card-{{ $list->id }}"
-                    :list="$list"
-                    :show-owner="false"
-                />
+                <div wire:key="user-lists-card-{{ $list->id }}">
+                    <x-list.card
+                        :list="$list"
+                        :show-owner="false"
+                    />
+                </div>
             @endforeach
         </div>
         <div class="mt-4">

@@ -1,3 +1,5 @@
+@blaze
+
 @props(['list', 'showOwner' => true])
 
 <div
