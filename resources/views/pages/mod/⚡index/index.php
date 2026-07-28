@@ -9,6 +9,7 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Support\DataTransferObjects\ActiveFilterChip;
 use App\Traits\Livewire\ModeratesMod;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
@@ -356,7 +357,8 @@ new #[Layout('layouts::base')] class extends Component
             'fikaCompatibility' => $this->fikaCompatibility,
         ]);
 
-        $paginatedMods = $filters->apply()->paginate($this->perPage);
+        $builder = $filters->apply();
+        $paginatedMods = $builder->paginate($this->perPage, total: fn (): ?int => $this->cachedModTotal($builder));
 
         // Determine if we should load legacy versions
         $includeLegacy = $this->sptVersions === 'all' || (is_array($this->sptVersions) && in_array('legacy', $this->sptVersions)) || $this->sptVersions === 'legacy';
@@ -490,5 +492,85 @@ new #[Layout('layouts::base')] class extends Component
         if ($paginatedMods->currentPage() > $paginatedMods->lastPage()) {
             $this->redirectRoute('mods', ['page' => $paginatedMods->lastPage()]);
         }
+    }
+
+    /**
+     * Fetch the paginator total from the cache, or return null to run a live count for uncacheable filters.
+     *
+     * @param  Builder<Mod>  $builder
+     */
+    private function cachedModTotal(Builder $builder): ?int
+    {
+        $cacheKey = $this->modTotalCacheKey();
+
+        if ($cacheKey === null) {
+            return null;
+        }
+
+        return (int) Cache::flexible(
+            $cacheKey,
+            [5 * 60, 10 * 60], // 5 minutes stale, 10 minutes expire
+            fn (): int => $builder->toBase()->getCountForPagination(),
+        );
+    }
+
+    /**
+     * Build the cache key for the paginator total. Returns null when a search query is set, the category slug is
+     * unknown, or the version selection contains values outside the filter options.
+     */
+    private function modTotalCacheKey(): ?string
+    {
+        if (is_string($this->query) && $this->query !== '') {
+            return null;
+        }
+
+        $category = is_string($this->category) ? $this->category : '';
+
+        if ($category !== '' && $this->availableCategories->firstWhere('slug', $category) === null) {
+            return null;
+        }
+
+        $versions = $this->cacheableSptVersions();
+
+        if ($versions === null) {
+            return null;
+        }
+
+        $role = (auth()->user()?->isModOrAdmin() ?? false) ? 'elevated' : 'guest';
+
+        return sprintf('mod-index:total:%s:%s', $role, md5((string) json_encode([
+            'versions' => $versions,
+            'featured' => in_array($this->featured, ['exclude', 'only'], true) ? $this->featured : 'include',
+            'ai' => in_array($this->aiContent, ['exclude', 'only'], true) ? $this->aiContent : 'include',
+            'category' => $category,
+            'fika' => $this->fikaCompatibility === true,
+        ])));
+    }
+
+    /**
+     * Normalize the version selection for the cache key. Returns null when the selection contains a value that
+     * is not "all", "legacy", or one of the versions offered by the filter options.
+     *
+     * @return string|array<int, string>|null
+     */
+    private function cacheableSptVersions(): string|array|null
+    {
+        $versions = $this->sptVersions;
+
+        if (is_string($versions)) {
+            return in_array($versions, ['all', 'legacy'], true) ? $versions : null;
+        }
+
+        $knownVersions = [...$this->availableSptVersions->pluck('version')->all(), 'legacy'];
+
+        foreach ($versions as $version) {
+            if (! in_array($version, $knownVersions, true)) {
+                return null;
+            }
+        }
+
+        sort($versions);
+
+        return array_values(array_unique($versions));
     }
 };

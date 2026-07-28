@@ -29,6 +29,7 @@
         "laravel/socialite": "^5.27.0",
         "league/flysystem-aws-s3-v3": "^3.34",
         "league/html-to-markdown": "^5.1.1",
+        "livewire/blaze": "^1.0",
         "livewire/flux": "^2.14.1",
         "livewire/flux-pro": "^2.14.1",
         "livewire/livewire": "^4.3.0",
@@ -156,6 +157,10 @@
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --queue=default,verification-detection,verification,alt-detection,visitor-analytics,long --tries=2 --timeout=900\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+        ],
+        "dev:octane": [
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan octane:start --host=127.0.0.1 --port=8000 --workers=1 --watch\" \"php artisan queue:listen --queue=default,verification-detection,verification,alt-detection,visitor-analytics,long --tries=2 --timeout=900\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=octane,queue,logs,vite"
         ]
     },
     "extra": {

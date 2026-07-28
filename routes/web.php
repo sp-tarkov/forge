@@ -14,7 +14,6 @@ use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Middleware\ForcePublicViewpoint;
-use App\Http\Middleware\TrackVisitorPresence;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModList;
@@ -28,16 +27,13 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Spatie\Honeypot\ProtectAgainstSpam;
 
-// Crawler endpoints are stateless and publicly cacheable: the session, CSRF, honeypot, and presence middleware are
-// excluded so these responses never carry a Set-Cookie header, and the cache.headers middleware marks them as
-// shareable by browsers (1 hour), shared caches (6 hours, matching SitemapController::CACHE_TTL), and conditional
-// ETag revalidation.
+// Crawler endpoints, served without session, CSRF, or honeypot middleware and marked publicly cacheable: browsers for
+// 1 hour, shared caches for 6 hours (matching SitemapController::CACHE_TTL), with conditional ETag revalidation.
 Route::middleware('cache.headers:public;max_age=3600;s_maxage=21600;etag')->withoutMiddleware([
     StartSession::class,
     ShareErrorsFromSession::class,
     PreventRequestForgery::class,
     ProtectAgainstSpam::class,
-    TrackVisitorPresence::class,
 ])->group(function (): void {
     Route::middleware(ForcePublicViewpoint::class)->group(function (): void {
         Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.index');

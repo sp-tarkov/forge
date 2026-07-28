@@ -60,6 +60,7 @@ new #[Layout('layouts::base')] class extends Component
                 }
             })
             ->with(['latestVersion', 'latestVersion.latestSptVersion', 'owner:id,name', 'additionalAuthors:id,name', 'license:id,name,link'])
+            ->when($this->viewDisabled, fn (Builder $q): Builder => $q->withVisibilityFlags())
             ->inRandomOrder()
             ->limit(6);
 
@@ -83,6 +84,7 @@ new #[Layout('layouts::base')] class extends Component
                 }
             })
             ->with(['latestVersion', 'latestVersion.latestSptVersion', 'owner:id,name', 'additionalAuthors:id,name', 'license:id,name,link'])
+            ->when($this->viewDisabled, fn (Builder $q): Builder => $q->withVisibilityFlags())
             ->latest()
             ->limit(6);
 
@@ -113,6 +115,7 @@ new #[Layout('layouts::base')] class extends Component
                     });
             })
             ->with(['latestUpdatedVersion', 'latestUpdatedVersion.latestSptVersion', 'owner:id,name', 'additionalAuthors:id,name', 'license:id,name,link'])
+            ->when($this->viewDisabled, fn (Builder $q): Builder => $q->withVisibilityFlags())
             ->orderByDesc('latest_version.created_at')
             ->limit(6);
 

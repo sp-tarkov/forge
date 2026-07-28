@@ -15,6 +15,7 @@ use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Attributes\Touches;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -58,6 +59,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Collection<int, VirusTotalLink> $virusTotalLinks
  * @property-read Collection<int, VerificationResult> $verificationResults
  * @property-read VerificationResult|null $latestVerificationResult
+ * @property-read VerificationResult|null $latestCompletedVerificationResult
  * @property-read Collection<int, Dependency> $dependencies
  * @property-read Collection<int, ModVersion> $dependenciesResolved
  * @property-read Collection<int, ModVersion> $latestDependenciesResolved
@@ -121,6 +123,20 @@ final class AddonVersion extends Model
     {
         return $this->morphOne(VerificationResult::class, 'verifiable')
             ->latestOfMany();
+    }
+
+    /**
+     * The relationship between an addon version and its latest completed (passed, failed, or errored) verification
+     * result.
+     *
+     * @return MorphOne<VerificationResult, $this>
+     */
+    public function latestCompletedVerificationResult(): MorphOne
+    {
+        return $this->morphOne(VerificationResult::class, 'verifiable')
+            ->ofMany(['id' => 'max'], function (Builder $query): void {
+                $query->whereIn('status', [VerificationStatus::Passed, VerificationStatus::Failed, VerificationStatus::Error]);
+            });
     }
 
     /**

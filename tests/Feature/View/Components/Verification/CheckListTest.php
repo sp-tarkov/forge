@@ -24,9 +24,11 @@ describe('CheckList Blade Component', function (): void {
         $view->assertSee('No manifest found');
     });
 
-    it('orders checks by their type in the expected sequence: File Download, Archive Extraction, GUID Match, Version Match', function (): void {
+    it('orders checks by their type in the expected sequence: File Download, Archive Extraction, GUID Match, Version Match, Plugin Location, Server Mod Location', function (): void {
         $checks = [
+            new VerificationCheck('server_mod_location', VerificationCheckStatus::Passed, false, null),
             new VerificationCheck('dll_version_match', VerificationCheckStatus::Passed, false, null),
+            new VerificationCheck('client_plugin_location', VerificationCheckStatus::Passed, false, null),
             new VerificationCheck('archive_extraction', VerificationCheckStatus::Failed, false, 'Advisory'),
             new VerificationCheck('dll_guid_match', VerificationCheckStatus::Passed, false, null),
             new VerificationCheck('file_download', VerificationCheckStatus::Passed, false, null),
@@ -34,7 +36,7 @@ describe('CheckList Blade Component', function (): void {
 
         $view = $this->blade('<x-verification.check-list :checks="$checks" />', ['checks' => $checks]);
 
-        $view->assertSeeInOrder(['file_download', 'archive_extraction', 'dll_guid_match', 'dll_version_match']);
+        $view->assertSeeInOrder(['file_download', 'archive_extraction', 'dll_guid_match', 'dll_version_match', 'client_plugin_location', 'server_mod_location']);
     });
 
     it('appends other check types at the end while preserving their original order', function (): void {

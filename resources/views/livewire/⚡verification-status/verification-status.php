@@ -120,8 +120,9 @@ new class extends Component
     }
 
     /**
-     * Get the publicly visible status: the latest run's status, falling back to the version's denormalized status.
-     * Null means the version is unverified, which only renders for users who can manage verification.
+     * Get the publicly visible status: the last completed run's status while a re-run of the same file is queued or
+     * running, otherwise the latest run's status, falling back to the version's denormalized status. Null means the
+     * version is unverified, which only renders for users who can manage verification.
      */
     #[Computed]
     public function displayStatus(): ?VerificationStatus
@@ -130,6 +131,14 @@ new class extends Component
 
         if ($version === null) {
             return null;
+        }
+
+        if ($this->isActive) {
+            $completed = $version->latestCompletedVerificationResult;
+
+            if ($completed !== null && $completed->download_url === $version->link) {
+                return $completed->status;
+            }
         }
 
         return $this->latestResult->status ?? $version->verification_status;
@@ -160,12 +169,12 @@ new class extends Component
     }
 
     /**
-     * Get the tooltip text for the displayed status.
+     * Get the tooltip text for the displayed status, noting an in-progress re-run when a completed status is shown.
      */
     #[Computed]
     public function tooltip(): string
     {
-        return match ($this->displayStatus) {
+        $label = match ($this->displayStatus) {
             VerificationStatus::Pending => __('Verification Pending'),
             VerificationStatus::Running => __('Verification Running'),
             VerificationStatus::Passed => __('Passed Verification'),
@@ -173,6 +182,12 @@ new class extends Component
             VerificationStatus::Error => __('Verification Error'),
             null => __('Unverified'),
         };
+
+        $showsCompletedStatus = ! in_array($this->displayStatus, [VerificationStatus::Pending, VerificationStatus::Running, null], true);
+
+        return $this->isActive && $showsCompletedStatus
+            ? $label.' ('.__('Re-verification in progress').')'
+            : $label;
     }
 
     /**

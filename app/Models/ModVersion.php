@@ -72,6 +72,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Collection<int, VirusTotalLink> $virusTotalLinks
  * @property-read Collection<int, VerificationResult> $verificationResults
  * @property-read VerificationResult|null $latestVerificationResult
+ * @property-read VerificationResult|null $latestCompletedVerificationResult
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModVersionObserver::class])]
@@ -246,6 +247,20 @@ final class ModVersion extends Model implements Trackable
     {
         return $this->morphOne(VerificationResult::class, 'verifiable')
             ->latestOfMany();
+    }
+
+    /**
+     * The relationship between a mod version and its latest completed (passed, failed, or errored) verification
+     * result.
+     *
+     * @return MorphOne<VerificationResult, $this>
+     */
+    public function latestCompletedVerificationResult(): MorphOne
+    {
+        return $this->morphOne(VerificationResult::class, 'verifiable')
+            ->ofMany(['id' => 'max'], function (Builder $query): void {
+                $query->whereIn('status', [VerificationStatus::Passed, VerificationStatus::Failed, VerificationStatus::Error]);
+            });
     }
 
     /**

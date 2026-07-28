@@ -65,6 +65,40 @@ describe('verification status badge', function (): void {
             ->assertSuccessful();
     });
 
+    it('keeps the completed status visible while a re-run is queued', function (): void {
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        $version = ModVersion::factory()->recycle($mod)->create();
+        VerificationResult::factory()->forModVersion($version)->passed()->create();
+        VerificationResult::factory()->forModVersion($version)->create();
+
+        Livewire::actingAs($owner)
+            ->test('verification-status', [
+                'verifiableId' => $version->id,
+                'verifiableType' => ModVersion::class,
+                'modalName' => 'version-verification-'.$version->id,
+            ])
+            ->assertSee('Passed Verification (Re-verification in progress)')
+            ->assertSuccessful();
+    });
+
+    it('shows a pending badge while a re-run for a different download link is queued', function (): void {
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        $version = ModVersion::factory()->recycle($mod)->create();
+        VerificationResult::factory()->forModVersion($version)->passed()->create(['download_url' => 'https://example.com/old-file.zip']);
+        VerificationResult::factory()->forModVersion($version)->create();
+
+        Livewire::actingAs($owner)
+            ->test('verification-status', [
+                'verifiableId' => $version->id,
+                'verifiableType' => ModVersion::class,
+                'modalName' => 'version-verification-'.$version->id,
+            ])
+            ->assertSee('Verification Pending')
+            ->assertSuccessful();
+    });
+
     it('shows the latest result status to guests', function (): void {
         $version = ModVersion::factory()->create();
         VerificationResult::factory()->forModVersion($version)->passed()->create();

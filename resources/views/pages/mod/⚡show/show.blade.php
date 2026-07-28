@@ -118,7 +118,7 @@
                     :disabled="$mod->disabled"
                     :published-at="$mod->published_at?->toISOString()"
                     :featured="$mod->featured"
-                    :publicly-visible="$mod->isPubliclyVisible()"
+                    :publicly-visible="$mod->publiclyVisibleWithoutQuery()"
                 />
 
                 <div class="flex flex-col gap-4 sm:flex-row sm:gap-6">

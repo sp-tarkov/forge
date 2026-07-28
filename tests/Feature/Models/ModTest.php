@@ -16,6 +16,7 @@ use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 
@@ -403,6 +404,55 @@ describe('Mod model', function (): void {
             // Since there's no release version, latestVersion should be the first pre-release
             $latestVersion = $mod->latestVersion;
             expect($latestVersion->version)->toBe('1.0.0-alpha');
+        });
+
+        it('eager loads the correct latest version for each mod when loading multiple mods', function (): void {
+            SptVersion::factory()->create(['version' => '3.8.0']);
+
+            $modA = Mod::factory()->create();
+            ModVersion::factory()->recycle($modA)->create([
+                'version' => '2.0.0-beta',
+                'version_major' => 2,
+                'version_minor' => 0,
+                'version_patch' => 0,
+                'version_labels' => '-beta',
+                'spt_version_constraint' => '3.8.0',
+            ]);
+            ModVersion::factory()->recycle($modA)->create([
+                'version' => '2.0.0',
+                'version_major' => 2,
+                'version_minor' => 0,
+                'version_patch' => 0,
+                'version_labels' => '',
+                'spt_version_constraint' => '3.8.0',
+            ]);
+
+            $modB = Mod::factory()->create();
+            ModVersion::factory()->recycle($modB)->create([
+                'version' => '1.0.0',
+                'version_major' => 1,
+                'version_minor' => 0,
+                'version_patch' => 0,
+                'version_labels' => '',
+                'spt_version_constraint' => '3.8.0',
+            ]);
+            ModVersion::factory()->recycle($modB)->create([
+                'version' => '1.1.0',
+                'version_major' => 1,
+                'version_minor' => 1,
+                'version_patch' => 0,
+                'version_labels' => '',
+                'spt_version_constraint' => '3.8.0',
+            ]);
+
+            $mods = Mod::query()
+                ->whereIn('id', [$modA->id, $modB->id])
+                ->with('latestVersion')
+                ->get()
+                ->keyBy('id');
+
+            expect($mods->get($modA->id)->latestVersion->version)->toBe('2.0.0');
+            expect($mods->get($modB->id)->latestVersion->version)->toBe('1.1.0');
         });
     });
 
@@ -1911,6 +1961,84 @@ describe('Legacy Support', function (): void {
             ]);
 
             expect($mod->isPubliclyVisible())->toBeFalse();
+        });
+    });
+
+    describe('Mod visibility flags batching', function (): void {
+        beforeEach(function (): void {
+            $this->sptVersion = SptVersion::factory()->create(['version' => '3.8.0']);
+        });
+
+        it('answers isPubliclyVisible true from withVisibilityFlags without running queries', function (): void {
+            $mod = Mod::factory()->create(['published_at' => now()->subDay()]);
+            $version = ModVersion::factory()->recycle($mod)->create([
+                'spt_version_constraint' => '3.8.0',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+            $version->sptVersions()->sync($this->sptVersion->id);
+
+            $flaggedMod = Mod::query()->withVisibilityFlags()->findOrFail($mod->id);
+
+            DB::enableQueryLog();
+            expect($flaggedMod->isPubliclyVisible())->toBeTrue()
+                ->and(DB::getQueryLog())->toBeEmpty();
+            DB::disableQueryLog();
+        });
+
+        it('answers isPubliclyVisible false from withVisibilityFlags without running queries', function (): void {
+            $mod = Mod::factory()->create(['published_at' => now()->subDay()]);
+            ModVersion::factory()->recycle($mod)->create([
+                'spt_version_constraint' => '3.8.0',
+                'published_at' => null,
+                'disabled' => false,
+            ]);
+
+            $flaggedMod = Mod::query()->withVisibilityFlags()->findOrFail($mod->id);
+
+            DB::enableQueryLog();
+            expect($flaggedMod->isPubliclyVisible())->toBeFalse()
+                ->and(DB::getQueryLog())->toBeEmpty();
+            DB::disableQueryLog();
+        });
+
+        it('answers hasOnlyLegacyVersions from withVisibilityFlags without running queries', function (): void {
+            $mod = Mod::factory()->create(['published_at' => now()->subDay()]);
+            ModVersion::factory()->recycle($mod)->create([
+                'spt_version_constraint' => '',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+
+            $flaggedMod = Mod::query()->withVisibilityFlags()->findOrFail($mod->id);
+
+            DB::enableQueryLog();
+            expect($flaggedMod->hasOnlyLegacyVersions())->toBeTrue()
+                ->and(DB::getQueryLog())->toBeEmpty();
+            DB::disableQueryLog();
+        });
+
+        it('reports publiclyVisibleWithoutQuery as null without flags and as a boolean with flags', function (): void {
+            $mod = Mod::factory()->create(['published_at' => now()->subDay()]);
+            ModVersion::factory()->recycle($mod)->create([
+                'spt_version_constraint' => '',
+                'published_at' => now()->subDay(),
+                'disabled' => false,
+            ]);
+
+            expect($mod->publiclyVisibleWithoutQuery())->toBeNull()
+                ->and(Mod::query()->withVisibilityFlags()->findOrFail($mod->id)->publiclyVisibleWithoutQuery())->toBeTrue();
+        });
+
+        it('reports publiclyVisibleWithoutQuery false for disabled and unpublished mods without running queries', function (): void {
+            $disabledMod = Mod::factory()->create(['published_at' => now()->subDay(), 'disabled' => true]);
+            $unpublishedMod = Mod::factory()->create(['published_at' => null]);
+
+            DB::enableQueryLog();
+            expect($disabledMod->publiclyVisibleWithoutQuery())->toBeFalse()
+                ->and($unpublishedMod->publiclyVisibleWithoutQuery())->toBeFalse()
+                ->and(DB::getQueryLog())->toBeEmpty();
+            DB::disableQueryLog();
         });
     });
 

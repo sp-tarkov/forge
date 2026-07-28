@@ -1690,4 +1690,19 @@ describe('verification status refresh', function (): void {
             ->verification_status->toBeNull()
             ->last_verified_at->toBeNull();
     });
+
+    it('resolves the latest completed verification result, skipping newer incomplete runs', function (): void {
+        $version = ModVersion::factory()->create();
+        $completed = VerificationResult::factory()->forModVersion($version)->passed()->create();
+        VerificationResult::factory()->forModVersion($version)->create();
+
+        expect($version->latestCompletedVerificationResult?->id)->toBe($completed->id);
+    });
+
+    it('resolves a null latest completed verification result when only incomplete runs exist', function (): void {
+        $version = ModVersion::factory()->create();
+        VerificationResult::factory()->forModVersion($version)->create();
+
+        expect($version->latestCompletedVerificationResult)->toBeNull();
+    });
 });

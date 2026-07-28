@@ -763,6 +763,99 @@ describe('Index', function (): void {
         });
     });
 
+    describe('paginator total caching', function (): void {
+        it('serves the paginator total from the cache for default filters', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $mod = Mod::factory()->create();
+            ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+            $component = Livewire::test('pages::mod.index');
+            expect($component->viewData('mods')->total())->toBe(1);
+
+            $newMod = Mod::factory()->create();
+            ModVersion::factory()->recycle($newMod)->create(['spt_version_constraint' => '3.11.4']);
+
+            $component->call('$refresh');
+            expect($component->viewData('mods')->total())->toBe(1);
+
+            Cache::flush();
+
+            $component->call('$refresh');
+            expect($component->viewData('mods')->total())->toBe(2);
+        });
+
+        it('runs a live count when a search query is active', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $mod = Mod::factory()->create(['name' => 'Searchable Alpha']);
+            ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+            $component = Livewire::test('pages::mod.index')->set('query', 'Searchable');
+            expect($component->viewData('mods')->total())->toBe(1);
+
+            $newMod = Mod::factory()->create(['name' => 'Searchable Beta']);
+            ModVersion::factory()->recycle($newMod)->create(['spt_version_constraint' => '3.11.4']);
+
+            $component->call('$refresh');
+            expect($component->viewData('mods')->total())->toBe(2);
+        });
+
+        it('runs a live count for version selections outside the filter options', function (): void {
+            SptVersion::factory()->create(['version' => '3.12.0']);
+            SptVersion::factory()->create(['version' => '3.11.0']);
+            SptVersion::factory()->create(['version' => '3.10.0']);
+            SptVersion::factory()->create(['version' => '3.9.0']);
+
+            $mod = Mod::factory()->create();
+            ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.9.0']);
+
+            $component = Livewire::withQueryParams(['versions' => ['3.9.0']])->test('pages::mod.index');
+            expect($component->viewData('mods')->total())->toBe(1);
+
+            $newMod = Mod::factory()->create();
+            ModVersion::factory()->recycle($newMod)->create(['spt_version_constraint' => '3.9.0']);
+
+            $component->call('$refresh');
+            expect($component->viewData('mods')->total())->toBe(2);
+        });
+
+        it('casts a string total from the cache store to an integer', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $mod = Mod::factory()->create();
+            ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+            $component = Livewire::test('pages::mod.index');
+            expect($component->viewData('mods')->total())->toBe(1);
+
+            $cacheKey = (fn (): ?string => $this->modTotalCacheKey())->call($component->instance());
+            expect($cacheKey)->not->toBeNull();
+            Cache::put($cacheKey, '5', 600);
+
+            $component->call('$refresh');
+            expect($component->viewData('mods')->total())->toBe(5);
+        });
+
+        it('caches the total separately per viewer role', function (): void {
+            SptVersion::factory()->create(['version' => '3.11.4']);
+
+            $enabledMod = Mod::factory()->create();
+            ModVersion::factory()->recycle($enabledMod)->create(['spt_version_constraint' => '3.11.4']);
+
+            $disabledMod = Mod::factory()->disabled()->create();
+            ModVersion::factory()->recycle($disabledMod)->create(['spt_version_constraint' => '3.11.4']);
+
+            $guest = Livewire::test('pages::mod.index');
+            expect($guest->viewData('mods')->total())->toBe(1);
+
+            $admin = User::factory()->create(['user_role_id' => UserRole::factory()->create(['name' => 'Staff'])->id]);
+
+            $adminComponent = Livewire::actingAs($admin)->test('pages::mod.index');
+            expect($adminComponent->viewData('mods')->total())->toBe(2);
+        });
+    });
+
     describe('favourite counts on cards', function (): void {
         it('shows the favourite count on cards when sorted by most favourited', function (): void {
             SptVersion::factory()->create(['version' => '3.11.4']);
@@ -785,6 +878,27 @@ describe('Index', function (): void {
             Livewire::test('pages::mod.index')
                 ->assertSee('Heart Magnet')
                 ->assertDontSee('2 Favourites');
+        });
+    });
+
+    describe('loading skeleton', function (): void {
+        it('renders an animated skeleton grid toggled by the loading state', function (): void {
+            $html = Livewire::test('pages::mod.index')->html();
+
+            expect($html)->toContain('wire:loading.grid')
+                ->toContain('wire:loading.remove')
+                ->toContain('data-flux-skeleton-group')
+                ->toContain('flux-shimmer');
+        });
+
+        it('renders one skeleton card per result on the page', function (): void {
+            $component = Livewire::test('pages::mod.index');
+
+            expect(mb_substr_count($component->html(), 'data-flux-skeleton-group'))->toBe(12);
+
+            $component->set('perPage', 24);
+
+            expect(mb_substr_count($component->html(), 'data-flux-skeleton-group'))->toBe(24);
         });
     });
 });

@@ -147,7 +147,7 @@
             </div>
         </div>
         <div class="mt-8 border-t border-white/10 pt-8">
-            <div class="flex flex-col space-y-6 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div class="flex flex-col space-y-6 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
                 <div class="flex flex-col space-y-2 text-xs text-gray-400">
                     <p>
                         &copy; {{ date('Y') }} {{ config('app.name', 'The Forge') }}. All rights reserved.<br />
@@ -155,8 +155,8 @@
                         The Forge is not affiliated with Battlestate Games Limited in any way.
                     </p>
                 </div>
-                <div class="flex items-center">
-                    <livewire:visitor-tracker />
+                <div>
+                    <x-site-stats />
                 </div>
             </div>
         </div>

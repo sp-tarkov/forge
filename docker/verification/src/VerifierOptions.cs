@@ -13,6 +13,7 @@ public sealed record VerifierOptions(
     int MaxFileTreeEntries,
     string ModVersion,
     string ModGuid,
+    string SptGeneration,
     string ExtractDir)
 {
     /// <summary>Builds the options from the container environment, falling back to safe defaults.</summary>
@@ -27,6 +28,7 @@ public sealed record VerifierOptions(
             MaxFileTreeEntries: int.TryParse(Environment.GetEnvironmentVariable("MAX_FILE_TREE_ENTRIES"), out int entries) ? entries : 10000,
             ModVersion: Environment.GetEnvironmentVariable("MOD_VERSION") ?? string.Empty,
             ModGuid: Environment.GetEnvironmentVariable("MOD_GUID") ?? string.Empty,
+            SptGeneration: Environment.GetEnvironmentVariable("SPT_GENERATION") ?? "unknown",
             ExtractDir: "/tmp/work/extracted");
     }
 }

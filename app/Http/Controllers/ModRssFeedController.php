@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Cache;
 
 final class ModRssFeedController extends Controller
 {
+    private const int CACHE_TTL = 300;
+
     /**
      * Generate RSS feed for mods with filtering.
      */
@@ -30,19 +32,35 @@ final class ModRssFeedController extends Controller
             'category' => $request->string('category', '')->toString(),
         ];
 
-        // Apply filters using the same ModFilter class
-        $modFilter = new ModFilter($filters);
-        $mods = $modFilter->apply()
+        // Mod and admin viewers always get a freshly built feed that includes disabled mods
+        if (auth()->user()?->isModOrAdmin() ?? false) {
+            return response($this->buildFeed($request, $filters), 200, [
+                'Content-Type' => 'text/xml; charset=UTF-8',
+            ]);
+        }
+
+        $cacheKey = 'mods-rss:'.hash('xxh128', (string) $request->getQueryString());
+        $rss = Cache::remember($cacheKey, self::CACHE_TTL, fn (): string => $this->buildFeed($request, $filters));
+
+        return response($rss, 200, [
+            'Content-Type' => 'text/xml; charset=UTF-8',
+            'Cache-Control' => 'public, max-age='.self::CACHE_TTL,
+        ]);
+    }
+
+    /**
+     * Query the filtered mods and render the RSS XML.
+     *
+     * @param  array<string, string|array<int, string>>  $filters
+     */
+    private function buildFeed(Request $request, array $filters): string
+    {
+        $mods = new ModFilter($filters)->apply()
             ->with(['latestVersion', 'category', 'owner'])
             ->limit(50)
             ->get();
 
-        // Generate RSS content
-        $rss = $this->generateRssFeed($request, $mods, $filters);
-
-        return response($rss, 200, [
-            'Content-Type' => 'text/xml; charset=UTF-8',
-        ]);
+        return $this->generateRssFeed($request, $mods, $filters);
     }
 
     /**

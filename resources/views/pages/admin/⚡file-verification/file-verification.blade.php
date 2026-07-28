@@ -380,6 +380,12 @@
                             {{ $this->selectedResult->completed_at?->format('M j, Y H:i:s') ?? '—' }}
                         </p>
                     </div>
+                    @if ($this->selectedResult->checks_version)
+                        <div>
+                            <span class="text-gray-400">Checks Version</span>
+                            <p class="mt-1 text-gray-100">{{ $this->selectedResult->checks_version }}</p>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Download URL --}}

@@ -176,7 +176,8 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
             ->orderByRaw('CASE WHEN version_pre_release = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_pre_release');
+            ->orderBy('version_pre_release')
+            ->limit(1);
     }
 
     /**
@@ -323,11 +324,27 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
+     * The publicly-visible state derived only from data already on the instance: the addon's own attributes and a
+     * has_published_version flag selected by a listing query. Null when answering would require a query.
+     */
+    public function publiclyVisibleWithoutQuery(): ?bool
+    {
+        if ($this->disabled || is_null($this->published_at) || $this->published_at->isFuture()) {
+            return false;
+        }
+
+        return $this->hasAttribute('has_published_version')
+            ? (bool) $this->getAttribute('has_published_version')
+            : null;
+    }
+
+    /**
      * Check if the addon has at least one published version.
      */
     public function hasPublishedVersion(): bool
     {
         return $this->versions()
+            ->reorder()
             ->where('disabled', false)
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())

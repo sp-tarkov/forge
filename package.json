@@ -25,8 +25,8 @@
         "concurrently": "^10.0.3",
         "laravel-echo": "^2.3.4",
         "laravel-vite-plugin": "^3.1.0",
-        "npm-check-updates": "^22.0.1",
-        "playwright": "^1.61.1",
+        "npm-check-updates": "^23.0.0",
+        "playwright": "^1.62.0",
         "prettier": "^3.9.4",
         "pusher-js": "^8.5.0",
         "tailwindcss": "^4.2.4",
@@ -34,6 +34,7 @@
         "vite-plus": "latest"
     },
     "overrides": {
+        "brace-expansion": "^5.0.8",
         "shell-quote": "^1.10.0",
         "vite": "npm:@voidzero-dev/vite-plus-core@latest",
         "vitest": "npm:@voidzero-dev/vite-plus-test@latest",

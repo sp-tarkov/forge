@@ -10,85 +10,23 @@
 @endplaceholder
 
 <div class="space-y-6">
-    @if ($this->result && $this->isActive)
-        <div>
-            <flux:heading size="lg">{{ __('File Verification') }}</flux:heading>
-            <div class="mt-2 flex flex-wrap items-center gap-2">
-                @if ($this->result->status === \App\Enums\VerificationStatus::Running)
-                    <flux:badge
-                        color="blue"
-                        size="sm"
-                    >
-                        <flux:icon.loading class="mr-1 h-4 w-4" />
-                        {{ $this->result->status->label() }}
-                    </flux:badge>
-                @else
-                    <flux:badge
-                        :color="$this->result->status->color()"
-                        :icon="$this->result->status->icon()"
-                        size="sm"
-                    >
-                        {{ $this->result->status->label() }}
-                    </flux:badge>
-                @endif
-            </div>
-        </div>
-
-        <div
-            data-test="verification-progress"
-            class="space-y-4"
-        >
-            <div>
-                <span class="text-sm text-gray-400">{{ __('Trigger') }}</span>
-                <p class="mt-1 text-sm text-gray-100">
-                    {{ $this->result->trigger->label() }}
-                </p>
-            </div>
-
-            <div>
-                <span class="text-sm text-gray-400">{{ __('Requested') }}</span>
-                <p class="mt-1 text-sm text-gray-100">
-                    {{ $this->result->created_at?->dynamicFormat() }}
-                </p>
-            </div>
-
-            @if ($this->result->started_at)
-                <div>
-                    <span class="text-sm text-gray-400">{{ __('Started') }}</span>
-                    <p class="mt-1 text-sm text-gray-100">
-                        {{ $this->result->started_at->dynamicFormat() }}
-                    </p>
-                </div>
-            @endif
-
-            @if ($this->queuePosition !== null)
-                <div>
-                    <span class="text-sm text-gray-400">{{ __('Position in queue') }}</span>
-                    <p class="mt-1 text-sm text-gray-100">
-                        {{ Number::format($this->queuePosition) }}
-                    </p>
-                </div>
-            @endif
-
-            <p class="text-sm text-gray-400">{{ __('This panel updates automatically.') }}</p>
-        </div>
-    @elseif ($this->result)
+    @if ($this->displayResult)
         <div>
             <flux:heading size="lg">{{ __('File Verification') }}</flux:heading>
             <div class="mt-2 flex flex-wrap items-center gap-2">
                 <flux:badge
-                    :color="$this->result->status->color()"
-                    :icon="$this->result->status->icon()"
+                    :color="$this->displayResult->status->color()"
+                    :icon="$this->displayResult->status->icon()"
                     size="sm"
                 >
-                    {{ $this->result->status->label() }}
+                    {{ $this->displayResult->status->label() }}
                 </flux:badge>
-                @if ($this->result->completed_at)
+                @if ($this->displayResult->completed_at)
                     <span class="text-sm text-gray-400">
-                        {{ __('Verified') }} {{ $this->result->completed_at->dynamicFormat() }}
+                        {{ __('Verified') }} {{ $this->displayResult->completed_at->dynamicFormat() }}
                     </span>
                 @endif
-                @if ($this->canSubmit)
+                @if ($this->canSubmit && !$this->activeResult)
                     <flux:button
                         wire:click="submit"
                         size="sm"
@@ -103,10 +41,26 @@
             </div>
         </div>
 
+        @if ($this->activeResult)
+            <flux:callout
+                icon="arrow-path"
+                color="blue"
+                data-test="verification-rerun-banner"
+            >
+                <flux:callout.text>
+                    @if ($this->queuePosition !== null)
+                        {{ __('A new verification run is queued at position :position. This panel updates automatically.', ['position' => Number::format($this->queuePosition)]) }}
+                    @else
+                        {{ __('A new verification run is in progress. This panel updates automatically.') }}
+                    @endif
+                </flux:callout.text>
+            </flux:callout>
+        @endif
+
         <div>
             <span class="text-sm text-gray-400">{{ __('Download URL') }}</span>
             <p class="mt-1 select-none break-all text-sm text-gray-100">
-                {{ $this->result->download_url }}
+                {{ $this->displayResult->download_url }}
             </p>
         </div>
 
@@ -119,9 +73,9 @@
             </div>
         @endif
 
-        @if ($this->result->downloaded_sha256)
+        @if ($this->displayResult->downloaded_sha256)
             <flux:input
-                :value="$this->result->downloaded_sha256"
+                :value="$this->displayResult->downloaded_sha256"
                 label="{{ __('Archive SHA-256') }}"
                 data-test="verification-sha256"
                 readonly
@@ -151,6 +105,68 @@
         @else
             <p class="text-sm text-gray-400">{{ __('No file listing available.') }}</p>
         @endif
+    @elseif ($this->activeResult)
+        <div>
+            <flux:heading size="lg">{{ __('File Verification') }}</flux:heading>
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+                @if ($this->activeResult->status === \App\Enums\VerificationStatus::Running)
+                    <flux:badge
+                        color="blue"
+                        size="sm"
+                    >
+                        <flux:icon.loading class="mr-1 h-4 w-4" />
+                        {{ $this->activeResult->status->label() }}
+                    </flux:badge>
+                @else
+                    <flux:badge
+                        :color="$this->activeResult->status->color()"
+                        :icon="$this->activeResult->status->icon()"
+                        size="sm"
+                    >
+                        {{ $this->activeResult->status->label() }}
+                    </flux:badge>
+                @endif
+            </div>
+        </div>
+
+        <div
+            data-test="verification-progress"
+            class="space-y-4"
+        >
+            <div>
+                <span class="text-sm text-gray-400">{{ __('Trigger') }}</span>
+                <p class="mt-1 text-sm text-gray-100">
+                    {{ $this->activeResult->trigger->label() }}
+                </p>
+            </div>
+
+            <div>
+                <span class="text-sm text-gray-400">{{ __('Requested') }}</span>
+                <p class="mt-1 text-sm text-gray-100">
+                    {{ $this->activeResult->created_at?->dynamicFormat() }}
+                </p>
+            </div>
+
+            @if ($this->activeResult->started_at)
+                <div>
+                    <span class="text-sm text-gray-400">{{ __('Started') }}</span>
+                    <p class="mt-1 text-sm text-gray-100">
+                        {{ $this->activeResult->started_at->dynamicFormat() }}
+                    </p>
+                </div>
+            @endif
+
+            @if ($this->queuePosition !== null)
+                <div>
+                    <span class="text-sm text-gray-400">{{ __('Position in queue') }}</span>
+                    <p class="mt-1 text-sm text-gray-100">
+                        {{ Number::format($this->queuePosition) }}
+                    </p>
+                </div>
+            @endif
+
+            <p class="text-sm text-gray-400">{{ __('This panel updates automatically.') }}</p>
+        </div>
     @else
         <p class="text-sm text-gray-400">{{ __('Verification details are currently unavailable.') }}</p>
 

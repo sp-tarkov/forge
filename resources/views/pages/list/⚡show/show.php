@@ -622,8 +622,7 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
-     * Eager-load every item on the list with the heavy nested relations needed
-     * to render its group card.
+     * Eager-load every item on the list with the listable relations needed to render its group card.
      *
      * @return EloquentCollection<int, ModListItem>
      */
@@ -638,8 +637,8 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
-     * Eager-load constraint for the polymorphic listable relation, scoping the
-     * heavy nested relations loaded for each Mod / Addon group card.
+     * Eager-load constraint for the polymorphic listable relation, scoping the relations loaded for each Mod / Addon
+     * group card. Badge and dependency relations for the displayed versions are batch-loaded in grouped().
      *
      * @return Closure(Relation<*, *, *>):void
      */
@@ -651,15 +650,13 @@ new #[Layout('layouts::base')] class extends Component
             }
 
             $relation->morphWith([
-                Mod::class => ['owner:id,name', 'latestVersion', 'latestVersion.latestSptVersion', 'latestVersion.latestDependenciesResolved.mod:id,name,slug'],
+                Mod::class => ['owner:id,name', 'latestVersion'],
                 Addon::class => [
                     'owner:id,name',
                     'latestVersion',
                     'mod',
                     'mod.owner:id,name',
                     'mod.latestVersion',
-                    'mod.latestVersion.latestSptVersion',
-                    'mod.latestVersion.latestDependenciesResolved.mod:id,name,slug',
                 ],
             ]);
         };

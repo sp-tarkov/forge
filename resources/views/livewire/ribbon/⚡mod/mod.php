@@ -12,6 +12,7 @@ use Livewire\Component;
 /**
  * @property-read array<string, string>|null $ribbonData
  * @property-read bool $canSeeWarnings
+ * @property-read ModModel|null $mod
  */
 new class extends Component
 {
@@ -46,10 +47,10 @@ new class extends Component
     public bool $homepageFeatured = false;
 
     /**
-     * Whether the mod is publicly visible.
+     * Whether the mod is publicly visible. Null until it has been resolved.
      */
     #[Locked]
-    public bool $publiclyVisible = false;
+    public ?bool $publiclyVisible = null;
 
     /**
      * Refresh the mod data when it's updated.
@@ -57,7 +58,7 @@ new class extends Component
     #[On('mod-updated.{modId}')]
     public function refreshMod(): void
     {
-        $mod = ModModel::query()->with('versions.latestSptVersion')->find($this->modId);
+        $mod = ModModel::query()->find($this->modId);
 
         if ($mod) {
             $hasChanges = false;
@@ -93,6 +94,15 @@ new class extends Component
     }
 
     /**
+     * The mod this ribbon describes.
+     */
+    #[Computed]
+    public function mod(): ?ModModel
+    {
+        return ModModel::query()->find($this->modId);
+    }
+
+    /**
      * Check if the current user can see visibility warnings.
      */
     #[Computed]
@@ -104,14 +114,14 @@ new class extends Component
             return false;
         }
 
-        $mod = ModModel::query()->find($this->modId);
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        $mod = $this->mod;
 
         if (! $mod) {
             return false;
-        }
-
-        if ($user->isModOrAdmin()) {
-            return true;
         }
 
         return $mod->isAuthorOrOwner($user);
@@ -138,9 +148,8 @@ new class extends Component
             return ['color' => 'emerald', 'label' => __('Scheduled')];
         }
 
-        // Check if mod is not publicly visible due to missing or unpublished versions or invalid SPT compatibility
-        // Only show this to privileged users who can see warnings
-        if (! $this->publiclyVisible && $this->canSeeWarnings) {
+        // Shows the unpublished warning to privileged users when the mod is not publicly visible
+        if ($this->canSeeWarnings && ! $this->resolvePubliclyVisible()) {
             return ['color' => 'amber', 'label' => __('Unpublished')];
         }
 
@@ -149,5 +158,13 @@ new class extends Component
         }
 
         return null;
+    }
+
+    /**
+     * Resolve whether the mod is publicly visible, storing the result on the component after the first lookup.
+     */
+    protected function resolvePubliclyVisible(): bool
+    {
+        return $this->publiclyVisible ??= (bool) $this->mod?->isPubliclyVisible();
     }
 };

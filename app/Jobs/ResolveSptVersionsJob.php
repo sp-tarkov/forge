@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Models\ModVersion;
 use App\Services\SptVersionService;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Backoff;
 use Illuminate\Queue\Attributes\Timeout;
@@ -28,12 +26,7 @@ final class ResolveSptVersionsJob implements ShouldBeUnique, ShouldQueue
      */
     public function handle(SptVersionService $sptVersionService): void
     {
-        ModVersion::query()
-            ->chunk(100, function (Collection $modVersions) use ($sptVersionService): void {
-                foreach ($modVersions as $modVersion) {
-                    $sptVersionService->resolve($modVersion);
-                }
-            });
+        $sptVersionService->resolveAll();
     }
 
     /**

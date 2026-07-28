@@ -21,8 +21,8 @@ final class CheckList extends Component
     ) {}
 
     /**
-     * Get the checks ordered for display: File Download first, then Archive Extraction, then GUID Match, then
-     * Version Match. Other checks are appended keeping their container-reported order.
+     * Get the checks ordered for display: File Download first, then Archive Extraction, GUID Match, Version Match,
+     * Plugin Location, and Server Mod Location. Other checks are appended keeping their container-reported order.
      *
      * @return list<VerificationCheck>
      */
@@ -53,7 +53,9 @@ final class CheckList extends Component
             VerificationCheckType::ArchiveExtraction->value => 1,
             VerificationCheckType::DllGuidMatch->value => 2,
             VerificationCheckType::DllVersionMatch->value => 3,
-            default => 4,
+            VerificationCheckType::ClientPluginLocation->value => 4,
+            VerificationCheckType::ServerModLocation->value => 5,
+            default => 6,
         };
     }
 }

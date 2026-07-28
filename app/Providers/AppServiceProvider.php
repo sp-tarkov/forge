@@ -11,7 +11,6 @@ use App\Contracts\DependencyResolver;
 use App\Contracts\DnsResolver;
 use App\Contracts\Geolocator;
 use App\Contracts\SpamChecker;
-use App\Contracts\VisitorPresenceStore;
 use App\Enums\TrackingEventType;
 use App\Facades\CachedGate;
 use App\Facades\Track;
@@ -26,8 +25,6 @@ use App\Support\ApiUsage\ArrayApiUsageStore;
 use App\Support\ApiUsage\RedisApiUsageStore;
 use App\Support\Dns\AmpDnsResolver;
 use App\Support\Dns\ArrayDnsResolver;
-use App\Support\Visitors\ArrayVisitorPresenceStore;
-use App\Support\Visitors\RedisVisitorPresenceStore;
 use App\View\Composers\PaginationComposer;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Auth\Events\Login;
@@ -83,20 +80,6 @@ final class AppServiceProvider extends ServiceProvider
             return new RedisApiUsageStore(
                 config()->string('api.usage.connection'),
                 config()->integer('api.usage.bucket_ttl'),
-            );
-        });
-
-        // Visitor presence powers the footer "users online" count. Production uses shared Redis sorted sets so every
-        // Octane worker sees the same visitors; tests run without Redis, so fall back to an in-memory store. Both are
-        // singletons: the Redis store only holds scalars, and the array store must persist across a test's requests.
-        $this->app->singleton(VisitorPresenceStore::class, function (): VisitorPresenceStore {
-            if ($this->app->runningUnitTests()) {
-                return new ArrayVisitorPresenceStore(config()->integer('visitors.online_window'));
-            }
-
-            return new RedisVisitorPresenceStore(
-                config()->string('visitors.connection'),
-                config()->integer('visitors.online_window'),
             );
         });
 
