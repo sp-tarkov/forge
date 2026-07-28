@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Events\UserNotificationsChanged;
+use Illuminate\Broadcasting\BroadcastException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -30,13 +32,21 @@ final class NotificationsToken
     }
 
     /**
-     * Forget the user's token and broadcast the change to their open tabs.
+     * Forget the user's token, broadcast the change to their open tabs, and log a warning when the broadcast fails.
      */
     public static function flush(int $userId): void
     {
         self::forget($userId);
 
-        event(new UserNotificationsChanged($userId));
+        try {
+            event(new UserNotificationsChanged($userId));
+        } catch (BroadcastException $broadcastException) {
+            Log::warning('Notifications broadcast failed; realtime update skipped.', [
+                'event' => UserNotificationsChanged::class,
+                'user_id' => $userId,
+                'exception' => $broadcastException->getMessage(),
+            ]);
+        }
     }
 
     /**
