@@ -12,6 +12,7 @@ describe('label', function (): void {
         'manual' => [VerificationTrigger::Manual, 'Manual'],
         'upload' => [VerificationTrigger::Upload, 'Upload'],
         'link updated' => [VerificationTrigger::LinkUpdated, 'Link Updated'],
+        'checks updated' => [VerificationTrigger::ChecksUpdated, 'Checks Updated'],
     ]);
 
     it('offers a non-empty label for every case', function (VerificationTrigger $trigger): void {

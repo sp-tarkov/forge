@@ -6,8 +6,9 @@ namespace Verifier.Checks;
 /// The post-extraction checks to run, in order.
 ///
 /// To add a check: implement IVerificationCheck in this directory, register an instance in the Checks array, bump
-/// ChecksVersion, and add a matching VerificationCheckType case on the host for its label and description. Emit new
-/// checks with ReportOnly=true until they are trusted to enforce.
+/// ChecksVersion together with LATEST_CHECKS_VERSION in app/Jobs/RunVerificationJob.php on the host, and add a
+/// matching VerificationCheckType case on the host for its label and description. Emit new checks with
+/// ReportOnly=true until they are trusted to enforce.
 /// </summary>
 public static class CheckRegistry
 {

@@ -14,16 +14,17 @@ use App\Models\VerificationResult;
 use App\Services\Verification\DownloadSafetyService;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 
 /**
  * Build a v2 container output carrying a single passing archive_extraction check.
  */
-function passingContainerOutput(mixed $fileTree = [], bool $fileTreeTruncated = false, string $sha256 = 'abc'): string
+function passingContainerOutput(mixed $fileTree = [], bool $fileTreeTruncated = false, string $sha256 = 'abc', string $checksVersion = '1'): string
 {
     return (string) json_encode([
         'schema_version' => 2,
-        'checks_version' => '1',
+        'checks_version' => $checksVersion,
         'sha256' => $sha256,
         'archive' => [
             'file_tree' => $fileTree,
@@ -176,6 +177,66 @@ it('marks result as passed when container reports success', function (): void {
     $modVersion->refresh();
     expect($modVersion->verification_status)->toBe(VerificationStatus::Passed);
     expect($modVersion->last_verified_at)->not->toBeNull();
+});
+
+it('logs a warning when the container reports a checks version behind the host constant', function (): void {
+    Log::spy();
+
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: passingContainerOutput(checksVersion: '1')),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+    ]);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    expect($result->refresh()->checks_version)->toBe('1');
+
+    Log::shouldHaveReceived('warning')
+        ->once()
+        ->withArgs(fn (string $message): bool => $message === 'Verification container reported a checks version that differs from the host constant');
+});
+
+it('does not log a checks version warning when the container reports the latest checks version', function (): void {
+    Log::spy();
+
+    Http::fake(fn ($request) => $request->method() === 'HEAD'
+        ? Http::response('', 200, ['Content-Type' => 'application/octet-stream', 'Content-Length' => '1000'])
+        : Http::response("PK\x03\x04fake-archive-content", 200)
+    );
+
+    Process::fake([
+        'docker run *' => Process::result(output: passingContainerOutput(checksVersion: RunVerificationJob::LATEST_CHECKS_VERSION)),
+        'docker rm *' => Process::result(output: ''),
+    ]);
+
+    $mod = Mod::factory()->for(User::factory(), 'owner')->create();
+    $modVersion = ModVersion::factory()->for($mod)->create([
+        'link' => 'https://example.com/mod.zip',
+    ]);
+
+    $result = VerificationResult::factory()->forModVersion($modVersion)->create([
+        'status' => VerificationStatus::Pending,
+    ]);
+
+    new RunVerificationJob($result)->handle(resolve(DownloadSafetyService::class));
+
+    expect($result->refresh()->checks_version)->toBe(RunVerificationJob::LATEST_CHECKS_VERSION);
+
+    Log::shouldNotHaveReceived('warning');
 });
 
 it('caps and sanitizes the container-reported file tree', function (): void {

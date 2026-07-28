@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Enums\VerificationStatus;
 use App\Enums\VerificationTrigger;
 use App\Models\AddonVersion;
 use App\Models\ModVersion;
@@ -19,13 +20,14 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * Checks a single mod/addon version's download link for changes via a HEAD request.
- * Dispatched in bulk by DetectDownloadChangesJob and processed concurrently by Horizon.
+ * Checks a single mod/addon version's download link via a HEAD request and queues verification when the file has
+ * changed or the latest completed verification ran under an older checks version. Dispatched in bulk by
+ * VerificationSweepJob and processed concurrently by Horizon.
  */
 #[Timeout(60)]
 #[Backoff([5, 10])]
 #[Tries(2)]
-final class CheckDownloadLinkJob implements ShouldQueue
+final class CheckVersionForVerificationJob implements ShouldQueue
 {
     use Queueable;
 
@@ -60,6 +62,12 @@ final class CheckDownloadLinkJob implements ShouldQueue
 
         if ($result->changed) {
             VerificationResult::dispatchFor($version, VerificationTrigger::ChangeDetected);
+
+            return;
+        }
+
+        if ($this->hasOutdatedChecksVersion($version)) {
+            VerificationResult::dispatchFor($version, VerificationTrigger::ChecksUpdated);
         }
     }
 
@@ -68,7 +76,7 @@ final class CheckDownloadLinkJob implements ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
-        Log::warning('CheckDownloadLinkJob failed', [
+        Log::warning('CheckVersionForVerificationJob failed', [
             'model' => $this->modelClass,
             'version_id' => $this->versionId,
             'error' => $exception?->getMessage(),
@@ -97,5 +105,18 @@ final class CheckDownloadLinkJob implements ShouldQueue
         if ($updates !== []) {
             $version->updateQuietly($updates);
         }
+    }
+
+    /**
+     * Whether the version's latest completed verification result was produced under an older checks version.
+     */
+    private function hasOutdatedChecksVersion(ModVersion|AddonVersion $version): bool
+    {
+        $checksVersion = $version->verificationResults()
+            ->whereIn('status', [VerificationStatus::Passed, VerificationStatus::Failed, VerificationStatus::Error])
+            ->latest('id')
+            ->value('checks_version');
+
+        return is_string($checksVersion) && $checksVersion !== RunVerificationJob::LATEST_CHECKS_VERSION;
     }
 }

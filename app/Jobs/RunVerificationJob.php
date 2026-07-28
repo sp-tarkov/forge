@@ -49,6 +49,11 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
     public const int SUPPORTED_SCHEMA_VERSION = 2;
 
     /**
+     * The current check-suite version, kept in lockstep with CheckRegistry.ChecksVersion in the verification container.
+     */
+    public const string LATEST_CHECKS_VERSION = '4';
+
+    /**
      * The most checks kept from a single container run, bounding untrusted output.
      */
     private const int MAX_CHECKS = 100;
@@ -268,6 +273,14 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         }
 
         $checksVersion = is_string($containerData['checks_version'] ?? null) ? $containerData['checks_version'] : null;
+
+        if ($checksVersion !== null && $checksVersion !== self::LATEST_CHECKS_VERSION) {
+            Log::warning('Verification container reported a checks version that differs from the host constant', [
+                'verification_result_id' => $this->verificationResult->id,
+                'container_checks_version' => $checksVersion,
+                'host_checks_version' => self::LATEST_CHECKS_VERSION,
+            ]);
+        }
 
         $finalStatus = $archiveOk ? VerificationStatus::Passed : VerificationStatus::Failed;
         $failureReason = $archiveOk ? null : $this->failureReasonFromChecks($checks);
