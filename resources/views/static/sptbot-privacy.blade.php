@@ -90,7 +90,7 @@
         >Discord's own privacy policy</a>.</p>
 
     <h2 id="operational-logs">5. Operational Logs</h2>
-    <p>The bot writes technical logs (events, errors, and related IDs) to daily files kept for up to 50 days, after
+    <p>The bot writes technical logs (events, errors, and related IDs) to daily files kept for up to 30 days, after
         which they are deleted automatically.</p>
 
     <h2 id="data-sharing">6. Data Sharing</h2>

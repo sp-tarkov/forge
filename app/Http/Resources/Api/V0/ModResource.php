@@ -19,13 +19,6 @@ use Override;
 final class ModResource extends JsonResource
 {
     /**
-     * The queried mod identifiers that directly require this dependency, set on top-level dependency tree nodes.
-     *
-     * @var list<string>|null
-     */
-    public ?array $requiredBy = null;
-
-    /**
      * The fields requested by the client.
      *
      * @var array<string>
@@ -45,35 +38,7 @@ final class ModResource extends JsonResource
     #[Override]
     public function toArray(Request $request): array
     {
-        // For dependency tree endpoint - return only essential identifying fields
-        if ($request->routeIs('api.v0.mods.dependencies')) {
-            return [
-                'id' => $this->resource->id,
-                'guid' => $this->resource->guid,
-                'name' => $this->resource->name,
-                'slug' => $this->resource->slug,
-                'latest_compatible_version' => $this->when(
-                    isset($this->resource->latestCompatibleVersion),
-                    fn (): ?ModVersionResource => $this->resource->latestCompatibleVersion
-                        ? new ModVersionResource($this->resource->latestCompatibleVersion)
-                        : null
-                ),
-                'dependencies' => $this->when(
-                    isset($this->resource->dependencies),
-                    fn (): array => $this->resource->dependencies ?? []
-                ),
-                'conflict' => $this->when(
-                    isset($this->resource->conflict),
-                    fn (): bool => $this->resource->conflict ?? false
-                ),
-                'required_by' => $this->when(
-                    $this->requiredBy !== null,
-                    fn (): array => $this->requiredBy ?? []
-                ),
-            ];
-        }
-
-        // For all other endpoints - use field filtering
+        // Use field filtering
         $this->requestedFields = $request->string('fields', '')
             ->explode(',')
             ->map(fn (string $field): string => mb_trim($field))
