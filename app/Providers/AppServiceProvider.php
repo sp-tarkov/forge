@@ -15,7 +15,9 @@ use App\Enums\TrackingEventType;
 use App\Facades\CachedGate;
 use App\Facades\Track;
 use App\Mixins\CarbonMixin;
+use App\Models\Ban;
 use App\Models\User;
+use App\Observers\BanObserver;
 use App\Policies\BlockingPolicy;
 use App\Services\ClaudeCommentTranslationService;
 use App\Services\CommentSpamService;
@@ -136,6 +138,9 @@ final class AppServiceProvider extends ServiceProvider
         Livewire::addPersistentMiddleware([
             AuthBanned::class,
         ]);
+
+        // Invalidate the cached per-user ban state when the underlying rows change.
+        Ban::observe(BanObserver::class);
 
         // Register the broadcasting.auth endpoint. Every remaining channel (chat conversations, user notifications,
         // online/typing presence) requires an authenticated user, so the framework's default controller is sufficient.

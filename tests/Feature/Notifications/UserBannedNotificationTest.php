@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Models\Ban;
 use App\Models\User;
 use App\Models\UserRole;
 use App\Notifications\UserBannedNotification;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
-use Mchev\Banhammer\Models\Ban;
 
 describe('Notification Delivery', function (): void {
     it('always sends notification via database channel', function (): void {

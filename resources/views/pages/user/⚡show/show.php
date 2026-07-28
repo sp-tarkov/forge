@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Models\Ban;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Mchev\Banhammer\Models\Ban;
 
 new #[Layout('layouts::base')] class extends Component
 {

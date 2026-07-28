@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Models\Ban;
 use App\Models\Comment;
 use App\Models\Conversation;
 use App\Models\Message;
@@ -23,7 +24,6 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
-use Mchev\Banhammer\Models\Ban;
 use Throwable;
 
 #[Description('Send every notification email to the given user via the mail channel only. Local/development use only.')]

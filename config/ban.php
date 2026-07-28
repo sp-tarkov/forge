@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Mchev\Banhammer\Models\Ban;
+use App\Models\Ban;
 
 return [
 

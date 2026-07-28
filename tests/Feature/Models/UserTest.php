@@ -741,3 +741,55 @@ describe('blocking', function (): void {
         });
     });
 });
+
+describe('ban state caching', function (): void {
+    it('caches the ban state when checking isBanned', function (): void {
+        $user = User::factory()->create();
+
+        expect($user->isBanned())->toBeFalse()
+            ->and(Cache::get(User::banStateCacheKey($user->id)))->toBe('none');
+    });
+
+    it('reflects a new ban immediately', function (): void {
+        $user = User::factory()->create();
+
+        expect($user->isBanned())->toBeFalse();
+
+        $user->ban(['comment' => 'Test ban']);
+
+        expect($user->isBanned())->toBeTrue()
+            ->and(Cache::get(User::banStateCacheKey($user->id)))->toBe('permanent');
+    });
+
+    it('reflects an unban immediately', function (): void {
+        $user = User::factory()->create();
+        $user->ban(['comment' => 'Test ban']);
+
+        expect($user->isBanned())->toBeTrue();
+
+        $user->unban();
+
+        expect($user->isBanned())->toBeFalse();
+    });
+
+    it('treats a lapsed temporary ban as inactive without invalidation', function (): void {
+        $user = User::factory()->create();
+        $user->ban(['comment' => 'Test ban', 'expired_at' => now()->addHour()]);
+
+        expect($user->isBanned())->toBeTrue();
+
+        $this->travel(2)->hours();
+
+        expect($user->isBanned())->toBeFalse();
+    });
+
+    it('reads the loaded bans relation over the cached state', function (): void {
+        $user = User::factory()->create();
+        $user->ban(['comment' => 'Test ban']);
+        $user->load('bans');
+
+        Cache::put(User::banStateCacheKey($user->id), 'none', 60);
+
+        expect($user->isBanned())->toBeTrue();
+    });
+});

@@ -6,6 +6,7 @@ namespace App\Notifications;
 
 use App\Contracts\Presentable;
 use App\Enums\NotificationColorRole;
+use App\Models\Ban;
 use App\Notifications\Messages\NotificationMailMessage;
 use App\Support\DataTransferObjects\HeadlineSegment;
 use App\Support\DataTransferObjects\NotificationPresentation;
@@ -15,7 +16,6 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notification;
-use Mchev\Banhammer\Models\Ban;
 
 final class UserBannedNotification extends Notification implements Presentable, ShouldQueue
 {
