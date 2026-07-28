@@ -11,7 +11,6 @@ use Livewire\Component;
 
 /**
  * @property-read array<string, string>|null $ribbonData
- * @property-read bool $canSeeWarnings
  * @property-read ModModel|null $mod
  */
 new class extends Component
@@ -53,6 +52,12 @@ new class extends Component
     public ?bool $publiclyVisible = null;
 
     /**
+     * Whether the current user can see visibility warnings. Null until it has been resolved.
+     */
+    #[Locked]
+    public ?bool $canSeeWarnings = null;
+
+    /**
      * Refresh the mod data when it's updated.
      */
     #[On('mod-updated.{modId}')]
@@ -62,6 +67,7 @@ new class extends Component
 
         if ($mod) {
             $hasChanges = false;
+            $this->canSeeWarnings = null;
             $newPublishedAt = $mod->published_at?->toISOString();
             $newPubliclyVisible = $mod->isPubliclyVisible();
 
@@ -103,31 +109,6 @@ new class extends Component
     }
 
     /**
-     * Check if the current user can see visibility warnings.
-     */
-    #[Computed]
-    public function canSeeWarnings(): bool
-    {
-        $user = auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->isModOrAdmin()) {
-            return true;
-        }
-
-        $mod = $this->mod;
-
-        if (! $mod) {
-            return false;
-        }
-
-        return $mod->isAuthorOrOwner($user);
-    }
-
-    /**
      * Get the ribbon data with caching.
      *
      * @return array<string, string>|null
@@ -149,7 +130,7 @@ new class extends Component
         }
 
         // Shows the unpublished warning to privileged users when the mod is not publicly visible
-        if ($this->canSeeWarnings && ! $this->resolvePubliclyVisible()) {
+        if ($this->resolveCanSeeWarnings() && ! $this->resolvePubliclyVisible()) {
             return ['color' => 'amber', 'label' => __('Unpublished')];
         }
 
@@ -158,6 +139,39 @@ new class extends Component
         }
 
         return null;
+    }
+
+    /**
+     * Resolve whether the current user can see visibility warnings, storing the result on the component after the
+     * first lookup.
+     */
+    protected function resolveCanSeeWarnings(): bool
+    {
+        return $this->canSeeWarnings ??= $this->computeCanSeeWarnings();
+    }
+
+    /**
+     * Check if the current user can see visibility warnings.
+     */
+    protected function computeCanSeeWarnings(): bool
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        $mod = $this->mod;
+
+        if (! $mod) {
+            return false;
+        }
+
+        return $mod->isAuthorOrOwner($user);
     }
 
     /**

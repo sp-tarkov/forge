@@ -141,3 +141,117 @@ describe('homepage recent comment activity', function (): void {
             ->assertViewHas('recentComments', fn (Collection $comments): bool => $comments->first()->id === $newer->id && $comments->last()->id === $older->id);
     });
 });
+
+describe('homepage section caching', function (): void {
+    it('keeps the cached sections through updates that do not affect section membership', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create(['featured' => true]);
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+
+        Livewire::test('pages::homepage')
+            ->assertViewHas('featured', fn (Collection $featured): bool => $featured->count() === 1);
+
+        expect(Cache::has('homepage:sections:featured'))->toBeTrue();
+
+        $mod->update(['downloads' => 999]);
+
+        expect(Cache::has('homepage:sections:featured'))->toBeTrue();
+    });
+
+    it('busts the cache when a new mod is published', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create(['featured' => true]);
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+
+        Livewire::test('pages::homepage')
+            ->assertViewHas('featured', fn (Collection $featured): bool => $featured->count() === 1);
+
+        $newMod = Mod::factory()->create(['featured' => true]);
+        ModVersion::factory()->recycle($newMod)->create(['spt_version_constraint' => '1.0.0']);
+
+        Livewire::test('pages::homepage')
+            ->assertViewHas('featured', fn (Collection $featured): bool => $featured->count() === 2);
+    });
+
+    it('busts the cache when a mod is disabled', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create(['featured' => true]);
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+
+        Livewire::test('pages::homepage')
+            ->assertViewHas('featured', fn (Collection $featured): bool => $featured->count() === 1);
+
+        $mod->update(['disabled' => true]);
+
+        expect(Cache::has('homepage:sections:featured'))->toBeFalse()
+            ->and(Cache::has('homepage:sections:newest'))->toBeFalse()
+            ->and(Cache::has('homepage:sections:updated'))->toBeFalse()
+            ->and(Cache::has('homepage:sections:comments'))->toBeTrue();
+
+        Livewire::test('pages::homepage')
+            ->assertViewHas('featured', fn (Collection $featured): bool => $featured->isEmpty());
+    });
+
+    it('busts the cache when a comment is posted on a mod', function (): void {
+        $mod = Mod::factory()->create();
+        Comment::factory()->recycle($mod)->withVersion()->create();
+
+        Livewire::test('pages::homepage')
+            ->assertViewHas('recentComments', fn (Collection $comments): bool => $comments->count() === 1);
+
+        Comment::factory()->recycle($mod)->withVersion()->create();
+
+        expect(Cache::has('homepage:sections:comments'))->toBeFalse()
+            ->and(Cache::has('homepage:sections:featured'))->toBeTrue();
+
+        Livewire::test('pages::homepage')
+            ->assertViewHas('recentComments', fn (Collection $comments): bool => $comments->count() === 2);
+    });
+
+    it('drops mods hidden without model events during hydration', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create(['featured' => true]);
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+
+        Livewire::test('pages::homepage')
+            ->assertViewHas('featured', fn (Collection $featured): bool => $featured->count() === 1);
+
+        $mod->updateQuietly(['disabled' => true]);
+
+        expect(Cache::has('homepage:sections:featured'))->toBeTrue();
+
+        Livewire::test('pages::homepage')
+            ->assertViewHas('featured', fn (Collection $featured): bool => $featured->isEmpty());
+    });
+
+    it('fills the cache from the public viewpoint when the requesting user owns an unpublished mod', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $owner = User::factory()->create();
+
+        $published = Mod::factory()->create();
+        ModVersion::factory()->recycle($published)->create(['spt_version_constraint' => '1.0.0']);
+
+        $unpublished = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => null]);
+        ModVersion::factory()->recycle($unpublished)->create(['spt_version_constraint' => '1.0.0']);
+
+        Livewire::actingAs($owner)
+            ->test('pages::homepage')
+            ->assertViewHas('newest', fn (Collection $newest): bool => $newest->pluck('id')->doesntContain($unpublished->id));
+
+        Livewire::test('pages::homepage')
+            ->assertViewHas('newest', fn (Collection $newest): bool => $newest->pluck('id')->doesntContain($unpublished->id) && $newest->pluck('id')->contains($published->id));
+    });
+
+    it('does not cache sections for users who can view disabled mods', function (): void {
+        $this->actingAs(User::factory()->admin()->create());
+
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create(['featured' => true, 'disabled' => true]);
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+
+        Livewire::test('pages::homepage')
+            ->assertViewHas('featured', fn (Collection $featured): bool => $featured->count() === 1);
+
+        expect(Cache::has('homepage:sections:featured'))->toBeFalse();
+    });
+});

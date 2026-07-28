@@ -19,6 +19,7 @@
         :featured="$mod->featured"
         :homepage-featured="$homepageFeatured"
         :publicly-visible="$mod->publiclyVisibleWithoutQuery()"
+        :can-see-warnings="auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user())"
     />
 
     <a
@@ -62,7 +63,7 @@
                 <div class="@lg:pb-3">
                     <h3 @class([
                         'text-lg leading-tight font-medium text-white',
-                        'pr-10 lg:pr-12' => $showActions ?? Gate::check('update', $mod),
+                        'pr-10 lg:pr-12' => $showActions ?? CachedGate::allows('update', $mod),
                     ])>
                         <span class="group-hover:underline">{{ $mod->name }}</span>
                         @if ($version)
