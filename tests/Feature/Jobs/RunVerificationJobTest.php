@@ -1167,7 +1167,7 @@ it('stores the dll guid and version check results and fails the run', function (
         'archive' => ['file_tree' => ['BepInEx/plugins/TestMod/TestMod.dll'], 'file_tree_truncated' => false, 'symlinks_removed' => 0],
         'checks' => [
             ['name' => 'archive_extraction', 'status' => 'passed', 'report_only' => false, 'message' => null, 'data' => []],
-            ['name' => 'dll_guid_match', 'status' => 'failed', 'report_only' => false, 'message' => "No client plugin declares the mod's GUID (com.example.testmod); found: com.other.mod.", 'data' => ['expected_guid' => 'com.example.testmod', 'findings' => [$finding]]],
+            ['name' => 'dll_guid_match', 'status' => 'failed', 'report_only' => false, 'message' => "No client mod declares the mod's GUID (com.example.testmod); found: com.other.mod.", 'data' => ['expected_guid' => 'com.example.testmod', 'findings' => [$finding]]],
             ['name' => 'dll_version_match', 'status' => 'failed', 'report_only' => false, 'message' => "No DLL in the archive declares the mod's GUID (com.example.testmod), so the published version (2.4.6) could not be verified.", 'data' => ['expected_version' => '2.4.6', 'mod_guid' => 'com.example.testmod', 'findings' => [$finding]]],
         ],
         'error' => null,

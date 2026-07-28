@@ -24,20 +24,20 @@ enum VerificationCheckType: string
     case ArchiveExtraction = 'archive_extraction';
 
     /**
-     * The GUIDs declared inside the archive's client plugin and server mod DLLs match the GUID registered for the mod
+     * The GUIDs declared inside the archive's client mod and server mod DLLs match the GUID registered for the mod
      * on the Forge, and match each other (when both types of mods exist).
      */
     case DllGuidMatch = 'dll_guid_match';
 
     /**
-     * The version numbers declared inside the archive's client plugin and server mod DLLs match the version number
+     * The version numbers declared inside the archive's client mod and server mod DLLs match the version number
      * published on the Forge.
      */
     case DllVersionMatch = 'dll_version_match';
 
     /**
-     * Every client plugin in the archive sits inside the `BepInEx/plugins` directory (or a subdirectory of it) at the
-     * archive root, and no plugin folder under `BepInEx/plugins` includes a version number in its name.
+     * Every client mod in the archive sits inside the `BepInEx/plugins` or `BepInEx/patchers` directory (or a
+     * subdirectory of one) at the archive root, and no mod folder under either includes a version number in its name.
      */
     case ClientPluginLocation = 'client_plugin_location';
 
@@ -74,7 +74,7 @@ enum VerificationCheckType: string
             self::ArchiveExtraction => 'Archive Extraction',
             self::DllGuidMatch => 'GUID Match',
             self::DllVersionMatch => 'Version Match',
-            self::ClientPluginLocation => 'Client Plugin Location',
+            self::ClientPluginLocation => 'Client Mod Location',
             self::ServerModLocation => 'Server Mod Location',
         };
     }
@@ -89,7 +89,7 @@ enum VerificationCheckType: string
             self::ArchiveExtraction => 'Confirms the uploaded archive can be opened and its files unpacked safely. A failure usually means the file is corrupted, uses an unsupported format, or expands to an unreasonably large size.',
             self::DllGuidMatch => 'Confirms the GUID declared inside the client and server DLLs matches the GUID registered for the mod on the Forge, and that the client and server agree with each other. A failure usually means the DLLs were built with a different GUID than the one registered.',
             self::DllVersionMatch => 'Confirms the version numbers declared inside the client and server DLLs match the version number published on the Forge. A failure usually means the archive was built from a different version than the one published.',
-            self::ClientPluginLocation => 'Confirms every client plugin sits inside the BepInEx/plugins directory at the root of the archive, so it loads when the archive is extracted into the game folder, and that plugin folders do not include a version number in their name. A failure usually means the plugin is nested under a wrapper folder, placed outside BepInEx/plugins, or sits in a folder named with a version number.',
+            self::ClientPluginLocation => 'Confirms every client mod sits inside the BepInEx/plugins or BepInEx/patchers directory at the root of the archive, so it loads when the archive is extracted into the game folder, and that mod folders do not include a version number in their name. A failure usually means the mod is nested under a wrapper folder, placed outside those directories, or sits in a folder named with a version number.',
             self::ServerModLocation => "Confirms every server mod sits in its own folder under SPT/user/mods for SPT 4.0 mods, or SPT_Runtime/user/mods for SPT 4.1 and later, at the root of the archive, and that the mod folder does not include a version number in its name. A failure usually means the mod is under the wrong root for the targeted SPT version, sits directly in user/mods without its own folder, sits in a folder named with a version number, or the mod versions's SPT version constraint spans both incompatible SPT versions.",
         };
     }

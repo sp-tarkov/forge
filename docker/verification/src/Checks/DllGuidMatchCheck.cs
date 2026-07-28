@@ -26,11 +26,11 @@ public sealed class DllGuidMatchCheck : IVerificationCheck
 
         if (scan.Findings.Count == 0)
         {
-            return CheckResult.Skipped(Name, "The archive contains no client plugin or server mod metadata.", data: data);
+            return CheckResult.Skipped(Name, "The archive contains no client mod or server mod metadata.", data: data);
         }
 
         List<string> failures = [];
-        AddForgeMismatchFailure(failures, scan.Findings.Where(finding => finding.Kind == DllComponentKind.Client).ToList(), "client plugin", expectedGuid);
+        AddForgeMismatchFailure(failures, scan.Findings.Where(finding => finding.Kind == DllComponentKind.Client).ToList(), "client mod", expectedGuid);
         AddForgeMismatchFailure(failures, scan.Findings.Where(finding => finding.Kind == DllComponentKind.Server).ToList(), "server mod", expectedGuid);
 
         return failures.Count > 0
