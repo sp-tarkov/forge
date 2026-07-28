@@ -15,7 +15,7 @@ describe('labelFor', function (): void {
     });
 
     it('resolves the labels for the location checks', function (): void {
-        expect(VerificationCheckType::labelFor('client_plugin_location'))->toBe('Client Plugin Location');
+        expect(VerificationCheckType::labelFor('client_plugin_location'))->toBe('Client Mod Location');
         expect(VerificationCheckType::labelFor('server_mod_location'))->toBe('Server Mod Location');
     });
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Models\Ban;
 use App\Models\User;
 use App\Models\UserRole;
 use Carbon\CarbonInterface;
@@ -18,7 +19,6 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Mchev\Banhammer\Models\Ban;
 
 new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class extends Component
 {

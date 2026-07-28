@@ -14,7 +14,7 @@ public static class CheckRegistry
     /// <summary>
     /// The version of the check set reported to the host, bumped whenever a check is added, removed, or changed.
     /// </summary>
-    public const string ChecksVersion = "3";
+    public const string ChecksVersion = "4";
 
     private static readonly IVerificationCheck[] Checks = [new DllGuidMatchCheck(), new DllVersionMatchCheck(), new ClientPluginLocationCheck(), new ServerModLocationCheck()];
 

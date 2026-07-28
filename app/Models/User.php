@@ -31,11 +31,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -131,6 +133,14 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
     public static function profilePhotoStoragePath(): string
     {
         return 'profile-photos';
+    }
+
+    /**
+     * Build the cache key holding the user's ban state.
+     */
+    public static function banStateCacheKey(int $userId): string
+    {
+        return sprintf('user:%d:ban-state', $userId);
     }
 
     /**
@@ -499,6 +509,48 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
         $this->loadMissing(['bans']);
 
         return $this->isNotBanned();
+    }
+
+    /**
+     * The relationship between the user and their bans.
+     *
+     * @return MorphMany<Ban, $this>
+     */
+    public function bans(): MorphMany
+    {
+        return $this->morphMany(Ban::class, 'bannable');
+    }
+
+    /**
+     * Ban the user with the given attributes.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function ban(array $attributes = []): Ban
+    {
+        return $this->bans()->create($attributes);
+    }
+
+    /**
+     * Check if the user is banned, reading the loaded bans relation when present and a cached ban state otherwise.
+     */
+    public function isBanned(): bool
+    {
+        if ($this->relationLoaded('bans')) {
+            return $this->bans->contains(fn (Ban $ban): bool => $ban->expired_at === null || $ban->expired_at->isFuture());
+        }
+
+        $state = Cache::remember(self::banStateCacheKey($this->id), now()->addHour(), fn (): string => $this->freshBanState());
+
+        if ($state === 'permanent') {
+            return true;
+        }
+
+        if ($state === 'none') {
+            return false;
+        }
+
+        return CarbonImmutable::parse($state)->isFuture();
     }
 
     /**
@@ -993,6 +1045,26 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
             ->orderByRaw('CASE WHEN LOWER(name) = LOWER(?) THEN 0 WHEN LOWER(name) LIKE LOWER(?) THEN 1 ELSE 2 END', [$search, $search.'%'])
             ->orderBy('name')
             ->limit(10);
+    }
+
+    /**
+     * Compute the ban state from the bans table: 'permanent', an ISO-8601 expiry, or 'none'.
+     */
+    private function freshBanState(): string
+    {
+        $bans = $this->bans()->get();
+
+        if ($bans->contains(fn (Ban $ban): bool => $ban->expired_at === null)) {
+            return 'permanent';
+        }
+
+        $latestExpiry = $bans->reduce(
+            fn (?CarbonImmutable $latest, Ban $ban): ?CarbonImmutable => $ban->expired_at !== null && (! $latest instanceof CarbonImmutable || $ban->expired_at->greaterThan($latest))
+                ? $ban->expired_at
+                : $latest
+        );
+
+        return $latestExpiry?->isFuture() ? $latestExpiry->toIso8601String() : 'none';
     }
 
     /**

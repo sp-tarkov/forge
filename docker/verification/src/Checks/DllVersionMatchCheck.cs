@@ -30,7 +30,7 @@ public sealed class DllVersionMatchCheck : IVerificationCheck
 
         if (scan.Findings.Count == 0)
         {
-            return CheckResult.Skipped(Name, "The archive contains no client plugin or server mod metadata.", data: data);
+            return CheckResult.Skipped(Name, "The archive contains no client mod or server mod metadata.", data: data);
         }
 
         if (expected is null)
@@ -53,7 +53,7 @@ public sealed class DllVersionMatchCheck : IVerificationCheck
         }
 
         List<string> failures = [];
-        AddKindMismatchFailure(failures, comparison.Where(finding => finding.Kind == DllComponentKind.Client).ToList(), "client plugin", expected, expectedRaw);
+        AddKindMismatchFailure(failures, comparison.Where(finding => finding.Kind == DllComponentKind.Client).ToList(), "client mod", expected, expectedRaw);
         AddKindMismatchFailure(failures, comparison.Where(finding => finding.Kind == DllComponentKind.Server).ToList(), "server mod", expected, expectedRaw);
 
         return failures.Count > 0

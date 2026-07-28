@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Models\User;
+use App\Support\NotificationsToken;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Queue\Queueable;
@@ -35,5 +36,7 @@ final class CleanupBlockedNotificationsJob implements ShouldQueue
                     ->orWhere('data->sender_id', (string) $this->blocked->id);
             })
             ->delete();
+
+        NotificationsToken::flush($this->blocker->id);
     }
 }

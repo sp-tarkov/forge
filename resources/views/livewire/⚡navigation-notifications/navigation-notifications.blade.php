@@ -1,5 +1,4 @@
 <div
-    wire:poll.30s="$refresh"
     x-data="{ notificationDropdownOpen: false }"
     x-on:keydown.esc.window="notificationDropdownOpen = false"
     class="relative"

@@ -5,12 +5,13 @@ declare(strict_types=1);
 use App\Models\User;
 use App\Services\NotificationPresentationService;
 use App\Support\DataTransferObjects\NotificationPresentation;
+use App\Support\NotificationsToken;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -24,6 +25,12 @@ new class extends Component
     public int $unreadCount = 0;
 
     /**
+     * Notifications change token the component last rendered with.
+     */
+    #[Locked]
+    public string $notificationsToken = '';
+
+    /**
      * Initialize the component when it's first mounted.
      */
     public function mount(): void
@@ -33,11 +40,36 @@ new class extends Component
     }
 
     /**
-     * Called when the component is hydrated from a later request.
+     * Map the user's private broadcast channel to the notification refresh handler.
+     *
+     * @return array<string, string>
      */
-    public function hydrate(): void
+    public function getListeners(): array
     {
-        // Ensures the unread count is always current.
+        $userId = Auth::id();
+
+        if ($userId === null) {
+            return [];
+        }
+
+        return [
+            sprintf('echo-private:user.%d,UserNotificationsChanged', $userId) => 'refreshNotifications',
+        ];
+    }
+
+    /**
+     * Refresh the notification state, skipping the render when nothing has changed.
+     */
+    public function refreshNotifications(): void
+    {
+        $user = Auth::user();
+
+        if (! $user || NotificationsToken::current($user->id) === $this->notificationsToken) {
+            $this->skipRender();
+
+            return;
+        }
+
         $this->loadUnreadCount();
     }
 
@@ -54,7 +86,6 @@ new class extends Component
         $notification = $this->findNotification($user, $notificationId);
         if ($notification instanceof DatabaseNotification) {
             $notification->markAsRead();
-            $this->clearUnreadCountCache();
             $this->loadUnreadCount();
         }
     }
@@ -71,7 +102,7 @@ new class extends Component
 
         $user->unreadNotifications()
             ->update(['read_at' => now()]);
-        $this->clearUnreadCountCache();
+        NotificationsToken::flush($user->id);
         $this->loadUnreadCount();
     }
 
@@ -90,7 +121,6 @@ new class extends Component
             $wasUnread = ! $notification->read_at;
             $notification->delete();
             if ($wasUnread) {
-                $this->clearUnreadCountCache();
                 $this->loadUnreadCount();
             }
         }
@@ -107,7 +137,7 @@ new class extends Component
         }
 
         $user->notifications()->delete();
-        $this->clearUnreadCountCache();
+        NotificationsToken::flush($user->id);
         $this->loadUnreadCount();
     }
 
@@ -129,7 +159,6 @@ new class extends Component
 
         if (! $notification->read_at) {
             $notification->markAsRead();
-            $this->clearUnreadCountCache();
             $this->loadUnreadCount();
         }
 
@@ -179,25 +208,16 @@ new class extends Component
     }
 
     /**
-     * Updates the unread notification count using a short-lived cache.
+     * Updates the unread notification count and adopts the current notifications change token.
      */
     private function loadUnreadCount(): void
     {
-        $userId = Auth::id();
-
         $user = Auth::user();
         if (! $user) {
             return;
         }
 
-        $this->unreadCount = (int) Cache::remember(sprintf('user:%s:unread-notification-count', $userId), 30, fn (): int => $user->unreadNotifications()->count());
-    }
-
-    /**
-     * Clears the cached unread notification count so the next load fetches fresh data.
-     */
-    private function clearUnreadCountCache(): void
-    {
-        Cache::forget('user:'.Auth::id().':unread-notification-count');
+        $this->notificationsToken = NotificationsToken::current($user->id);
+        $this->unreadCount = $user->unreadNotifications()->count();
     }
 };

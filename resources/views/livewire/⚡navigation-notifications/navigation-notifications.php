@@ -5,11 +5,13 @@ declare(strict_types=1);
 use App\Models\User;
 use App\Services\NotificationPresentationService;
 use App\Support\DataTransferObjects\NotificationPresentation;
+use App\Support\NotificationsToken;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new class extends Component
@@ -20,6 +22,12 @@ new class extends Component
     public int $unreadCount = 0;
 
     /**
+     * Notifications change token the component last rendered with.
+     */
+    #[Locked]
+    public string $notificationsToken = '';
+
+    /**
      * Initialize the component when it's first mounted.
      */
     public function mount(): void
@@ -28,10 +36,36 @@ new class extends Component
     }
 
     /**
-     * Called when the component is hydrated from a later request.
+     * Map the user's private broadcast channel to the notification refresh handler.
+     *
+     * @return array<string, string>
      */
-    public function hydrate(): void
+    public function getListeners(): array
     {
+        $userId = Auth::id();
+
+        if ($userId === null) {
+            return [];
+        }
+
+        return [
+            sprintf('echo-private:user.%d,UserNotificationsChanged', $userId) => 'refreshNotifications',
+        ];
+    }
+
+    /**
+     * Refresh the notification state, skipping the render when nothing has changed.
+     */
+    public function refreshNotifications(): void
+    {
+        $user = Auth::user();
+
+        if (! $user || NotificationsToken::current($user->id) === $this->notificationsToken) {
+            $this->skipRender();
+
+            return;
+        }
+
         $this->loadUnreadCount();
     }
 
@@ -93,6 +127,7 @@ new class extends Component
 
         $user->unreadNotifications()
             ->update(['read_at' => now()]);
+        NotificationsToken::flush($user->id);
         $this->loadUnreadCount();
     }
 
@@ -129,6 +164,7 @@ new class extends Component
         }
 
         $user->notifications()->delete();
+        NotificationsToken::flush($user->id);
         $this->loadUnreadCount();
     }
 
@@ -171,7 +207,7 @@ new class extends Component
     }
 
     /**
-     * Updates the unread notification count.
+     * Updates the unread notification count and adopts the current notifications change token.
      */
     private function loadUnreadCount(): void
     {
@@ -180,6 +216,7 @@ new class extends Component
             return;
         }
 
+        $this->notificationsToken = NotificationsToken::current($user->id);
         $this->unreadCount = $user->unreadNotifications()->count();
     }
 };

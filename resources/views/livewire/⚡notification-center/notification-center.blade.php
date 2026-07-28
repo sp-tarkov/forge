@@ -1,5 +1,4 @@
 <div
-    wire:poll.30s="$refresh"
     id="notifications"
     class="p-6"
 >
