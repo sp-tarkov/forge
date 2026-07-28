@@ -68,7 +68,7 @@ public static class ArchiveExtractor
                 continue;
             }
 
-            string destPath = Path.GetFullPath(Path.Combine(options.ExtractDir, entry.Key));
+            string destPath = Path.GetFullPath(Path.Combine(options.ExtractDir, NormalizeEntryKey(entry.Key)));
             if (destPath != extractDirRoot && !destPath.StartsWith(extractDirFull, StringComparison.Ordinal))
             {
                 return $"Archive contains an entry that resolves outside the extraction directory: {entry.Key}";
@@ -110,7 +110,7 @@ public static class ArchiveExtractor
                 continue;
             }
 
-            string destPath = Path.GetFullPath(Path.Combine(options.ExtractDir, entry.Key));
+            string destPath = Path.GetFullPath(Path.Combine(options.ExtractDir, NormalizeEntryKey(entry.Key)));
             if (destPath != extractDirRoot && !destPath.StartsWith(extractDirFull, StringComparison.Ordinal))
             {
                 return $"Archive contains an entry that resolves outside the extraction directory: {entry.Key}";
@@ -153,6 +153,12 @@ public static class ArchiveExtractor
         }
 
         return null;
+    }
+
+    /// <summary>Converts backslash directory separators in an archive entry path to forward slashes.</summary>
+    private static string NormalizeEntryKey(string entryKey)
+    {
+        return entryKey.Replace('\\', '/');
     }
 
     /// <summary>Checks whether a file path contains directory traversal sequences.</summary>
