@@ -8,6 +8,7 @@ use App\Models\AddonVersion;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Support\Api\V0\QueryBuilder\ModDependencyTreeQueryBuilder;
+use App\Support\DataTransferObjects\QueriedModVersion;
 use App\Support\VersionMatcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -116,14 +117,27 @@ final class DependencyService
      */
     public function resolveModVersionIds(Collection $modVersionPairs): Collection
     {
+        return $this->resolveModVersions($modVersionPairs)
+            ->map(fn (QueriedModVersion $queriedModVersion): int => $queriedModVersion->modVersionId);
+    }
+
+    /**
+     * Resolve mod versions from identifier:version pairs with public visibility checks, pairing each resolved mod
+     * version ID with the queried identifiers that matched it.
+     *
+     * @param  Collection<int, array{identifier: string, version: string, is_mod_id: bool}>  $modVersionPairs
+     * @return Collection<int, QueriedModVersion>
+     */
+    public function resolveModVersions(Collection $modVersionPairs): Collection
+    {
         if ($modVersionPairs->isEmpty()) {
-            /** @var Collection<int, int> */
+            /** @var Collection<int, QueriedModVersion> */
             return collect();
         }
 
-        /** @var Collection<int, int> */
-        return DB::table('mod_versions')
+        $rows = DB::table('mod_versions')
             ->join('mods', 'mod_versions.mod_id', '=', 'mods.id')
+            ->select('mod_versions.id', 'mod_versions.version', 'mods.id as mod_id', 'mods.guid')
             ->where(function (\Illuminate\Database\Query\Builder $query) use ($modVersionPairs): void {
                 foreach ($modVersionPairs as $pair) {
                     $query->orWhere(function (\Illuminate\Database\Query\Builder $q) use ($pair): void {
@@ -142,7 +156,14 @@ final class DependencyService
             ->whereNotNull('mods.published_at')
             ->where('mods.published_at', '<=', now())
             ->where('mods.disabled', false)
-            ->pluck('mod_versions.id');
+            ->get();
+
+        return $rows
+            ->map(fn (stdClass $row): ?QueriedModVersion => is_numeric($row->id)
+                ? new QueriedModVersion((int) $row->id, $this->matchingIdentifiersForRow($row, $modVersionPairs))
+                : null)
+            ->filter()
+            ->values();
     }
 
     /**
@@ -477,6 +498,28 @@ final class DependencyService
             ->groupBy('dependable_id');
 
         $this->applyConstraintsFromTree($dependencyTree, $allDependencies, $constraintsByModId);
+    }
+
+    /**
+     * Get the unique queried identifiers whose version and mod ID or GUID match the given resolved mod version row.
+     *
+     * @param  Collection<int, array{identifier: string, version: string, is_mod_id: bool}>  $modVersionPairs
+     * @return list<string>
+     */
+    private function matchingIdentifiersForRow(stdClass $row, Collection $modVersionPairs): array
+    {
+        $version = is_string($row->version) ? $row->version : '';
+        $modId = is_numeric($row->mod_id) ? (int) $row->mod_id : 0;
+        $guid = is_string($row->guid) ? Str::lower($row->guid) : null;
+
+        return array_values($modVersionPairs
+            ->filter(fn (array $pair): bool => $pair['version'] === $version
+                && ($pair['is_mod_id']
+                    ? (int) $pair['identifier'] === $modId
+                    : Str::lower($pair['identifier']) === $guid))
+            ->map(fn (array $pair): string => $pair['identifier'])
+            ->unique()
+            ->all());
     }
 
     /**

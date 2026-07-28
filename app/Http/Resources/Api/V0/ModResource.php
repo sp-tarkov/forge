@@ -19,6 +19,13 @@ use Override;
 final class ModResource extends JsonResource
 {
     /**
+     * The queried mod identifiers that directly require this dependency, set on top-level dependency tree nodes.
+     *
+     * @var list<string>|null
+     */
+    public ?array $requiredBy = null;
+
+    /**
      * The fields requested by the client.
      *
      * @var array<string>
@@ -58,6 +65,10 @@ final class ModResource extends JsonResource
                 'conflict' => $this->when(
                     isset($this->resource->conflict),
                     fn (): bool => $this->resource->conflict ?? false
+                ),
+                'required_by' => $this->when(
+                    $this->requiredBy !== null,
+                    fn (): array => $this->requiredBy ?? []
                 ),
             ];
         }

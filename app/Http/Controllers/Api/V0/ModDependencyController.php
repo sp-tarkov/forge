@@ -57,6 +57,10 @@ final class ModDependencyController extends Controller
      *   - `fika_compatibility` - Compatibility status with Fika mod
      * - **conflict**: Boolean indicating if this dependency has incompatible version constraints
      * - **dependencies**: Array of nested dependencies (same structure, recursive)
+     * - **required_by**: Array of queried mod identifiers, exactly as provided in the `mods` parameter, that directly
+     *   require this dependency. Present on top-level entries only; nested dependencies omit the field. When entries
+     *   are flagged with `conflict: true`, each entry lists every queried mod that requires the dependency mod,
+     *   regardless of which version it resolves to.
      *
      * @response status=200 scenario="Success (Compatible Dependencies)"
      *  {
@@ -91,7 +95,8 @@ final class ModDependencyController extends Controller
      *                      "conflict": false,
      *                      "dependencies": []
      *                  }
-     *              ]
+     *              ],
+     *              "required_by": ["com.example.mod"]
      *          }
      *      ]
      *  }
@@ -112,7 +117,8 @@ final class ModDependencyController extends Controller
      *                  "fika_compatibility": "compatible"
      *              },
      *              "conflict": true,
-     *              "dependencies": []
+     *              "dependencies": [],
+     *              "required_by": ["5", "com.example.mod"]
      *          },
      *          {
      *              "id": 12,
@@ -127,7 +133,8 @@ final class ModDependencyController extends Controller
      *                  "fika_compatibility": "incompatible"
      *              },
      *              "conflict": true,
-     *              "dependencies": []
+     *              "dependencies": [],
+     *              "required_by": ["5", "com.example.mod"]
      *          }
      *      ]
      *  }
@@ -190,10 +197,10 @@ final class ModDependencyController extends Controller
             );
         }
 
-        // Look up mod version IDs from identifier:version pairs using service
-        $queriedModVersionIds = $this->dependencyService->resolveModVersionIds($modVersionPairs);
+        // Look up mod versions and their matching queried identifiers from identifier:version pairs using service
+        $queriedModVersions = $this->dependencyService->resolveModVersions($modVersionPairs);
 
-        if ($queriedModVersionIds->isEmpty()) {
+        if ($queriedModVersions->isEmpty()) {
             return ApiResponse::success([]);
         }
 
@@ -202,18 +209,33 @@ final class ModDependencyController extends Controller
         $allDependencies = collect();
         /** @var Collection<int, Collection<int, string>> $constraintsByModId */
         $constraintsByModId = collect();
+        /** @var array<int, list<string>> $requiredByModId */
+        $requiredByModId = [];
 
-        foreach ($queriedModVersionIds as $versionId) {
+        foreach ($queriedModVersions as $queriedModVersion) {
             /** @var Collection<int, int> $processedVersionIds */
             $processedVersionIds = collect();
-            $dependencies = $this->buildDependencyTree($versionId, $processedVersionIds, $constraintsByModId);
+            $dependencies = $this->buildDependencyTree($queriedModVersion->modVersionId, $processedVersionIds, $constraintsByModId);
             if ($dependencies) {
+                foreach ($dependencies as $dependencyResource) {
+                    $modId = $dependencyResource->resource->id;
+                    $requiredByModId[$modId] = array_values(array_unique([
+                        ...$requiredByModId[$modId] ?? [],
+                        ...$queriedModVersion->identifiers,
+                    ]));
+                }
+
                 $allDependencies = $allDependencies->merge($dependencies);
             }
         }
 
         // Smart deduplication: group by mod ID and handle version conflicts
         $uniqueDependencies = $this->deduplicateDependencies($allDependencies, $constraintsByModId);
+
+        // Stamp each top-level dependency with the queried identifiers that directly require it
+        foreach ($uniqueDependencies as $dependencyResource) {
+            $dependencyResource->requiredBy = $requiredByModId[$dependencyResource->resource->id] ?? [];
+        }
 
         return ApiResponse::success($uniqueDependencies);
     }
