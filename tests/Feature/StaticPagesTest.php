@@ -19,6 +19,10 @@ describe('static pages', function (): void {
         $this->get('/privacy-policy')->assertOk();
     });
 
+    it('renders the SPTBot privacy policy page', function (): void {
+        $this->get('/sptbot-privacy-policy')->assertOk();
+    });
+
     it('renders the terms of service page', function (): void {
         $this->get('/terms-of-service')->assertOk();
     });

@@ -239,5 +239,6 @@ Route::middleware('auth.banned')->group(function (): void {
     Route::get('/installer', fn (): Factory|View => view('static.installer'))->name('static.installer');
     Route::get('/developers', fn (): Factory|View => view('static.developers'))->name('static.developers');
     Route::get('/privacy-policy', fn (): Factory|View => view('static.privacy'))->name('static.privacy');
+    Route::get('/sptbot-privacy-policy', fn (): Factory|View => view('static.sptbot-privacy'))->name('static.sptbot-privacy');
     Route::get('/terms-of-service', fn (): Factory|View => view('static.tos'))->name('static.terms');
 });
