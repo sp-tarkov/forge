@@ -37,38 +37,52 @@
 
     <!-- JavaScript for smooth scrolling and active state -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add smooth scrolling behavior
-            document.documentElement.style.scrollBehavior = 'smooth';
+        (function() {
+            function initStaticToc() {
+                // Add smooth scrolling behavior
+                document.documentElement.style.scrollBehavior = 'smooth';
 
-            // Update active nav link based on scroll position
-            const navLinks = document.querySelectorAll('.nav-link');
-            const sections = document.querySelectorAll('h2[id], h3[id], h4[id]');
+                const navLinks = document.querySelectorAll('.nav-link');
+                const sections = document.querySelectorAll('h2[id], h3[id], h4[id]');
 
-            function updateActiveLink() {
-                let current = '';
-                sections.forEach(section => {
-                    const sectionTop = section.offsetTop - 100;
-                    if (window.scrollY >= sectionTop) {
-                        current = section.getAttribute('id');
-                    }
-                });
+                function updateActiveLink() {
+                    let current = '';
+                    sections.forEach(section => {
+                        const sectionTop = section.offsetTop - 100;
+                        if (window.scrollY >= sectionTop) {
+                            current = section.getAttribute('id');
+                        }
+                    });
 
-                navLinks.forEach(link => {
-                    link.classList.remove('text-cyan-600', 'text-cyan-400', 'bg-cyan-50',
-                        'bg-cyan-900/50');
-                    link.classList.add('text-gray-600', 'text-gray-400');
+                    navLinks.forEach(link => {
+                        link.classList.remove('text-cyan-400', 'bg-cyan-900/50');
+                        link.classList.add('text-gray-400');
 
-                    if (link.getAttribute('href') === '#' + current) {
-                        link.classList.remove('text-gray-600', 'text-gray-400');
-                        link.classList.add('text-cyan-600', 'text-cyan-400', 'bg-cyan-50',
-                            'bg-cyan-900/50');
-                    }
-                });
+                        if (link.getAttribute('href') === '#' + current) {
+                            link.classList.remove('text-gray-400');
+                            link.classList.add('text-cyan-400', 'bg-cyan-900/50');
+                        }
+                    });
+                }
+
+                if (window._staticTocScrollHandler) {
+                    window.removeEventListener('scroll', window._staticTocScrollHandler);
+                }
+                window._staticTocScrollHandler = updateActiveLink;
+
+                window.addEventListener('scroll', window._staticTocScrollHandler);
+                updateActiveLink(); // Initial call
             }
 
-            window.addEventListener('scroll', updateActiveLink);
-            updateActiveLink(); // Initial call
-        });
+            // Run on initial load
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initStaticToc);
+            } else {
+                initStaticToc();
+            }
+
+            // Run on Livewire navigation
+            document.addEventListener('livewire:navigated', initStaticToc);
+        })();
     </script>
 </x-layouts::base>
