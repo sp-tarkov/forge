@@ -117,8 +117,8 @@ describe('GeolocationService', function (): void {
             expect($result)->toHaveKeys([
                 'country_code', 'country_name', 'region_name',
                 'city_name', 'latitude', 'longitude', 'timezone',
-            ]);
-            expect($result['country_code'])->toBe('CA');
+            ])
+                ->and($result['country_code'])->toBe('CA');
         });
     });
 
@@ -150,17 +150,17 @@ describe('GeolocationService', function (): void {
             // The current implementation converts any 2-char string to regional indicators
             // This documents the current behavior rather than desired behavior
             $flag = GeolocationService::getCountryFlag($code);
-            expect(mb_strlen($flag))->toBeGreaterThan(0);
-            expect($flag)->not->toBe('🏳️'); // These get converted, not defaulted
+            expect(mb_strlen($flag))->toBeGreaterThan(0)
+                ->and($flag)->not->toBe('🏳️'); // These get converted, not defaulted
         })->with([
             'numeric' => ['12'],
             'special characters' => ['@#'],
         ]);
 
         it('handles mixed case country codes correctly', function (): void {
-            expect(GeolocationService::getCountryFlag('uS'))->toBe('🇺🇸');
-            expect(GeolocationService::getCountryFlag('Ca'))->toBe('🇨🇦');
-            expect(GeolocationService::getCountryFlag('gB'))->toBe('🇬🇧');
+            expect(GeolocationService::getCountryFlag('uS'))->toBe('🇺🇸')
+                ->and(GeolocationService::getCountryFlag('Ca'))->toBe('🇨🇦')
+                ->and(GeolocationService::getCountryFlag('gB'))->toBe('🇬🇧');
         });
     });
 

@@ -19,6 +19,6 @@ it('pins the request to the public viewpoint before the controller runs', functi
         return new Response;
     });
 
-    expect($forcedDuringRequest)->toBeTrue();
-    expect($response)->toBeInstanceOf(Response::class);
+    expect($forcedDuringRequest)->toBeTrue()
+        ->and($response)->toBeInstanceOf(Response::class);
 });

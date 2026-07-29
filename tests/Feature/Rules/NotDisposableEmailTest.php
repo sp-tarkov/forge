@@ -21,8 +21,8 @@ describe('disposable email validation', function (): void {
             ['email' => new NotDisposableEmail]
         );
 
-        expect($validator->fails())->toBeTrue();
-        expect($validator->errors()->first('email'))->toBe('This email address has been detected as disposable and is not supported.');
+        expect($validator->fails())->toBeTrue()
+            ->and($validator->errors()->first('email'))->toBe('This email address has been detected as disposable and is not supported.');
     });
 
     it('passes validation for non-disposable email addresses', function (): void {

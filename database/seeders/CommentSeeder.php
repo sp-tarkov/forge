@@ -250,7 +250,7 @@ final class CommentSeeder extends Seeder
     private function buildVersionPayload(CarbonInterface $createdAt): array
     {
         if (random_int(0, 99) < 10) {
-            $language = array_rand(self::TRANSLATED_SAMPLES);
+            $language = $this->randomElement(array_keys(self::TRANSLATED_SAMPLES));
             [$body, $translatedBody] = $this->randomElement(self::TRANSLATED_SAMPLES[$language]);
 
             return [

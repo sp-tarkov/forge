@@ -538,8 +538,8 @@ describe('Published Version Visibility', function (): void {
 
         $results = $filters->apply()->get();
 
-        expect($results)->toHaveCount(1);
-        expect($results->first()->id)->toBe($validMod->id);
+        expect($results)->toHaveCount(1)
+            ->and($results->first()->id)->toBe($validMod->id);
 
         // Ensure the mod with an unpublished version is not returned
         $returnedIds = $results->pluck('id')->toArray();
@@ -1079,14 +1079,14 @@ describe('Published Version Visibility', function (): void {
         // Test the scope - should only return the publicly visible version
         $publicVersions = $mod->versions()->publiclyVisible()->get();
 
-        expect($publicVersions)->toHaveCount(1);
-        expect($publicVersions->first()->id)->toBe($validVersion->id);
+        expect($publicVersions)->toHaveCount(1)
+            ->and($publicVersions->first()->id)->toBe($validVersion->id);
 
         // Test the individual method
         expect($validVersion->isPubliclyVisible())->toBeTrue();
-        expect($unpublishedVersion->isPubliclyVisible())->toBeFalse();
-        expect($disabledVersion->isPubliclyVisible())->toBeFalse();
-        expect($versionWithoutSpt->isPubliclyVisible())->toBeFalse();
+        expect($unpublishedVersion->isPubliclyVisible())->toBeFalse()
+            ->and($disabledVersion->isPubliclyVisible())->toBeFalse()
+            ->and($versionWithoutSpt->isPubliclyVisible())->toBeFalse();
     });
 
     it('is not publicly visible when constraint does not resolve even if legacy 0.0.0 version exists', function (): void {
@@ -1105,9 +1105,9 @@ describe('Published Version Visibility', function (): void {
         ]);
 
         // The mod version should NOT have any SPT versions linked
-        expect($modVersion->sptVersions)->toHaveCount(0);
-        expect($modVersion->latestSptVersion)->toBeNull();
-        expect($modVersion->isPubliclyVisible())->toBeFalse();
+        expect($modVersion->sptVersions)->toBeEmpty();
+        expect($modVersion->latestSptVersion)->toBeNull()
+            ->and($modVersion->isPubliclyVisible())->toBeFalse();
 
         // The mod should also NOT be publicly visible
         expect($mod->isPubliclyVisible())->toBeFalse();

@@ -175,7 +175,7 @@ trait SeederHelpers
      */
     protected function randomElement(array $items): mixed
     {
-        return $items[array_rand($items)];
+        return $items[random_int(0, count($items) - 1)];
     }
 
     /**
@@ -189,11 +189,13 @@ trait SeederHelpers
      */
     protected function randomElements(array $items, int $count): array
     {
-        $keys = array_rand($items, $count);
-
+        $remaining = $items;
         $selected = [];
-        foreach ((array) $keys as $key) {
-            $selected[] = $items[(int) $key];
+
+        for ($i = 0; $i < $count; $i++) {
+            $index = random_int(0, count($remaining) - 1);
+            $selected[] = $remaining[$index];
+            array_splice($remaining, $index, 1);
         }
 
         return $selected;

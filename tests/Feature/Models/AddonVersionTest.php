@@ -308,7 +308,7 @@ describe('resolved dependency visibility', function (): void {
             'resolved_mod_version_id' => $hiddenModVersion->id,
         ])->saveQuietly();
 
-        expect($addonVersion->latestDependenciesResolved()->get())->toHaveCount(0);
+        expect($addonVersion->latestDependenciesResolved()->get())->toBeEmpty();
 
         $this->actingAs(User::factory()->admin()->create());
 

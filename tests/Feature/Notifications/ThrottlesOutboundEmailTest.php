@@ -20,7 +20,7 @@ describe('Mail Channel Throttling', function (): void {
     it('does not rate limit non-mail channels', function (): void {
         $middleware = (new ContentGuidelinesUpdatedNotification)->middleware(User::factory()->make(), 'database');
 
-        expect($middleware)->toBe([]);
+        expect($middleware)->toBeEmpty();
     });
 
     it('retries throttled mail jobs against a deadline rather than a try count', function (): void {

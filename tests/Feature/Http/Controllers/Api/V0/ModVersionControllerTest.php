@@ -123,11 +123,7 @@ describe('index', function (): void {
         $returnedIds = collect($response->json('data'))->pluck('id')->all();
         expect($returnedIds)
             ->toContain($modVersion1->id)
-            ->toContain($modVersion3->id);
-
-        expect($returnedIds)
-            ->not
-            ->toContain($modVersion2->id);
+            ->toContain($modVersion3->id)->not->toContain($modVersion2->id);
     });
 
     it('filters mod versions by hub_id', function (): void {
@@ -145,11 +141,7 @@ describe('index', function (): void {
         $returnedIds = collect($response->json('data'))->pluck('id')->all();
         expect($returnedIds)
             ->toContain($modVersion1->id)
-            ->toContain($modVersion3->id);
-
-        expect($returnedIds)
-            ->not->toContain($modVersion2->id)
-            ->not->toContain($modVersion4->id);
+            ->toContain($modVersion3->id)->not->toContain($modVersion2->id)->not->toContain($modVersion4->id);
     });
 
     it('filters mod versions by mod version semver constraint using tilde (~)', function (): void {
@@ -170,13 +162,7 @@ describe('index', function (): void {
         $returnedIds = collect($response->json('data'))->pluck('id')->all();
         expect($returnedIds)
             ->toContain($modVersion2->id)
-            ->toContain($modVersion3->id);
-
-        expect($returnedIds)
-            ->not->toContain($modVersion1->id)
-            ->not->toContain($modVersion4->id)
-            ->not->toContain($modVersion5->id)
-            ->not->toContain($modVersion6->id);
+            ->toContain($modVersion3->id)->not->toContain($modVersion1->id)->not->toContain($modVersion4->id)->not->toContain($modVersion5->id)->not->toContain($modVersion6->id);
     });
 
     it('filters mod versions by mod version semver constraint using caret (^)', function (): void {
@@ -200,10 +186,7 @@ describe('index', function (): void {
             ->toContain($modVersion2->id)
             ->toContain($modVersion3->id)
             ->toContain($modVersion4->id)
-            ->toContain($modVersion5->id);
-
-        expect($returnedIds)
-            ->not->toContain($modVersion6->id);
+            ->toContain($modVersion5->id)->not->toContain($modVersion6->id);
     });
 
     it('filters mod versions by mod version semver constraint using a two version range', function (): void {
@@ -226,11 +209,7 @@ describe('index', function (): void {
             ->toContain($modVersion2->id)
             ->toContain($modVersion3->id)
             ->toContain($modVersion4->id)
-            ->toContain($modVersion5->id);
-
-        expect($returnedIds)
-            ->not->toContain($modVersion1->id)
-            ->not->toContain($modVersion6->id);
+            ->toContain($modVersion5->id)->not->toContain($modVersion1->id)->not->toContain($modVersion6->id);
     });
 
     it('filters between two created_at dates', function (): void {
@@ -252,11 +231,7 @@ describe('index', function (): void {
             ->toContain($modVersion2->id)
             ->toContain($modVersion3->id)
             ->toContain($modVersion4->id)
-            ->toContain($modVersion5->id);
-
-        expect($returnedIds)
-            ->not->toContain($modVersion1->id)
-            ->not->toContain($modVersion6->id);
+            ->toContain($modVersion5->id)->not->toContain($modVersion1->id)->not->toContain($modVersion6->id);
     });
 
     it('filters mod versions by spt_version semver constraint using tilde (~)', function (): void {
@@ -283,11 +258,7 @@ describe('index', function (): void {
         expect($returnedIds)
             ->toContain($modVersionFor380->id)
             ->toContain($modVersionFor381First->id)
-            ->toContain($modVersionFor381Second->id);
-
-        expect($returnedIds)
-            ->not->toContain($modVersionFor390->id)
-            ->not->toContain($modVersionFor371->id);
+            ->toContain($modVersionFor381Second->id)->not->toContain($modVersionFor390->id)->not->toContain($modVersionFor371->id);
     });
 
     it('filters mod versions by spt_version semver constraint using caret (^)', function (): void {
@@ -314,11 +285,7 @@ describe('index', function (): void {
         expect($returnedIds)
             ->toContain($modVersionFor390->id)
             ->toContain($modVersionFor381First->id)
-            ->toContain($modVersionFor381Second->id);
-
-        expect($returnedIds)
-            ->not->toContain($modVersionFor380->id)
-            ->not->toContain($modVersionFor371->id);
+            ->toContain($modVersionFor381Second->id)->not->toContain($modVersionFor380->id)->not->toContain($modVersionFor371->id);
     });
 
     it('includes version dependencies', function (): void {
@@ -560,10 +527,9 @@ describe('virus total links', function (): void {
 
         // Verify the virus_total_link data is present
         $data = $response->json('data.0.virus_total_links');
-        expect($data)->toBeArray();
-        expect($data)->toHaveCount(1);
-        expect($data[0]['url'])->toBe('https://www.virustotal.com/gui/file/abc123');
-        expect($data[0]['label'])->toBe('Test VT Link');
+        expect($data)->toBeArray()
+            ->toHaveCount(1)
+            ->and($data[0])->toMatchArray(['url' => 'https://www.virustotal.com/gui/file/abc123', 'label' => 'Test VT Link']);
     });
 
     it('includes multiple virus_total_links when mod version has multiple', function (): void {
@@ -593,8 +559,8 @@ describe('virus total links', function (): void {
         $response->assertSuccessful();
 
         $data = $response->json('data.0.virus_total_links');
-        expect($data)->toBeArray();
-        expect($data)->toHaveCount(2);
+        expect($data)->toBeArray()
+            ->toHaveCount(2);
     });
 
     it('returns empty array when mod version has no virus_total_links', function (): void {
@@ -610,8 +576,8 @@ describe('virus total links', function (): void {
         $response->assertSuccessful();
 
         $data = $response->json('data.0.virus_total_links');
-        expect($data)->toBeArray();
-        expect($data)->toHaveCount(0);
+        expect($data)->toBeArray()
+            ->toBeEmpty();
     });
 });
 

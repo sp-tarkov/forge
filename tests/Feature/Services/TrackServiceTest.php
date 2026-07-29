@@ -153,10 +153,10 @@ describe('TrackService', function (): void {
 
             $event = TrackingEvent::query()->where('event_name', 'login')->first();
 
-            expect($event->url)->toBe('/test-path');
-            expect($event->referer)->toBe('https://example.com/referrer');
-            expect($event->useragent)->toBe('Test Browser 1.0');
-            expect($event->languages)->toBeArray();
+            expect($event->url)->toBe('/test-path')
+                ->and($event->referer)->toBe('https://example.com/referrer')
+                ->and($event->useragent)->toBe('Test Browser 1.0')
+                ->and($event->languages)->toBeArray();
         });
 
         it('handles missing geolocation gracefully', function (): void {
@@ -252,9 +252,8 @@ describe('TrackService', function (): void {
 
             $event = TrackingEvent::query()->where('event_name', 'comment_create')->first();
 
-            expect($event->event_data)->toHaveKey('snapshot');
-            expect($event->event_data)->toHaveKey('url');
-            expect($event->event_data['snapshot'])->toBeArray();
+            expect($event->event_data)->toHaveKeys(['snapshot', 'url'])
+                ->and($event->event_data['snapshot'])->toBeArray();
         });
 
         it('works with trackable models and extracts snapshots', function (): void {
@@ -271,8 +270,8 @@ describe('TrackService', function (): void {
 
             $event = TrackingEvent::query()->where('event_name', 'mod_create')->first();
 
-            expect($event->visitable_type)->toBe(Mod::class);
-            expect($event->visitable_id)->toBe($mod->id);
+            expect($event->visitable_type)->toBe(Mod::class)
+                ->and($event->visitable_id)->toBe($mod->id);
             // Should have snapshot data since Mod implements Trackable
             expect($event->event_data)->toHaveKey('snapshot');
             expect($event->event_data)->toHaveKey('url');
@@ -298,19 +297,19 @@ describe('TrackService', function (): void {
             $reflection = new ReflectionClass(TrackService::class);
             $method = $reflection->getMethod('event');
 
-            expect($method->isPublic())->toBeTrue();
-            expect($method->getNumberOfParameters())->toBe(3);
+            expect($method->isPublic())->toBeTrue()
+                ->and($method->getNumberOfParameters())->toBe(3);
 
             $parameters = $method->getParameters();
-            expect($parameters[0]->getName())->toBe('eventType');
-            expect($parameters[1]->getName())->toBe('trackable');
-            expect($parameters[2]->getName())->toBe('additionalData');
+            expect($parameters[0]->getName())->toBe('eventType')
+                ->and($parameters[1]->getName())->toBe('trackable')
+                ->and($parameters[2]->getName())->toBe('additionalData');
 
             // Check parameter types
             expect($parameters[0]->getType()?->getName())->toBe(TrackingEventType::class);
-            expect($parameters[1]->allowsNull())->toBeTrue();
-            expect($parameters[2]->hasType())->toBeTrue();
-            expect($parameters[2]->getType()?->getName())->toBe('array');
+            expect($parameters[1]->allowsNull())->toBeTrue()
+                ->and($parameters[2]->hasType())->toBeTrue()
+                ->and($parameters[2]->getType()?->getName())->toBe('array');
         });
     });
 });

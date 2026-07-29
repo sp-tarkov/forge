@@ -166,10 +166,10 @@ describe('actions', function (): void {
 
         $comment->refresh();
 
-        expect($comment->spam_reviewed_at)->not->toBeNull();
-        expect($comment->spam_reviewed_by)->toBe($moderator->id);
-        expect($comment->isSpam())->toBeTrue();
-        expect($comment->deleted_at)->toBeNull();
+        expect($comment->spam_reviewed_at)->not->toBeNull()
+            ->and($comment->spam_reviewed_by)->toBe($moderator->id)
+            ->and($comment->isSpam())->toBeTrue()
+            ->and($comment->deleted_at)->toBeNull();
 
         $event = TrackingEvent::query()
             ->where('event_name', TrackingEventType::COMMENT_MARK_SPAM->value)
@@ -177,9 +177,9 @@ describe('actions', function (): void {
             ->where('visitable_type', Comment::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeTrue();
-        expect($event->reason)->toBe('Clear spam');
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeTrue()
+            ->and($event->reason)->toBe('Clear spam');
     });
 
     it('marks a comment as ham, calls Akismet submit-ham, changes status to clean, and tracks the action', function (): void {
@@ -204,17 +204,17 @@ describe('actions', function (): void {
 
         $comment->refresh();
 
-        expect($comment->isSpam())->toBeFalse();
-        expect($comment->spam_status)->toBe(SpamStatus::CLEAN);
+        expect($comment->isSpam())->toBeFalse()
+            ->and($comment->spam_status)->toBe(SpamStatus::CLEAN);
 
         $event = TrackingEvent::query()
             ->where('event_name', TrackingEventType::COMMENT_MARK_CLEAN->value)
             ->where('visitable_id', $comment->id)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeTrue();
-        expect($event->reason)->toBe('False positive');
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeTrue()
+            ->and($event->reason)->toBe('False positive');
     });
 
     it('soft-deletes a comment without calling Akismet and tracks the action', function (): void {
@@ -236,16 +236,16 @@ describe('actions', function (): void {
 
         $comment->refresh();
 
-        expect($comment->deleted_at)->not->toBeNull();
-        expect($comment->isSpam())->toBeTrue();
+        expect($comment->deleted_at)->not->toBeNull()
+            ->and($comment->isSpam())->toBeTrue();
 
         $event = TrackingEvent::query()
             ->where('event_name', TrackingEventType::COMMENT_SOFT_DELETE->value)
             ->where('visitable_id', $comment->id)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeTrue();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeTrue();
     });
 
     it('hard-deletes a comment and descendants without calling Akismet', function (): void {
@@ -272,16 +272,16 @@ describe('actions', function (): void {
             ->call('openActionModal', $root->id, 'hard_delete')
             ->call('executeAction');
 
-        expect(Comment::query()->whereKey($root->id)->exists())->toBeFalse();
-        expect(Comment::query()->whereKey($reply->id)->exists())->toBeFalse();
+        expect(Comment::query()->whereKey($root->id)->exists())->toBeFalse()
+            ->and(Comment::query()->whereKey($reply->id)->exists())->toBeFalse();
 
         $event = TrackingEvent::query()
             ->where('event_name', TrackingEventType::COMMENT_HARD_DELETE->value)
             ->where('visitable_id', $root->id)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeTrue();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeTrue();
     });
 
     it('blocks moderators from hard-deleting', function (): void {

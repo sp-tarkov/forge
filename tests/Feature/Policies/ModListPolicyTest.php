@@ -15,8 +15,8 @@ describe('view', function (): void {
         $list = ModList::factory()->public()->create();
         $other = User::factory()->create();
 
-        expect(auth()->guest())->toBeTrue();
-        expect($other->can('view', $list))->toBeTrue();
+        expect(auth()->guest())->toBeTrue()
+            ->and($other->can('view', $list))->toBeTrue();
     });
 
     it('allows only the owner to view a private list', function (): void {
@@ -93,10 +93,10 @@ describe('disable/enable', function (): void {
         $admin = User::factory()->admin()->create();
         $list = ModList::factory()->public()->create();
 
-        expect($moderator->can('disable', $list))->toBeTrue();
-        expect($moderator->can('enable', $list))->toBeTrue();
-        expect($admin->can('disable', $list))->toBeTrue();
-        expect($admin->can('enable', $list))->toBeTrue();
+        expect($moderator->can('disable', $list))->toBeTrue()
+            ->and($moderator->can('enable', $list))->toBeTrue()
+            ->and($admin->can('disable', $list))->toBeTrue()
+            ->and($admin->can('enable', $list))->toBeTrue();
     });
 
     it('denies regular users and the owner from disabling or enabling a list', function (): void {
@@ -104,18 +104,18 @@ describe('disable/enable', function (): void {
         $other = User::factory()->create();
         $list = ModList::factory()->for($owner, 'owner')->public()->create();
 
-        expect($owner->can('disable', $list))->toBeFalse();
-        expect($owner->can('enable', $list))->toBeFalse();
-        expect($other->can('disable', $list))->toBeFalse();
-        expect($other->can('enable', $list))->toBeFalse();
+        expect($owner->can('disable', $list))->toBeFalse()
+            ->and($owner->can('enable', $list))->toBeFalse()
+            ->and($other->can('disable', $list))->toBeFalse()
+            ->and($other->can('enable', $list))->toBeFalse();
     });
 
     it('denies unverified moderators from disabling or enabling a list', function (): void {
         $moderator = User::factory()->moderator()->unverified()->create();
         $list = ModList::factory()->public()->create();
 
-        expect($moderator->can('disable', $list))->toBeFalse();
-        expect($moderator->can('enable', $list))->toBeFalse();
+        expect($moderator->can('disable', $list))->toBeFalse()
+            ->and($moderator->can('enable', $list))->toBeFalse();
     });
 });
 
@@ -142,8 +142,8 @@ describe('delete', function (): void {
 
         $curated = ModList::factory()->for($owner, 'owner')->public()->create();
 
-        expect($moderator->can('delete', $curated))->toBeTrue();
-        expect($admin->can('delete', $curated))->toBeTrue();
+        expect($moderator->can('delete', $curated))->toBeTrue()
+            ->and($admin->can('delete', $curated))->toBeTrue();
     });
 
     it('denies everyone, including staff, from deleting a default Favourites list', function (): void {
@@ -153,9 +153,9 @@ describe('delete', function (): void {
 
         $favourites = $owner->favouritesList;
 
-        expect($owner->can('delete', $favourites))->toBeFalse();
-        expect($moderator->can('delete', $favourites))->toBeFalse();
-        expect($admin->can('delete', $favourites))->toBeFalse();
+        expect($owner->can('delete', $favourites))->toBeFalse()
+            ->and($moderator->can('delete', $favourites))->toBeFalse()
+            ->and($admin->can('delete', $favourites))->toBeFalse();
     });
 });
 
@@ -185,8 +185,8 @@ describe('rename/delete immutability of Favourites', function (): void {
 
         $this->actingAs($user);
 
-        expect($user->can('rename', $favourites))->toBeFalse();
-        expect($user->can('delete', $favourites))->toBeFalse();
+        expect($user->can('rename', $favourites))->toBeFalse()
+            ->and($user->can('delete', $favourites))->toBeFalse();
     });
 
     it('disallows changing Favourites visibility for anyone', function (): void {
@@ -195,9 +195,9 @@ describe('rename/delete immutability of Favourites', function (): void {
         $admin = User::factory()->admin()->create();
         $favourites = $user->favouritesList;
 
-        expect($user->can('changeVisibility', $favourites))->toBeFalse();
-        expect($moderator->can('changeVisibility', $favourites))->toBeFalse();
-        expect($admin->can('changeVisibility', $favourites))->toBeFalse();
+        expect($user->can('changeVisibility', $favourites))->toBeFalse()
+            ->and($moderator->can('changeVisibility', $favourites))->toBeFalse()
+            ->and($admin->can('changeVisibility', $favourites))->toBeFalse();
     });
 
     it('allows the owner to change a non-default list visibility', function (): void {
@@ -205,8 +205,8 @@ describe('rename/delete immutability of Favourites', function (): void {
         $other = User::factory()->create();
         $list = ModList::factory()->for($owner, 'owner')->public()->create();
 
-        expect($owner->can('changeVisibility', $list))->toBeTrue();
-        expect($other->can('changeVisibility', $list))->toBeFalse();
+        expect($owner->can('changeVisibility', $list))->toBeTrue()
+            ->and($other->can('changeVisibility', $list))->toBeFalse();
     });
 });
 
@@ -230,8 +230,8 @@ describe('report', function (): void {
         $admin = User::factory()->admin()->create();
         $list = ModList::factory()->public()->create();
 
-        expect($moderator->can('report', $list))->toBeFalse();
-        expect($admin->can('report', $list))->toBeFalse();
+        expect($moderator->can('report', $list))->toBeFalse()
+            ->and($admin->can('report', $list))->toBeFalse();
     });
 
     it('disallows reporting the same list twice', function (): void {
@@ -306,8 +306,8 @@ describe('updateItemNote', function (): void {
         $other = User::factory()->create();
         $list = ModList::factory()->for($owner, 'owner')->public()->create();
 
-        expect($owner->can('updateItemNote', $list))->toBeTrue();
-        expect($other->can('updateItemNote', $list))->toBeFalse();
+        expect($owner->can('updateItemNote', $list))->toBeTrue()
+            ->and($other->can('updateItemNote', $list))->toBeFalse();
     });
 });
 
@@ -323,8 +323,8 @@ describe('forking', function (): void {
     it('denies guests from forking any list', function (): void {
         $list = ModList::factory()->public()->create();
 
-        expect(auth()->guest())->toBeTrue();
-        expect(Gate::allows('fork', $list))->toBeFalse();
+        expect(auth()->guest())->toBeTrue()
+            ->and(Gate::allows('fork', $list))->toBeFalse();
     });
 
     it('denies unverified users from forking', function (): void {

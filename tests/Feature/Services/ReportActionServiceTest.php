@@ -38,12 +38,12 @@ it('can take an action and link it to a report', function (): void {
         reason: 'Test reason',
     );
 
-    expect($reportAction)->toBeInstanceOf(ReportAction::class);
-    expect($reportAction->report_id)->toBe($report->id);
-    expect($reportAction->moderator_id)->toBe($this->adminUser->id);
-    expect($reportAction->trackingEvent->reason)->toBe('Test reason');
-    expect($mod->fresh()->disabled)->toBeTrue();
-    expect($report->fresh()->status)->toBe(ReportStatus::RESOLVED);
+    expect($reportAction)->toBeInstanceOf(ReportAction::class)
+        ->and($reportAction->report_id)->toBe($report->id)
+        ->and($reportAction->moderator_id)->toBe($this->adminUser->id)
+        ->and($reportAction->trackingEvent->reason)->toBe('Test reason')
+        ->and($mod->fresh()->disabled)->toBeTrue()
+        ->and($report->fresh()->status)->toBe(ReportStatus::RESOLVED);
 });
 
 it('can take an action without resolving the report', function (): void {
@@ -95,10 +95,10 @@ it('can link an existing tracking event to a report', function (): void {
         trackingEvent: $trackingEvent,
     );
 
-    expect($reportAction)->toBeInstanceOf(ReportAction::class);
-    expect($reportAction->report_id)->toBe($report->id);
-    expect($reportAction->tracking_event_id)->toBe($trackingEvent->id);
-    expect($reportAction->moderator_id)->toBe($this->adminUser->id);
+    expect($reportAction)->toBeInstanceOf(ReportAction::class)
+        ->and($reportAction->report_id)->toBe($report->id)
+        ->and($reportAction->tracking_event_id)->toBe($trackingEvent->id)
+        ->and($reportAction->moderator_id)->toBe($this->adminUser->id);
 });
 
 it('creates tracking event when taking action', function (): void {
@@ -126,7 +126,7 @@ it('creates tracking event when taking action', function (): void {
     expect(TrackingEvent::query()->count())->toBe($initialEventCount + 1);
 
     $event = TrackingEvent::query()->latest()->first();
-    expect($event->event_name)->toBe(TrackingEventType::MOD_DISABLE->value);
-    expect($event->visitable_type)->toBe(Mod::class);
-    expect($event->visitable_id)->toBe($mod->id);
+    expect($event->event_name)->toBe(TrackingEventType::MOD_DISABLE->value)
+        ->and($event->visitable_type)->toBe(Mod::class)
+        ->and($event->visitable_id)->toBe($mod->id);
 });

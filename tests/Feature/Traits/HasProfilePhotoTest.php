@@ -109,5 +109,5 @@ it('builds a srcset from the profile photo variants', function (): void {
 it('returns an empty srcset when no variants exist', function (): void {
     $user = User::factory()->create(['profile_photo_variants' => null]);
 
-    expect($user->profile_photo_srcset)->toBe('');
+    expect($user->profile_photo_srcset)->toBeEmpty();
 });

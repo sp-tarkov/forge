@@ -37,9 +37,9 @@ describe('mod deletion - owner vs moderator', function (): void {
             ->where('visitable_type', Mod::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeFalse();
-        expect($event->reason)->toBeNull();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeFalse()
+            ->and($event->reason)->toBeNull();
     });
 
     it('flags as moderation action when admin deletes another users mod', function (): void {
@@ -62,9 +62,9 @@ describe('mod deletion - owner vs moderator', function (): void {
             ->where('visitable_type', Mod::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeTrue();
-        expect($event->reason)->toBe('Violated terms of service');
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeTrue()
+            ->and($event->reason)->toBe('Violated terms of service');
     });
 });
 
@@ -94,8 +94,8 @@ describe('mod publishing - owner vs moderator', function (): void {
             ->where('visitable_type', Mod::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeFalse();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeFalse();
     });
 
     it('does not flag as moderation action when owner unpublishes their own mod', function (): void {
@@ -118,8 +118,8 @@ describe('mod publishing - owner vs moderator', function (): void {
             ->where('visitable_type', Mod::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeFalse();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeFalse();
     });
 });
 
@@ -146,9 +146,9 @@ describe('mod disable/enable - always moderation actions', function (): void {
             ->where('visitable_type', Mod::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeTrue();
-        expect($event->reason)->toBe('Content violation');
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeTrue()
+            ->and($event->reason)->toBe('Content violation');
     });
 
     it('flags as moderation action when admin enables a mod', function (): void {
@@ -173,9 +173,9 @@ describe('mod disable/enable - always moderation actions', function (): void {
             ->where('visitable_type', Mod::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeTrue();
-        expect($event->reason)->toBe('Cleared for publication');
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeTrue()
+            ->and($event->reason)->toBe('Cleared for publication');
     });
 });
 
@@ -200,8 +200,8 @@ describe('mod featuring - always moderation actions', function (): void {
             ->where('visitable_type', Mod::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeTrue();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeTrue();
     });
 });
 
@@ -232,8 +232,8 @@ describe('mod version publishing - owner vs moderator', function (): void {
             ->where('visitable_type', ModVersion::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeFalse();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeFalse();
     });
 
     it('does not flag as moderation action when owner unpublishes their own mod version', function (): void {
@@ -257,8 +257,8 @@ describe('mod version publishing - owner vs moderator', function (): void {
             ->where('visitable_type', ModVersion::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeFalse();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeFalse();
     });
 });
 
@@ -290,8 +290,8 @@ describe('addon publishing - owner vs moderator', function (): void {
             ->where('visitable_type', Addon::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeFalse();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeFalse();
     });
 
     it('does not flag as moderation action when owner unpublishes their own addon', function (): void {
@@ -316,8 +316,8 @@ describe('addon publishing - owner vs moderator', function (): void {
             ->where('visitable_type', Addon::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeFalse();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeFalse();
     });
 });
 
@@ -346,9 +346,9 @@ describe('addon disable - always moderation action', function (): void {
             ->where('visitable_type', Addon::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeTrue();
-        expect($event->reason)->toBe('Content violation');
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeTrue()
+            ->and($event->reason)->toBe('Content violation');
     });
 });
 
@@ -379,9 +379,9 @@ describe('addon version actions - owner vs moderator', function (): void {
             ->where('visitable_type', AddonVersion::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeTrue();
-        expect($event->reason)->toBe('Version has security issues');
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeTrue()
+            ->and($event->reason)->toBe('Version has security issues');
     });
 
     it('uses correct ADDON_VERSION event types for addon version actions', function (): void {
@@ -439,8 +439,8 @@ describe('homepage unfeature - always moderation action', function (): void {
             ->where('visitable_type', Mod::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeTrue();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeTrue();
     });
 });
 
@@ -472,8 +472,8 @@ describe('additional author actions - not moderation actions', function (): void
             ->where('visitable_type', Mod::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeFalse();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeFalse();
     });
 
     it('does not flag as moderation action when additional author (who is also a mod) publishes mod', function (): void {
@@ -503,8 +503,8 @@ describe('additional author actions - not moderation actions', function (): void
             ->where('visitable_type', Mod::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeFalse();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeFalse();
     });
 });
 
@@ -534,8 +534,8 @@ describe('mod/admin on their own content - not moderation actions', function ():
             ->where('visitable_type', Mod::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeFalse();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeFalse();
     });
 
     it('does not flag as moderation action when moderator deletes their own mod', function (): void {
@@ -557,7 +557,7 @@ describe('mod/admin on their own content - not moderation actions', function ():
             ->where('visitable_type', Mod::class)
             ->first();
 
-        expect($event)->not->toBeNull();
-        expect($event->is_moderation_action)->toBeFalse();
+        expect($event)->not->toBeNull()
+            ->and($event->is_moderation_action)->toBeFalse();
     });
 });

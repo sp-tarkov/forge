@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Tests\Concerns\MakesAnimatedTestImages;
+
+pest()->use(MakesAnimatedTestImages::class);
 
 function selectCropTestImage(string $name, int $width, int $height): string
 {
@@ -99,7 +102,7 @@ describe('avatar crop upload', function (): void {
                 input.files = dataTransfer.files;
                 input.dispatchEvent(new Event('change', { bubbles: true }));
             })()
-            JS, base64_encode(makeAnimatedTestImage(2, 400, 400))));
+            JS, base64_encode($this->makeAnimatedTestImage(2, 400, 400))));
 
         $page->waitForText('Crop Image')
             ->assertScript("document.querySelector('cropper-selection').width > 1")

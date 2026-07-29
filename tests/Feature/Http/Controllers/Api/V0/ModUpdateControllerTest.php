@@ -733,17 +733,19 @@ describe('check', function (): void {
 
             DB::enableQueryLog();
             $response = $this->getJson(sprintf('/api/v0/mods/updates?mods=%s&spt_version=3.11.5', implode(',', $installed)));
-            // The shared library's candidate version list is fetched with a `where mod_id = <library>` query; count how
-            // many of those ran during the request.
+            // Count the library's candidate version list lookups: queries selecting from mod_versions with the SPT
+            // version compatibility subquery and the library's mod ID bound, skipping the newer-version candidate scan.
             $libraryLookups = collect(DB::getQueryLog())
-                ->filter(fn (array $query): bool => preg_match('/from ["`]mod_versions["`]/', (string) $query['query']) === 1
+                ->filter(fn (array $query): bool => preg_match('/from ["`]mod_versions["`] where/', (string) $query['query']) === 1
+                    && preg_match('/from ["`]spt_versions["`]/', (string) $query['query']) === 1
+                    && preg_match('/["`]version_major["`] > \?/', (string) $query['query']) === 0
                     && in_array($library->id, $query['bindings'], true))
                 ->count();
             DB::disableQueryLog();
 
             $response->assertSuccessful()->assertJsonCount(3, 'data.updates');
 
-            // Memoized per request, so the library is resolved once rather than once per dependent mod.
+            // The library's candidate version list is fetched once for the entire request.
             expect($libraryLookups)->toBe(1);
         });
 

@@ -22,10 +22,7 @@ describe('ModAddToList list ordering', function (): void {
         $component = Livewire::actingAs($user)->test('mod-add-to-list', ['sourceId' => $mod->id]);
 
         $titles = $component->instance()->userLists->pluck('title')->all();
-
-        expect($titles[0])->toBe('Favourites');
-        expect($titles[1])->toBe('Alpha');
-        expect($titles[2])->toBe('Zeta');
+        expect($titles)->toMatchArray([0 => 'Favourites', 1 => 'Alpha', 2 => 'Zeta']);
     });
 
     it('returns no lists when the viewer is a guest', function (): void {
@@ -201,8 +198,8 @@ describe('ModAddToList membership toggle for addons', function (): void {
             ->call('addToList', $list->id);
 
         $fresh = $list->fresh();
-        expect($fresh->containsAddon($addon->id))->toBeTrue();
-        expect($fresh->containsMod($mod->id))->toBeTrue();
+        expect($fresh->containsAddon($addon->id))->toBeTrue()
+            ->and($fresh->containsMod($mod->id))->toBeTrue();
     });
 
     it('removes an addon from a list when present', function (): void {
@@ -264,8 +261,8 @@ describe('ModAddToList dependency cascade', function (): void {
             ->call('confirmDependencies');
 
         $fresh = $list->fresh();
-        expect($fresh->containsMod($mod->id))->toBeTrue();
-        expect($fresh->containsMod($depMod->id))->toBeTrue();
+        expect($fresh->containsMod($mod->id))->toBeTrue()
+            ->and($fresh->containsMod($depMod->id))->toBeTrue();
     });
 
     it('adds the mod only when dependencies are deselected', function (): void {
@@ -278,8 +275,8 @@ describe('ModAddToList dependency cascade', function (): void {
             ->call('confirmDependencies');
 
         $fresh = $list->fresh();
-        expect($fresh->containsMod($mod->id))->toBeTrue();
-        expect($fresh->containsMod($depMod->id))->toBeFalse();
+        expect($fresh->containsMod($mod->id))->toBeTrue()
+            ->and($fresh->containsMod($depMod->id))->toBeFalse();
     });
 
     it('closes the modal after confirming all dependencies', function (): void {
@@ -304,8 +301,8 @@ describe('ModAddToList dependency cascade', function (): void {
             ->assertDispatched('modal-close', name: 'mod-add-to-list-mod-'.$mod->id);
 
         $fresh = $list->fresh();
-        expect($fresh->containsMod($mod->id))->toBeTrue();
-        expect($fresh->containsMod($depMod->id))->toBeFalse();
+        expect($fresh->containsMod($mod->id))->toBeTrue()
+            ->and($fresh->containsMod($depMod->id))->toBeFalse();
     });
 
     it('keeps the modal open when the dependency cascade exceeds capacity', function (): void {
@@ -342,8 +339,8 @@ describe('ModAddToList dependency cascade', function (): void {
         $component->assertSet('activeListId', null);
 
         $fresh = $list->fresh();
-        expect($fresh->containsMod($mod->id))->toBeFalse();
-        expect($fresh->containsMod($depMod->id))->toBeFalse();
+        expect($fresh->containsMod($mod->id))->toBeFalse()
+            ->and($fresh->containsMod($depMod->id))->toBeFalse();
     });
 });
 
@@ -360,8 +357,8 @@ describe('ModAddToList inline list creation', function (): void {
 
         $list = $user->modLists()->where('title', 'My New List')->first();
 
-        expect($list)->not->toBeNull();
-        expect($list->containsMod($mod->id))->toBeTrue();
+        expect($list)->not->toBeNull()
+            ->and($list->containsMod($mod->id))->toBeTrue();
     });
 
     it('validates the new list title', function (): void {

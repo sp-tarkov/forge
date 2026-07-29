@@ -13,10 +13,10 @@ describe('Favourites observer', function (): void {
 
         $favourites = $user->favouritesList;
 
-        expect($favourites)->not->toBeNull();
-        expect($favourites->is_default)->toBeTrue();
-        expect($favourites->visibility)->toBe(ListVisibility::Private);
-        expect($favourites->title)->toBe(config('mod-lists.favourites.title'));
+        expect($favourites)->not->toBeNull()
+            ->and($favourites->is_default)->toBeTrue()
+            ->and($favourites->visibility)->toBe(ListVisibility::Private)
+            ->and($favourites->title)->toBe(config('mod-lists.favourites.title'));
     });
 
     it('only creates one Favourites list per user', function (): void {
@@ -43,9 +43,9 @@ describe('ModList slug + share token lifecycle', function (): void {
         $hidden = ModList::factory()->for($user, 'owner')->hidden()->create();
         $private = ModList::factory()->for($user, 'owner')->private()->create();
 
-        expect($public->share_token)->toBeNull();
-        expect($hidden->share_token)->not->toBeNull();
-        expect($private->share_token)->toBeNull();
+        expect($public->share_token)->toBeNull()
+            ->and($hidden->share_token)->not->toBeNull()
+            ->and($private->share_token)->toBeNull();
     });
 
     it('clears the share token when flipping away from hidden', function (): void {
@@ -78,8 +78,8 @@ describe('ModList slug + share token lifecycle', function (): void {
         $list->title = 'A Completely Different Title';
         $list->save();
 
-        expect($list->fresh()->slug)->not->toBe($originalSlug);
-        expect($list->fresh()->slug)->toBe('a-completely-different-title');
+        expect($list->fresh()->slug)->not->toBe($originalSlug)
+            ->toBe('a-completely-different-title');
     });
 
     it('keeps the slug stable when a non-title field changes', function (): void {

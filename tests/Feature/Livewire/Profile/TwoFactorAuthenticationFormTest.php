@@ -17,8 +17,8 @@ describe('two factor authentication', function (): void {
 
         $user = $user->fresh();
 
-        expect($user->two_factor_secret)->not->toBeNull();
-        expect($user->recoveryCodes())->toHaveCount(8);
+        expect($user->two_factor_secret)->not->toBeNull()
+            ->and($user->recoveryCodes())->toHaveCount(8);
     })->skip(fn (): bool => ! Features::canManageTwoFactorAuthentication(), 'Two factor authentication is not enabled.');
 
     it('can regenerate recovery codes', function (): void {
@@ -34,8 +34,8 @@ describe('two factor authentication', function (): void {
 
         $component->call('regenerateRecoveryCodes');
 
-        expect($user->recoveryCodes())->toHaveCount(8);
-        expect(array_diff($user->recoveryCodes(), $user->fresh()->recoveryCodes()))->toHaveCount(8);
+        expect($user->recoveryCodes())->toHaveCount(8)
+            ->and(array_diff($user->recoveryCodes(), $user->fresh()->recoveryCodes()))->toHaveCount(8);
     })->skip(fn (): bool => ! Features::canManageTwoFactorAuthentication(), 'Two factor authentication is not enabled.');
 
     it('can be disabled', function (): void {
@@ -46,7 +46,7 @@ describe('two factor authentication', function (): void {
         $component = Livewire::test('profile.two-factor-authentication-form')
             ->call('enableTwoFactorAuthentication');
 
-        $this->assertNotNull($user->fresh()->two_factor_secret);
+        expect($user->fresh()->two_factor_secret)->not->toBeNull();
 
         $component->call('disableTwoFactorAuthentication');
 

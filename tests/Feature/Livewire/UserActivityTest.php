@@ -217,8 +217,8 @@ describe('UserActivity Component', function (): void {
                 ->test('user-activity', ['user' => $this->user])
                 ->instance();
 
-            expect($component->isEventPrivate($this->privateEvent))->toBeTrue();
-            expect($component->isEventPrivate($this->publicEvent))->toBeFalse();
+            expect($component->isEventPrivate($this->privateEvent))->toBeTrue()
+                ->and($component->isEventPrivate($this->publicEvent))->toBeFalse();
         });
 
         it('treats reporting events as private', function (): void {
@@ -330,8 +330,8 @@ describe('UserActivity Component', function (): void {
 
             // Check that visitable relationship is loaded
             $eventWithVisitable = $recentActivity->first(fn ($event): bool => $event->visitable_type === Comment::class);
-            expect($eventWithVisitable)->not->toBeNull();
-            expect($eventWithVisitable->relationLoaded('visitable'))->toBeTrue();
+            expect($eventWithVisitable)->not->toBeNull()
+                ->and($eventWithVisitable->relationLoaded('visitable'))->toBeTrue();
         });
     });
 
@@ -789,7 +789,7 @@ describe('UserActivity Component', function (): void {
 
             $component = Livewire::test('user-activity', ['user' => $userWithNoEvents]);
 
-            expect($component->get('recentActivity'))->toHaveCount(0);
+            expect($component->get('recentActivity'))->toBeEmpty();
         });
 
         it('handles events with missing trackable relationships', function (): void {
@@ -824,9 +824,9 @@ describe('UserActivity Component', function (): void {
 
             // Should handle gracefully without throwing errors
             expect($component->getEventType($malformedEvent))->toBeNull();
-            expect($component->getEventIcon($malformedEvent))->toBe('document-text');
-            expect($component->getEventColor($malformedEvent))->toBe('gray');
-            expect($component->isEventPrivate($malformedEvent))->toBeFalse();
+            expect($component->getEventIcon($malformedEvent))->toBe('document-text')
+                ->and($component->getEventColor($malformedEvent))->toBe('gray')
+                ->and($component->isEventPrivate($malformedEvent))->toBeFalse();
         });
     });
 
@@ -862,8 +862,8 @@ describe('UserActivity Component', function (): void {
             $commentEvents1 = $recentActivity->where('id', $commentEvent1->id);
             $commentEvents2 = $recentActivity->where('id', $commentEvent2->id);
 
-            expect($commentEvents1)->toHaveCount(1);
-            expect($commentEvents2)->toHaveCount(1);
+            expect($commentEvents1)->toHaveCount(1)
+                ->and($commentEvents2)->toHaveCount(1);
         });
     });
 
@@ -930,7 +930,7 @@ describe('UserActivity Component', function (): void {
 
             $recentActivity = $component->get('recentActivity');
 
-            expect($recentActivity)->toHaveCount(0);
+            expect($recentActivity)->toBeEmpty();
         });
 
         it('shows unpublished mod activities to the mod owner', function (): void {
@@ -1057,7 +1057,7 @@ describe('UserActivity Component', function (): void {
 
             $recentActivity = $component->get('recentActivity');
 
-            expect($recentActivity)->toHaveCount(0);
+            expect($recentActivity)->toBeEmpty();
         });
     });
 });

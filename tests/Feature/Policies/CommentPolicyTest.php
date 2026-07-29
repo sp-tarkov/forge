@@ -56,8 +56,8 @@ describe('seeRibbon Policy Method', function (): void {
             'spam_status' => SpamStatus::CLEAN->value,
         ]);
 
-        expect($this->policy->seeRibbon($this->moderator, $comment))->toBeFalse();
-        expect($this->policy->seeRibbon($this->admin, $comment))->toBeFalse();
+        expect($this->policy->seeRibbon($this->moderator, $comment))->toBeFalse()
+            ->and($this->policy->seeRibbon($this->admin, $comment))->toBeFalse();
     });
 
     it('returns true for spam comments to moderators', function (): void {
@@ -703,8 +703,8 @@ describe('checkForSpam Policy Method', function (): void {
             'spam_status' => SpamStatus::CLEAN,
         ]);
 
-        expect($this->policy->checkForSpam($this->moderator, $comment))->toBeFalse();
-        expect($this->policy->checkForSpam($this->admin, $comment))->toBeFalse();
+        expect($this->policy->checkForSpam($this->moderator, $comment))->toBeFalse()
+            ->and($this->policy->checkForSpam($this->admin, $comment))->toBeFalse();
     });
 
     it('returns true for moderators when Akismet is enabled and recheck attempts remain', function (): void {
@@ -716,8 +716,8 @@ describe('checkForSpam Policy Method', function (): void {
             'spam_recheck_count' => 0,
         ]);
 
-        expect($this->policy->checkForSpam($this->moderator, $comment))->toBeTrue();
-        expect($this->policy->checkForSpam($this->admin, $comment))->toBeTrue();
+        expect($this->policy->checkForSpam($this->moderator, $comment))->toBeTrue()
+            ->and($this->policy->checkForSpam($this->admin, $comment))->toBeTrue();
     });
 
     it('returns false for regular users even when Akismet is enabled', function (): void {
@@ -748,10 +748,10 @@ describe('pin authorization', function (): void {
             'commentable_type' => Mod::class,
         ]);
 
-        expect($owner->can('pin', $comment))->toBeTrue();
-        expect($author->can('pin', $comment))->toBeTrue();
-        expect($moderator->can('pin', $comment))->toBeTrue();
-        expect($admin->can('pin', $comment))->toBeTrue();
+        expect($owner->can('pin', $comment))->toBeTrue()
+            ->and($author->can('pin', $comment))->toBeTrue()
+            ->and($moderator->can('pin', $comment))->toBeTrue()
+            ->and($admin->can('pin', $comment))->toBeTrue();
     });
 
     it('prevents regular users from pinning comments', function (): void {
@@ -815,14 +815,14 @@ describe('pin authorization', function (): void {
             'deleted_at' => now(),
         ]);
 
-        expect($comment->isPinned())->toBeTrue();
-        expect($comment->isDeleted())->toBeTrue();
+        expect($comment->isPinned())->toBeTrue()
+            ->and($comment->isDeleted())->toBeTrue();
 
         // All privileged users should still be able to unpin a soft-deleted comment
         expect($owner->can('pin', $comment))->toBeTrue();
-        expect($author->can('pin', $comment))->toBeTrue();
-        expect($moderator->can('pin', $comment))->toBeTrue();
-        expect($admin->can('pin', $comment))->toBeTrue();
+        expect($author->can('pin', $comment))->toBeTrue()
+            ->and($moderator->can('pin', $comment))->toBeTrue()
+            ->and($admin->can('pin', $comment))->toBeTrue();
     });
 
     it('grants pin permission on a deleted comment so it can be unpinned', function (): void {
@@ -838,8 +838,8 @@ describe('pin authorization', function (): void {
 
         // Comment is deleted but not pinned; owner retains pin permission (used for unpinning in the UI).
         expect($comment->isDeleted())->toBeTrue();
-        expect($comment->isPinned())->toBeFalse();
-        expect($owner->can('pin', $comment))->toBeTrue();
+        expect($comment->isPinned())->toBeFalse()
+            ->and($owner->can('pin', $comment))->toBeTrue();
     });
 
     it('shows owner pin actions only to mod owners and authors', function (): void {
@@ -933,8 +933,8 @@ describe('pin ordering', function (): void {
 
         // Latest pinned should be first
         expect($comments->get(0)->id)->toBe($latestPinned->id);
-        expect($comments->get(1)->id)->toBe($secondPinned->id);
-        expect($comments->get(2)->id)->toBe($firstPinned->id);
+        expect($comments->get(1)->id)->toBe($secondPinned->id)
+            ->and($comments->get(2)->id)->toBe($firstPinned->id);
     });
 });
 

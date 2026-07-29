@@ -107,9 +107,9 @@ it('allows different mod versions to use the same spt version', function (): voi
 
     // Verify both versions can use the same SPT version (no unique constraint violation)
     expect($modVersion1->sptVersions)->toHaveCount(1);
-    expect($modVersion2->sptVersions)->toHaveCount(1);
-    expect($modVersion1->sptVersions->first()->id)->toBe($sptVersion->id);
-    expect($modVersion2->sptVersions->first()->id)->toBe($sptVersion->id);
+    expect($modVersion2->sptVersions)->toHaveCount(1)
+        ->and($modVersion1->sptVersions->first()->id)->toBe($sptVersion->id)
+        ->and($modVersion2->sptVersions->first()->id)->toBe($sptVersion->id);
 });
 
 it('allows same mod version to use different spt versions', function (): void {

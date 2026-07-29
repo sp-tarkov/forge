@@ -18,9 +18,9 @@ describe('EnsureFavouritesListsJob', function (): void {
 
         $favourites = $user->favouritesList()->sole();
 
-        expect($favourites->is_default)->toBeTrue();
-        expect($favourites->visibility)->toBe(ListVisibility::Private);
-        expect($favourites->title)->toBe(config()->string('mod-lists.favourites.title'));
+        expect($favourites->is_default)->toBeTrue()
+            ->and($favourites->visibility)->toBe(ListVisibility::Private)
+            ->and($favourites->title)->toBe(config()->string('mod-lists.favourites.title'));
     });
 
     it('does not create a duplicate for users that already have a Favourites list', function (): void {
@@ -45,7 +45,7 @@ describe('EnsureFavouritesListsJob', function (): void {
 
         $favourites = $user->favouritesList()->sole();
 
-        expect($favourites->slug)->not->toBe($slug);
-        expect($favourites->slug)->toStartWith($slug.'-');
+        expect($favourites->slug)->not->toBe($slug)
+            ->toStartWith($slug.'-');
     });
 });

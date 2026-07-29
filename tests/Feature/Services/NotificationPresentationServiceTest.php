@@ -30,9 +30,9 @@ it('delegates to the notification class for a known Presentable type', function 
 
     $presentation = $this->service->present($record);
 
-    expect($presentation->iconName)->toBe('megaphone');
-    expect($presentation->iconColorRole)->toBe(NotificationColorRole::Amber);
-    expect($presentation->url)->toBe('/content-guidelines');
+    expect($presentation->iconName)->toBe('megaphone')
+        ->and($presentation->iconColorRole)->toBe(NotificationColorRole::Amber)
+        ->and($presentation->url)->toBe('/content-guidelines');
 });
 
 it('throws when the type is unknown in non-production environments', function (): void {
@@ -62,9 +62,9 @@ it('logs and returns a fallback presentation when in production', function (): v
     $service = new NotificationPresentationService(app());
     $presentation = $service->present($record);
 
-    expect($presentation->iconName)->toBe('bell');
-    expect($presentation->iconColorRole)->toBe(NotificationColorRole::Gray);
-    expect($presentation->url)->toBeNull();
+    expect($presentation->iconName)->toBe('bell')
+        ->and($presentation->iconColorRole)->toBe(NotificationColorRole::Gray)
+        ->and($presentation->url)->toBeNull();
     Log::shouldHaveReceived('warning')->once();
 });
 

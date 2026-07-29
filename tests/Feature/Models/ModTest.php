@@ -351,8 +351,8 @@ describe('Mod model', function (): void {
 
             // Test that latestVersion() returns the semantically latest release version
             $latestVersion = $mod->latestVersion;
-            expect($latestVersion->version)->toBe('2.0.0');
-            expect($latestVersion->version_labels)->toBe('');
+            expect($latestVersion->version)->toBe('2.0.0')
+                ->and($latestVersion->version_labels)->toBeEmpty();
 
             // Test that the first version in the ordered collection matches latestVersion
             expect($orderedVersions->first()->id)->toBe($latestVersion->id);
@@ -451,8 +451,8 @@ describe('Mod model', function (): void {
                 ->get()
                 ->keyBy('id');
 
-            expect($mods->get($modA->id)->latestVersion->version)->toBe('2.0.0');
-            expect($mods->get($modB->id)->latestVersion->version)->toBe('1.1.0');
+            expect($mods->get($modA->id)->latestVersion->version)->toBe('2.0.0')
+                ->and($mods->get($modB->id)->latestVersion->version)->toBe('1.1.0');
         });
     });
 
@@ -764,8 +764,7 @@ describe('Addon Toggle', function (): void {
                 ]);
 
             $html = $component->html();
-            expect($html)->not->toContain("selectedTab = 'addons'");
-            expect($html)->not->toContain('<option value="addons">');
+            expect($html)->not->toContain("selectedTab = 'addons'")->not->toContain('<option value="addons">');
 
             $component->assertDontSee('Create Addon')
                 ->assertDontSee('Create First Addon');
@@ -1356,7 +1355,7 @@ describe('Filter Published SPT', function (): void {
             $filter = new ModFilter([]);
             $results = $filter->apply()->get();
 
-            expect($results)->toHaveCount(0);
+            expect($results)->toBeEmpty();
         });
 
         it('includes mods with unpublished SPT versions for administrators', function (): void {
@@ -1381,8 +1380,8 @@ describe('Filter Published SPT', function (): void {
             $filter = new ModFilter([]);
             $results = $filter->apply()->get();
 
-            expect($results)->toHaveCount(1);
-            expect($results->first()->id)->toBe($mod->id);
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->id)->toBe($mod->id);
         });
 
         it('shows mods when filtering by published SPT versions', function (): void {
@@ -1413,8 +1412,8 @@ describe('Filter Published SPT', function (): void {
             $filter = new ModFilter(['sptVersions' => ['3.10.0']]);
             $results = $filter->apply()->get();
 
-            expect($results)->toHaveCount(1);
-            expect($results->first()->name)->toBe('Published SPT Mod');
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->name)->toBe('Published SPT Mod');
         });
 
         it('excludes mods with unpublished SPT when filtering by that version for guests', function (): void {
@@ -1433,7 +1432,7 @@ describe('Filter Published SPT', function (): void {
             $filter = new ModFilter(['sptVersions' => ['3.11.0']]);
             $results = $filter->apply()->get();
 
-            expect($results)->toHaveCount(0);
+            expect($results)->toBeEmpty();
         });
 
         it('includes mods with scheduled SPT versions after publish date', function (): void {
@@ -1471,7 +1470,7 @@ describe('Filter Published SPT', function (): void {
             $filter = new ModFilter([]);
             $results = $filter->apply()->get();
 
-            expect($results)->toHaveCount(0);
+            expect($results)->toBeEmpty();
         });
 
         it('handles legacy filter with published versions correctly', function (): void {
@@ -1520,7 +1519,7 @@ describe('Filter Published SPT', function (): void {
             $results = $filter->apply()->get();
 
             // Should not include the mod with unpublished legacy version
-            expect($results)->toHaveCount(0);
+            expect($results)->toBeEmpty();
         });
     });
 });
@@ -1546,8 +1545,8 @@ describe('AI Content Lock', function (): void {
                 ->assertHasNoErrors();
 
             $mod->refresh();
-            expect($mod->contains_ai_content)->toBeTrue();
-            expect($mod->contains_ai_content_locked)->toBeTrue();
+            expect($mod->contains_ai_content)->toBeTrue()
+                ->and($mod->contains_ai_content_locked)->toBeTrue();
         });
 
         it('prevents non-staff from changing contains_ai_content when locked', function (): void {
@@ -1566,8 +1565,8 @@ describe('AI Content Lock', function (): void {
                 ->assertHasNoErrors();
 
             $mod->refresh();
-            expect($mod->contains_ai_content)->toBeTrue();
-            expect($mod->contains_ai_content_locked)->toBeTrue();
+            expect($mod->contains_ai_content)->toBeTrue()
+                ->and($mod->contains_ai_content_locked)->toBeTrue();
         });
 
         it('allows staff to unlock the contains_ai_content flag', function (): void {
@@ -1586,8 +1585,8 @@ describe('AI Content Lock', function (): void {
                 ->assertHasNoErrors();
 
             $mod->refresh();
-            expect($mod->contains_ai_content)->toBeFalse();
-            expect($mod->contains_ai_content_locked)->toBeFalse();
+            expect($mod->contains_ai_content)->toBeFalse()
+                ->and($mod->contains_ai_content_locked)->toBeFalse();
         });
 
         it('allows non-staff to update contains_ai_content when not locked', function (): void {
@@ -1606,8 +1605,8 @@ describe('AI Content Lock', function (): void {
                 ->assertHasNoErrors();
 
             $mod->refresh();
-            expect($mod->contains_ai_content)->toBeTrue();
-            expect($mod->contains_ai_content_locked)->toBeFalse();
+            expect($mod->contains_ai_content)->toBeTrue()
+                ->and($mod->contains_ai_content_locked)->toBeFalse();
         });
 
         it('does not let non-staff lock the flag via the edit form', function (): void {
@@ -1733,8 +1732,8 @@ describe('Legacy Support', function (): void {
 
             $results = $mod->versions()->legacyPubliclyVisible()->get();
 
-            expect($results)->toHaveCount(1);
-            expect($results->first()->id)->toBe($legacyVisible->id);
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->id)->toBe($legacyVisible->id);
         });
     });
 
@@ -2072,8 +2071,8 @@ describe('Legacy Support', function (): void {
             $filters = new ModFilter(['sptVersions' => ['3.8.0']]);
             $results = $filters->apply()->get();
 
-            expect($results)->toHaveCount(1);
-            expect($results->first()->id)->toBe($modernMod->id);
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->id)->toBe($modernMod->id);
         });
 
         it('includes legacy mods when legacy filter is selected', function (): void {
@@ -2098,8 +2097,8 @@ describe('Legacy Support', function (): void {
             $filters = new ModFilter(['sptVersions' => ['legacy']]);
             $results = $filters->apply()->get();
 
-            expect($results)->toHaveCount(1);
-            expect($results->first()->id)->toBe($legacyMod->id);
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->id)->toBe($legacyMod->id);
         });
 
         it('includes both legacy and modern mods when both filters are selected', function (): void {
@@ -2124,8 +2123,8 @@ describe('Legacy Support', function (): void {
             $filters = new ModFilter(['sptVersions' => ['legacy', '3.8.0']]);
             $results = $filters->apply()->get();
 
-            expect($results)->toHaveCount(2);
-            expect($results->pluck('id')->toArray())->toContain($legacyMod->id, $modernMod->id);
+            expect($results)->toHaveCount(2)
+                ->and($results->pluck('id')->toArray())->toContain($legacyMod->id, $modernMod->id);
         });
     });
 
@@ -2285,8 +2284,8 @@ describe('Legacy Support', function (): void {
                 })
                 ->get();
 
-            expect($versions)->toHaveCount(1);
-            expect($versions->first()->id)->toBe($legacyVersion->id);
+            expect($versions)->toHaveCount(1)
+                ->and($versions->first()->id)->toBe($legacyVersion->id);
         });
 
         it('includes both modern and legacy versions in the versions tab query', function (): void {
@@ -2320,8 +2319,8 @@ describe('Legacy Support', function (): void {
                 })
                 ->get();
 
-            expect($versions)->toHaveCount(2);
-            expect($versions->pluck('id')->toArray())->toContain($legacyVersion->id, $modernVersion->id);
+            expect($versions)->toHaveCount(2)
+                ->and($versions->pluck('id')->toArray())->toContain($legacyVersion->id, $modernVersion->id);
         });
     });
 });
@@ -2408,8 +2407,8 @@ describe('Cheat Notice', function (): void {
                 ->assertRedirect();
 
             $mod = Mod::query()->where('name', 'Test Cheat Mod')->first();
-            expect($mod)->not->toBeNull();
-            expect($mod->cheat_notice)->toBeTrue();
+            expect($mod)->not->toBeNull()
+                ->and($mod->cheat_notice)->toBeTrue();
         });
 
         it('defaults to disabled', function (): void {
@@ -2519,8 +2518,7 @@ describe('Cheat Notice', function (): void {
             $response->assertOk();
 
             $modIds = collect($response->json('data'))->pluck('id')->all();
-            expect($modIds)->toContain($modWithNotice->id);
-            expect($modIds)->not->toContain($modWithoutNotice->id);
+            expect($modIds)->toContain($modWithNotice->id)->not->toContain($modWithoutNotice->id);
         });
 
         it('filters by cheat_notice false', function (): void {
@@ -2538,8 +2536,7 @@ describe('Cheat Notice', function (): void {
             $response->assertOk();
 
             $modIds = collect($response->json('data'))->pluck('id')->all();
-            expect($modIds)->toContain($modWithoutNotice->id);
-            expect($modIds)->not->toContain($modWithNotice->id);
+            expect($modIds)->toContain($modWithoutNotice->id)->not->toContain($modWithNotice->id);
         });
     });
 
@@ -2562,15 +2559,15 @@ describe('Cheat Notice', function (): void {
         it('lowercases the GUID on save', function (): void {
             $mod = Mod::factory()->create(['guid' => 'Com.Example.MixedCase']);
 
-            expect($mod->guid)->toBe('com.example.mixedcase');
-            expect($mod->fresh()->guid)->toBe('com.example.mixedcase');
+            expect($mod->guid)->toBe('com.example.mixedcase')
+                ->and($mod->fresh()->guid)->toBe('com.example.mixedcase');
         });
 
         it('stores an empty GUID as null', function (): void {
             $mod = Mod::factory()->create(['guid' => '']);
 
-            expect($mod->guid)->toBeNull();
-            expect($mod->fresh()->guid)->toBeNull();
+            expect($mod->guid)->toBeNull()
+                ->and($mod->fresh()->guid)->toBeNull();
         });
 
         it('allows multiple mods with no GUID', function (): void {

@@ -56,7 +56,7 @@ it('flags a candidate that shares an IP, disposable domain and tight timeline wi
         ->and($found->score)->toBeGreaterThanOrEqual(70)
         ->and($found->sharedIps[0]->ip)->toBe($ip)
         ->and($found->sharedIps[0]->breadth)->toBe(2)
-        ->and($found->sharedIps[0]->otherAccounts)->toBe([])
+        ->and($found->sharedIps[0]->otherAccounts)->toBeEmpty()
         ->and($found->timeline->gapSeconds)->toBe(64);
 });
 

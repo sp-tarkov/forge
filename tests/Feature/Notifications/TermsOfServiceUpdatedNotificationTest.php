@@ -77,8 +77,6 @@ describe('Database Notification Data', function (): void {
         $user = User::factory()->create();
 
         $data = (new TermsOfServiceUpdatedNotification)->toArray($user);
-
-        expect($data['title'])->toBe('Terms of Service Updated');
-        expect($data['url'])->toBe(route('static.terms'));
+        expect($data)->toMatchArray(['title' => 'Terms of Service Updated', 'url' => route('static.terms')]);
     });
 });

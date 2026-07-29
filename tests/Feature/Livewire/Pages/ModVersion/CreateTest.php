@@ -149,19 +149,19 @@ describe('Mod Version Create Form', function (): void {
 
             // Verify the mod version was created
             $modVersion = ModVersion::query()->where('mod_id', $mod->id)->first();
-            expect($modVersion)->not->toBeNull();
-            expect($modVersion->version)->toBe('1.0.0');
+            expect($modVersion)->not->toBeNull()
+                ->and($modVersion->version)->toBe('1.0.0');
 
             // Verify dependencies were created
             expect($modVersion->dependencies)->toHaveCount(2);
 
             $dependency1 = $modVersion->dependencies->firstWhere('dependent_mod_id', $dependencyMod1->id);
-            expect($dependency1)->not->toBeNull();
-            expect($dependency1->constraint)->toBe('~1.0.0');
+            expect($dependency1)->not->toBeNull()
+                ->and($dependency1->constraint)->toBe('~1.0.0');
 
             $dependency2 = $modVersion->dependencies->firstWhere('dependent_mod_id', $dependencyMod2->id);
-            expect($dependency2)->not->toBeNull();
-            expect($dependency2->constraint)->toBe('^2.0.0');
+            expect($dependency2)->not->toBeNull()
+                ->and($dependency2->constraint)->toBe('^2.0.0');
 
             // Verify resolved dependencies were created by the observer
             $modVersion->load('dependenciesResolved');
@@ -237,16 +237,15 @@ describe('Mod Version Create Form', function (): void {
             $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Initially should have no dependencies
-            expect($component->get('dependencies'))->toHaveCount(0);
+            expect($component->get('dependencies'))->toBeEmpty();
 
             // Add a dependency
             $component->call('addDependency');
             expect($component->get('dependencies'))->toHaveCount(1);
             $firstDependency = $component->get('dependencies')[0];
-            expect($firstDependency)->toHaveKeys(['id', 'modId', 'constraint']);
-            expect($firstDependency['modId'])->toBe('');
-            expect($firstDependency['constraint'])->toBe('');
-            expect($firstDependency['id'])->toBeString();
+            expect($firstDependency)->toHaveKeys(['id', 'modId', 'constraint'])
+                ->toMatchArray(['modId' => '', 'constraint' => ''])
+                ->and($firstDependency['id'])->toBeString();
 
             // Add another dependency
             $component->call('addDependency');
@@ -297,9 +296,9 @@ describe('Mod Version Create Form', function (): void {
 
             // Verify the array was reindexed correctly
             $remainingDependencies = $component->get('dependencies');
-            expect($remainingDependencies)->toHaveCount(2);
-            expect($remainingDependencies[0]['modId'])->toBe((string) $dependencyMod1->id);
-            expect($remainingDependencies[1]['modId'])->toBe((string) $dependencyMod3->id);
+            expect($remainingDependencies)->toHaveCount(2)
+                ->and($remainingDependencies[0]['modId'])->toBe((string) $dependencyMod1->id)
+                ->and($remainingDependencies[1]['modId'])->toBe((string) $dependencyMod3->id);
 
             // Now try to update the second dependency (which was previously index 2, now index 1)
             // This should work without throwing an undefined array key error
@@ -347,8 +346,7 @@ describe('Mod Version Create Form', function (): void {
 
             // Verify the update worked
             $updatedDependencies = $component->get('dependencies');
-            expect($updatedDependencies[0]['modId'])->toBe((string) $dependencyMod2->id);
-            expect($updatedDependencies[0]['constraint'])->toBe('~3.0.0');
+            expect($updatedDependencies[0])->toMatchArray(['modId' => (string) $dependencyMod2->id, 'constraint' => '~3.0.0']);
         });
 
         it('removes the correct dependency when remove button is clicked', function (): void {
@@ -392,10 +390,7 @@ describe('Mod Version Create Form', function (): void {
 
             // Verify the correct dependencies remain
             $remainingDependencies = $component->get('dependencies');
-            expect($remainingDependencies[0]['modId'])->toBe((string) $dependencyMod1->id);
-            expect($remainingDependencies[0]['constraint'])->toBe('~1.0.0');
-            expect($remainingDependencies[1]['modId'])->toBe((string) $dependencyMod3->id);
-            expect($remainingDependencies[1]['constraint'])->toBe('~3.0.0');
+            expect($remainingDependencies)->sequence(fn ($e) => $e->toMatchArray(['modId' => (string) $dependencyMod1->id, 'constraint' => '~1.0.0']), fn ($e) => $e->toMatchArray(['modId' => (string) $dependencyMod3->id, 'constraint' => '~3.0.0']));
         });
 
         it('removes the first dependency correctly', function (): void {
@@ -430,8 +425,7 @@ describe('Mod Version Create Form', function (): void {
             // Verify only the second dependency remains
             expect($component->get('dependencies'))->toHaveCount(1);
             $remainingDependencies = $component->get('dependencies');
-            expect($remainingDependencies[0]['modId'])->toBe((string) $dependencyMod2->id);
-            expect($remainingDependencies[0]['constraint'])->toBe('~2.0.0');
+            expect($remainingDependencies[0])->toMatchArray(['modId' => (string) $dependencyMod2->id, 'constraint' => '~2.0.0']);
         });
 
         it('removes the last dependency correctly', function (): void {
@@ -466,8 +460,7 @@ describe('Mod Version Create Form', function (): void {
             // Verify only the first dependency remains
             expect($component->get('dependencies'))->toHaveCount(1);
             $remainingDependencies = $component->get('dependencies');
-            expect($remainingDependencies[0]['modId'])->toBe((string) $dependencyMod1->id);
-            expect($remainingDependencies[0]['constraint'])->toBe('~1.0.0');
+            expect($remainingDependencies[0])->toMatchArray(['modId' => (string) $dependencyMod1->id, 'constraint' => '~1.0.0']);
         });
 
         it('maintains unique IDs for dependencies after removal', function (): void {
@@ -495,8 +488,8 @@ describe('Mod Version Create Form', function (): void {
 
             // Verify the IDs are preserved for remaining dependencies
             $remainingDependencies = $component->get('dependencies');
-            expect($remainingDependencies[0]['id'])->toBe($firstId);
-            expect($remainingDependencies[1]['id'])->toBe($thirdId);
+            expect($remainingDependencies[0]['id'])->toBe($firstId)
+                ->and($remainingDependencies[1]['id'])->toBe($thirdId);
         });
 
         it('shows matching dependency versions when constraint is updated', function (): void {
@@ -530,9 +523,8 @@ describe('Mod Version Create Form', function (): void {
             // Check that matching versions are set correctly: ^1.0.0 matches 1.0.0, 1.1.0, but not 2.0.0.
             expect($component->get('matchingDependencyVersions')[0])->toHaveCount(2);
             $versions = collect($component->get('matchingDependencyVersions')[0])->pluck('version')->toArray();
-            expect($versions)->toContain('1.0.0');
-            expect($versions)->toContain('1.1.0');
-            expect($versions)->not->toContain('2.0.0');
+            expect($versions)->toContain('1.0.0')
+                ->toContain('1.1.0')->not->toContain('2.0.0');
         });
 
         it('prevents self-dependency through UI', function (): void {
@@ -844,7 +836,7 @@ describe('Mod Version Create Form', function (): void {
             ]);
 
             $modVersion = ModVersion::query()->where('mod_id', $mod->id)->first();
-            expect($modVersion->dependencies)->toHaveCount(0);
+            expect($modVersion->dependencies)->toBeEmpty();
         });
 
         it('validates dependency constraint format', function (): void {
@@ -916,9 +908,7 @@ describe('Mod Version Create Form', function (): void {
             expect($modVersion->dependenciesResolved)->toHaveCount(1);
 
             $resolvedVersionIds = $modVersion->dependenciesResolved->pluck('id')->toArray();
-            expect($resolvedVersionIds)->toContain($version1->id);
-            expect($resolvedVersionIds)->not->toContain($version2->id);
-            expect($resolvedVersionIds)->not->toContain($version3->id);
+            expect($resolvedVersionIds)->toContain($version1->id)->not->toContain($version2->id)->not->toContain($version3->id);
         });
     });
 
@@ -1104,8 +1094,8 @@ describe('Mod Version Create Form', function (): void {
 
             // Component should detect GUID is required
             expect($component->get('modGuidRequired'))->toBeTrue();
-            expect($component->get('modGuid'))->toBe('');
-            expect($component->get('guidSaved'))->toBeFalse();
+            expect($component->get('modGuid'))->toBe('')
+                ->and($component->get('guidSaved'))->toBeFalse();
 
             // Save GUID inline
             $component->call('saveGuid')
@@ -1207,8 +1197,8 @@ describe('Mod Version Create Form', function (): void {
             expect($mod->versions()->count())->toBe(1);
 
             $version = $mod->versions()->first();
-            expect($version->version)->toBe('1.0.0');
-            expect($version->spt_version_constraint)->toBe('>=4.0.0');
+            expect($version->version)->toBe('1.0.0')
+                ->and($version->spt_version_constraint)->toBe('>=4.0.0');
         });
 
         it('validates GUID format and uniqueness when provided inline', function (): void {
@@ -1328,8 +1318,8 @@ describe('Mod Version Create Form', function (): void {
             $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Should have no dependencies
-            expect($component->get('dependencies'))->toHaveCount(0);
-            expect($component->get('matchingDependencyVersions'))->toHaveCount(0);
+            expect($component->get('dependencies'))->toBeEmpty();
+            expect($component->get('matchingDependencyVersions'))->toBeEmpty();
         });
 
         it('pre-populates dependencies from previous version', function (): void {
@@ -1377,14 +1367,9 @@ describe('Mod Version Create Form', function (): void {
             expect($component->get('dependencies'))->toHaveCount(2);
 
             $dependencies = $component->get('dependencies');
-
             // Check first dependency
-            expect($dependencies[0]['modId'])->toBe((string) $dependencyMod1->id);
-            expect($dependencies[0]['constraint'])->toBe('~1.0.0');
-
             // Check second dependency
-            expect($dependencies[1]['modId'])->toBe((string) $dependencyMod2->id);
-            expect($dependencies[1]['constraint'])->toBe('^2.0.0');
+            expect($dependencies)->sequence(fn ($e) => $e->toMatchArray(['modId' => (string) $dependencyMod1->id, 'constraint' => '~1.0.0']), fn ($e) => $e->toMatchArray(['modId' => (string) $dependencyMod2->id, 'constraint' => '^2.0.0']));
         });
 
         it('pre-populates matching versions for dependencies', function (): void {
@@ -1431,9 +1416,8 @@ describe('Mod Version Create Form', function (): void {
             expect($component->get('matchingDependencyVersions')[0])->toHaveCount(2);
 
             $versions = collect($component->get('matchingDependencyVersions')[0])->pluck('version')->toArray();
-            expect($versions)->toContain('1.0.0');
-            expect($versions)->toContain('1.1.0');
-            expect($versions)->not->toContain('2.0.0');
+            expect($versions)->toContain('1.0.0')
+                ->toContain('1.1.0')->not->toContain('2.0.0');
         });
 
         it('uses most recent version for pre-population regardless of publish status', function (): void {
@@ -1486,8 +1470,7 @@ describe('Mod Version Create Form', function (): void {
             expect($component->get('dependencies'))->toHaveCount(1);
 
             $dependencies = $component->get('dependencies');
-            expect($dependencies[0]['modId'])->toBe((string) $dependencyMod2->id);
-            expect($dependencies[0]['constraint'])->toBe('^2.0.0');
+            expect($dependencies[0])->toMatchArray(['modId' => (string) $dependencyMod2->id, 'constraint' => '^2.0.0']);
         });
 
         it('starts with empty dependencies when previous version has no dependencies', function (): void {
@@ -1507,7 +1490,7 @@ describe('Mod Version Create Form', function (): void {
             $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Should have no dependencies
-            expect($component->get('dependencies'))->toHaveCount(0);
+            expect($component->get('dependencies'))->toBeEmpty();
         });
 
         it('allows removing pre-populated dependencies', function (): void {
@@ -1546,7 +1529,7 @@ describe('Mod Version Create Form', function (): void {
             $component->call('removeDependency', 0);
 
             // Should have no dependencies
-            expect($component->get('dependencies'))->toHaveCount(0);
+            expect($component->get('dependencies'))->toBeEmpty();
         });
 
         it('allows adding new dependencies alongside pre-populated ones', function (): void {
@@ -1597,14 +1580,9 @@ describe('Mod Version Create Form', function (): void {
             expect($component->get('dependencies'))->toHaveCount(2);
 
             $dependencies = $component->get('dependencies');
-
             // Check original pre-populated dependency
-            expect($dependencies[0]['modId'])->toBe((string) $dependencyMod1->id);
-            expect($dependencies[0]['constraint'])->toBe('~1.0.0');
-
             // Check newly added dependency
-            expect($dependencies[1]['modId'])->toBe((string) $dependencyMod2->id);
-            expect($dependencies[1]['constraint'])->toBe('^2.0.0');
+            expect($dependencies)->sequence(fn ($e) => $e->toMatchArray(['modId' => (string) $dependencyMod1->id, 'constraint' => '~1.0.0']), fn ($e) => $e->toMatchArray(['modId' => (string) $dependencyMod2->id, 'constraint' => '^2.0.0']));
         });
     });
 });

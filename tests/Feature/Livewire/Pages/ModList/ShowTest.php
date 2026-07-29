@@ -711,8 +711,8 @@ describe('missing dependencies', function (): void {
             ->assertSet('statusMessage', '2 missing dependencies added to list.');
 
         $list = $list->fresh();
-        expect($list->containsMod($depA->id))->toBeTrue();
-        expect($list->containsMod($depB->id))->toBeTrue();
+        expect($list->containsMod($depA->id))->toBeTrue()
+            ->and($list->containsMod($depB->id))->toBeTrue();
     });
 
     it('forbids non-owners from calling addMissingDependencies', function (): void {
@@ -756,8 +756,8 @@ describe('missing dependencies', function (): void {
 
         // Nothing got added, original mod stays alone.
         expect($list->fresh()->itemCount())->toBe(1);
-        expect($list->fresh()->containsMod($depA->id))->toBeFalse();
-        expect($list->fresh()->containsMod($depB->id))->toBeFalse();
+        expect($list->fresh()->containsMod($depA->id))->toBeFalse()
+            ->and($list->fresh()->containsMod($depB->id))->toBeFalse();
     });
 });
 
@@ -1212,8 +1212,8 @@ describe('fork UI', function (): void {
             ->where('title', 'My Fork')
             ->first();
 
-        expect($created)->not->toBeNull();
-        expect($created?->forked_from_list_id)->toBe($list->id);
+        expect($created)->not->toBeNull()
+            ->and($created?->forked_from_list_id)->toBe($list->id);
     });
 
     it('validates that the title is not empty', function (): void {

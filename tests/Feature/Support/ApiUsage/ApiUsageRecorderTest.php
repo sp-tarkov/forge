@@ -27,7 +27,7 @@ it('rounds latency to whole milliseconds', function (): void {
 it('skips the client map when the ip is null', function (): void {
     resolve(ApiUsageRecorder::class)->record('api.v0.ping', 'GET', 200, 1.0, null);
 
-    expect(resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'))['clients'])->toBe([]);
+    expect(resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'))['clients'])->toBeEmpty();
 });
 
 it('records an unmatched path with the path segment last', function (): void {
@@ -40,7 +40,7 @@ it('records an unmatched path with the path segment last', function (): void {
 it('skips the unmatched map when no path is given', function (): void {
     resolve(ApiUsageRecorder::class)->record('api.v0.ping', 'GET', 200, 1.0, '203.0.113.5');
 
-    expect(resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'))['unmatched'])->toBe([]);
+    expect(resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'))['unmatched'])->toBeEmpty();
 });
 
 it('truncates overlong unmatched paths to the stored column width', function (): void {
@@ -49,7 +49,7 @@ it('truncates overlong unmatched paths to the stored column width', function ():
     $keys = array_keys(resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'))['unmatched']);
 
     expect($keys)->toHaveCount(1)
-        ->and(mb_strlen(explode('|', $keys[0], 3)[2]))->toBe(191);
+        ->and(explode('|', $keys[0], 3)[2])->toHaveLength(191);
 });
 
 it('swallows and logs store failures', function (): void {

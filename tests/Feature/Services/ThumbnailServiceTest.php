@@ -6,6 +6,9 @@ use App\Enums\ImageVariantFit;
 use App\Services\ThumbnailService;
 use App\Support\DataTransferObjects\ImageCropRect;
 use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\MakesAnimatedTestImages;
+
+pest()->use(MakesAnimatedTestImages::class);
 
 function makeThumbnailTestImage(int $width, int $height, string $format = 'png'): string
 {
@@ -70,17 +73,17 @@ it('skips variants that would upscale the source image', function (): void {
 it('returns no variants when the source is smaller than every configured width', function (): void {
     Storage::disk('public')->put('mods/tiny.png', makeThumbnailTestImage(100, 100));
 
-    expect($this->service->generateVariants('public', 'mods/tiny.png'))->toBe([]);
+    expect($this->service->generateVariants('public', 'mods/tiny.png'))->toBeEmpty();
 });
 
 it('returns no variants when the source file does not exist', function (): void {
-    expect($this->service->generateVariants('public', 'mods/missing.png'))->toBe([]);
+    expect($this->service->generateVariants('public', 'mods/missing.png'))->toBeEmpty();
 });
 
 it('returns no variants when the source file is not a valid image', function (): void {
     Storage::disk('public')->put('mods/corrupt.png', 'not-an-image');
 
-    expect($this->service->generateVariants('public', 'mods/corrupt.png'))->toBe([]);
+    expect($this->service->generateVariants('public', 'mods/corrupt.png'))->toBeEmpty();
 });
 
 it('deletes variant files from storage', function (): void {
@@ -144,11 +147,11 @@ it('skips width-fit variants that would upscale the source', function (): void {
         ImageVariantFit::Width,
     );
 
-    expect($variants)->toBe([]);
+    expect($variants)->toBeEmpty();
 });
 
 it('generates animated webp variants when animation is preserved', function (): void {
-    Storage::disk('public')->put('profile-photos/animated.gif', makeAnimatedTestImage(4, 512, 512));
+    Storage::disk('public')->put('profile-photos/animated.gif', $this->makeAnimatedTestImage(4, 512, 512));
 
     $variants = $this->service->generateVariants(
         'public',
@@ -174,7 +177,7 @@ it('generates animated webp variants when animation is preserved', function (): 
 });
 
 it('flattens animations over the frame cap to static variants', function (): void {
-    Storage::disk('public')->put('profile-photos/long.gif', makeAnimatedTestImage(121, 200, 200));
+    Storage::disk('public')->put('profile-photos/long.gif', $this->makeAnimatedTestImage(121, 200, 200));
 
     $variants = $this->service->generateVariants(
         'public',
@@ -233,7 +236,7 @@ it('flattens animations over the pixel budget to static variants', function (): 
 describe('normalizeAvatar', function (): void {
     it('crops every frame to the rect and encodes an animated webp', function (): void {
         $blob = $this->service->normalizeAvatar(
-            makeAnimatedTestImage(3, 400, 300),
+            $this->makeAnimatedTestImage(3, 400, 300),
             new ImageCropRect(50, 20, 200, 250),
         );
 
@@ -248,7 +251,7 @@ describe('normalizeAvatar', function (): void {
 
     it('clamps a rect that overflows the image bounds', function (): void {
         $blob = $this->service->normalizeAvatar(
-            makeAnimatedTestImage(2, 300, 300),
+            $this->makeAnimatedTestImage(2, 300, 300),
             new ImageCropRect(250, 250, 200, 200),
         );
 
@@ -260,7 +263,7 @@ describe('normalizeAvatar', function (): void {
     });
 
     it('center-crops the largest square without a rect', function (): void {
-        $blob = $this->service->normalizeAvatar(makeAnimatedTestImage(2, 400, 300));
+        $blob = $this->service->normalizeAvatar($this->makeAnimatedTestImage(2, 400, 300));
 
         $image = new Imagick;
         $image->readImageBlob((string) $blob);
@@ -285,7 +288,7 @@ describe('normalizeAvatar', function (): void {
     });
 
     it('flattens an animation over the frame cap to a static webp', function (): void {
-        $blob = $this->service->normalizeAvatar(makeAnimatedTestImage(121, 64, 64));
+        $blob = $this->service->normalizeAvatar($this->makeAnimatedTestImage(121, 64, 64));
 
         $image = new Imagick;
         $image->readImageBlob((string) $blob);

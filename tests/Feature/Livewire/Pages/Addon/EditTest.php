@@ -89,8 +89,8 @@ describe('custom AI disclosure', function (): void {
             ->assertRedirect();
 
         $addon->refresh();
-        expect($addon->contains_ai_content)->toBeTrue();
-        expect($addon->custom_ai_disclosure)->toBe('Used AI to refactor a helper class.');
+        expect($addon->contains_ai_content)->toBeTrue()
+            ->and($addon->custom_ai_disclosure)->toBe('Used AI to refactor a helper class.');
     });
 
     it('clears the custom AI disclosure when AI content is disabled', function (): void {
@@ -118,8 +118,8 @@ describe('custom AI disclosure', function (): void {
             ->assertRedirect();
 
         $addon->refresh();
-        expect($addon->contains_ai_content)->toBeFalse();
-        expect($addon->custom_ai_disclosure)->toBeNull();
+        expect($addon->contains_ai_content)->toBeFalse()
+            ->and($addon->custom_ai_disclosure)->toBeNull();
     });
 
     it('requires a disclosure message when the message is emptied while AI content remains enabled', function (): void {

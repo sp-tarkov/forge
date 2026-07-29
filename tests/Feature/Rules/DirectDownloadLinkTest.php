@@ -23,8 +23,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failCalled = true;
         });
 
-        expect($failCalled)->toBeFalse();
-        expect($rule->contentLength)->toBe(1048576);
+        expect($failCalled)->toBeFalse()
+            ->and($rule->contentLength)->toBe(1048576);
     });
 
     it('passes validation for valid 7z download links with .7z URL extension', function (): void {
@@ -42,8 +42,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failCalled = true;
         });
 
-        expect($failCalled)->toBeFalse();
-        expect($rule->contentLength)->toBe(2097152);
+        expect($failCalled)->toBeFalse()
+            ->and($rule->contentLength)->toBe(2097152);
     });
 
     it('fails validation for non-string values', function (): void {
@@ -54,8 +54,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failMessage = $message;
         });
 
-        expect($failMessage)->not->toBeNull();
-        expect($failMessage)->toContain('valid URL');
+        expect($failMessage)->not->toBeNull()
+            ->toContain('valid URL');
     });
 
     it('fails validation for invalid URLs', function (): void {
@@ -66,8 +66,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failMessage = $message;
         });
 
-        expect($failMessage)->not->toBeNull();
-        expect($failMessage)->toContain('valid URL');
+        expect($failMessage)->not->toBeNull()
+            ->toContain('valid URL');
     });
 
     it('fails validation for inaccessible URLs', function (): void {
@@ -82,8 +82,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failMessage = $message;
         });
 
-        expect($failMessage)->not->toBeNull();
-        expect($failMessage)->toContain('not accessible');
+        expect($failMessage)->not->toBeNull()
+            ->toContain('not accessible');
     });
 
     it('fails validation for wrong content-type', function (): void {
@@ -102,8 +102,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failMessage = $message;
         });
 
-        expect($failMessage)->not->toBeNull();
-        expect($failMessage)->toContain('direct download link');
+        expect($failMessage)->not->toBeNull()
+            ->toContain('direct download link');
     });
 
     it('fails validation when URL does not end with .7z or .zip and no valid content-disposition', function (): void {
@@ -121,8 +121,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failMessage = $message;
         });
 
-        expect($failMessage)->not->toBeNull();
-        expect($failMessage)->toContain('7-zip (.7z) or ZIP (.zip) file');
+        expect($failMessage)->not->toBeNull()
+            ->toContain('7-zip (.7z) or ZIP (.zip) file');
     });
 
     it('fails validation for missing content-length', function (): void {
@@ -139,8 +139,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failMessage = $message;
         });
 
-        expect($failMessage)->not->toBeNull();
-        expect($failMessage)->toContain('valid file size');
+        expect($failMessage)->not->toBeNull()
+            ->toContain('valid file size');
     });
 
     it('fails validation for zero content-length', function (): void {
@@ -158,8 +158,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failMessage = $message;
         });
 
-        expect($failMessage)->not->toBeNull();
-        expect($failMessage)->toContain('valid file size');
+        expect($failMessage)->not->toBeNull()
+            ->toContain('valid file size');
     });
 
     it('handles connection exceptions gracefully', function (): void {
@@ -174,8 +174,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failMessage = $message;
         });
 
-        expect($failMessage)->not->toBeNull();
-        expect($failMessage)->toContain('Unable to connect');
+        expect($failMessage)->not->toBeNull()
+            ->toContain('Unable to connect');
     });
 
     it('passes validation with content-disposition attachment and different filename case', function (): void {
@@ -194,8 +194,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failCalled = true;
         });
 
-        expect($failCalled)->toBeFalse();
-        expect($rule->contentLength)->toBe(5242880);
+        expect($failCalled)->toBeFalse()
+            ->and($rule->contentLength)->toBe(5242880);
     });
 
     it('passes validation for valid zip download links with .zip URL extension', function (): void {
@@ -213,8 +213,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failCalled = true;
         });
 
-        expect($failCalled)->toBeFalse();
-        expect($rule->contentLength)->toBe(3145728);
+        expect($failCalled)->toBeFalse()
+            ->and($rule->contentLength)->toBe(3145728);
     });
 
     it('passes validation for zip files with content-disposition', function (): void {
@@ -233,8 +233,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failCalled = true;
         });
 
-        expect($failCalled)->toBeFalse();
-        expect($rule->contentLength)->toBe(2097152);
+        expect($failCalled)->toBeFalse()
+            ->and($rule->contentLength)->toBe(2097152);
     });
 
     it('passes validation for zip files with uppercase extension', function (): void {
@@ -252,8 +252,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failCalled = true;
         });
 
-        expect($failCalled)->toBeFalse();
-        expect($rule->contentLength)->toBe(4194304);
+        expect($failCalled)->toBeFalse()
+            ->and($rule->contentLength)->toBe(4194304);
     });
 
     it('accepts application/x-zip content-type for zip files', function (): void {
@@ -271,8 +271,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failCalled = true;
         });
 
-        expect($failCalled)->toBeFalse();
-        expect($rule->contentLength)->toBe(2048576);
+        expect($failCalled)->toBeFalse()
+            ->and($rule->contentLength)->toBe(2048576);
     });
 
     it('accepts various 7z content-types', function (): void {
@@ -294,8 +294,8 @@ describe('DirectDownloadLink validation rule', function (): void {
         $rule->validate('link', 'https://example.com/mod1.7z', function ($message) use (&$failCalled): void {
             $failCalled = true;
         });
-        expect($failCalled)->toBeFalse();
-        expect($rule->contentLength)->toBe(1048576);
+        expect($failCalled)->toBeFalse()
+            ->and($rule->contentLength)->toBe(1048576);
 
         // Test application/x-7z-compressed
         $rule2 = new DirectDownloadLink;
@@ -303,8 +303,8 @@ describe('DirectDownloadLink validation rule', function (): void {
         $rule2->validate('link', 'https://example.com/mod2.7z', function ($message) use (&$failCalled2): void {
             $failCalled2 = true;
         });
-        expect($failCalled2)->toBeFalse();
-        expect($rule2->contentLength)->toBe(2097152);
+        expect($failCalled2)->toBeFalse()
+            ->and($rule2->contentLength)->toBe(2097152);
     });
 
     it('passes validation with mixed case content-disposition for zip', function (): void {
@@ -323,8 +323,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failCalled = true;
         });
 
-        expect($failCalled)->toBeFalse();
-        expect($rule->contentLength)->toBe(1572864);
+        expect($failCalled)->toBeFalse()
+            ->and($rule->contentLength)->toBe(1572864);
     });
 
     it('fails validation for files that are neither 7z nor zip', function (): void {
@@ -342,8 +342,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failMessage = $message;
         });
 
-        expect($failMessage)->not->toBeNull();
-        expect($failMessage)->toContain('7-zip (.7z) or ZIP (.zip) file');
+        expect($failMessage)->not->toBeNull()
+            ->toContain('7-zip (.7z) or ZIP (.zip) file');
     });
 
     it('validates zip files still require direct download link headers', function (): void {
@@ -361,8 +361,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failMessage = $message;
         });
 
-        expect($failMessage)->not->toBeNull();
-        expect($failMessage)->toContain('direct download link');
+        expect($failMessage)->not->toBeNull()
+            ->toContain('direct download link');
     });
 
     it('validates zip files still require content-length', function (): void {
@@ -380,8 +380,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failMessage = $message;
         });
 
-        expect($failMessage)->not->toBeNull();
-        expect($failMessage)->toContain('valid file size');
+        expect($failMessage)->not->toBeNull()
+            ->toContain('valid file size');
     });
 
     it('passes validation when content-type header is absent', function (): void {
@@ -398,8 +398,8 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failCalled = true;
         });
 
-        expect($failCalled)->toBeFalse();
-        expect($rule->contentLength)->toBe(2510798731);
+        expect($failCalled)->toBeFalse()
+            ->and($rule->contentLength)->toBe(2510798731);
     });
 
     it('validates correct file type in content-disposition when URL has no extension', function (): void {
@@ -418,7 +418,7 @@ describe('DirectDownloadLink validation rule', function (): void {
             $failMessage = $message;
         });
 
-        expect($failMessage)->not->toBeNull();
-        expect($failMessage)->toContain('7-zip (.7z) or ZIP (.zip) file');
+        expect($failMessage)->not->toBeNull()
+            ->toContain('7-zip (.7z) or ZIP (.zip) file');
     });
 });

@@ -110,5 +110,5 @@ it('discards malformed bucket identifiers', function (): void {
     (new AggregateApiUsageJob)->handle($store);
 
     expect(ApiUsageMetric::query()->count())->toBe(0)
-        ->and($store->pendingBuckets())->toBe([]);
+        ->and($store->pendingBuckets())->toBeEmpty();
 });

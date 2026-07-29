@@ -16,8 +16,8 @@ it('shows ban button for admin viewing regular user', function (): void {
     $component = Livewire::actingAs($admin)
         ->test('user.ban-action', ['user' => $user]);
 
-    expect($admin->can('ban', $user))->toBeTrue();
-    expect($user->isBanned())->toBeFalse();
+    expect($admin->can('ban', $user))->toBeTrue()
+        ->and($user->isBanned())->toBeFalse();
 
     $component->assertSee('Ban User');
 });
@@ -33,8 +33,8 @@ it('shows unban button for admin viewing banned user', function (): void {
     $component = Livewire::actingAs($admin)
         ->test('user.ban-action', ['user' => $user]);
 
-    expect($admin->can('ban', $user))->toBeTrue();
-    expect($user->isBanned())->toBeTrue();
+    expect($admin->can('ban', $user))->toBeTrue()
+        ->and($user->isBanned())->toBeTrue();
 
     $component->assertSee('Unban User');
 });
@@ -101,10 +101,10 @@ it('allows admin to ban user with duration', function (): void {
     expect($user->fresh()->isBanned())->toBeTrue();
 
     $ban = $user->bans()->first();
-    expect($ban)->not->toBeNull();
-    expect($ban->created_by_id)->toBe($admin->id);
-    expect($ban->comment)->toBe('Testing ban functionality');
-    expect($ban->expired_at)->not->toBeNull();
+    expect($ban)->not->toBeNull()
+        ->and($ban->created_by_id)->toBe($admin->id)
+        ->and($ban->comment)->toBe('Testing ban functionality')
+        ->and($ban->expired_at)->not->toBeNull();
 });
 
 it('allows admin to ban user permanently', function (): void {
@@ -122,8 +122,8 @@ it('allows admin to ban user permanently', function (): void {
     expect($user->fresh()->isBanned())->toBeTrue();
 
     $ban = $user->bans()->first();
-    expect($ban)->not->toBeNull();
-    expect($ban->expired_at)->toBeNull();
+    expect($ban)->not->toBeNull()
+        ->and($ban->expired_at)->toBeNull();
 });
 
 it('allows admin to unban user', function (): void {

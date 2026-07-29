@@ -17,6 +17,10 @@ inputs:
     description: Redis libraries to install.
     required: false
     default: liblz4-dev, liblzf-dev, libzstd-dev
+  coverage:
+    description: Coverage driver to enable.
+    required: false
+    default: none
 
 runs:
   using: composite
@@ -56,7 +60,7 @@ runs:
         extensions: ${{ inputs.php-extensions }}
         ini-values: error_reporting=E_ALL
         tools: composer:v2
-        coverage: none
+        coverage: ${{ inputs.coverage }}
       env:
         REDIS_CONFIGURE_OPTS: ${{ inputs.redis-options }}
         REDIS_LIBS: ${{ inputs.redis-libs }}

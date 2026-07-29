@@ -188,8 +188,8 @@ it('displays active filters', function (): void {
 
     $activeFilters = $component->instance()->getActiveFilters();
 
-    expect($activeFilters)->toContain('Type: Disabled mod');
-    expect($activeFilters)->toContain('Linked to reports only');
+    expect($activeFilters)->toContain('Type: Disabled mod')
+        ->toContain('Linked to reports only');
 });
 
 it('shows empty state when no actions exist', function (): void {
@@ -215,6 +215,6 @@ it('paginates actions correctly', function (): void {
 
     $component = Livewire::test('pages::admin.moderation-actions');
 
-    expect($component->instance()->actions->count())->toBeLessThanOrEqual(25);
-    expect($component->instance()->actions->total())->toBe(30);
+    expect($component->instance()->actions->count())->toBeLessThanOrEqual(25)
+        ->and($component->instance()->actions->total())->toBe(30);
 });

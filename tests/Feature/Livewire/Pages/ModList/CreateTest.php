@@ -39,9 +39,9 @@ describe('save', function (): void {
             ->assertRedirect();
 
         $list = ModList::query()->where('title', 'My Brand New List')->first();
-        expect($list)->not->toBeNull();
-        expect($list->owner_id)->toBe($user->id);
-        expect($list->is_default)->toBeFalse();
+        expect($list)->not->toBeNull()
+            ->and($list->owner_id)->toBe($user->id)
+            ->and($list->is_default)->toBeFalse();
     });
 
     it('rejects an over-length title', function (): void {

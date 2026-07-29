@@ -23,9 +23,9 @@ it('marks stale pending results as errored', function (): void {
 
     $stale->refresh();
 
-    expect($stale->status)->toBe(VerificationStatus::Error);
-    expect($stale->failure_reason)->toContain('stale');
-    expect($stale->completed_at)->not->toBeNull();
+    expect($stale->status)->toBe(VerificationStatus::Error)
+        ->and($stale->failure_reason)->toContain('stale')
+        ->and($stale->completed_at)->not->toBeNull();
 });
 
 it('marks stale running results as errored', function (): void {
@@ -42,8 +42,8 @@ it('marks stale running results as errored', function (): void {
 
     $stale->refresh();
 
-    expect($stale->status)->toBe(VerificationStatus::Error);
-    expect($stale->failure_reason)->toContain('stale');
+    expect($stale->status)->toBe(VerificationStatus::Error)
+        ->and($stale->failure_reason)->toContain('stale');
 });
 
 it('leaves fresh pending and running results untouched', function (): void {
@@ -64,8 +64,8 @@ it('leaves fresh pending and running results untouched', function (): void {
 
     new CleanupStaleVerificationsJob()->handle();
 
-    expect($pending->refresh()->status)->toBe(VerificationStatus::Pending);
-    expect($running->refresh()->status)->toBe(VerificationStatus::Running);
+    expect($pending->refresh()->status)->toBe(VerificationStatus::Pending)
+        ->and($running->refresh()->status)->toBe(VerificationStatus::Running);
 });
 
 it('leaves completed results untouched regardless of age', function (): void {
@@ -84,6 +84,6 @@ it('leaves completed results untouched regardless of age', function (): void {
 
     new CleanupStaleVerificationsJob()->handle();
 
-    expect($passed->refresh()->status)->toBe(VerificationStatus::Passed);
-    expect($failed->refresh()->status)->toBe(VerificationStatus::Failed);
+    expect($passed->refresh()->status)->toBe(VerificationStatus::Passed)
+        ->and($failed->refresh()->status)->toBe(VerificationStatus::Failed);
 });

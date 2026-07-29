@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use Pest\Rector\Rules\ConvertExpectExceptionToThrowRector;
+use Pest\Rector\Rules\EnsureTypeChecksFirstRector;
+use Pest\Rector\Rules\ToBeTrueNotFalseRector;
+use Pest\Rector\Set\PestSetList;
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\CodingStyle\Rector\ClassMethod\MakeInheritedMethodVisibilitySameAsParentRector;
 use Rector\Config\RectorConfig;
@@ -24,6 +28,7 @@ return RectorConfig::configure()
         LaravelSetList::LARAVEL_FACTORIES,
         LaravelSetList::LARAVEL_IF_HELPERS,
         LaravelSetList::LARAVEL_LEGACY_FACTORIES_TO_CLASSES,
+        PestSetList::CODING_STYLE,
     ])
     ->withImportNames(
         removeUnusedImports: true,
@@ -32,6 +37,9 @@ return RectorConfig::configure()
     ->withCache(
         cacheDirectory: '.rector/cache',
         cacheClass: FileCacheStorage::class,
+    )
+    ->withParallel(
+        timeoutSeconds: 300,
     )
     ->withPaths([
         __DIR__.'/app',
@@ -48,6 +56,9 @@ return RectorConfig::configure()
         AddOverrideAttributeToOverriddenMethodsRector::class,
         MakeInheritedMethodVisibilitySameAsParentRector::class,
         AddOverrideAttributeToOverriddenPropertiesRector::class,
+        ConvertExpectExceptionToThrowRector::class,
+        EnsureTypeChecksFirstRector::class,
+        ToBeTrueNotFalseRector::class,
         RemoveUnusedPublicMethodParameterRector::class => [
             __DIR__.'/app/Policies',
         ],

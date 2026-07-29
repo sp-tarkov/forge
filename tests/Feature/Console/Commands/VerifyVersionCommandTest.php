@@ -25,9 +25,8 @@ it('dispatches verification job for a valid mod version', function (): void {
         ->assertSuccessful();
 
     Queue::assertPushedOn('verification', RunVerificationJob::class);
-    expect(VerificationResult::query()->count())->toBe(1);
-    expect(VerificationResult::query()->first())
-        ->status->toBe(VerificationStatus::Pending);
+    expect(VerificationResult::query()->count())->toBe(1)
+        ->and(VerificationResult::query()->first())->status->toBe(VerificationStatus::Pending);
 });
 
 it('fails for non-existent version', function (): void {

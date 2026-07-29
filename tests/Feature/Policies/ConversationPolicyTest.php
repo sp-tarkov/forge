@@ -33,16 +33,16 @@ beforeEach(function (): void {
 
 describe('viewAny', function (): void {
     it('allows any authenticated user to view their conversations list', function (): void {
-        expect($this->user1->can('viewAny', Conversation::class))->toBeTrue();
-        expect($this->user2->can('viewAny', Conversation::class))->toBeTrue();
-        expect($this->user3->can('viewAny', Conversation::class))->toBeTrue();
+        expect($this->user1->can('viewAny', Conversation::class))->toBeTrue()
+            ->and($this->user2->can('viewAny', Conversation::class))->toBeTrue()
+            ->and($this->user3->can('viewAny', Conversation::class))->toBeTrue();
     });
 });
 
 describe('view', function (): void {
     it('allows users who are part of the conversation to view it', function (): void {
-        expect($this->user1->can('view', $this->conversation))->toBeTrue();
-        expect($this->user2->can('view', $this->conversation))->toBeTrue();
+        expect($this->user1->can('view', $this->conversation))->toBeTrue()
+            ->and($this->user2->can('view', $this->conversation))->toBeTrue();
     });
 
     it('denies users who are not part of the conversation from viewing it', function (): void {
@@ -52,16 +52,16 @@ describe('view', function (): void {
 
 describe('create', function (): void {
     it('allows any authenticated user to create a conversation', function (): void {
-        expect($this->user1->can('create', Conversation::class))->toBeTrue();
-        expect($this->user2->can('create', Conversation::class))->toBeTrue();
-        expect($this->user3->can('create', Conversation::class))->toBeTrue();
+        expect($this->user1->can('create', Conversation::class))->toBeTrue()
+            ->and($this->user2->can('create', Conversation::class))->toBeTrue()
+            ->and($this->user3->can('create', Conversation::class))->toBeTrue();
     });
 });
 
 describe('update', function (): void {
     it('allows users who are part of the conversation to update it', function (): void {
-        expect($this->user1->can('update', $this->conversation))->toBeTrue();
-        expect($this->user2->can('update', $this->conversation))->toBeTrue();
+        expect($this->user1->can('update', $this->conversation))->toBeTrue()
+            ->and($this->user2->can('update', $this->conversation))->toBeTrue();
     });
 
     it('denies users who are not part of the conversation from updating it', function (): void {
@@ -71,8 +71,8 @@ describe('update', function (): void {
 
 describe('delete', function (): void {
     it('allows users who are part of the conversation to delete it', function (): void {
-        expect($this->user1->can('delete', $this->conversation))->toBeTrue();
-        expect($this->user2->can('delete', $this->conversation))->toBeTrue();
+        expect($this->user1->can('delete', $this->conversation))->toBeTrue()
+            ->and($this->user2->can('delete', $this->conversation))->toBeTrue();
     });
 
     it('denies users who are not part of the conversation from deleting it', function (): void {
@@ -82,24 +82,24 @@ describe('delete', function (): void {
 
 describe('restore', function (): void {
     it('denies all users from restoring conversations', function (): void {
-        expect($this->user1->can('restore', $this->conversation))->toBeFalse();
-        expect($this->user2->can('restore', $this->conversation))->toBeFalse();
-        expect($this->user3->can('restore', $this->conversation))->toBeFalse();
+        expect($this->user1->can('restore', $this->conversation))->toBeFalse()
+            ->and($this->user2->can('restore', $this->conversation))->toBeFalse()
+            ->and($this->user3->can('restore', $this->conversation))->toBeFalse();
     });
 });
 
 describe('forceDelete', function (): void {
     it('denies all users from permanently deleting conversations', function (): void {
-        expect($this->user1->can('forceDelete', $this->conversation))->toBeFalse();
-        expect($this->user2->can('forceDelete', $this->conversation))->toBeFalse();
-        expect($this->user3->can('forceDelete', $this->conversation))->toBeFalse();
+        expect($this->user1->can('forceDelete', $this->conversation))->toBeFalse()
+            ->and($this->user2->can('forceDelete', $this->conversation))->toBeFalse()
+            ->and($this->user3->can('forceDelete', $this->conversation))->toBeFalse();
     });
 });
 
 describe('sendMessage', function (): void {
     it('allows users who are part of the conversation to send messages', function (): void {
-        expect($this->user1->can('sendMessage', $this->conversation))->toBeTrue();
-        expect($this->user2->can('sendMessage', $this->conversation))->toBeTrue();
+        expect($this->user1->can('sendMessage', $this->conversation))->toBeTrue()
+            ->and($this->user2->can('sendMessage', $this->conversation))->toBeTrue();
     });
 
     it('denies users who are not part of the conversation from sending messages', function (): void {
@@ -162,8 +162,8 @@ it('handles conversation with same user IDs correctly', function (): void {
 
     // Both users should still be able to view the conversation
     expect($this->user1->can('view', $conversation3))->toBeTrue();
-    expect($this->user2->can('view', $conversation3))->toBeTrue();
-    expect($this->user3->can('view', $conversation3))->toBeFalse();
+    expect($this->user2->can('view', $conversation3))->toBeTrue()
+        ->and($this->user3->can('view', $conversation3))->toBeFalse();
 });
 
 describe('first-message visibility', function (): void {
@@ -224,8 +224,8 @@ describe('blocking authorization', function (): void {
 
         // But if the other user also blocks, then neither can unarchive
         $this->userB->block($this->userA);
-        expect($this->userA->can('unarchive', $conversation))->toBeFalse();
-        expect($this->userB->can('unarchive', $conversation))->toBeFalse();
+        expect($this->userA->can('unarchive', $conversation))->toBeFalse()
+            ->and($this->userB->can('unarchive', $conversation))->toBeFalse();
     });
 
     it('allows unarchiving conversations when both users are not blocking', function (): void {
@@ -298,7 +298,7 @@ describe('blocking authorization', function (): void {
 
         // User1 should NOT find user2 in search (other user blocked them)
         $searchResults = User::conversationSearch($user1, 'Mutual')->get();
-        expect($searchResults)->toHaveCount(0);
+        expect($searchResults)->toBeEmpty();
 
         // Conversation should remain archived (cannot be unarchived due to mutual blocking)
         expect($conversation->isArchivedBy($user1))->toBeTrue();
@@ -322,8 +322,8 @@ describe('blocking authorization', function (): void {
 
         // Blocked user SHOULD appear in search (blocker can search for users they blocked)
         $searchResults = User::conversationSearch($blocker, 'No Archive')->get();
-        expect($searchResults)->toHaveCount(1);
-        expect($searchResults->first()->id)->toBe($blocked->id);
+        expect($searchResults)->toHaveCount(1)
+            ->and($searchResults->first()->id)->toBe($blocked->id);
     });
 
     it('blocked user cannot search for blocker even with archived conversation', function (): void {
@@ -350,7 +350,7 @@ describe('blocking authorization', function (): void {
 
         // Blocked user should NOT find blocker in search
         $searchResults = User::conversationSearch($blocked, 'Blocker')->get();
-        expect($searchResults)->toHaveCount(0);
+        expect($searchResults)->toBeEmpty();
 
         // Blocked user CANNOT unarchive (they're blocked by the other user)
         $this->actingAs($blocked);

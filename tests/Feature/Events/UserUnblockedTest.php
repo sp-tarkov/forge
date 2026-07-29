@@ -11,13 +11,13 @@ it('broadcasts on the unblocked user private channel', function (): void {
 
     $channels = new UserUnblocked($unblocker, $unblocked)->broadcastOn();
 
-    expect($channels)->toHaveCount(1);
-    expect((string) $channels[0]->name)->toBe('private-user.'.$unblocked->id);
+    expect($channels)->toHaveCount(1)
+        ->and((string) $channels[0]->name)->toBe('private-user.'.$unblocked->id);
 });
 
 it('does not reveal the unblocker in the broadcast payload', function (): void {
     $unblocker = User::factory()->create();
     $unblocked = User::factory()->create();
 
-    expect(new UserUnblocked($unblocker, $unblocked)->broadcastWith())->toBe([]);
+    expect(new UserUnblocked($unblocker, $unblocked)->broadcastWith())->toBeEmpty();
 });

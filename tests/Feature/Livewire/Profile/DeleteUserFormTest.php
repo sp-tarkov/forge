@@ -75,15 +75,14 @@ describe('account deletion', function (): void {
             ->where('visitor_type', User::class)
             ->first();
 
-        expect($trackingEvent)->not->toBeNull();
-        expect($trackingEvent->visitor_id)->toBe($user->id);
-        expect($trackingEvent->visitor_type)->toBe(User::class);
+        expect($trackingEvent)->not->toBeNull()
+            ->and($trackingEvent->visitor_id)->toBe($user->id)
+            ->and($trackingEvent->visitor_type)->toBe(User::class);
 
         // Verify snapshot data is stored in event_data.
         expect($trackingEvent->event_data)->toHaveKey('name');
-        expect($trackingEvent->event_data)->toHaveKey('email');
-        expect($trackingEvent->event_data['name'])->toBe('Test User');
-        expect($trackingEvent->event_data['email'])->toBe('test@example.com');
+        expect($trackingEvent->event_data)->toHaveKey('email')
+            ->toMatchArray(['name' => 'Test User', 'email' => 'test@example.com']);
     });
 });
 

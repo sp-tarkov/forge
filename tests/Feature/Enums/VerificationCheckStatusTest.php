@@ -24,7 +24,7 @@ describe('fromContainer', function (): void {
 
 describe('presentation', function (): void {
     it('offers a non-empty label and color for every case', function (VerificationCheckStatus $status): void {
-        expect($status->label())->toBeString()->not->toBeEmpty();
-        expect($status->color())->toBeString()->not->toBeEmpty();
+        expect($status->label())->toBeString()->not->toBeEmpty()
+            ->and($status->color())->toBeString()->not->toBeEmpty();
     })->with(VerificationCheckStatus::cases());
 });

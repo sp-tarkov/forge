@@ -22,8 +22,8 @@ it('shows unread badge in complete user flow from conversation creation to first
         ->where('user2_id', max($alice->id, $bob->id))
         ->first();
 
-    expect($conversation)->not->toBeNull();
-    expect($conversation->created_by)->toBe($alice->id);
+    expect($conversation)->not->toBeNull()
+        ->and($conversation->created_by)->toBe($alice->id);
 
     // At this point, conversation exists but has no messages
     expect($conversation->messages()->count())->toBe(0);
@@ -41,9 +41,9 @@ it('shows unread badge in complete user flow from conversation creation to first
 
     // Verify message was created and conversation was updated
     $conversation->refresh();
-    expect($conversation->messages()->count())->toBe(1);
-    expect($conversation->last_message_id)->not->toBeNull();
-    expect($conversation->last_message_at)->not->toBeNull();
+    expect($conversation->messages()->count())->toBe(1)
+        ->and($conversation->last_message_id)->not->toBeNull()
+        ->and($conversation->last_message_at)->not->toBeNull();
 
     // Step 3: Bob refreshes and should now see the conversation with unread badge
     $bobNavRefreshed = Livewire::actingAs($bob)->test('navigation-chat');

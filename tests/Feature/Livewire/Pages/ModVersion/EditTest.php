@@ -162,8 +162,8 @@ describe('Mod Version Edit Form', function (): void {
             expect($modVersion->dependencies)->toHaveCount(1);
 
             $dependency = $modVersion->dependencies->first();
-            expect($dependency->dependent_mod_id)->toBe($dependencyMod2->id);
-            expect($dependency->constraint)->toBe('^2.0.0');
+            expect($dependency->dependent_mod_id)->toBe($dependencyMod2->id)
+                ->and($dependency->constraint)->toBe('^2.0.0');
 
             // Verify resolved dependencies were updated
             expect($modVersion->dependenciesResolved)->toHaveCount(1);
@@ -280,8 +280,8 @@ describe('Mod Version Edit Form', function (): void {
                 ->call('saveGuid')
                 ->assertHasNoErrors();
 
-            expect($component->get('guidSaved'))->toBeTrue();
-            expect($component->get('modGuid'))->toBe('com.test.editguid');
+            expect($component->get('guidSaved'))->toBeTrue()
+                ->and($component->get('modGuid'))->toBe('com.test.editguid');
 
             // Verify the mod was updated
             $mod->refresh();

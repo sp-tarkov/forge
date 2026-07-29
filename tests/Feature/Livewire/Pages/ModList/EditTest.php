@@ -36,9 +36,9 @@ describe('edit page', function (): void {
             ->call('save');
 
         $list->refresh();
-        expect($list->title)->toBe('Renamed');
-        expect($list->visibility)->toBe(ListVisibility::Hidden);
-        expect($list->share_token)->not->toBeNull();
+        expect($list->title)->toBe('Renamed')
+            ->and($list->visibility)->toBe(ListVisibility::Hidden)
+            ->and($list->share_token)->not->toBeNull();
     });
 
     it('prevents deletion of the default Favourites list', function (): void {

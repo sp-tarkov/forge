@@ -925,8 +925,8 @@ final class DependencyService
             ->where('disabled', false)
             ->whereHas('sptVersions', function (Builder $q) use ($sptVersion): void {
                 $q->where('version', $sptVersion)
-                    ->whereNotNull('published_at')
-                    ->where('published_at', '<=', now());
+                    ->whereNotNull('publish_date')
+                    ->where('publish_date', '<=', now());
             })
             ->whereHas('mod', function (Builder $q): void {
                 $q->whereNotNull('published_at')

@@ -256,10 +256,9 @@ describe('virus total links', function (): void {
 
         // Verify the virus_total_link data is present
         $data = $response->json('data.0.virus_total_links');
-        expect($data)->toBeArray();
-        expect($data)->toHaveCount(1);
-        expect($data[0]['url'])->toBe('https://www.virustotal.com/gui/file/abc123');
-        expect($data[0]['label'])->toBe('Test VT Link');
+        expect($data)->toBeArray()
+            ->toHaveCount(1)
+            ->and($data[0])->toMatchArray(['url' => 'https://www.virustotal.com/gui/file/abc123', 'label' => 'Test VT Link']);
     });
 
     it('includes multiple virus_total_links when addon version has multiple', function (): void {
@@ -290,8 +289,8 @@ describe('virus total links', function (): void {
         $response->assertSuccessful();
 
         $data = $response->json('data.0.virus_total_links');
-        expect($data)->toBeArray();
-        expect($data)->toHaveCount(2);
+        expect($data)->toBeArray()
+            ->toHaveCount(2);
     });
 
     it('returns empty array when addon version has no virus_total_links', function (): void {
@@ -308,8 +307,8 @@ describe('virus total links', function (): void {
         $response->assertSuccessful();
 
         $data = $response->json('data.0.virus_total_links');
-        expect($data)->toBeArray();
-        expect($data)->toHaveCount(0);
+        expect($data)->toBeArray()
+            ->toBeEmpty();
     });
 });
 
