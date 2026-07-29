@@ -18,14 +18,14 @@ return new class extends Migration
             ->where(function (Builder $query): void {
                 $query->where('version', 'like', 'v%')->orWhere('version', 'like', 'V%');
             })
-            ->update(['version' => DB::raw("REGEXP_REPLACE(version, '^[vV]', '')")]);
+            ->update(['version' => DB::raw('SUBSTR(version, 2)')]);
 
         // Strip 'v' or 'V' prefix from addon_versions.version column
         DB::table('addon_versions')
             ->where(function (Builder $query): void {
                 $query->where('version', 'like', 'v%')->orWhere('version', 'like', 'V%');
             })
-            ->update(['version' => DB::raw("REGEXP_REPLACE(version, '^[vV]', '')")]);
+            ->update(['version' => DB::raw('SUBSTR(version, 2)')]);
     }
 
     /**

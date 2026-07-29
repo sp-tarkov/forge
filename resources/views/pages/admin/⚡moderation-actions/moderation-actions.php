@@ -243,7 +243,12 @@ new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class 
         if ($this->search !== '' && $this->search !== '0') {
             // Match the search term anywhere in the serialized event payload; the cast to a plain string differs per
             // database driver.
-            $jsonAsText = DB::getDriverName() === 'mysql' ? 'CAST(event_data AS CHAR)' : 'event_data::text';
+            $driver = DB::getDriverName();
+            $jsonAsText = match ($driver) {
+                'mysql' => 'CAST(event_data AS CHAR)',
+                'sqlite' => 'CAST(event_data AS TEXT)',
+                default => 'event_data::text',
+            };
 
             $query->where(function (Builder $q) use ($jsonAsText): void {
                 $q->whereRaw(sprintf('LOWER(%s) LIKE ?', $jsonAsText), ['%'.mb_strtolower($this->search).'%']);

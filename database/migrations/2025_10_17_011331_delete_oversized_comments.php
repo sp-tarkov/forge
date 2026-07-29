@@ -13,10 +13,11 @@ return new class extends Migration
     public function up(): void
     {
         $maxLength = config('comments.validation.max_length', 10000);
+        $lengthFunc = DB::getDriverName() === 'sqlite' ? 'LENGTH' : 'CHAR_LENGTH';
 
         // Delete all comments that exceed the maximum allowed length
         DB::table('comments')
-            ->whereRaw('CHAR_LENGTH(body) > ?', [$maxLength])
+            ->whereRaw("{$lengthFunc}(body) > ?", [$maxLength])
             ->delete();
     }
 

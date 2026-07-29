@@ -31,19 +31,31 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (DB::getDriverName() !== 'pgsql') {
+        $driver = DB::getDriverName();
+
+        if (! in_array($driver, ['pgsql', 'sqlite'], true)) {
             return;
         }
 
         foreach (self::INDEXES as $table => $columns) {
             foreach ($columns as $column) {
-                DB::statement(sprintf(
-                    'create index concurrently if not exists %s_%s_index on %s (%s)',
-                    $table,
-                    $column,
-                    $table,
-                    $column,
-                ));
+                if ($driver === 'pgsql') {
+                    DB::statement(sprintf(
+                        'create index concurrently if not exists %s_%s_index on %s (%s)',
+                        $table,
+                        $column,
+                        $table,
+                        $column,
+                    ));
+                } else {
+                    DB::statement(sprintf(
+                        'create index if not exists %s_%s_index on %s (%s)',
+                        $table,
+                        $column,
+                        $table,
+                        $column,
+                    ));
+                }
             }
         }
     }
@@ -53,13 +65,19 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (DB::getDriverName() !== 'pgsql') {
+        $driver = DB::getDriverName();
+
+        if (! in_array($driver, ['pgsql', 'sqlite'], true)) {
             return;
         }
 
         foreach (self::INDEXES as $table => $columns) {
             foreach ($columns as $column) {
-                DB::statement(sprintf('drop index concurrently if exists %s_%s_index', $table, $column));
+                if ($driver === 'pgsql') {
+                    DB::statement(sprintf('drop index concurrently if exists %s_%s_index', $table, $column));
+                } else {
+                    DB::statement(sprintf('drop index if exists %s_%s_index', $table, $column));
+                }
             }
         }
     }

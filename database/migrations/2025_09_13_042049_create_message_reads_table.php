@@ -25,8 +25,9 @@ return new class extends Migration
             $table->index(['message_id', 'read_at']);
         });
 
-        // Drop the old read_at column from messages table
+        // Drop the old read_at column and its index from messages table
         Schema::table('messages', function (Blueprint $table): void {
+            $table->dropIndex(['conversation_id', 'read_at']);
             $table->dropColumn('read_at');
         });
     }
@@ -36,9 +37,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Re-add read_at column to messages
+        // Re-add read_at column and its index to messages
         Schema::table('messages', function (Blueprint $table): void {
             $table->timestamp('read_at')->nullable();
+            $table->index(['conversation_id', 'read_at']);
         });
 
         Schema::dropIfExists('message_reads');
