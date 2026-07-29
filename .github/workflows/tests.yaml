@@ -49,28 +49,41 @@ jobs:
           retention-days: 1
 
   # The lightweight feature/unit shards. These never touch a browser, so they skip Playwright, Chromium, Reverb,
-  # and Node entirely: they only need PHP, Composer, MySQL, and the prebuilt asset manifest.
+  # and Node entirely: they only need PHP, Composer, a database, and the prebuilt asset manifest. Every shard runs
+  # twice, once against PostgreSQL (production) and once against SQLite (local development).
   feature:
     runs-on: ubuntu-latest
 
-    name: Feature (Shard ${{ matrix.shard }}/4)
+    name: Feature (${{ matrix.driver }}, Shard ${{ matrix.shard }}/4)
 
     needs: build-assets
 
     strategy:
       fail-fast: false
       matrix:
+        driver: [ pgsql, sqlite ]
         shard: [ 1, 2, 3, 4 ]
 
+    env:
+      DB_CONNECTION: ${{ matrix.driver }}
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: ${{ matrix.driver == 'sqlite' && 'database/testing.sqlite' || 'testing' }}
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+
+    # GitHub Actions cannot attach a service to only part of a matrix, so the SQLite shards start this container
+    # and then ignore it.
     services:
-      mysql:
-        image: mysql:8.3
+      postgres:
+        image: postgres:18
         ports:
-          - 33306:3306
+          - 5432:5432
         env:
-          MYSQL_DATABASE: test
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+          POSTGRES_DB: testing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        options: --health-cmd=pg_isready --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - name: Checkout
@@ -96,6 +109,10 @@ jobs:
           php artisan key:generate
           php artisan optimize
 
+      - name: Create SQLite Database File
+        if: matrix.driver == 'sqlite'
+        run: touch database/testing.sqlite
+
       - name: Run Database Migrations
         run: php artisan migrate
 
@@ -103,14 +120,15 @@ jobs:
         run: php artisan storage:link
 
       - name: Run Tests
-        run: ./vendor/bin/pest --ci --parallel --testsuite=Feature,Unit --shard=${{ matrix.shard }}/4
+        run: ./vendor/bin/pest --ci --no-tia --parallel --testsuite=Feature,Unit --shard=${{ matrix.shard }}/4
 
       - name: Display Laravel Log
         if: failure()
         run: cat storage/logs/laravel.log
 
   # The heavyweight browser job. This is the only place that pays the Playwright/Chromium install cost and runs
-  # Reverb, because only the browser suite drives a real browser against the served application.
+  # Reverb, because only the browser suite drives a real browser against the served application. It runs against
+  # PostgreSQL alone; the feature matrix is what covers the driver differences.
   browser:
     runs-on: ubuntu-latest
 
@@ -118,15 +136,24 @@ jobs:
 
     needs: build-assets
 
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: testing
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+
     services:
-      mysql:
-        image: mysql:8.3
+      postgres:
+        image: postgres:18
         ports:
-          - 33306:3306
+          - 5432:5432
         env:
-          MYSQL_DATABASE: test
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+          POSTGRES_DB: testing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        options: --health-cmd=pg_isready --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - name: Checkout
@@ -183,7 +210,7 @@ jobs:
         run: php artisan storage:link
 
       - name: Run Tests
-        run: ./vendor/bin/pest --ci --parallel --testsuite=Browser
+        run: ./vendor/bin/pest --ci --no-tia --parallel --testsuite=Browser
 
       - name: Upload Screenshots
         if: failure()

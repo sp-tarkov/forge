@@ -22,15 +22,24 @@ jobs:
 
     name: Record Baseline
 
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: testing
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+
     services:
-      mysql:
-        image: mysql:8.3
+      postgres:
+        image: postgres:18
         ports:
-          - 33306:3306
+          - 5432:5432
         env:
-          MYSQL_DATABASE: test
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+          POSTGRES_DB: testing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        options: --health-cmd=pg_isready --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - name: Checkout
