@@ -6,6 +6,8 @@ namespace App\Support\Api\V0\QueryBuilder;
 
 use App\Exceptions\Api\V0\InvalidQueryException;
 use App\Support\Api\V0\PublicViewpoint;
+use Carbon\CarbonImmutable;
+use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -473,6 +475,34 @@ abstract class AbstractQueryBuilder
     protected function hasFilter(string $filterName): bool
     {
         return request()->has('filter.'.$filterName);
+    }
+
+    /**
+     * Apply an inclusive date range filter to a column. Both bounds are expanded to full datetime strings. A range
+     * that is not exactly two parseable dates leaves the query untouched.
+     *
+     * @param  Builder<TModel>  $query
+     */
+    protected function applyDateRangeFilter(Builder $query, string $column, ?string $range): void
+    {
+        if ($range === null || $range === '') {
+            return;
+        }
+
+        $bounds = explode(',', $range);
+
+        if (count($bounds) !== 2) {
+            return;
+        }
+
+        try {
+            $start = CarbonImmutable::parse(mb_trim($bounds[0]));
+            $end = CarbonImmutable::parse(mb_trim($bounds[1]));
+        } catch (InvalidFormatException) {
+            return;
+        }
+
+        $query->whereBetween($column, [$start->toDateTimeString(), $end->toDateTimeString()]);
     }
 
     /**

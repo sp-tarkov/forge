@@ -269,12 +269,7 @@ final class ModVersionQueryBuilder extends AbstractQueryBuilder
      */
     protected function filterByPublishedBetween(Builder $query, ?string $range): void
     {
-        if ($range === null) {
-            return;
-        }
-
-        [$start, $end] = explode(',', $range);
-        $query->whereBetween('mod_versions.published_at', [$start, $end]);
+        $this->applyDateRangeFilter($query, 'mod_versions.published_at', $range);
     }
 
     /**
@@ -284,12 +279,7 @@ final class ModVersionQueryBuilder extends AbstractQueryBuilder
      */
     protected function filterByCreatedBetween(Builder $query, ?string $range): void
     {
-        if ($range === null) {
-            return;
-        }
-
-        [$start, $end] = explode(',', $range);
-        $query->whereBetween('mod_versions.created_at', [$start, $end]);
+        $this->applyDateRangeFilter($query, 'mod_versions.created_at', $range);
     }
 
     /**
@@ -299,12 +289,7 @@ final class ModVersionQueryBuilder extends AbstractQueryBuilder
      */
     protected function filterByUpdatedBetween(Builder $query, ?string $range): void
     {
-        if ($range === null) {
-            return;
-        }
-
-        [$start, $end] = explode(',', $range);
-        $query->whereBetween('mod_versions.updated_at', [$start, $end]);
+        $this->applyDateRangeFilter($query, 'mod_versions.updated_at', $range);
     }
 
     /**
