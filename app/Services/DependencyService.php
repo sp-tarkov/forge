@@ -166,12 +166,15 @@ final class DependencyService
             ->where('mods.disabled', false)
             ->get();
 
-        return $rows
-            ->map(fn (stdClass $row): ?QueriedVersion => is_numeric($row->id)
-                ? new QueriedVersion((int) $row->id, $this->matchingModPairKeys($row, $modVersionPairs))
-                : null)
-            ->filter()
-            ->values();
+        return $this->sortByRequestedPairOrder(
+            $rows
+                ->map(fn (stdClass $row): ?QueriedVersion => is_numeric($row->id)
+                    ? new QueriedVersion((int) $row->id, $this->matchingModPairKeys($row, $modVersionPairs))
+                    : null)
+                ->filter()
+                ->values(),
+            array_values($modVersionPairs->map(fn (array $pair): string => $pair['identifier'].':'.$pair['version'])->unique()->all())
+        );
     }
 
     /**
@@ -223,12 +226,15 @@ final class DependencyService
             ->where('addons.disabled', false)
             ->get();
 
-        return $rows
-            ->map(fn (stdClass $row): ?QueriedVersion => is_numeric($row->id)
-                ? new QueriedVersion((int) $row->id, $this->matchingAddonPairKeys($row, $addonVersionPairs))
-                : null)
-            ->filter()
-            ->values();
+        return $this->sortByRequestedPairOrder(
+            $rows
+                ->map(fn (stdClass $row): ?QueriedVersion => is_numeric($row->id)
+                    ? new QueriedVersion((int) $row->id, $this->matchingAddonPairKeys($row, $addonVersionPairs))
+                    : null)
+                ->filter()
+                ->values(),
+            array_values($addonVersionPairs->map(fn (array $pair): string => $pair['identifier'].':'.$pair['version'])->unique()->all())
+        );
     }
 
     /**
@@ -841,6 +847,22 @@ final class DependencyService
             ->map(fn (array $pair): string => $pair['identifier'].':'.$pair['version'])
             ->unique()
             ->all());
+    }
+
+    /**
+     * Sort resolved versions by the position of their first matching pair key within the requested pair keys.
+     *
+     * @param  Collection<int, QueriedVersion>  $queriedVersions
+     * @param  list<string>  $orderedPairKeys
+     * @return Collection<int, QueriedVersion>
+     */
+    private function sortByRequestedPairOrder(Collection $queriedVersions, array $orderedPairKeys): Collection
+    {
+        $positions = array_flip($orderedPairKeys);
+
+        return $queriedVersions
+            ->sortBy(fn (QueriedVersion $queriedVersion): int => $positions[$queriedVersion->pairKeys[0] ?? ''] ?? PHP_INT_MAX)
+            ->values();
     }
 
     /**
