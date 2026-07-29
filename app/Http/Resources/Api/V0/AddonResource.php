@@ -6,6 +6,7 @@ namespace App\Http\Resources\Api\V0;
 
 use App\Models\Addon;
 use App\Models\AddonVersion;
+use App\Support\Api\V0\QueryBuilder\AbstractQueryBuilder;
 use App\Support\Api\V0\QueryBuilder\AddonQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -29,6 +30,26 @@ final class AddonResource extends JsonResource
      * Whether to show all fields (no specific fields requested).
      */
     private bool $showAllFields = true;
+
+    /**
+     * The query builder that hydrated the addon, whose field contract bounds this response.
+     *
+     * @var class-string<AbstractQueryBuilder<Addon>>
+     */
+    private string $queryBuilder = AddonQueryBuilder::class;
+
+    /**
+     * Set the query builder that hydrated the addon. Fields outside that builder's contract are omitted from the
+     * response.
+     *
+     * @param  class-string<AbstractQueryBuilder<Addon>>  $queryBuilder
+     */
+    public function hydratedBy(string $queryBuilder): self
+    {
+        $this->queryBuilder = $queryBuilder;
+
+        return $this;
+    }
 
     /**
      * Transform the resource into an array.
@@ -146,21 +167,21 @@ final class AddonResource extends JsonResource
     }
 
     /**
-     * Determine if the given field should be included in the response.
+     * Determine if the given field should be included in the response. The id is always included; every other field
+     * must be exposed by the hydrating query builder and either requested or covered by an unfiltered request.
      */
     private function shouldInclude(string $field): bool
     {
-        // ID is always included
         if ($field === 'id') {
             return true;
         }
 
-        // If no fields requested, show all allowed fields
-        if ($this->showAllFields) {
-            return in_array($field, AddonQueryBuilder::getAllAllowedFields(), true);
+        $queryBuilder = $this->queryBuilder;
+
+        if (! in_array($field, $queryBuilder::getAllAllowedFields(), true)) {
+            return false;
         }
 
-        // Otherwise, only show requested fields
-        return in_array($field, $this->requestedFields, true);
+        return $this->showAllFields || in_array($field, $this->requestedFields, true);
     }
 }
