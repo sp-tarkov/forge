@@ -108,6 +108,17 @@
             "./vendor/bin/pest --parallel --compact --testsuite=Feature,Unit",
             "./vendor/bin/pest --parallel --compact --testsuite=Browser"
         ],
+        "test:pgsql": [
+            "DB_CONNECTION=pgsql DB_DATABASE=testing DB_CHARSET=utf8 ./vendor/bin/pest --no-tia --parallel --compact --testsuite=Feature,Unit"
+        ],
+        "test:sqlite": [
+            "@php -r \"file_exists('database/testing.sqlite') || touch('database/testing.sqlite');\"",
+            "DB_CONNECTION=sqlite DB_DATABASE=database/testing.sqlite ./vendor/bin/pest --no-tia --parallel --compact --testsuite=Feature,Unit"
+        ],
+        "test:drivers": [
+            "@test:pgsql",
+            "@test:sqlite"
+        ],
         "format": [
             "@pint",
             "npm run lint"
