@@ -78,11 +78,11 @@
     </ul>
 
     <h2 id="infringement-actions">4. Infringement Actions</h2>
-    <p><strong>Content Removal:</strong></p>
+    <h4 id="content-removal">Content Removal:</h4>
     <p>Upon receiving a valid DMCA notice, we will expeditiously remove or disable access to the material that is
         claimed to be infringing. This action is taken without prejudice to the rights of either party.</p>
 
-    <p><strong>User Notification:</strong></p>
+    <h4 id="user-notification">User Notification:</h4>
     <p>We will make reasonable efforts to notify the user who posted the content about the removal and provide them
         with:</p>
     <ul>
@@ -138,7 +138,7 @@
             DMCA notice</li>
     </ol>
 
-    <p><strong>Counter-Notice Process:</strong></p>
+    <h4 id="counter-notice-process">Counter-Notice Process:</h4>
     <ul>
         <li>We will forward your counter-notice to the original complainant</li>
         <li>If no lawsuit is filed within 10 business days, we may restore the content</li>
@@ -150,7 +150,7 @@
         infringer" is a user who has been notified of infringing activity multiple times or has had multiple pieces of
         content removed for copyright infringement.</p>
 
-    <p><strong>Account Actions:</strong></p>
+    <h4 id="account-actions">Account Actions:</h4>
     <ul>
         <li><strong>First offense:</strong> Content removal and warning</li>
         <li><strong>Second offense:</strong> Temporary account suspension and content review</li>
@@ -186,9 +186,9 @@
 
     <hr>
 
-    <h2>DMCA Notice Summary</h2>
+    <h2 id="dmca-notice-summary">DMCA Notice Summary</h2>
 
-    <p><strong>For Copyright Owners:</strong></p>
+    <h4 id="for-copyright-owners">For Copyright Owners:</h4>
     <ul>
         <li>Ensure your notice includes all 8 required elements</li>
         <li>Provide specific URLs or locations of infringing content</li>
@@ -196,7 +196,7 @@
         <li>Be prepared to defend your claim if challenged</li>
     </ul>
 
-    <p><strong>For Users:</strong></p>
+    <h4 id="for-users">For Users:</h4>
     <ul>
         <li>Only upload content you own or have permission to use</li>
         <li>Respect others' intellectual property rights</li>

@@ -35,15 +35,41 @@
         </div>
     </div>
 
-    <!-- JavaScript for smooth scrolling and active state -->
+    <!-- JavaScript for smooth scrolling, heading permalinks, and active state -->
     <script>
         (function() {
+            function addHeadingPermalinks() {
+                const content = document.querySelector('.static-content');
+
+                if (!content) {
+                    return;
+                }
+
+                content.querySelectorAll(':scope > h2[id], :scope > h3[id], :scope > h4[id]').forEach(heading => {
+                    if (heading.querySelector('a.heading-permalink')) {
+                        return;
+                    }
+
+                    const permalink = document.createElement('a');
+                    permalink.href = '#' + heading.id;
+                    permalink.className = 'heading-permalink';
+
+                    while (heading.firstChild) {
+                        permalink.appendChild(heading.firstChild);
+                    }
+
+                    heading.appendChild(permalink);
+                });
+            }
+
             function initStaticToc() {
                 // Add smooth scrolling behavior
                 document.documentElement.style.scrollBehavior = 'smooth';
 
                 const navLinks = document.querySelectorAll('.nav-link');
-                const sections = document.querySelectorAll('h2[id], h3[id], h4[id]');
+                const sections = [...navLinks]
+                    .map(link => document.getElementById(link.getAttribute('href').slice(1)))
+                    .filter(Boolean);
 
                 function updateActiveLink() {
                     let current = '';
@@ -74,15 +100,20 @@
                 updateActiveLink(); // Initial call
             }
 
-            // Run on initial load
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initStaticToc);
-            } else {
+            function init() {
+                addHeadingPermalinks();
                 initStaticToc();
             }
 
+            // Run on initial load
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
             // Run on Livewire navigation
-            document.addEventListener('livewire:navigated', initStaticToc);
+            document.addEventListener('livewire:navigated', init);
         })();
     </script>
 </x-layouts::base>

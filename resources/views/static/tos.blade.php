@@ -83,7 +83,7 @@
 
     <p>By using The Forge, you agree to these Terms. If you don't agree, please don't use our services.</p>
 
-    <p><strong>Key Points:</strong></p>
+    <h4 id="key-points">Key Points:</h4>
     <ul>
         <li>You must be at least 18 years old to use our services</li>
         <li>You're responsible for your account and content you submit</li>
@@ -139,7 +139,7 @@
 
     <h3 id="what-you-cannot-do">What You Cannot Do</h3>
 
-    <h4>Prohibited Activities:</h4>
+    <h4 id="prohibited-activities">Prohibited Activities:</h4>
     <ul>
         <li><strong>Piracy:</strong> Discussing, sharing, or requesting copyrighted game files</li>
         <li><strong>Cheating:</strong> Creating or sharing mods intended for use in live Escape From Tarkov</li>
@@ -149,7 +149,7 @@
         <li><strong>Malware:</strong> Uploading files containing viruses, malware, or harmful code</li>
     </ul>
 
-    <h4>Technical Restrictions:</h4>
+    <h4 id="technical-restrictions">Technical Restrictions:</h4>
     <ul>
         <li><strong>No scraping</strong> of our website's HTML content (crawlers, scrapers, headless browsers, etc.)
         </li>
@@ -158,7 +158,7 @@
         <li><strong>No excessive bandwidth usage</strong> that impacts service quality</li>
     </ul>
 
-    <h4>Content Restrictions:</h4>
+    <h4 id="content-restrictions">Content Restrictions:</h4>
     <ul>
         <li><strong>No illegal content</strong> under applicable laws</li>
         <li><strong>No adult content</strong> outside designated areas</li>
@@ -168,7 +168,7 @@
 
     <h2 id="user-generated-content">5. User-Generated Content</h2>
 
-    <h3>Your Content Rights</h3>
+    <h3 id="your-content-rights">Your Content Rights</h3>
     <p>You retain ownership of content you create and upload. By submitting content to The Forge, you grant us:</p>
     <ul>
         <li><strong>A worldwide, non-exclusive license</strong> to store, display, and distribute your content</li>
@@ -176,7 +176,7 @@
         <li><strong>Permission to create backups</strong> and ensure service functionality</li>
     </ul>
 
-    <h3>Content Standards</h3>
+    <h3 id="content-standards">Content Standards</h3>
     <p>All user-submitted content must:</p>
     <ul>
         <li><strong>Comply with these Terms</strong> and our Community Standards</li>
@@ -185,7 +185,7 @@
         <li><strong>Function as described</strong> (no broken or malicious files)</li>
     </ul>
 
-    <h3>Content Moderation</h3>
+    <h3 id="content-moderation">Content Moderation</h3>
     <p>We reserve the right to:</p>
     <ul>
         <li><strong>Review submitted content</strong> before or after publication</li>
@@ -194,7 +194,7 @@
         <li><strong>Preserve content</strong> for legal or safety reasons</li>
     </ul>
 
-    <h3>Third-Party Content</h3>
+    <h3 id="third-party-content">Third-Party Content</h3>
     <p>When sharing content that includes third-party materials:</p>
     <ul>
         <li><strong>Obtain proper permissions</strong> from original creators</li>
@@ -205,7 +205,7 @@
 
     <h2 id="intellectual-property">6. Intellectual Property</h2>
 
-    <h3>Our Rights</h3>
+    <h3 id="our-rights">Our Rights</h3>
     <p>The Forge owns:</p>
     <ul>
         <li>The platform software and infrastructure</li>
@@ -214,7 +214,7 @@
         <li>Community-generated data and statistics</li>
     </ul>
 
-    <h3>Respecting Others' Rights</h3>
+    <h3 id="respecting-others-rights">Respecting Others' Rights</h3>
     <p>You must:</p>
     <ul>
         <li><strong>Only upload content you own</strong> or have permission to share</li>
@@ -223,7 +223,7 @@
         <li><strong>Respond to takedown requests</strong> if you're a content owner</li>
     </ul>
 
-    <h3>DMCA Policy</h3>
+    <h3 id="dmca-policy">DMCA Policy</h3>
     <p>We respond to valid DMCA takedown notices. If you believe your copyright has been infringed:</p>
     <ol>
         <li><strong>Submit a formal DMCA notice</strong> with required information</li>
@@ -249,21 +249,21 @@
     <p>Detailed behavioral expectations are outlined in our <a
             href="{{ route('static.community-standards') }}">Community Standards</a>. Key principles:</p>
 
-    <h3>Be Respectful</h3>
+    <h3 id="be-respectful">Be Respectful</h3>
     <ul>
         <li>Treat other users with civility and respect</li>
         <li>Avoid personal attacks or inflammatory language</li>
         <li>Respect diverse viewpoints and backgrounds</li>
     </ul>
 
-    <h3>Be Constructive</h3>
+    <h3 id="be-constructive">Be Constructive</h3>
     <ul>
         <li>Provide helpful feedback and support</li>
         <li>Stay on-topic in discussions</li>
         <li>Contribute positively to the community</li>
     </ul>
 
-    <h3>Be Honest</h3>
+    <h3 id="be-honest">Be Honest</h3>
     <ul>
         <li>Don't misrepresent your work or identity</li>
         <li>Give appropriate credit to others</li>
@@ -282,7 +282,7 @@
 
     <h2 id="service-availability">10. Service Availability</h2>
 
-    <h3>Our Commitment</h3>
+    <h3 id="our-commitment">Our Commitment</h3>
     <p>We strive to provide reliable service but cannot guarantee:</p>
     <ul>
         <li><strong>100% uptime</strong> or uninterrupted access</li>
@@ -291,7 +291,7 @@
         <li><strong>Technical support</strong> response times</li>
     </ul>
 
-    <h3>Service Modifications</h3>
+    <h3 id="service-modifications">Service Modifications</h3>
     <p>We may:</p>
     <ul>
         <li><strong>Update features</strong> to improve functionality</li>
@@ -300,7 +300,7 @@
         <li><strong>Migrate data</strong> to new systems when necessary</li>
     </ul>
 
-    <h3>Your Responsibilities</h3>
+    <h3 id="your-responsibilities">Your Responsibilities</h3>
     <p>You should:</p>
     <ul>
         <li><strong>Back up important data</strong> you don't want to lose</li>
@@ -311,7 +311,7 @@
 
     <h2 id="termination">11. Termination</h2>
 
-    <h3>Your Right to Leave</h3>
+    <h3 id="your-right-to-leave">Your Right to Leave</h3>
     <p>You may:</p>
     <ul>
         <li><strong>Delete your account</strong> at any time through account settings</li>
@@ -319,7 +319,7 @@
         <li><strong>Stop using services</strong> without penalty</li>
     </ul>
 
-    <h3>Our Right to Enforce</h3>
+    <h3 id="our-right-to-enforce">Our Right to Enforce</h3>
     <p>We may suspend or terminate accounts for:</p>
     <ul>
         <li><strong>Violations of these Terms</strong> or Community Standards</li>
@@ -328,7 +328,7 @@
         <li><strong>Prolonged inactivity</strong> (with advance notice)</li>
     </ul>
 
-    <h3>Effect of Termination</h3>
+    <h3 id="effect-of-termination">Effect of Termination</h3>
     <p>Upon termination:</p>
     <ul>
         <li><strong>Your access ends</strong> immediately</li>
@@ -339,7 +339,7 @@
 
     <h2 id="disclaimers-limitations">12. Disclaimers and Limitations</h2>
 
-    <h3>Service Disclaimers</h3>
+    <h3 id="service-disclaimers">Service Disclaimers</h3>
     <p>The Forge is provided "as is" without warranties:</p>
     <ul>
         <li><strong>We don't guarantee</strong> error-free operation</li>
@@ -348,7 +348,7 @@
         <li><strong>Mod functionality</strong> depends on SPT compatibility</li>
     </ul>
 
-    <h3>Limitation of Liability</h3>
+    <h3 id="limitation-of-liability">Limitation of Liability</h3>
     <p>To the fullest extent permitted by law:</p>
     <ul>
         <li><strong>Our liability is limited</strong> to the amount you've paid us (currently $0)</li>
@@ -357,7 +357,7 @@
         <li><strong>Third-party actions</strong> are not our responsibility</li>
     </ul>
 
-    <h3>Indemnification</h3>
+    <h3 id="indemnification">Indemnification</h3>
     <p>You agree to defend and hold us harmless from claims arising from:</p>
     <ul>
         <li><strong>Your use of our services</strong></li>
@@ -368,7 +368,7 @@
 
     <h2 id="dispute-resolution">13. Dispute Resolution</h2>
 
-    <h3>Informal Resolution</h3>
+    <h3 id="informal-resolution">Informal Resolution</h3>
     <p>Before formal legal action:</p>
     <ul>
         <li><strong>Contact us directly</strong> to discuss issues</li>
@@ -376,10 +376,10 @@
         <li><strong>Allow reasonable time</strong> for us to respond and address problems</li>
     </ul>
 
-    <h3>Governing Law</h3>
+    <h3 id="governing-law">Governing Law</h3>
     <p>These Terms are governed by the laws of Ontario and Canada, without regard to conflict of law principles.</p>
 
-    <h3>Arbitration</h3>
+    <h3 id="arbitration">Arbitration</h3>
     <p>For disputes that cannot be resolved informally:</p>
     <ul>
         <li><strong>Binding arbitration</strong> may be required for certain claims</li>
@@ -389,7 +389,7 @@
 
     <h2 id="changes-terms">14. Changes to These Terms</h2>
 
-    <h3>Updates and Notices</h3>
+    <h3 id="updates-and-notices">Updates and Notices</h3>
     <p>We may update these Terms to:</p>
     <ul>
         <li><strong>Reflect service changes</strong> or new features</li>
@@ -397,14 +397,14 @@
         <li><strong>Improve clarity</strong> or fix errors</li>
     </ul>
 
-    <h3>How We'll Notify You</h3>
+    <h3 id="how-we-ll-notify-you">How We'll Notify You</h3>
     <ul>
         <li><strong>Email notices</strong> to your registered address</li>
         <li><strong>Website announcements</strong> for significant changes</li>
         <li><strong>In-service notifications</strong> when you log in</li>
     </ul>
 
-    <h3>Your Options</h3>
+    <h3 id="your-options">Your Options</h3>
     <p>After changes take effect:</p>
     <ul>
         <li><strong>Continued use</strong> means you accept the new Terms</li>
@@ -418,7 +418,7 @@
 
     <hr>
 
-    <h2>Summary</h2>
+    <h2 id="summary">Summary</h2>
 
     <p>These Terms establish the rules for using The Forge responsibly and legally. Key points:</p>
 
