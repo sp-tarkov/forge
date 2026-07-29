@@ -137,6 +137,7 @@ jobs:
     needs: build-assets
 
     env:
+      BROADCAST_CONNECTION: reverb
       DB_CONNECTION: pgsql
       DB_HOST: 127.0.0.1
       DB_PORT: 5432
