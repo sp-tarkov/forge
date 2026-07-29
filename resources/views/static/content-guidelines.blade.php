@@ -77,11 +77,27 @@
 
     <p><strong>Effective Date:</strong> August 26, 2025<br><strong>Last Updated:</strong> July 28, 2026</p>
 
-    <h2 id="overview" class="group"><a href="#overview" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">1. Overview<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h2>
+    <h2
+        id="overview"
+        class="group"
+    ><a
+            href="#overview"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >1. Overview
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h2>
     <p>These Content Guidelines establish the technical and quality standards for all files, mods, and content submitted
         to The Forge. Following these guidelines ensures a consistent, professional experience for all users and
         maintains the integrity of our modding platform.</p>
-    <h4 id="what-these-guidelines-cover" class="group"><a href="#what-these-guidelines-cover" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">What These Guidelines Cover:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="what-these-guidelines-cover"
+        class="group"
+    ><a
+            href="#what-these-guidelines-cover"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >What These Guidelines Cover:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <ul>
         <li>File submission requirements and technical standards</li>
         <li>Mod versioning standards for consistency and compatibility</li>
@@ -89,10 +105,34 @@
         <li>Special requirements for different content types</li>
     </ul>
 
-    <h2 id="general-submission" class="group"><a href="#general-submission" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">2. General Submission Requirements<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h2>
+    <h2
+        id="general-submission"
+        class="group"
+    ><a
+            href="#general-submission"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >2. General Submission Requirements
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h2>
 
-    <h3 id="file-format-standards" class="group"><a href="#file-format-standards" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">2.1 File Format Standards<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="archive-requirements" class="group"><a href="#archive-requirements" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Archive Requirements:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="file-format-standards"
+        class="group"
+    ><a
+            href="#file-format-standards"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >2.1 File Format Standards
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="archive-requirements"
+        class="group"
+    ><a
+            href="#archive-requirements"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Archive Requirements:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>The Forge maintains strict archive standards to ensure consistency and ease of installation across all submitted
         content. These requirements help prevent compatibility issues and streamline the user experience.</p>
     <ul>
@@ -103,19 +143,51 @@
             without missing external dependencies</li>
         <li>Password-protected archives are prohibited to prevent access issues and maintain security transparency</li>
     </ul>
-    <h4 id="file-structure" class="group"><a href="#file-structure" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">File Structure:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="file-structure"
+        class="group"
+    ><a
+            href="#file-structure"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >File Structure:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>The file structure within archives must provide an installation-ready layout that matches SPT directory
         conventions. Users should be able to extract the archive contents and place them directly into their SPT root
         directory without requiring additional folder manipulation or reorganization. This approach minimizes
         installation complexity and reduces support requests related to improper file placement.</p>
-    <h4 id="description-requirements" class="group"><a href="#description-requirements" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Description Requirements:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="description-requirements"
+        class="group"
+    ><a
+            href="#description-requirements"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Description Requirements:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Every submission must include clear installation instructions presented in step-by-step format and basic usage
         instructions or configuration guidance. Any required dependencies must be added to each mod version submission.
         These requirements ensure that users can successfully install and configure mods regardless of their technical
         expertise.</p>
 
-    <h3 id="mod-types-requirements" class="group"><a href="#mod-types-requirements" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">2.2 Mod Types and Requirements<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="client-mods-bepinex-plugins" class="group"><a href="#client-mods-bepinex-plugins" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Client Mods (BepInEx Plugins):<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="mod-types-requirements"
+        class="group"
+    ><a
+            href="#mod-types-requirements"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >2.2 Mod Types and Requirements
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="client-mods-bepinex-plugins"
+        class="group"
+    ><a
+            href="#client-mods-bepinex-plugins"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Client Mods (BepInEx Plugins):
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Client-side modifications require additional scrutiny due to their direct interaction with game code. The
         following requirements ensure code quality and maintainability while enabling proper compatibility tracking.</p>
     <ul>
@@ -137,7 +209,15 @@
             <pre><code class="language-csharp">[BepInPlugin("com.username.modname", "Username-ModName", "1.2.3")]</code></pre>
         </li>
     </ul>
-    <h4 id="server-mods-spt-v3-x-and-below-node-js" class="group"><a href="#server-mods-spt-v3-x-and-below-node-js" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Server Mods (SPT v3.x and below - Node.js):<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="server-mods-spt-v3-x-and-below-node-js"
+        class="group"
+    ><a
+            href="#server-mods-spt-v3-x-and-below-node-js"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Server Mods (SPT v3.x and below - Node.js):
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Server modifications for legacy SPT versions must follow established Node.js conventions while maintaining
         compatibility with the SPT server architecture. These requirements ensure proper integration and prevent
         conflicts with core SPT functionality.</p>
@@ -162,7 +242,15 @@
                 information</em>
         </li>
     </ul>
-    <h4 id="server-mods-spt-v4-0-c" class="group"><a href="#server-mods-spt-v4-0-c" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Server Mods (SPT v4.0+ - C#):<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="server-mods-spt-v4-0-c"
+        class="group"
+    ><a
+            href="#server-mods-spt-v4-0-c"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Server Mods (SPT v4.0+ - C#):
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Modern SPT server mods utilize C# and require additional metadata for proper integration with the new modding
         framework. These requirements ensure compatibility with SPT's enhanced mod management system.</p>
     <ul>
@@ -195,7 +283,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
                 information</em>
         </li>
     </ul>
-    <h4 id="configuration-presets" class="group"><a href="#configuration-presets" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Configuration Presets:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="configuration-presets"
+        class="group"
+    ><a
+            href="#configuration-presets"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Configuration Presets:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Configuration modifications represent significant changes to game behavior and require careful documentation to
         ensure users understand their impact and can troubleshoot issues effectively.</p>
     <ul>
@@ -206,7 +302,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>Special installation requirements must be documented with step-by-step instructions for proper setup</li>
         <li>Uninstallation procedures must be provided to help users revert changes if needed</li>
     </ul>
-    <h4 id="tools-and-utilities" class="group"><a href="#tools-and-utilities" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Tools and Utilities:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="tools-and-utilities"
+        class="group"
+    ><a
+            href="#tools-and-utilities"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Tools and Utilities:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Standalone tools and utilities extend SPT functionality beyond traditional mods and require additional
         verification to ensure they operate safely within the SPT ecosystem.</p>
     <ul>
@@ -217,14 +321,38 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>Removal procedures must be provided to help users cleanly uninstall tools when no longer needed</li>
     </ul>
 
-    <h2 id="semantic-versioning" class="group"><a href="#semantic-versioning" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">3. Semantic Versioning Requirements<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h2>
+    <h2
+        id="semantic-versioning"
+        class="group"
+    ><a
+            href="#semantic-versioning"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >3. Semantic Versioning Requirements
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h2>
 
-    <h3 id="understanding-semver" class="group"><a href="#understanding-semver" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">3.1 Understanding Semantic Versioning<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
+    <h3
+        id="understanding-semver"
+        class="group"
+    ><a
+            href="#understanding-semver"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >3.1 Understanding Semantic Versioning
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
     <p>All mods submitted to The Forge must use Semantic Versioning (SemVer) for version numbering. SemVer is a
         widely-adopted standard that provides clear meaning to version numbers and helps users understand the nature of
         changes between releases. The complete specification is available at <a
             href="https://semver.org/">semver.org</a>.</p>
-    <h4 id="basic-semver-format-major-minor-patch" class="group"><a href="#basic-semver-format-major-minor-patch" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Basic SemVer Format: <code>MAJOR.MINOR.PATCH</code><flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="basic-semver-format-major-minor-patch"
+        class="group"
+    ><a
+            href="#basic-semver-format-major-minor-patch"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Basic SemVer Format: <code>MAJOR.MINOR.PATCH</code>
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Each component serves a specific purpose in communicating the type of changes included in a release. The MAJOR
         version increments for incompatible changes that break existing functionality or require user intervention. The
         MINOR version increments when new functionality is added in a backward-compatible manner. The PATCH version
@@ -234,7 +362,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         pre-release development versions. Pre-release versions may include additional identifiers such as
         <code>1.0.0-beta.1</code> or <code>2.0.0-rc.2</code>.
     </p>
-    <h4 id="when-to-increment-version-components" class="group"><a href="#when-to-increment-version-components" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">When to Increment Version Components:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="when-to-increment-version-components"
+        class="group"
+    ><a
+            href="#when-to-increment-version-components"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >When to Increment Version Components:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Increment the MAJOR version when making incompatible changes that require users to modify their configurations,
         when removing features or functionality that existing users depend on, when changing mod dependencies in ways
         that break existing installations, or when restructuring the mod in ways that affect how users install or
@@ -247,12 +383,28 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         optimizations, when updating documentation or help text, when making internal code improvements that do not
         affect user experience, or when addressing security issues that do not change the mod's interface.</p>
 
-    <h3 id="version-constraints" class="group"><a href="#version-constraints" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">3.2 Semantic Version Constraints<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
+    <h3
+        id="version-constraints"
+        class="group"
+    ><a
+            href="#version-constraints"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >3.2 Semantic Version Constraints
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
     <p>A semantic version constraint defines which versions of a dependency are acceptable for your mod to function
         correctly. Constraints are expressions that specify compatibility ranges rather than exact version matches,
         allowing for automatic updates within safe boundaries while preventing incompatible versions from being used.
     </p>
-    <h4 id="common-constraint-patterns" class="group"><a href="#common-constraint-patterns" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Common Constraint Patterns:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="common-constraint-patterns"
+        class="group"
+    ><a
+            href="#common-constraint-patterns"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Common Constraint Patterns:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>The tilde constraint (<code>~1.2.3</code>) allows patch-level changes within the same minor version, meaning it
         accepts <code>1.2.3</code>, <code>1.2.4</code>, and <code>1.2.15</code> but rejects <code>1.3.0</code>. This
         constraint is useful when you want to receive bug fixes but avoid new features that might introduce
@@ -264,7 +416,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         maximum stability but prevents users from receiving any updates, including critical bug fixes. Range constraints
         (<code>&gt;=1.2.0 &lt;2.0.0</code>) offer more flexibility by specifying minimum and maximum acceptable
         versions.</p>
-    <h4 id="practical-application-in-mod-development" class="group"><a href="#practical-application-in-mod-development" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Practical Application in Mod Development:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="practical-application-in-mod-development"
+        class="group"
+    ><a
+            href="#practical-application-in-mod-development"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Practical Application in Mod Development:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>When specifying SPT compatibility, use constraints that reflect the actual compatibility testing you have
         performed. If your mod has been tested with SPT 3.11 and you expect it to work with future patch releases, use
         <code>~3.11.0</code>. If your mod uses features introduced in SPT 4.0 but should work with future minor
@@ -274,44 +434,124 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         Well-maintained mods with consistent APIs may safely use caret constraints, while experimental or
         rapidly-changing dependencies may require more restrictive constraints.</p>
 
-    <h3 id="implementation-requirements" class="group"><a href="#implementation-requirements" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">3.3 Implementation Requirements<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="version-declaration-consistency" class="group"><a href="#version-declaration-consistency" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Version Declaration Consistency:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="implementation-requirements"
+        class="group"
+    ><a
+            href="#implementation-requirements"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >3.3 Implementation Requirements
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="version-declaration-consistency"
+        class="group"
+    ><a
+            href="#version-declaration-consistency"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Version Declaration Consistency:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>All version numbers declared within a single mod must match exactly. Client-side plugins, server-side modules,
         and any associated configuration files must declare identical version numbers. This consistency ensures that
         users can clearly identify complete mod packages and ensures that automatic tooling can reliably select mods
         based on their version.</p>
-    <h4 id="spt-compatibility-constraints" class="group"><a href="#spt-compatibility-constraints" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">SPT Compatibility Constraints:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="spt-compatibility-constraints"
+        class="group"
+    ><a
+            href="#spt-compatibility-constraints"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >SPT Compatibility Constraints:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Every server mod must declare its SPT version compatibility using appropriate constraint syntax. Server mods for
         SPT v3.x must include the <code>sptVersion</code> field in their <code>package.json</code> file. Server mods for
         SPT v4.0+ must specify the <code>SptVersion</code> property in their metadata class. These constraints should
         reflect actual testing and validation performed by the mod author.</p>
-    <h4 id="version-validation" class="group"><a href="#version-validation" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Version Validation:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="version-validation"
+        class="group"
+    ><a
+            href="#version-validation"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Version Validation:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>The Forge automatically validates semantic version format compliance during the submission process. Improperly
         formatted versions will be rejected. Pre-release versions are acceptable for beta or experimental content but
         must follow the SemVer pre-release specification exactly.</p>
 
-    <h2 id="quality-standards" class="group"><a href="#quality-standards" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">4. Content Quality Standards<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h2>
+    <h2
+        id="quality-standards"
+        class="group"
+    ><a
+            href="#quality-standards"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >4. Content Quality Standards
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h2>
 
-    <h3 id="functional-requirements" class="group"><a href="#functional-requirements" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">4.1 Functional Requirements<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="testing-standards" class="group"><a href="#testing-standards" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Testing Standards:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="functional-requirements"
+        class="group"
+    ><a
+            href="#functional-requirements"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >4.1 Functional Requirements
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="testing-standards"
+        class="group"
+    ><a
+            href="#testing-standards"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Testing Standards:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Mod authors must thoroughly test their submissions using a fresh SPT installation (with all documented
         dependencies properly installed) to ensure compatibility and stability before making them available to the
         community. All advertised features must work as described. The mod must load without errors, and without causing
         unintended changes to base SPT functionality. Testing should verify that the mod functions correctly in standard
         user environments without requiring undocumented system configurations or additional modifications.</p>
-    <h4 id="performance-requirements" class="group"><a href="#performance-requirements" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Performance Requirements:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="performance-requirements"
+        class="group"
+    ><a
+            href="#performance-requirements"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Performance Requirements:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Mods should not cause significant, unintended performance degradation during normal gameplay or system operation.
         Memory leaks and excessive resource usage are strictly prohibited as they negatively impact user experience and
         system stability. Loading times should remain reasonable compared to base SPT performance, and mods must not
         contain infinite loops or blocking operations that could cause system freezes or unresponsive behavior.</p>
-    <h4 id="error-handling" class="group"><a href="#error-handling" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Error Handling:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="error-handling"
+        class="group"
+    ><a
+            href="#error-handling"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Error Handling:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Error handling must be implemented gracefully to manage missing dependencies without causing system crashes or
         data corruption. Clear error messages should be provided for configuration issues to help users identify and
         resolve problems independently. Fallback behavior should be implemented when possible to maintain basic
         functionality even when optimal conditions are not met. Logging systems should be designed to help users
         troubleshoot problems by providing relevant diagnostic information without overwhelming them with excessive
         technical detail.</p>
-    <h4 id="logging-standards" class="group"><a href="#logging-standards" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Logging Standards:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="logging-standards"
+        class="group"
+    ><a
+            href="#logging-standards"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Logging Standards:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Logging functionality should provide pertinent information to end users while maintaining clean, readable console
         and file output. Excessive or inappropriate logging can impede users' ability to identify genuine errors or
         warnings among unnecessary output, degrading the overall user experience and making troubleshooting more
@@ -321,20 +561,53 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         advertising of external links that serves no diagnostic purpose. Log messages should focus exclusively on
         operational status, configuration information, error reporting, and debugging data that helps users understand
         mod behavior and resolve issues effectively.</p>
-    <h4 id="version-watermark" class="group"><a href="#version-watermark" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Version Watermark:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
-    <p>As of SPT 4.1, mods must not modify the SPT version watermark displayed in-game. This restriction does not apply to mods 
-        whose sole purpose is to customize the appearance of the watermark, provided they offer no other functionality, 
+    <h4
+        id="version-watermark"
+        class="group"
+    ><a
+            href="#version-watermark"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Version Watermark:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
+    <p>As of SPT 4.1, mods must not modify the SPT version watermark displayed in-game. This restriction does not apply
+        to mods
+        whose sole purpose is to customize the appearance of the watermark, provided they offer no other functionality,
         nor does it apply to Fika, which is exempt due to its cross-user versioning requirements.</p>
 
-    <h3 id="code-quality" class="group"><a href="#code-quality" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">4.2 Code Quality Standards<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="security-requirements" class="group"><a href="#security-requirements" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Security Requirements:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="code-quality"
+        class="group"
+    ><a
+            href="#code-quality"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >4.2 Code Quality Standards
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="security-requirements"
+        class="group"
+    ><a
+            href="#security-requirements"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Security Requirements:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>No obfuscated code may be present in executable files, as this prevents proper security review and violates
         transparency standards. Source code must be available for review through publicly accessible repositories that
         contain the exact code used to generate submitted binaries. No unauthorized network connections or data
         collection may be implemented without explicit user consent and clear documentation of the purpose and scope of
         such activities. Modifications to system files outside the SPT directory are prohibited to prevent system
         instability and security risks.</p>
-    <h4 id="ai-generated-content-policy" class="group"><a href="#ai-generated-content-policy" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">AI-Generated Content Policy:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="ai-generated-content-policy"
+        class="group"
+    ><a
+            href="#ai-generated-content-policy"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >AI-Generated Content Policy:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>The Forge does not accept mods that have been substantially or entirely written by AI coding agents. AI models
         have not been trained on the specific codebase and security requirements necessary to safely modify SPT client
         and server code. This limitation creates significant risks for code stability, security vulnerabilities, and
@@ -355,10 +628,34 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         generation, and image generation requires that the "Contains AI Content" flag be enabled in the mod
         properties.</p>
 
-    <h2 id="executable-security" class="group"><a href="#executable-security" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">5. Executable Files and Security<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h2>
+    <h2
+        id="executable-security"
+        class="group"
+    ><a
+            href="#executable-security"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >5. Executable Files and Security
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h2>
 
-    <h3 id="executable-requirements" class="group"><a href="#executable-requirements" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">5.1 Executable Content Requirements<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="mandatory-requirements" class="group"><a href="#mandatory-requirements" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Mandatory Requirements:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="executable-requirements"
+        class="group"
+    ><a
+            href="#executable-requirements"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >5.1 Executable Content Requirements
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="mandatory-requirements"
+        class="group"
+    ><a
+            href="#mandatory-requirements"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Mandatory Requirements:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Executable content presents the highest security risk and requires comprehensive verification to protect users
         from malicious software. These requirements ensure transparency and enable proper security review of all
         executable components.</p>
@@ -372,7 +669,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>Build instructions must be provided in the repository to enable independent verification of the compilation
             process</li>
     </ul>
-    <h4 id="security-verification" class="group"><a href="#security-verification" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Security Verification:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="security-verification"
+        class="group"
+    ><a
+            href="#security-verification"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Security Verification:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <ul>
         <li>VirusTotal scan links are required for all executable content to provide initial security screening</li>
         <li>False positives (1-2 detections) are evaluated on a case-by-case basis considering the detection engines and
@@ -381,7 +686,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>Staff reserves the right to request additional security verification through alternative scanning services
             or manual review</li>
     </ul>
-    <h4 id="prohibited-executable-behavior" class="group"><a href="#prohibited-executable-behavior" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Prohibited Executable Behavior:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="prohibited-executable-behavior"
+        class="group"
+    ><a
+            href="#prohibited-executable-behavior"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Prohibited Executable Behavior:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <ul>
         <li>Code obfuscation or anti-debugging techniques are prohibited as they prevent proper security analysis</li>
         <li>Unauthorized system modifications outside the SPT directory are forbidden to maintain system integrity</li>
@@ -389,8 +702,24 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>Installation of additional software or drivers is prohibited to prevent system compromise</li>
     </ul>
 
-    <h3 id="network-communication" class="group"><a href="#network-communication" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">5.2 Network Communication<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="allowed-network-activity" class="group"><a href="#allowed-network-activity" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Allowed Network Activity:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="network-communication"
+        class="group"
+    ><a
+            href="#network-communication"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >5.2 Network Communication
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="allowed-network-activity"
+        class="group"
+    ><a
+            href="#allowed-network-activity"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Allowed Network Activity:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Network communication capabilities must be transparent and serve legitimate purposes that benefit users. All
         network activity requires clear disclosure and appropriate user consent mechanisms.</p>
     <ul>
@@ -399,13 +728,29 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>API calls essential for mod functionality are acceptable when clearly documented and disclosed in advance
         </li>
     </ul>
-    <h4 id="required-disclosure" class="group"><a href="#required-disclosure" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Required Disclosure:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="required-disclosure"
+        class="group"
+    ><a
+            href="#required-disclosure"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Required Disclosure:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <ul>
         <li>All network activity must be documented in detail, including destination servers and data transmitted</li>
         <li>Privacy implications must be clearly explained in language that non-technical users can understand</li>
         <li>Opt-out options must be provided where technically feasible to respect user privacy preferences</li>
     </ul>
-    <h4 id="prohibited-network-activity" class="group"><a href="#prohibited-network-activity" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Prohibited Network Activity:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="prohibited-network-activity"
+        class="group"
+    ><a
+            href="#prohibited-network-activity"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Prohibited Network Activity:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <ul>
         <li>Unauthorized data collection or telemetry violates user privacy and trust</li>
         <li>Communication with unknown or undisclosed servers presents security risks</li>
@@ -414,9 +759,33 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>User tracking or analytics without explicit consent violates privacy expectations</li>
     </ul>
 
-    <h2 id="licensing-permissions" class="group"><a href="#licensing-permissions" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">6. Content Licensing and Permissions<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h2>
-    <h3 id="license-requirements" class="group"><a href="#license-requirements" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">6.1 License Requirements<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="acceptable-licenses" class="group"><a href="#acceptable-licenses" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Acceptable Licenses:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h2
+        id="licensing-permissions"
+        class="group"
+    ><a
+            href="#licensing-permissions"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >6. Content Licensing and Permissions
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h2>
+    <h3
+        id="license-requirements"
+        class="group"
+    ><a
+            href="#license-requirements"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >6.1 License Requirements
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="acceptable-licenses"
+        class="group"
+    ><a
+            href="#acceptable-licenses"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Acceptable Licenses:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Content licensing ensures legal compliance and clarifies usage rights for both creators and users. The Forge
         accepts standard open-source and creative licenses that provide appropriate legal frameworks.</p>
     <ul>
@@ -426,7 +795,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
             files</li>
         <li>Public domain dedication is acceptable for content where authors wish to relinquish all rights</li>
     </ul>
-    <h4 id="license-documentation" class="group"><a href="#license-documentation" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">License Documentation:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="license-documentation"
+        class="group"
+    ><a
+            href="#license-documentation"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >License Documentation:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <ul>
         <li>License files must be included in mod archives to ensure users understand their rights and obligations</li>
         <li>Third-party component licenses must be respected and documented to maintain legal compliance</li>
@@ -434,8 +811,24 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
             derivative works</li>
     </ul>
 
-    <h3 id="attribution-requirements" class="group"><a href="#attribution-requirements" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">6.2 Attribution Requirements<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="obtaining-permission" class="group"><a href="#obtaining-permission" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Obtaining Permission:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="attribution-requirements"
+        class="group"
+    ><a
+            href="#attribution-requirements"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >6.2 Attribution Requirements
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="obtaining-permission"
+        class="group"
+    ><a
+            href="#obtaining-permission"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Obtaining Permission:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Building upon or modifying existing community content requires explicit permission from original creators to
         respect their intellectual property rights and creative contributions. These requirements protect creators while
         enabling collaborative development within appropriate boundaries.</p>
@@ -447,7 +840,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         is not necessary. However, providing attribution alone does not substitute for receiving explicit permission to
         upload or modify someone else's work. Permission and attribution serve different purposes and both requirements
         must be satisfied independently.</p>
-    <h4 id="when-using-others-work" class="group"><a href="#when-using-others-work" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">When Using Others' Work:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="when-using-others-work"
+        class="group"
+    ><a
+            href="#when-using-others-work"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >When Using Others' Work:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Proper attribution protects original creators' rights while enabling collaborative development. These
         requirements ensure credit is given appropriately while maintaining legal compliance.</p>
     <ul>
@@ -457,10 +858,34 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>License information for third-party components must be included to maintain legal compliance</li>
     </ul>
 
-    <h2 id="special-categories" class="group"><a href="#special-categories" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">7. Special Content Categories<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h2>
+    <h2
+        id="special-categories"
+        class="group"
+    ><a
+            href="#special-categories"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >7. Special Content Categories
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h2>
 
-    <h3 id="adult-content" class="group"><a href="#adult-content" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">7.1 Adult Content Policy<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="prohibited-content" class="group"><a href="#prohibited-content" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Prohibited Content:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="adult-content"
+        class="group"
+    ><a
+            href="#adult-content"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >7.1 Adult Content Policy
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="prohibited-content"
+        class="group"
+    ><a
+            href="#prohibited-content"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Prohibited Content:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>The Forge maintains family-friendly content standards while allowing mature themes appropriate to the source
         game. These restrictions ensure broad accessibility while respecting community standards.</p>
     <ul>
@@ -470,7 +895,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>References to adult websites or services are prohibited to maintain appropriate boundaries</li>
     </ul>
 
-    <h4 id="mature-themes" class="group"><a href="#mature-themes" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Mature Themes:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="mature-themes"
+        class="group"
+    ><a
+            href="#mature-themes"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Mature Themes:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <ul>
         <li>Violence and combat modifications are generally acceptable given the tactical nature of the base game</li>
         <li>Realistic tactical or military themes are allowed when appropriate to the game context</li>
@@ -478,8 +911,24 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>Language and mature themes should be noted in descriptions to help users make informed choices</li>
     </ul>
 
-    <h3 id="anti-cheat-policy" class="group"><a href="#anti-cheat-policy" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">7.2 Anti-Cheat and Exploit Policy<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="strictly-prohibited-modifications" class="group"><a href="#strictly-prohibited-modifications" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Strictly Prohibited Modifications:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="anti-cheat-policy"
+        class="group"
+    ><a
+            href="#anti-cheat-policy"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >7.2 Anti-Cheat and Exploit Policy
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="strictly-prohibited-modifications"
+        class="group"
+    ><a
+            href="#strictly-prohibited-modifications"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Strictly Prohibited Modifications:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>The Forge strictly prohibits content that could be used to gain unfair advantages in live multiplayer
         environments.</p>
     <ul>
@@ -487,7 +936,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>"Sunset" cheats, which are mods originally developed as live game cheats that have been repurposed for SPT
             after detection or obsolescence, are strictly forbidden regardless of their current stated purpose</li>
     </ul>
-    <h4 id="cheat-like-mods" class="group"><a href="#cheat-like-mods" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Cheat-Like Mods:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="cheat-like-mods"
+        class="group"
+    ><a
+            href="#cheat-like-mods"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Cheat-Like Mods:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Mods that provide functionality similar to traditional multiplayer cheats (such as ESP, wallhacks, aimbots, or
         similar visual or gameplay advantages) may be permitted under the following strict conditions:</p>
     <ul>
@@ -498,7 +955,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
             warning notice on the mod page informing users of the mod's nature and the risks of using similar software
             on live servers</li>
     </ul>
-    <h4 id="allowed-development-tools" class="group"><a href="#allowed-development-tools" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Allowed Development Tools:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="allowed-development-tools"
+        class="group"
+    ><a
+            href="#allowed-development-tools"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Allowed Development Tools:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <ul>
         <li>Debug overlays and development menus are acceptable when clearly labelled as development tools</li>
         <li>Testing utilities that require developer mode or special setup serve legitimate development purposes</li>
@@ -506,8 +971,24 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>Diagnostic tools for troubleshooting mod conflicts help maintain a healthy modding ecosystem</li>
     </ul>
 
-    <h3 id="compilation-guidelines" class="group"><a href="#compilation-guidelines" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">7.3 Compilation and Collection Guidelines<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="compilation-guidelines-prohibited-content" class="group"><a href="#compilation-guidelines-prohibited-content" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Prohibited Content:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="compilation-guidelines"
+        class="group"
+    ><a
+            href="#compilation-guidelines"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >7.3 Compilation and Collection Guidelines
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="compilation-guidelines-prohibited-content"
+        class="group"
+    ><a
+            href="#compilation-guidelines-prohibited-content"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Prohibited Content:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Mod compilations, collections, and modpacks are not permitted on The Forge. While these packages may appear to
         offer convenience by bundling multiple mods together, they create significant and ongoing maintenance challenges
         that cannot be sustainably managed.</p>
@@ -521,12 +1002,36 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         most current versions while supporting mod authors directly and maintaining clear accountability for each
         component.</p>
 
-    <h3 id="payment-policy" class="group"><a href="#payment-policy" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">7.4 Payment and Commercial Activity Policy<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="free-access-requirement" class="group"><a href="#free-access-requirement" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Free Access Requirement:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="payment-policy"
+        class="group"
+    ><a
+            href="#payment-policy"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >7.4 Payment and Commercial Activity Policy
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="free-access-requirement"
+        class="group"
+    ><a
+            href="#free-access-requirement"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Free Access Requirement:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>The Forge strictly prohibits any form of payment requirement for accessing content within our community. All
         mods, tools, and resources must remain completely free and accessible to all users without any financial
         barriers or obligations.</p>
-    <h4 id="prohibited-commercial-activities" class="group"><a href="#prohibited-commercial-activities" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Prohibited Commercial Activities:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="prohibited-commercial-activities"
+        class="group"
+    ><a
+            href="#prohibited-commercial-activities"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Prohibited Commercial Activities:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <ul>
         <li>Requiring payment for mod downloads, early access, or premium versions</li>
         <li>Creating paywalls or subscription models for content access</li>
@@ -536,7 +1041,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>Bartering or trading goods/services that have monetary value</li>
         <li>Withholding features, updates, or support based on donation status</li>
     </ul>
-    <h4 id="permitted-donation-links" class="group"><a href="#permitted-donation-links" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Permitted Donation Links:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="permitted-donation-links"
+        class="group"
+    ><a
+            href="#permitted-donation-links"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Permitted Donation Links:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Voluntary donation links are permitted with the following strict requirements:</p>
     <ul>
         <li>Donations must be completely optional with no impact on content access or functionality</li>
@@ -546,20 +1059,60 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>No exclusive content, early access, or special privileges may be offered to donors</li>
         <li>Donation links must not use manipulative or coercive language</li>
     </ul>
-    <h4 id="community-standards" class="group"><a href="#community-standards" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Community Standards:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="community-standards"
+        class="group"
+    ><a
+            href="#community-standards"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Community Standards:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>This policy ensures equal access to all community members regardless of financial means and maintains the
         collaborative spirit of the modding community. Content creators who include donation links must understand that
         all users, whether they donate or not, deserve the same level of access, support, and respect.</p>
-    <h4 id="consequences-for-violations" class="group"><a href="#consequences-for-violations" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Consequences for Violations:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="consequences-for-violations"
+        class="group"
+    ><a
+            href="#consequences-for-violations"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Consequences for Violations:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Any attempt to circumvent this policy through coded language, indirect benefits for donors, or creating a
         two-tier system based on financial contributions will result in immediate content removal and potential account
         termination. This includes subtle discrimination against non-donors or preferential treatment for those who
         contribute financially.</p>
 
-    <h2 id="file-hosting" class="group"><a href="#file-hosting" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">8. File Hosting and Distribution<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h2>
+    <h2
+        id="file-hosting"
+        class="group"
+    ><a
+            href="#file-hosting"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >8. File Hosting and Distribution
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h2>
 
-    <h3 id="download-link-requirements" class="group"><a href="#download-link-requirements" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">8.1 Download Link Requirements<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="direct-download-links-ddl-required" class="group"><a href="#direct-download-links-ddl-required" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Direct Download Links (DDL) Required:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="download-link-requirements"
+        class="group"
+    ><a
+            href="#download-link-requirements"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >8.1 Download Link Requirements
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="direct-download-links-ddl-required"
+        class="group"
+    ><a
+            href="#direct-download-links-ddl-required"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Direct Download Links (DDL) Required:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>All download links must be direct download links that immediately begin downloading the file when visited. This
         requirement ensures the best user experience and enables automated tooling to download mods without user
         interaction.</p>
@@ -569,19 +1122,59 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
             required by our archive standards</li>
         <li>Links must remain accessible indefinitely to ensure long-term availability</li>
     </ul>
-    <h4 id="prohibited-link-types" class="group"><a href="#prohibited-link-types" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Prohibited Link Types:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="prohibited-link-types"
+        class="group"
+    ><a
+            href="#prohibited-link-types"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Prohibited Link Types:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Any download link that does not meet the direct download requirement is prohibited. This includes but is not
         limited to file sharing services with landing pages, ad-supported download sites, services requiring user
         interaction, temporary file sharing platforms, and any link that redirects users through multiple pages before
         downloading.</p>
-    <h4 id="recommended-hosting" class="group"><a href="#recommended-hosting" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Recommended Hosting:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="recommended-hosting"
+        class="group"
+    ><a
+            href="#recommended-hosting"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Recommended Hosting:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>GitHub releases provide reliable direct download links with proper version control integration and meet all
         requirements for direct downloads of 7-zip and ZIP archives.</p>
 
-    <h2 id="violation-consequences" class="group"><a href="#violation-consequences" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">9. Violation Consequences and Appeals<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h2>
+    <h2
+        id="violation-consequences"
+        class="group"
+    ><a
+            href="#violation-consequences"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >9. Violation Consequences and Appeals
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h2>
 
-    <h3 id="guideline-violations" class="group"><a href="#guideline-violations" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">9.1 Guideline Violations<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="minor-violations" class="group"><a href="#minor-violations" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Minor Violations:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="guideline-violations"
+        class="group"
+    ><a
+            href="#guideline-violations"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >9.1 Guideline Violations
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="minor-violations"
+        class="group"
+    ><a
+            href="#minor-violations"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Minor Violations:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Minor violations typically result from oversight or misunderstanding rather than malicious intent and can usually
         be corrected through collaboration with content creators.</p>
     <ul>
@@ -591,7 +1184,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
     </ul>
     <p><strong>Consequences:</strong> Requests for corrections with guidance, temporary content hiding until issues are
         resolved</p>
-    <h4 id="major-violations" class="group"><a href="#major-violations" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Major Violations:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="major-violations"
+        class="group"
+    ><a
+            href="#major-violations"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Major Violations:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>Major violations present significant risks to user safety or legal compliance and require immediate intervention
         to protect the community.</p>
     <ul>
@@ -602,8 +1203,24 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
     <p><strong>Consequences:</strong> Immediate content removal, account restrictions proportional to violation
         severity, possible permanent ban for egregious violations</p>
 
-    <h3 id="appeals-process" class="group"><a href="#appeals-process" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">9.2 Appeals Process<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h3>
-    <h4 id="content-removal-appeals" class="group"><a href="#content-removal-appeals" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Content Removal Appeals:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h3
+        id="appeals-process"
+        class="group"
+    ><a
+            href="#appeals-process"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >9.2 Appeals Process
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h3>
+    <h4
+        id="content-removal-appeals"
+        class="group"
+    ><a
+            href="#content-removal-appeals"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Content Removal Appeals:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <p>The appeals process provides creators with opportunities to address violations while maintaining platform
         security and compliance standards.</p>
     <ol>
@@ -612,7 +1229,15 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>Staff review is completed within 10 business days of receiving complete appeal information</li>
         <li>Decision is communicated with clear reasoning explaining the outcome</li>
     </ol>
-    <h4 id="improvement-opportunities" class="group"><a href="#improvement-opportunities" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Improvement Opportunities:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="improvement-opportunities"
+        class="group"
+    ><a
+            href="#improvement-opportunities"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Improvement Opportunities:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <ul>
         <li>Guidance is provided for bringing content into compliance with current standards</li>
         <li>Re-submission is allowed after corrections are made and verified</li>
@@ -621,8 +1246,24 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
 
     <hr>
 
-    <h2 id="content-guidelines-summary" class="group"><a href="#content-guidelines-summary" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Content Guidelines Summary<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h2>
-    <h4 id="essential-requirements" class="group"><a href="#essential-requirements" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Essential Requirements:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h2
+        id="content-guidelines-summary"
+        class="group"
+    ><a
+            href="#content-guidelines-summary"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Content Guidelines Summary
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h2>
+    <h4
+        id="essential-requirements"
+        class="group"
+    ><a
+            href="#essential-requirements"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Essential Requirements:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <ul>
         <li>Proper packaging in standard archive formats (7z or ZIP) with complete file structures</li>
         <li>Complete documentation including installation and usage instructions for all user skill levels</li>
@@ -630,14 +1271,30 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
         <li>Source code availability for all executable content to enable security review</li>
         <li>Security verification through VirusTotal scanning and code review processes</li>
     </ul>
-    <h4 id="summary-quality-standards" class="group"><a href="#summary-quality-standards" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Quality Standards:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="summary-quality-standards"
+        class="group"
+    ><a
+            href="#summary-quality-standards"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Quality Standards:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <ul>
         <li>Functional testing before submission to ensure advertised features work correctly</li>
         <li>Performance optimization to avoid degrading user experience or system stability</li>
         <li>Clear licensing and proper attribution for all components and dependencies</li>
         <li>Professional presentation with comprehensive documentation and user guidance</li>
     </ul>
-    <h4 id="summary-prohibited-content" class="group"><a href="#summary-prohibited-content" class="inline-flex items-center gap-1 text-inherit no-underline hover:underline">Prohibited Content:<flux:icon.link class="size-4 opacity-0 group-hover:opacity-100 transition-opacity" /></a></h4>
+    <h4
+        id="summary-prohibited-content"
+        class="group"
+    ><a
+            href="#summary-prohibited-content"
+            class="inline-flex items-center gap-1 text-inherit no-underline hover:underline"
+        >Prohibited Content:
+            <flux:icon.link class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </a></h4>
     <ul>
         <li>Security risks including malware, obfuscated code, or unauthorized system modifications</li>
         <li>Cheating tools that could work in multiplayer environments or resemble traditional hacks</li>
