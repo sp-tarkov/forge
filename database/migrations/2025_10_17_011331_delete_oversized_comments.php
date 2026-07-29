@@ -17,7 +17,7 @@ return new class extends Migration
 
         // Delete all comments that exceed the maximum allowed length
         DB::table('comments')
-            ->whereRaw("{$lengthFunc}(body) > ?", [$maxLength])
+            ->whereRaw($lengthFunc . '(body) > ?', [$maxLength])
             ->delete();
     }
 
