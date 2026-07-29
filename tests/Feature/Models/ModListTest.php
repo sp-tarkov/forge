@@ -43,9 +43,8 @@ describe('AuthorOptOut', function (): void {
             $mod = Mod::factory()->create(['lists_disabled' => true]);
 
             expect(fn () => resolve(ModListService::class)->addMod($list, $mod))
-                ->toThrow(ModListEntryDisabledException::class);
-
-            expect($list->fresh()->itemCount())->toBe(0);
+                ->toThrow(ModListEntryDisabledException::class)
+                ->and($list->fresh()->itemCount())->toBe(0);
         });
 
         it('allows adding an opted-out mod to the favourites list', function (): void {
@@ -55,8 +54,8 @@ describe('AuthorOptOut', function (): void {
 
             resolve(ModListService::class)->addMod($favourites, $mod);
 
-            expect($favourites->fresh()->itemCount())->toBe(1);
-            expect($favourites->containsMod($mod->id))->toBeTrue();
+            expect($favourites->fresh()->itemCount())->toBe(1)
+                ->and($favourites->containsMod($mod->id))->toBeTrue();
         });
 
         it('filters opted-out mods from explicit dependency cascade', function (): void {
@@ -68,10 +67,10 @@ describe('AuthorOptOut', function (): void {
 
             resolve(ModListService::class)->addMod($list, $primary, collect([$allowedDep, $blockedDep]));
 
-            expect($list->fresh()->itemCount())->toBe(2);
-            expect($list->containsMod($primary->id))->toBeTrue();
-            expect($list->containsMod($allowedDep->id))->toBeTrue();
-            expect($list->containsMod($blockedDep->id))->toBeFalse();
+            expect($list->fresh()->itemCount())->toBe(2)
+                ->and($list->containsMod($primary->id))->toBeTrue()
+                ->and($list->containsMod($allowedDep->id))->toBeTrue()
+                ->and($list->containsMod($blockedDep->id))->toBeFalse();
         });
     });
 
@@ -83,9 +82,8 @@ describe('AuthorOptOut', function (): void {
             $addon = Addon::factory()->create(['mod_id' => $mod->id]);
 
             expect(fn () => resolve(ModListService::class)->addAddon($list, $addon, includeParentMod: true))
-                ->toThrow(ModListEntryDisabledException::class);
-
-            expect($list->fresh()->itemCount())->toBe(0);
+                ->toThrow(ModListEntryDisabledException::class)
+                ->and($list->fresh()->itemCount())->toBe(0);
         });
 
         it('throws even when includeParentMod is false', function (): void {
@@ -108,10 +106,10 @@ describe('AuthorOptOut', function (): void {
 
             $added = resolve(ModListService::class)->addMods($list, collect([$allowed, $blocked]));
 
-            expect($added)->toBe(1);
-            expect($list->fresh()->itemCount())->toBe(1);
-            expect($list->containsMod($allowed->id))->toBeTrue();
-            expect($list->containsMod($blocked->id))->toBeFalse();
+            expect($added)->toBe(1)
+                ->and($list->fresh()->itemCount())->toBe(1)
+                ->and($list->containsMod($allowed->id))->toBeTrue()
+                ->and($list->containsMod($blocked->id))->toBeFalse();
         });
     });
 
@@ -123,8 +121,8 @@ describe('AuthorOptOut', function (): void {
 
             $added = resolve(ModListService::class)->toggleFavourite($favourites, $mod);
 
-            expect($added)->toBeTrue();
-            expect($favourites->containsMod($mod->id))->toBeTrue();
+            expect($added)->toBeTrue()
+                ->and($favourites->containsMod($mod->id))->toBeTrue();
 
             $removed = resolve(ModListService::class)->toggleFavourite($favourites, $mod);
             expect($removed)->toBeFalse();
@@ -146,8 +144,8 @@ describe('AuthorOptOut', function (): void {
 
             $result = resolve(ModListService::class)->suggestedDependenciesResult($list, $modA);
 
-            expect($result->included->pluck('id')->all())->toBe([$modC->id]);
-            expect($result->skipped->pluck('id')->all())->toBe([$modB->id]);
+            expect($result->included->pluck('id')->all())->toBe([$modC->id])
+                ->and($result->skipped->pluck('id')->all())->toBe([$modB->id]);
         });
 
         it('missingDependenciesResultForList reports both included and skipped', function (): void {
@@ -166,8 +164,8 @@ describe('AuthorOptOut', function (): void {
 
             $result = resolve(ModListService::class)->missingDependenciesResultForList($list->fresh());
 
-            expect($result->included->pluck('id')->all())->toBe([$modC->id]);
-            expect($result->skipped->pluck('id')->all())->toBe([$modB->id]);
+            expect($result->included->pluck('id')->all())->toBe([$modC->id])
+                ->and($result->skipped->pluck('id')->all())->toBe([$modB->id]);
         });
 
         it('favourites lists do not skip opted-out dependencies', function (): void {
@@ -182,8 +180,8 @@ describe('AuthorOptOut', function (): void {
 
             $result = resolve(ModListService::class)->suggestedDependenciesResult($favourites, $modA);
 
-            expect($result->included->pluck('id')->all())->toBe([$modB->id]);
-            expect($result->skipped)->toBeEmpty();
+            expect($result->included->pluck('id')->all())->toBe([$modB->id])
+                ->and($result->skipped)->toBeEmpty();
         });
     });
 
@@ -239,10 +237,10 @@ describe('AuthorOptOut', function (): void {
             $modItem = ModListItem::query()->where('listable_type', Mod::class)->where('listable_id', $mod->id)->first();
             $addonItem = ModListItem::query()->where('listable_type', Addon::class)->where('listable_id', $addon->id)->first();
 
-            expect($modItem->isTombstone())->toBeTrue();
-            expect($modItem->tombstoned_name)->toBe('The Mod');
-            expect($addonItem->isTombstone())->toBeTrue();
-            expect($addonItem->tombstoned_name)->toBe('The Addon');
+            expect($modItem->isTombstone())->toBeTrue()
+                ->and($modItem->tombstoned_name)->toBe('The Mod')
+                ->and($addonItem->isTombstone())->toBeTrue()
+                ->and($addonItem->tombstoned_name)->toBe('The Addon');
         });
 
         it('leaves favourites entries untouched', function (): void {
@@ -262,8 +260,8 @@ describe('AuthorOptOut', function (): void {
                 ->where('listable_id', $mod->id)
                 ->first();
 
-            expect($favItem->isTombstone())->toBeFalse();
-            expect($favItem->tombstoned_at)->toBeNull();
+            expect($favItem->isTombstone())->toBeFalse()
+                ->and($favItem->tombstoned_at)->toBeNull();
         });
 
         it('bails when the mod has been un-opted-out before the job runs', function (): void {
@@ -340,9 +338,9 @@ describe('AuthorOptOut', function (): void {
 
             $fork = $svc->forkList($forker, $list->fresh(), 'My Fork');
 
-            expect($fork->itemCount())->toBe(1);
-            expect($fork->containsMod($modActive->id))->toBeTrue();
-            expect($fork->containsMod($modToTombstone->id))->toBeFalse();
+            expect($fork->itemCount())->toBe(1)
+                ->and($fork->containsMod($modActive->id))->toBeTrue()
+                ->and($fork->containsMod($modToTombstone->id))->toBeFalse();
         });
 
         it('curator can remove a tombstone via the normal remove flow', function (): void {
@@ -565,8 +563,8 @@ describe('Comments', function (): void {
                     'commentable_id' => $list->id,
                 ]);
 
-            expect($outsider->can('modOwnerSoftDelete', $comment))->toBeFalse();
-            expect($outsider->can('pin', $comment))->toBeFalse();
+            expect($outsider->can('modOwnerSoftDelete', $comment))->toBeFalse()
+                ->and($outsider->can('pin', $comment))->toBeFalse();
         });
     });
 });
@@ -589,8 +587,8 @@ describe('Seeder', function (): void {
                     ->where('is_default', true)
                     ->sole();
 
-                expect($favourites->visibility)->toBe(ListVisibility::Private);
-                expect($favourites->title)->toBe(config()->string('mod-lists.favourites.title'));
+                expect($favourites->visibility)->toBe(ListVisibility::Private)
+                    ->and($favourites->title)->toBe(config()->string('mod-lists.favourites.title'));
             }
         });
 
@@ -696,8 +694,8 @@ describe('Seeder', function (): void {
             expect($tombstoneRows->count())->toBeGreaterThanOrEqual(1, 'tombstone demo list must include at least one tombstoned mod row');
 
             foreach ($tombstoneRows as $row) {
-                expect($row->tombstoned_name)->not->toBeNull();
-                expect($row->tombstoned_at)->not->toBeNull();
+                expect($row->tombstoned_name)->not->toBeNull()
+                    ->and($row->tombstoned_at)->not->toBeNull();
             }
         });
 
@@ -796,8 +794,7 @@ describe('Discovery', function (): void {
 
             $ids = ModList::query()->discoverable()->pluck('id');
 
-            expect($ids)->toContain($curatedPublic->id);
-            expect($ids)->not->toContain($favourites->id);
+            expect($ids)->toContain($curatedPublic->id)->not->toContain($favourites->id);
         });
 
         it('public scope still includes public Favourites (for profile tab visibility)', function (): void {
@@ -849,8 +846,7 @@ describe('Discovery', function (): void {
 
             $ids = ModList::query()->discoverable()->pluck('id');
 
-            expect($ids)->toContain($visible->id);
-            expect($ids)->not->toContain($disabled->id);
+            expect($ids)->toContain($visible->id)->not->toContain($disabled->id);
         });
 
         it('excludes a disabled list from the public scope', function (): void {
@@ -859,8 +855,7 @@ describe('Discovery', function (): void {
 
             $ids = ModList::query()->public()->pluck('id');
 
-            expect($ids)->toContain($visible->id);
-            expect($ids)->not->toContain($disabled->id);
+            expect($ids)->toContain($visible->id)->not->toContain($disabled->id);
         });
     });
 });
@@ -882,8 +877,8 @@ describe('Thumbnail', function (): void {
 
         $list->refresh();
 
-        expect($list->thumbnail)->not->toBeNull();
-        expect($list->thumbnail_hash)->not->toBeNull();
+        expect($list->thumbnail)->not->toBeNull()
+            ->and($list->thumbnail_hash)->not->toBeNull();
 
         Storage::disk(config('filesystems.asset_upload', 'public'))
             ->assertExists($list->thumbnail);
@@ -927,8 +922,8 @@ describe('Thumbnail', function (): void {
 
         $list->refresh();
 
-        expect($list->thumbnail)->toBeNull();
-        expect($list->thumbnail_hash)->toBeNull();
+        expect($list->thumbnail)->toBeNull()
+            ->and($list->thumbnail_hash)->toBeNull();
         Storage::disk(config('filesystems.asset_upload', 'public'))
             ->assertMissing('mod-lists/ditch.png');
     });

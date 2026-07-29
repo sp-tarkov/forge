@@ -933,8 +933,8 @@ describe('Editing', function (): void {
             $comment->refresh();
             $comment->unsetRelation('latestVersion');
 
-            $this->assertEquals('This is an updated comment.', $comment->body);
-            $this->assertNotNull($comment->edited_at);
+            expect($comment->body)->toEqual('This is an updated comment.')
+                ->and($comment->edited_at)->not->toBeNull();
         });
 
         it('should not allow users to edit comments they do not own', function (): void {
@@ -999,12 +999,12 @@ describe('Editing', function (): void {
 
             $comment->refresh();
 
-            expect($comment->spam_status)->toBe(SpamStatus::CLEAN);
-            expect($comment->spam_metadata)->toBeNull();
-            expect($comment->spam_checked_at)->toBeNull();
-            expect($comment->spam_recheck_count)->toBe(0);
-            expect($comment->spam_reviewed_at)->toBeNull();
-            expect($comment->spam_reviewed_by)->toBeNull();
+            expect($comment->spam_status)->toBe(SpamStatus::CLEAN)
+                ->and($comment->spam_metadata)->toBeNull()
+                ->and($comment->spam_checked_at)->toBeNull()
+                ->and($comment->spam_recheck_count)->toBe(0)
+                ->and($comment->spam_reviewed_at)->toBeNull()
+                ->and($comment->spam_reviewed_by)->toBeNull();
 
             Queue::assertPushed(CheckCommentForSpam::class, fn (CheckCommentForSpam $job): bool => $job->comment->id === $comment->id && $job->isRecheck === false);
         });
@@ -1043,12 +1043,12 @@ describe('Editing', function (): void {
 
             $comment->refresh();
 
-            expect($comment->spam_status)->toBe(SpamStatus::CLEAN);
-            expect($comment->spam_metadata)->toBe(['reason' => 'akismet_disabled']);
-            expect($comment->spam_recheck_count)->toBe(2);
-            expect($comment->spam_reviewed_by)->toBe($moderator->id);
-            expect($comment->spam_checked_at?->toIso8601String())->toBe($checkedAt->toIso8601String());
-            expect($comment->spam_reviewed_at?->toIso8601String())->toBe($reviewedAt->toIso8601String());
+            expect($comment->spam_status)->toBe(SpamStatus::CLEAN)
+                ->and($comment->spam_metadata)->toBe(['reason' => 'akismet_disabled'])
+                ->and($comment->spam_recheck_count)->toBe(2)
+                ->and($comment->spam_reviewed_by)->toBe($moderator->id)
+                ->and($comment->spam_checked_at?->toIso8601String())->toBe($checkedAt->toIso8601String())
+                ->and($comment->spam_reviewed_at?->toIso8601String())->toBe($reviewedAt->toIso8601String());
 
             Queue::assertNotPushed(CheckCommentForSpam::class);
         });
@@ -1077,8 +1077,8 @@ describe('Editing', function (): void {
             $comment->refresh();
             $comment->unsetRelation('latestVersion');
 
-            expect($comment->body)->toBe('Spam body');
-            expect($comment->spam_status)->toBe(SpamStatus::SPAM);
+            expect($comment->body)->toBe('Spam body')
+                ->and($comment->spam_status)->toBe(SpamStatus::SPAM);
         });
     });
 
@@ -1784,9 +1784,9 @@ describe('Deletion', function (): void {
             $parentComment->refresh();
             $childComment->refresh();
 
-            expect($parentComment->isDeleted())->toBeTrue();
-            expect($childComment->isDeleted())->toBeFalse();
-            expect($childComment->body)->toBe('Child comment');
+            expect($parentComment->isDeleted())->toBeTrue()
+                ->and($childComment->isDeleted())->toBeFalse()
+                ->and($childComment->body)->toBe('Child comment');
         });
     });
 
@@ -2643,7 +2643,7 @@ describe('Display', function (): void {
 
         $test->assertViewHas('rootComments', fn ($paginator): bool => $paginator->total() === 15);
 
-        $this->assertEquals(2, mb_substr_count((string) $test->html(), '<nav role="navigation" aria-label="Pagination Navigation"'));
+        expect(mb_substr_count((string) $test->html(), '<nav role="navigation" aria-label="Pagination Navigation"'))->toEqual(2);
     });
 
     it('should display correct commentable display name for user profiles', function (): void {
@@ -2924,10 +2924,10 @@ describe('Versioning', function (): void {
             $seniorMod = User::factory()->seniorModerator()->create();
             $admin = User::factory()->admin()->create();
 
-            expect($author->can('viewVersionHistory', $comment))->toBeTrue();
-            expect($moderator->can('viewVersionHistory', $comment))->toBeTrue();
-            expect($seniorMod->can('viewVersionHistory', $comment))->toBeTrue();
-            expect($admin->can('viewVersionHistory', $comment))->toBeTrue();
+            expect($author->can('viewVersionHistory', $comment))->toBeTrue()
+                ->and($moderator->can('viewVersionHistory', $comment))->toBeTrue()
+                ->and($seniorMod->can('viewVersionHistory', $comment))->toBeTrue()
+                ->and($admin->can('viewVersionHistory', $comment))->toBeTrue();
         });
 
         it('denies regular users from viewing other users version history', function (): void {
@@ -3037,7 +3037,7 @@ describe('Versioning', function (): void {
             $comment = Comment::factory()->create();
 
             // Without any versions, body should be empty string
-            expect($comment->body)->toBe('');
+            expect($comment->body)->toBeEmpty();
         });
 
         it('returns latest version body', function (): void {
@@ -3093,8 +3093,8 @@ describe('Versioning', function (): void {
             $unedited = Comment::factory()->create(['edited_at' => null]);
             $edited = Comment::factory()->create(['edited_at' => now()]);
 
-            expect($unedited->hasBeenEdited())->toBeFalse();
-            expect($edited->hasBeenEdited())->toBeTrue();
+            expect($unedited->hasBeenEdited())->toBeFalse()
+                ->and($edited->hasBeenEdited())->toBeTrue();
         });
     });
 
@@ -3826,9 +3826,9 @@ describe('SpamRibbon', function (): void {
 
         // Verify that the comment was marked as clean
         $comment->refresh();
-        expect($comment->isSpamClean())->toBeTrue();
-        expect($comment->spam_metadata['reason'])->toBe('akismet_disabled');
-        expect($comment->spam_checked_at)->not->toBeNull();
+        expect($comment->isSpamClean())->toBeTrue()
+            ->and($comment->spam_metadata['reason'])->toBe('akismet_disabled')
+            ->and($comment->spam_checked_at)->not->toBeNull();
     });
 
     it('polls for spam check completion and dispatches comment-updated event', function (): void {
@@ -3965,8 +3965,8 @@ describe('Disabled', function (): void {
             $this->mod->update(['comments_disabled' => true]);
             $this->comment->refresh();
 
-            expect(auth()->guest())->toBeTrue();
-            expect(policy(Comment::class)->view(null, $this->comment))->toBeFalse();
+            expect(auth()->guest())->toBeTrue()
+                ->and(policy(Comment::class)->view(null, $this->comment))->toBeFalse();
         });
 
         it('prevents comment creation when comments are disabled', function (): void {
@@ -4009,8 +4009,8 @@ describe('Disabled', function (): void {
 
             $mod = Mod::query()->where('name', 'Test Mod')->first();
 
-            expect($mod)->not()->toBeNull();
-            expect($mod->comments_disabled)->toBeTrue();
+            expect($mod)->not()->toBeNull()
+                ->and($mod->comments_disabled)->toBeTrue();
         });
 
         it('creates mod with comments enabled by default', function (): void {
@@ -4040,8 +4040,8 @@ describe('Disabled', function (): void {
 
             $mod = Mod::query()->where('name', 'Test Mod 2')->first();
 
-            expect($mod)->not()->toBeNull();
-            expect($mod->comments_disabled)->toBeFalse();
+            expect($mod)->not()->toBeNull()
+                ->and($mod->comments_disabled)->toBeFalse();
         });
     });
 

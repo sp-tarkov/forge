@@ -287,8 +287,8 @@ describe('RoleManagement Computed Properties', function (): void {
 
         $roles = $component->get('roles');
 
-        expect($roles->count())->toBeGreaterThanOrEqual(2);
-        expect($roles->pluck('name')->toArray())->toContain('Staff', 'Moderator');
+        expect($roles->count())->toBeGreaterThanOrEqual(2)
+            ->and($roles->pluck('name')->toArray())->toContain('Staff', 'Moderator');
     });
 
     it('returns selected user property when user is selected', function (): void {

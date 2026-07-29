@@ -59,7 +59,7 @@ it('preserves pinned_to_spt_publish on pivot rows that remain satisfied', functi
         ->where('spt_version_id', $spt110->id)
         ->value('pinned_to_spt_publish');
 
-    expect((bool) $pinned)->toBeTrue();
+    expect($pinned)->toBeTruthy();
 });
 
 it('detaches all spt versions when the constraint no longer matches anything', function (): void {

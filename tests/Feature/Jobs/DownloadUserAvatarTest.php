@@ -10,6 +10,9 @@ use App\Services\ThumbnailService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\MakesAnimatedTestImages;
+
+pest()->use(MakesAnimatedTestImages::class);
 
 function makeAvatarDownloadTestImage(int $width, int $height): string
 {
@@ -67,7 +70,7 @@ it('replaces the previous photo and variant files', function (): void {
 });
 
 it('keeps animation when the downloaded avatar is animated', function (): void {
-    Http::fake(['example.com/*' => Http::response(makeAnimatedTestImage(3, 300, 200))]);
+    Http::fake(['example.com/*' => Http::response($this->makeAnimatedTestImage(3, 300, 200))]);
     $user = User::factory()->create(['profile_photo_path' => null]);
 
     new DownloadUserAvatar($user, 'https://example.com/avatar.gif')->handle(resolve(ThumbnailService::class));

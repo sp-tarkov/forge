@@ -54,9 +54,8 @@ describe('SPT version latest minor versions retrieval', function (): void {
 
         $latestMinorVersions = SptVersion::getLatestMinorVersions();
 
-        expect($latestMinorVersions)->toHaveCount(4);
-        expect($latestMinorVersions->pluck('version')->toArray())
-            ->toBe(['3.11.3', '3.11.2', '3.11.1', '3.11.0']);
+        expect($latestMinorVersions)->toHaveCount(4)
+            ->and($latestMinorVersions->pluck('version')->toArray())->toBe(['3.11.3', '3.11.2', '3.11.1', '3.11.0']);
     });
 
     it('returns single version when latest minor has only one patch', function (): void {
@@ -69,8 +68,8 @@ describe('SPT version latest minor versions retrieval', function (): void {
 
         $latestMinorVersions = SptVersion::getLatestMinorVersions();
 
-        expect($latestMinorVersions)->toHaveCount(1);
-        expect($latestMinorVersions->first()->version)->toBe('4.0.0');
+        expect($latestMinorVersions)->toHaveCount(1)
+            ->and($latestMinorVersions->first()->version)->toBe('4.0.0');
     });
 
     it('excludes version 0.0.0 from results', function (): void {
@@ -80,9 +79,8 @@ describe('SPT version latest minor versions retrieval', function (): void {
 
         $latestMinorVersions = SptVersion::getLatestMinorVersions();
 
-        expect($latestMinorVersions)->toHaveCount(2);
-        expect($latestMinorVersions->pluck('version')->toArray())
-            ->toBe(['3.11.1', '3.11.0']);
+        expect($latestMinorVersions)->toHaveCount(2)
+            ->and($latestMinorVersions->pluck('version')->toArray())->toBe(['3.11.1', '3.11.0']);
     });
 
     it('orders versions with release versions before pre-release versions', function (): void {
@@ -102,7 +100,7 @@ describe('SPT version latest minor versions retrieval', function (): void {
     it('returns empty collection when no versions exist', function (): void {
         $latestMinorVersions = SptVersion::getLatestMinorVersions();
 
-        expect($latestMinorVersions)->toHaveCount(0);
+        expect($latestMinorVersions)->toBeEmpty();
     });
 });
 
@@ -116,9 +114,7 @@ describe('SPT version publish date visibility', function (): void {
         // Query as guest (no auth)
         $visibleVersions = SptVersion::query()->pluck('version')->toArray();
 
-        expect($visibleVersions)->toContain('1.0.0');
-        expect($visibleVersions)->not->toContain('2.0.0');
-        expect($visibleVersions)->not->toContain('3.0.0');
+        expect($visibleVersions)->toContain('1.0.0')->not->toContain('2.0.0')->not->toContain('3.0.0');
     });
 
     it('shows all SPT versions to administrators', function (): void {
@@ -135,9 +131,9 @@ describe('SPT version publish date visibility', function (): void {
         $this->actingAs($admin);
         $visibleVersions = SptVersion::query()->pluck('version')->toArray();
 
-        expect($visibleVersions)->toContain('1.0.0');
-        expect($visibleVersions)->toContain('2.0.0');
-        expect($visibleVersions)->toContain('3.0.0');
+        expect($visibleVersions)->toContain('1.0.0')
+            ->toContain('2.0.0')
+            ->toContain('3.0.0');
     });
 
     it('shows all SPT versions to moderators', function (): void {
@@ -152,9 +148,9 @@ describe('SPT version publish date visibility', function (): void {
         $this->actingAs($moderator);
         $visibleVersions = SptVersion::query()->pluck('version')->toArray();
 
-        expect($visibleVersions)->toContain('1.0.0');
-        expect($visibleVersions)->toContain('2.0.0');
-        expect($visibleVersions)->toContain('3.0.0');
+        expect($visibleVersions)->toContain('1.0.0')
+            ->toContain('2.0.0')
+            ->toContain('3.0.0');
     });
 
     it('shows published SPT versions to regular users', function (): void {
@@ -170,9 +166,7 @@ describe('SPT version publish date visibility', function (): void {
         $this->actingAs($user);
         $visibleVersions = SptVersion::query()->pluck('version')->toArray();
 
-        expect($visibleVersions)->toContain('1.0.0');
-        expect($visibleVersions)->not->toContain('2.0.0');
-        expect($visibleVersions)->not->toContain('3.0.0');
+        expect($visibleVersions)->toContain('1.0.0')->not->toContain('2.0.0')->not->toContain('3.0.0');
     });
 
     it('correctly identifies published vs unpublished status', function (): void {
@@ -181,10 +175,10 @@ describe('SPT version publish date visibility', function (): void {
         $scheduledFuture = SptVersion::factory()->scheduled()->create();
         $scheduledPast = SptVersion::factory()->publishedAt(Date::now()->subHour())->create();
 
-        expect($published->is_published)->toBeTrue();
-        expect($unpublished->is_published)->toBeFalse();
-        expect($scheduledFuture->is_published)->toBeFalse();
-        expect($scheduledPast->is_published)->toBeTrue();
+        expect($published->is_published)->toBeTrue()
+            ->and($unpublished->is_published)->toBeFalse()
+            ->and($scheduledFuture->is_published)->toBeFalse()
+            ->and($scheduledPast->is_published)->toBeTrue();
     });
 });
 
@@ -196,9 +190,7 @@ describe('SPT version methods with publish dates', function (): void {
 
         $versions = SptVersion::allValidVersions();
 
-        expect($versions)->toContain('1.0.0');
-        expect($versions)->not->toContain('2.0.0');
-        expect($versions)->not->toContain('3.0.0');
+        expect($versions)->toContain('1.0.0')->not->toContain('2.0.0')->not->toContain('3.0.0');
     });
 
     it('allValidVersions with includeUnpublished returns all versions including unpublished', function (): void {
@@ -208,9 +200,9 @@ describe('SPT version methods with publish dates', function (): void {
 
         $versions = SptVersion::allValidVersions(includeUnpublished: true);
 
-        expect($versions)->toContain('1.0.0');
-        expect($versions)->toContain('2.0.0');
-        expect($versions)->toContain('3.0.0');
+        expect($versions)->toContain('1.0.0')
+            ->toContain('2.0.0')
+            ->toContain('3.0.0');
     });
 
     it('getLatest only considers published versions', function (): void {
@@ -234,9 +226,8 @@ describe('SPT version methods with publish dates', function (): void {
 
         $latestMinorVersions = SptVersion::getLatestMinorVersions();
 
-        expect($latestMinorVersions)->toHaveCount(3);
-        expect($latestMinorVersions->pluck('version')->toArray())
-            ->toBe(['3.11.2', '3.11.1', '3.11.0']);
+        expect($latestMinorVersions)->toHaveCount(3)
+            ->and($latestMinorVersions->pluck('version')->toArray())->toBe(['3.11.2', '3.11.1', '3.11.0']);
     });
 });
 
@@ -427,8 +418,8 @@ describe('SPT version cache management', function (): void {
         $versions = SptVersion::allValidVersions();
         $authorsVersions = SptVersion::allValidVersions(includeUnpublished: true);
 
-        expect($versions)->toContain('99.99.99');
-        expect($authorsVersions)->toContain('99.99.99');
+        expect($versions)->toContain('99.99.99')
+            ->and($authorsVersions)->toContain('99.99.99');
     });
 
     it('clears cache when SPT version publish_date is updated', function (): void {

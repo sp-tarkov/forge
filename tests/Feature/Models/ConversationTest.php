@@ -376,8 +376,8 @@ describe('visibility scope', function (): void {
         $user1Conversations = Conversation::visibleTo($user1)->get();
         $user2Conversations = Conversation::visibleTo($user2)->get();
 
-        expect($user1Conversations->contains('id', $conversation->id))->toBeTrue();
-        expect($user2Conversations->contains('id', $conversation->id))->toBeTrue();
+        expect($user1Conversations->contains('id', $conversation->id))->toBeTrue()
+            ->and($user2Conversations->contains('id', $conversation->id))->toBeTrue();
     });
 
     it('shows conversation to the other user after the first message is sent via the relation', function (): void {
@@ -401,8 +401,8 @@ describe('visibility scope', function (): void {
 
         // Verify last_message_id was set
         $conversation->refresh();
-        expect($conversation->last_message_id)->toBe($message->id);
-        expect($conversation->last_message_at)->not->toBeNull();
+        expect($conversation->last_message_id)->toBe($message->id)
+            ->and($conversation->last_message_at)->not->toBeNull();
 
         // User2 should see the conversation in navigation with an unread badge
         Livewire::actingAs($user2)
@@ -437,8 +437,8 @@ describe('visibility scope', function (): void {
 
         // Verify using database query
         $userConversations = Conversation::visibleTo($user2)->get();
-        expect($userConversations->contains('id', $visibleConversation->id))->toBeTrue();
-        expect($userConversations->contains('id', $hiddenConversation->id))->toBeFalse();
+        expect($userConversations->contains('id', $visibleConversation->id))->toBeTrue()
+            ->and($userConversations->contains('id', $hiddenConversation->id))->toBeFalse();
     });
 });
 
@@ -528,8 +528,8 @@ describe('archiving', function (): void {
         $conversation->archiveFor($user1);
         $conversation->archiveFor($user2);
 
-        expect($conversation->isArchivedBy($user1))->toBeTrue();
-        expect($conversation->isArchivedBy($user2))->toBeTrue();
+        expect($conversation->isArchivedBy($user1))->toBeTrue()
+            ->and($conversation->isArchivedBy($user2))->toBeTrue();
 
         // User2 sends a new message
         Livewire::actingAs($user2)
@@ -539,8 +539,8 @@ describe('archiving', function (): void {
 
         // Conversation should be unarchived for both users
         $conversation->refresh();
-        expect($conversation->isArchivedBy($user1))->toBeFalse();
-        expect($conversation->isArchivedBy($user2))->toBeFalse();
+        expect($conversation->isArchivedBy($user1))->toBeFalse()
+            ->and($conversation->isArchivedBy($user2))->toBeFalse();
     });
 
     it('shows conversation to other user when one user archives', function (): void {
@@ -623,8 +623,8 @@ describe('notification preferences', function (): void {
             ->where('user_id', $user->id)
             ->first();
 
-        expect($subscription)->not->toBeNull();
-        expect($subscription->notifications_enabled)->toBeFalse();
+        expect($subscription)->not->toBeNull()
+            ->and($subscription->notifications_enabled)->toBeFalse();
 
         // Toggle back on
         Livewire::actingAs($user)

@@ -238,8 +238,8 @@ describe('index', function (): void {
         $attached = $data->firstWhere('id', $attachedAddon->id);
         $detached = $data->firstWhere('id', $detachedAddon->id);
 
-        expect($attached['is_detached'])->toBeFalse();
-        expect($detached['is_detached'])->toBeTrue();
+        expect($attached['is_detached'])->toBeFalse()
+            ->and($detached['is_detached'])->toBeTrue();
     });
 
     it('sorts addons by created_at descending by default', function (): void {
@@ -252,10 +252,7 @@ describe('index', function (): void {
         $response->assertStatus(Response::HTTP_OK);
 
         $returnedIds = collect($response->json('data'))->pluck('id')->all();
-
-        expect($returnedIds[0])->toBe($addon3->id);
-        expect($returnedIds[1])->toBe($addon2->id);
-        expect($returnedIds[2])->toBe($addon1->id);
+        expect($returnedIds)->toMatchArray([0 => $addon3->id, 1 => $addon2->id, 2 => $addon1->id]);
     });
 
     it('caches the pagination total for guests', function (): void {

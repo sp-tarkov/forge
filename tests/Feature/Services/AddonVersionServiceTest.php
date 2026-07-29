@@ -333,9 +333,8 @@ describe('AddonVersionService', function (): void {
 
             // Addon version should now only include 2.0.5
             $addonVersion->refresh();
-            expect($addonVersion->compatibleModVersions)->toHaveCount(1);
-            expect($addonVersion->compatibleModVersions->pluck('id')->toArray())
-                ->toContain($v2_0_5->id);
+            expect($addonVersion->compatibleModVersions)->toHaveCount(1)
+                ->and($addonVersion->compatibleModVersions->pluck('id')->toArray())->toContain($v2_0_5->id);
         });
 
         it('re-resolves addon versions when mod version is updated', function (): void {
@@ -383,8 +382,8 @@ describe('AddonVersionService', function (): void {
             // Verify initial state
             $addonVersion->refresh();
             $otherAddonVersion->refresh();
-            expect($addonVersion->compatibleModVersions)->toHaveCount(1);
-            expect($otherAddonVersion->compatibleModVersions)->toHaveCount(1);
+            expect($addonVersion->compatibleModVersions)->toHaveCount(1)
+                ->and($otherAddonVersion->compatibleModVersions)->toHaveCount(1);
 
             // Create new version for first mod - should only affect first addon
             $v1_1_0 = ModVersion::factory()->for($this->mod)->create(['version' => '1.1.0']);

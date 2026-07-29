@@ -7,6 +7,9 @@ use App\Models\User;
 use App\Services\ThumbnailService;
 use App\Support\DataTransferObjects\ImageCropRect;
 use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\MakesAnimatedTestImages;
+
+pest()->use(MakesAnimatedTestImages::class);
 
 function makeNormalizeTestImage(int $width, int $height): string
 {
@@ -63,7 +66,7 @@ it('applies the crop rect to the normalized image', function (): void {
 });
 
 it('keeps animation in the normalized image and its variants', function (): void {
-    Storage::disk('public')->put('profile-photos/raw.gif', makeAnimatedTestImage(3, 400, 400));
+    Storage::disk('public')->put('profile-photos/raw.gif', $this->makeAnimatedTestImage(3, 400, 400));
     $user = User::factory()->create(['profile_photo_path' => 'profile-photos/raw.gif']);
 
     new NormalizeUserAvatar($user, 'profile-photos/raw.gif')->handle(resolve(ThumbnailService::class));

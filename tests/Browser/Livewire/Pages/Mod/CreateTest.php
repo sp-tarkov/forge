@@ -38,8 +38,8 @@ describe('License selection', function (): void {
             ->waitForText('Mod Created');
 
         $mod = Mod::query()->where('name', 'Test Mod')->first();
-        expect($mod)->not->toBeNull();
-        expect($mod->license_id)->toBe($license->id);
+        expect($mod)->not->toBeNull()
+            ->and($mod->license_id)->toBe($license->id);
     });
 });
 
@@ -72,7 +72,7 @@ describe('GUID normalization', function (): void {
             ->waitForText('Mod Created');
 
         $mod = Mod::query()->where('name', 'Test Mod')->first();
-        expect($mod)->not->toBeNull();
-        expect($mod->guid)->toBe('com.example.mymod');
+        expect($mod)->not->toBeNull()
+            ->and($mod->guid)->toBe('com.example.mymod');
     });
 });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V0;
 
 use App\Models\Mod;
+use App\Support\Api\V0\QueryBuilder\AbstractQueryBuilder;
 use App\Support\Api\V0\QueryBuilder\ModQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -29,6 +30,25 @@ final class ModResource extends JsonResource
      * Whether to show all fields (no specific fields requested).
      */
     private bool $showAllFields = true;
+
+    /**
+     * The query builder that hydrated the mod, whose field contract bounds this response.
+     *
+     * @var class-string<AbstractQueryBuilder<Mod>>
+     */
+    private string $queryBuilder = ModQueryBuilder::class;
+
+    /**
+     * Set the query builder that hydrated the mod. Fields outside that builder's contract are omitted from the response.
+     *
+     * @param  class-string<AbstractQueryBuilder<Mod>>  $queryBuilder
+     */
+    public function hydratedBy(string $queryBuilder): self
+    {
+        $this->queryBuilder = $queryBuilder;
+
+        return $this;
+    }
 
     /**
      * Transform the resource into an array.
@@ -144,9 +164,11 @@ final class ModResource extends JsonResource
             $data['updated_at'] = $this->resource->updated_at?->toISOString();
         }
 
-        // Handle relationships - owner and additional_authors are always included
-        $data['owner'] = $this->resource->owner ? new UserResource($this->resource->owner) : null;
-        $data['additional_authors'] = UserResource::collection($this->resource->additionalAuthors);
+        // Owner and additional_authors are serialized when the hydrating query builder loads authorship
+        if ($this->hydratesAuthorship()) {
+            $data['owner'] = $this->resource->owner ? new UserResource($this->resource->owner) : null;
+            $data['additional_authors'] = UserResource::collection($this->resource->additionalAuthors);
+        }
 
         // Other relationships are only included when loaded
         $data['versions'] = ModVersionResource::collection($this->whenLoaded('versions', fn (): Collection => $this->resource->versions->take(10)));
@@ -158,17 +180,35 @@ final class ModResource extends JsonResource
     }
 
     /**
-     * Check if a field should be included in the response.
+     * Check if the hydrating query builder selects the ownership column the authorship relationships resolve through.
+     */
+    private function hydratesAuthorship(): bool
+    {
+        $queryBuilder = $this->queryBuilder;
+
+        return in_array('owner_id', $queryBuilder::getRequiredFields(), true)
+            || in_array('owner_id', $queryBuilder::getAllAllowedFields(), true);
+    }
+
+    /**
+     * Check if a field should be included in the response. Required fields are always included; every other field
+     * must be exposed by the hydrating query builder and either requested or covered by an unfiltered request.
      *
      * @param  string  $field  The field name to check
      * @return bool Whether the field should be included
      */
     private function shouldInclude(string $field): bool
     {
-        $requiredFields = ModQueryBuilder::getRequiredFields();
+        $queryBuilder = $this->queryBuilder;
 
-        return $this->showAllFields
-            || in_array($field, $this->requestedFields, true)
-            || in_array($field, $requiredFields, true);
+        if (in_array($field, $queryBuilder::getRequiredFields(), true)) {
+            return true;
+        }
+
+        if (! in_array($field, $queryBuilder::getAllAllowedFields(), true)) {
+            return false;
+        }
+
+        return $this->showAllFields || in_array($field, $this->requestedFields, true);
     }
 }

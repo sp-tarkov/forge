@@ -402,12 +402,7 @@ final class ModQueryBuilder extends AbstractQueryBuilder
      */
     protected function filterByCreatedBetween(Builder $query, ?string $range): void
     {
-        if ($range === null) {
-            return;
-        }
-
-        [$start, $end] = explode(',', $range);
-        $query->whereBetween('mods.created_at', [$start, $end]);
+        $this->applyDateRangeFilter($query, 'mods.created_at', $range);
     }
 
     /**
@@ -417,12 +412,7 @@ final class ModQueryBuilder extends AbstractQueryBuilder
      */
     protected function filterByUpdatedBetween(Builder $query, ?string $range): void
     {
-        if ($range === null) {
-            return;
-        }
-
-        [$start, $end] = explode(',', $range);
-        $query->whereBetween('mods.updated_at', [$start, $end]);
+        $this->applyDateRangeFilter($query, 'mods.updated_at', $range);
     }
 
     /**
@@ -432,12 +422,7 @@ final class ModQueryBuilder extends AbstractQueryBuilder
      */
     protected function filterByPublishedBetween(Builder $query, ?string $range): void
     {
-        if ($range === null) {
-            return;
-        }
-
-        [$start, $end] = explode(',', $range);
-        $query->whereBetween('mods.published_at', [$start, $end]);
+        $this->applyDateRangeFilter($query, 'mods.published_at', $range);
     }
 
     /**

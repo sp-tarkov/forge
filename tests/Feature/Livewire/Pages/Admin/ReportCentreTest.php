@@ -566,8 +566,8 @@ describe('Mod List reports', function (): void {
             ->set('resolveAfterAction', true)
             ->call('executeAction');
 
-        expect($owner->fresh()->isBanned())->toBeTrue();
-        expect($report->fresh()->status)->toBe(ReportStatus::RESOLVED);
+        expect($owner->fresh()->isBanned())->toBeTrue()
+            ->and($report->fresh()->status)->toBe(ReportStatus::RESOLVED);
     });
 
     it('can disable a mod list from a report', function (): void {
@@ -589,9 +589,9 @@ describe('Mod List reports', function (): void {
             ->set('resolveAfterAction', true)
             ->call('executeAction');
 
-        expect($modList->fresh()->disabled)->toBeTrue();
-        expect($report->fresh()->status)->toBe(ReportStatus::RESOLVED);
-        expect(TrackingEvent::query()->where('event_name', TrackingEventType::MOD_LIST_DISABLE->value)->exists())->toBeTrue();
+        expect($modList->fresh()->disabled)->toBeTrue()
+            ->and($report->fresh()->status)->toBe(ReportStatus::RESOLVED)
+            ->and(TrackingEvent::query()->where('event_name', TrackingEventType::MOD_LIST_DISABLE->value)->exists())->toBeTrue();
     });
 
     it('can enable a disabled mod list from a report', function (): void {
@@ -612,8 +612,8 @@ describe('Mod List reports', function (): void {
             ->call('openActionModal', $report->id, 'enable_mod_list')
             ->call('executeAction');
 
-        expect($modList->fresh()->disabled)->toBeFalse();
-        expect(TrackingEvent::query()->where('event_name', TrackingEventType::MOD_LIST_ENABLE->value)->exists())->toBeTrue();
+        expect($modList->fresh()->disabled)->toBeFalse()
+            ->and(TrackingEvent::query()->where('event_name', TrackingEventType::MOD_LIST_ENABLE->value)->exists())->toBeTrue();
     });
 
     it('can hard delete a mod list from a report and the report stays resolvable', function (): void {
@@ -634,8 +634,8 @@ describe('Mod List reports', function (): void {
             ->call('openActionModal', $report->id, 'delete_mod_list')
             ->call('executeAction');
 
-        expect(ModList::query()->find($modList->id))->toBeNull();
-        expect(TrackingEvent::query()->where('event_name', TrackingEventType::MOD_LIST_DELETE->value)->exists())->toBeTrue();
+        expect(ModList::query()->find($modList->id))->toBeNull()
+            ->and(TrackingEvent::query()->where('event_name', TrackingEventType::MOD_LIST_DELETE->value)->exists())->toBeTrue();
 
         // The report remains intact and can still be resolved after its content is gone.
         $report->refresh();

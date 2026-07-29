@@ -76,9 +76,9 @@ it('marks result as failed when safety check rejects the url', function (): void
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Failed);
-    expect($result->download_ok)->toBeFalse();
-    expect($result->failure_reason)->toContain('downloadable file');
+    expect($result->status)->toBe(VerificationStatus::Failed)
+        ->and($result->download_ok)->toBeFalse()
+        ->and($result->failure_reason)->toContain('downloadable file');
 });
 
 it('marks result as failed when download returns non-200', function (): void {
@@ -101,9 +101,9 @@ it('marks result as failed when download returns non-200', function (): void {
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Failed);
-    expect($result->download_ok)->toBeFalse();
-    expect($result->failure_reason)->toContain('HTTP 404');
+    expect($result->status)->toBe(VerificationStatus::Failed)
+        ->and($result->download_ok)->toBeFalse()
+        ->and($result->failure_reason)->toContain('HTTP 404');
 });
 
 it('marks result as failed when docker container fails', function (): void {
@@ -134,10 +134,10 @@ it('marks result as failed when docker container fails', function (): void {
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Failed);
-    expect($result->download_ok)->toBeTrue();
-    expect($result->archive_ok)->toBeFalse();
-    expect($result->failure_reason)->toContain('Docker container failed');
+    expect($result->status)->toBe(VerificationStatus::Failed)
+        ->and($result->download_ok)->toBeTrue()
+        ->and($result->archive_ok)->toBeFalse()
+        ->and($result->failure_reason)->toContain('Docker container failed');
 });
 
 it('marks result as passed when container reports success', function (): void {
@@ -164,19 +164,18 @@ it('marks result as passed when container reports success', function (): void {
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Passed);
-    expect($result->download_ok)->toBeTrue();
-    expect($result->archive_ok)->toBeTrue();
-    expect($result->file_tree)->toBe(['package.json', 'src/mod.ts', 'README.md']);
-    expect($result->checks)->toHaveCount(1);
-    expect($result->checks[0]['name'])->toBe('archive_extraction');
-    expect($result->checks[0]['status'])->toBe('passed');
-    expect($result->checks_version)->toBe('1');
-    expect($result->failure_reason)->toBeNull();
+    expect($result->status)->toBe(VerificationStatus::Passed)
+        ->and($result->download_ok)->toBeTrue()
+        ->and($result->archive_ok)->toBeTrue()
+        ->and($result->file_tree)->toBe(['package.json', 'src/mod.ts', 'README.md'])
+        ->and($result->checks)->toHaveCount(1)
+        ->and($result->checks[0])->toMatchArray(['name' => 'archive_extraction', 'status' => 'passed'])
+        ->and($result->checks_version)->toBe('1')
+        ->and($result->failure_reason)->toBeNull();
 
     $modVersion->refresh();
-    expect($modVersion->verification_status)->toBe(VerificationStatus::Passed);
-    expect($modVersion->last_verified_at)->not->toBeNull();
+    expect($modVersion->verification_status)->toBe(VerificationStatus::Passed)
+        ->and($modVersion->last_verified_at)->not->toBeNull();
 });
 
 it('logs a warning when the container reports a checks version behind the host constant', function (): void {
@@ -266,8 +265,8 @@ it('caps and sanitizes the container-reported file tree', function (): void {
 
     $result->refresh();
 
-    expect($result->file_tree)->toBe(['a.txt', 'b.txt', 'c.txt', 'd.txt', 'e.txt']);
-    expect($result->details['file_tree_truncated'])->toBeTrue();
+    expect($result->file_tree)->toBe(['a.txt', 'b.txt', 'c.txt', 'd.txt', 'e.txt'])
+        ->and($result->details['file_tree_truncated'])->toBeTrue();
 });
 
 it('honours the container truncation flag even when under the host cap', function (): void {
@@ -292,8 +291,8 @@ it('honours the container truncation flag even when under the host cap', functio
 
     $result->refresh();
 
-    expect($result->file_tree)->toBe(['a.txt', 'b.txt']);
-    expect($result->details['file_tree_truncated'])->toBeTrue();
+    expect($result->file_tree)->toBe(['a.txt', 'b.txt'])
+        ->and($result->details['file_tree_truncated'])->toBeTrue();
 });
 
 it('tolerates a non-array file tree from the container', function (): void {
@@ -318,8 +317,8 @@ it('tolerates a non-array file tree from the container', function (): void {
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Passed);
-    expect($result->file_tree)->toBe([]);
+    expect($result->status)->toBe(VerificationStatus::Passed)
+        ->and($result->file_tree)->toBe([]);
 });
 
 it('passes the file tree entry cap to the container', function (): void {
@@ -374,12 +373,12 @@ it('marks result as failed when container reports extraction failure', function 
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Failed);
-    expect($result->archive_ok)->toBeFalse();
-    expect($result->failure_reason)->toContain('archive_extraction');
-    expect($result->failure_reason)->toContain('Failed to extract ZIP archive');
-    expect($result->checks)->toHaveCount(1);
-    expect($result->checks[0]['status'])->toBe('failed');
+    expect($result->status)->toBe(VerificationStatus::Failed)
+        ->and($result->archive_ok)->toBeFalse()
+        ->and($result->failure_reason)->toContain('archive_extraction')
+        ->toContain('Failed to extract ZIP archive')
+        ->and($result->checks)->toHaveCount(1)
+        ->and($result->checks[0]['status'])->toBe('failed');
 });
 
 it('detects 7z format from the downloaded file magic bytes', function (): void {
@@ -464,10 +463,10 @@ it('marks result as failed when the downloaded file is not a recognized archive'
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Failed);
-    expect($result->download_ok)->toBeTrue();
-    expect($result->archive_ok)->toBeFalse();
-    expect($result->failure_reason)->toContain('not a ZIP or 7z archive');
+    expect($result->status)->toBe(VerificationStatus::Failed)
+        ->and($result->download_ok)->toBeTrue()
+        ->and($result->archive_ok)->toBeFalse()
+        ->and($result->failure_reason)->toContain('not a ZIP or 7z archive');
     Process::assertNothingRan();
 });
 
@@ -643,10 +642,10 @@ it('marks result as failed when the local image build fails', function (): void 
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Failed);
-    expect($result->archive_ok)->toBeFalse();
-    expect($result->failure_reason)->toContain('Docker image build failed');
-    expect($result->failure_reason)->toContain('dockerfile parse error');
+    expect($result->status)->toBe(VerificationStatus::Failed)
+        ->and($result->archive_ok)->toBeFalse()
+        ->and($result->failure_reason)->toContain('Docker image build failed')
+        ->toContain('dockerfile parse error');
 
     Process::assertDidntRun(fn ($process): bool => is_string($process->command)
         && str_starts_with($process->command, 'docker run'));
@@ -807,8 +806,8 @@ it('pins the download connection to the validated ip and guards redirects', func
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Passed);
-    expect($result->details['safety_check']['resolved_ip'])->toBe('93.184.215.14');
+    expect($result->status)->toBe(VerificationStatus::Passed)
+        ->and($result->details['safety_check']['resolved_ip'])->toBe('93.184.215.14');
 });
 
 it('fails verification when the download certificate cannot be verified', function (): void {
@@ -832,9 +831,9 @@ it('fails verification when the download certificate cannot be verified', functi
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Failed);
-    expect($result->download_ok)->toBeFalse();
-    expect($result->failure_reason)->toContain('SSL certificate problem');
+    expect($result->status)->toBe(VerificationStatus::Failed)
+        ->and($result->download_ok)->toBeFalse()
+        ->and($result->failure_reason)->toContain('SSL certificate problem');
     Process::assertNothingRan();
 });
 
@@ -861,9 +860,9 @@ it('rejects an oversized download that understated its length to the head reques
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Failed);
-    expect($result->download_ok)->toBeFalse();
-    expect($result->failure_reason)->toContain('exceeds maximum');
+    expect($result->status)->toBe(VerificationStatus::Failed)
+        ->and($result->download_ok)->toBeFalse()
+        ->and($result->failure_reason)->toContain('exceeds maximum');
     Process::assertNothingRan();
 });
 
@@ -958,9 +957,9 @@ it('rejects file exceeding content-length before downloading', function (): void
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Failed);
-    expect($result->download_ok)->toBeFalse();
-    expect($result->failure_reason)->toContain('exceeds maximum');
+    expect($result->status)->toBe(VerificationStatus::Failed)
+        ->and($result->download_ok)->toBeFalse()
+        ->and($result->failure_reason)->toContain('exceeds maximum');
 });
 
 it('does not fail the verification for a failing report-only check', function (): void {
@@ -997,13 +996,12 @@ it('does not fail the verification for a failing report-only check', function ()
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Passed);
-    expect($result->archive_ok)->toBeTrue();
-    expect($result->checks)->toHaveCount(2);
-    expect($result->checks[1]['name'])->toBe('manifest_present');
-    expect($result->checks[1]['status'])->toBe('failed');
-    expect($result->checks[1]['report_only'])->toBeTrue();
-    expect($result->checks_version)->toBe('2');
+    expect($result->status)->toBe(VerificationStatus::Passed)
+        ->and($result->archive_ok)->toBeTrue()
+        ->and($result->checks)->toHaveCount(2)
+        ->and($result->checks[1])->toMatchArray(['name' => 'manifest_present', 'status' => 'failed'])
+        ->and($result->checks[1]['report_only'])->toBeTrue()
+        ->and($result->checks_version)->toBe('2');
 });
 
 it('does not fail the verification for a skipped enforcing check', function (): void {
@@ -1040,8 +1038,8 @@ it('does not fail the verification for a skipped enforcing check', function (): 
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Passed);
-    expect($result->archive_ok)->toBeTrue();
+    expect($result->status)->toBe(VerificationStatus::Passed)
+        ->and($result->archive_ok)->toBeTrue();
 });
 
 it('fails the verification for a failing enforcing check alongside a passing one', function (): void {
@@ -1078,9 +1076,9 @@ it('fails the verification for a failing enforcing check alongside a passing one
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Failed);
-    expect($result->archive_ok)->toBeFalse();
-    expect($result->failure_reason)->toContain('forbidden_files: Contains an executable');
+    expect($result->status)->toBe(VerificationStatus::Failed)
+        ->and($result->archive_ok)->toBeFalse()
+        ->and($result->failure_reason)->toContain('forbidden_files: Contains an executable');
 });
 
 it('marks result as failed for an unsupported container schema version', function (): void {
@@ -1108,9 +1106,9 @@ it('marks result as failed for an unsupported container schema version', functio
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Failed);
-    expect($result->archive_ok)->toBeFalse();
-    expect($result->failure_reason)->toContain('schema version');
+    expect($result->status)->toBe(VerificationStatus::Failed)
+        ->and($result->archive_ok)->toBeFalse()
+        ->and($result->failure_reason)->toContain('schema version');
 });
 
 it('sanitizes malformed and unknown-status checks from the container', function (): void {
@@ -1150,9 +1148,8 @@ it('sanitizes malformed and unknown-status checks from the container', function 
 
     // The string entry is dropped; the unknown status resolves to a failure, but it is report-only so the run passes.
     expect($result->checks)->toHaveCount(2);
-    expect($result->checks[1]['name'])->toBe('mystery');
-    expect($result->checks[1]['status'])->toBe('failed');
-    expect($result->status)->toBe(VerificationStatus::Passed);
+    expect($result->checks[1])->toMatchArray(['name' => 'mystery', 'status' => 'failed'])
+        ->and($result->status)->toBe(VerificationStatus::Passed);
 });
 
 it('passes the mod version and guid to the container', function (): void {
@@ -1253,18 +1250,17 @@ it('stores the dll guid and version check results and fails the run', function (
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Failed);
-    expect($result->archive_ok)->toBeFalse();
-    expect($result->checks)->toHaveCount(3);
-    expect($result->checks[1]['name'])->toBe('dll_guid_match');
-    expect($result->checks[1]['status'])->toBe('failed');
-    expect($result->checks[1]['report_only'])->toBeFalse();
-    expect($result->checks[1]['data']['expected_guid'])->toBe('com.example.testmod');
-    expect($result->checks[1]['data']['findings'][0]['guid'])->toBe('com.other.mod');
-    expect($result->checks[2]['name'])->toBe('dll_version_match');
-    expect($result->checks[2]['report_only'])->toBeFalse();
-    expect($result->checks[2]['data']['expected_version'])->toBe('2.4.6');
-    expect($result->checks_version)->toBe('2');
+    expect($result->status)->toBe(VerificationStatus::Failed)
+        ->and($result->archive_ok)->toBeFalse()
+        ->and($result->checks)->toHaveCount(3)
+        ->and($result->checks[1])->toMatchArray(['name' => 'dll_guid_match', 'status' => 'failed'])
+        ->and($result->checks[1]['report_only'])->toBeFalse()
+        ->and($result->checks[1]['data']['expected_guid'])->toBe('com.example.testmod')
+        ->and($result->checks[1]['data']['findings'][0]['guid'])->toBe('com.other.mod')
+        ->and($result->checks[2]['name'])->toBe('dll_version_match')
+        ->and($result->checks[2]['report_only'])->toBeFalse()
+        ->and($result->checks[2]['data']['expected_version'])->toBe('2.4.6')
+        ->and($result->checks_version)->toBe('2');
 });
 
 it('passes the spt generation to the container', function (string $constraint, string $generation): void {

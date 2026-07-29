@@ -18,8 +18,8 @@ describe('DisposableEmailBlocklist model', function (): void {
         // Add a disposable domain to the database.
         DisposableEmailBlocklist::query()->create(['domain' => 'tempmail.com']);
 
-        expect(DisposableEmailBlocklist::isDisposable('tempmail.com'))->toBeTrue();
-        expect(DisposableEmailBlocklist::isDisposable('gmail.com'))->toBeFalse();
+        expect(DisposableEmailBlocklist::isDisposable('tempmail.com'))->toBeTrue()
+            ->and(DisposableEmailBlocklist::isDisposable('gmail.com'))->toBeFalse();
     });
 
     it('caches the disposable check result', function (): void {

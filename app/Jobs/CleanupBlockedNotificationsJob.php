@@ -32,8 +32,8 @@ final class CleanupBlockedNotificationsJob implements ShouldQueue
     {
         $this->blocker->notifications()
             ->where(function (Builder $query): void {
-                $query->where('data->commenter_id', (string) $this->blocked->id)
-                    ->orWhere('data->sender_id', (string) $this->blocked->id);
+                $query->whereJsonContains('data->commenter_id', $this->blocked->id)
+                    ->orWhereJsonContains('data->sender_id', $this->blocked->id);
             })
             ->delete();
 

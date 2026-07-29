@@ -67,7 +67,7 @@ it('returns no addresses when the host does not resolve', function (): void {
         DnsRecord::AAAA => new DnsException('Name resolution failed; server returned error code: 3 (NXDomain)'),
     ]), 5.0);
 
-    expect($resolver->resolve('dead.example.com'))->toBe([]);
+    expect($resolver->resolve('dead.example.com'))->toBeEmpty();
 });
 
 it('returns no addresses when resolution fails unexpectedly', function (): void {
@@ -76,7 +76,7 @@ it('returns no addresses when resolution fails unexpectedly', function (): void 
         DnsRecord::AAAA => new RuntimeException('nameserver exploded'),
     ]), 5.0);
 
-    expect($resolver->resolve('example.com'))->toBe([]);
+    expect($resolver->resolve('example.com'))->toBeEmpty();
 });
 
 it('reads the configured dns timeout as a float', function (): void {
@@ -96,7 +96,6 @@ it('bounds every query with the configured timeout', function (): void {
 
     new AmpDnsResolver($amp, 5.0)->resolve('example.com');
 
-    expect($seen)->toHaveCount(2);
-    expect($seen[0])->toBeInstanceOf(TimeoutCancellation::class);
-    expect($seen[1])->toBeInstanceOf(TimeoutCancellation::class);
+    expect($seen)->toHaveCount(2)
+        ->sequence(fn ($e) => $e->toBeInstanceOf(TimeoutCancellation::class), fn ($e) => $e->toBeInstanceOf(TimeoutCancellation::class));
 });

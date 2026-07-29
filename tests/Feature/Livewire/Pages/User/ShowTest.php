@@ -826,9 +826,8 @@ describe('mod and addon tab counts', function (): void {
         ]);
 
         expect($page->instance()->getModCount())
-            ->toBe($expectedMods, sprintf('mod tab count for %s', $role));
-        expect($page->instance()->getAddonCount())
-            ->toBe($expectedAddons, sprintf('addon tab count for %s', $role));
+            ->toBe($expectedMods, sprintf('mod tab count for %s', $role))
+            ->and($page->instance()->getAddonCount())->toBe($expectedAddons, sprintf('addon tab count for %s', $role));
 
         $modsTab = Livewire::test('user.show.mods-tab', [
             'userId' => $this->owner->id,

@@ -2,6 +2,7 @@ includes:
     - vendor/larastan/larastan/extension.neon
     - vendor/calebdw/larastan-livewire/extension.neon
     - vendor/nesbot/carbon/extension.neon
+    - vendor/pestphp/pest-plugin-phpstan/extension.neon
     - phar://phpstan.phar/conf/bleedingEdge.neon
 
 parameters:

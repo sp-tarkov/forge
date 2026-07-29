@@ -91,10 +91,15 @@ return new class extends Migration
             $table->string('dependable_type')->default(null)->change();
         });
 
-        // Step 8: Update foreign key reference from mod_dependencies to dependencies
-        // Note: The foreign key keeps its original name after table rename
+        // Step 8: Update foreign key reference from mod_dependencies to dependencies. SQLite drops the foreign key by
+        // column; other drivers drop the constraint named 'mod_resolved_dependencies_dependency_id_foreign'.
         Schema::table('resolved_dependencies', function (Blueprint $table): void {
-            $table->dropForeign('mod_resolved_dependencies_dependency_id_foreign');
+            if (DB::getDriverName() === 'sqlite') {
+                $table->dropForeign(['dependency_id']);
+            } else {
+                $table->dropForeign('mod_resolved_dependencies_dependency_id_foreign');
+            }
+
             $table->foreign('dependency_id')
                 ->references('id')
                 ->on('dependencies')

@@ -68,7 +68,7 @@ describe('urls and tracking helpers', function (): void {
         // Simulate a scenario where commentable is deleted/null
         $comment->setRelation('commentable', null);
 
-        expect($comment->getTrackingUrl())->toBe('');
+        expect($comment->getTrackingUrl())->toBeEmpty();
     });
 
     it('returns the generic tracking title when commentable is null', function (): void {
@@ -127,7 +127,7 @@ describe('body length validation', function (): void {
         ]);
 
         expect($comment)->toBeInstanceOf(Comment::class)
-            ->and(mb_strlen($comment->body))->toBe($maxLength);
+            ->and($comment->body)->toHaveLength($maxLength);
     });
 });
 
@@ -183,9 +183,9 @@ describe('spam status helpers', function (): void {
         $comment->save();
         $comment->update(['spam_status' => SpamStatus::SPAM]);
 
-        expect($comment->isSpam())->toBeTrue();
-        expect($comment->isSpamClean())->toBeFalse();
-        expect($comment->isPendingSpamCheck())->toBeFalse();
+        expect($comment->isSpam())->toBeTrue()
+            ->and($comment->isSpamClean())->toBeFalse()
+            ->and($comment->isPendingSpamCheck())->toBeFalse();
     });
 
     it('correctly identifies clean comments', function (): void {
@@ -199,9 +199,9 @@ describe('spam status helpers', function (): void {
             'spam_status' => SpamStatus::CLEAN,
         ]);
 
-        expect($comment->isSpam())->toBeFalse();
-        expect($comment->isSpamClean())->toBeTrue();
-        expect($comment->isPendingSpamCheck())->toBeFalse();
+        expect($comment->isSpam())->toBeFalse()
+            ->and($comment->isSpamClean())->toBeTrue()
+            ->and($comment->isPendingSpamCheck())->toBeFalse();
     });
 });
 
@@ -229,8 +229,8 @@ describe('spam scopes', function (): void {
             'spam_status' => SpamStatus::CLEAN,
         ]);
 
-        expect(Comment::spam()->count())->toBe(1);
-        expect(Comment::clean()->count())->toBe(1); // just cleanComment
+        expect(Comment::spam()->count())->toBe(1)
+            ->and(Comment::clean()->count())->toBe(1); // just cleanComment
     });
 
     it('filters out spam comments from the commentable display scopes', function (): void {
@@ -256,8 +256,8 @@ describe('spam scopes', function (): void {
 
         // Check that only clean comments are displayed
         expect($mod->comments()->clean()->count())->toBe(1);
-        expect($mod->comments()->spam()->count())->toBe(1);
-        expect($mod->rootComments()->clean()->count())->toBe(1);
+        expect($mod->comments()->spam()->count())->toBe(1)
+            ->and($mod->rootComments()->clean()->count())->toBe(1);
     });
 });
 
@@ -268,9 +268,9 @@ describe('spam check result value object', function (): void {
             metadata: ['test' => 'data']
         );
 
-        expect($result->isSpam)->toBeTrue();
-        expect($result->metadata)->toBe(['test' => 'data']);
-        expect($result->getSpamStatus())->toBe(SpamStatus::SPAM);
+        expect($result->isSpam)->toBeTrue()
+            ->and($result->metadata)->toBe(['test' => 'data'])
+            ->and($result->getSpamStatus())->toBe(SpamStatus::SPAM);
     });
 
     it('determines auto-deletion correctly', function (): void {
@@ -288,8 +288,8 @@ describe('spam check result value object', function (): void {
             discard: false
         );
 
-        expect($discardResult->shouldAutoDelete())->toBeTrue();
-        expect($noDiscardResult->shouldAutoDelete())->toBeFalse();
+        expect($discardResult->shouldAutoDelete())->toBeTrue()
+            ->and($noDiscardResult->shouldAutoDelete())->toBeFalse();
     });
 });
 
@@ -309,8 +309,8 @@ describe('comment observer spam behavior', function (): void {
         $spamChecker = resolve(CommentSpamService::class);
         $result = $spamChecker->checkSpam($comment);
 
-        expect($result->isSpam)->toBeFalse();
-        expect($result->metadata)->toHaveKey('reason', 'akismet_disabled');
+        expect($result->isSpam)->toBeFalse()
+            ->and($result->metadata)->toHaveKey('reason', 'akismet_disabled');
     });
 
     it('sets comments to clean by default when Akismet is disabled', function (): void {
@@ -353,8 +353,8 @@ describe('comment observer spam behavior', function (): void {
 
         $comment->refresh();
 
-        expect($comment->spam_status)->toBe(SpamStatus::CLEAN);
-        expect($comment->spam_metadata)->toBe(['reason' => 'akismet_disabled']);
+        expect($comment->spam_status)->toBe(SpamStatus::CLEAN)
+            ->and($comment->spam_metadata)->toBe(['reason' => 'akismet_disabled']);
         Queue::assertNotPushed(CheckCommentForSpam::class);
     });
 
@@ -379,8 +379,8 @@ describe('comment observer spam behavior', function (): void {
 
         $comment->refresh();
 
-        expect($comment->spam_status)->toBe(SpamStatus::CLEAN);
-        expect($comment->spam_metadata)->toBe(['reason' => 'akismet_disabled']);
+        expect($comment->spam_status)->toBe(SpamStatus::CLEAN)
+            ->and($comment->spam_metadata)->toBe(['reason' => 'akismet_disabled']);
         Queue::assertNotPushed(CheckCommentForSpam::class);
     });
 

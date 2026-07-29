@@ -8,9 +8,8 @@ use App\Models\User;
 use App\Models\UserRole;
 use Database\Seeders\Traits\SeederHelpers;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Collection;
-
-use function Laravel\Prompts\progress;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Hash;
 
 final class UserSeeder extends Seeder
 {
@@ -26,42 +25,31 @@ final class UserSeeder extends Seeder
         $this->initializeFaker();
         $counts = $this->getDefaultCounts();
 
-        // Staff Users
+        /** @var int $staffCount */
+        $staffCount = $counts['staff'];
+        /** @var int $moderatorCount */
+        $moderatorCount = $counts['moderator'];
+        /** @var int $userCount */
+        $userCount = $counts['user'];
+
         $staffRole = UserRole::query()->firstOrCreate(
             ['name' => 'Staff'],
             UserRole::factory()->staff()->make()->attributesToArray()
         );
-        $this->testAccount = User::factory()->for($staffRole, 'role')->create([
-            'email' => 'test@example.com',
-        ]);
-        /** @var int $staffCount */
-        $staffCount = $counts['staff'];
-        User::factory($staffCount - 1)->for($staffRole, 'role')->create();
-
-        $this->command->outputComponents()->info('Test account created: '.$this->testAccount->email);
-
-        // Moderator Users
         $moderatorRole = UserRole::query()->firstOrCreate(
             ['name' => 'Moderator'],
             UserRole::factory()->moderator()->make()->attributesToArray()
         );
-        /** @var int $moderatorCount */
-        $moderatorCount = $counts['moderator'];
-        User::factory($moderatorCount)->for($moderatorRole, 'role')->create();
 
-        // Regular Users
-        /** @var int $userCount */
-        $userCount = $counts['user'];
-        User::withoutEvents(function () use ($userCount): void {
-            progress(
-                label: 'Adding Users...',
-                steps: $userCount,
-                callback: fn () => User::factory()->create()
-            );
-        });
+        $this->testAccount = User::factory()->for($staffRole, 'role')->create([
+            'email' => 'test@example.com',
+        ]);
 
-        // Add user follows
-        $this->seedUserFollows();
+        $this->command->outputComponents()->info('Test account created: '.$this->testAccount->email);
+
+        $newUserIds = $this->seedUsers($staffRole->id, $moderatorRole->id, $staffCount, $moderatorCount, $userCount);
+
+        $this->seedUserFollows([$this->testAccount->id, ...$newUserIds]);
     }
 
     /**
@@ -73,79 +61,112 @@ final class UserSeeder extends Seeder
     }
 
     /**
-     * Seed user follow relationships.
+     * Bulk-create staff, moderator, and regular users and return the new user IDs.
+     *
+     * @return list<int>
      */
-    private function seedUserFollows(): void
+    private function seedUsers(
+        int $staffRoleId,
+        int $moderatorRoleId,
+        int $staffCount,
+        int $moderatorCount,
+        int $userCount,
+    ): array {
+        /** @var list<string> $existingNames */
+        $existingNames = User::query()->pluck('name')->all();
+        /** @var list<string> $existingEmails */
+        $existingEmails = User::query()->pluck('email')->all();
+
+        $takenNames = array_fill_keys($existingNames, true);
+        $takenEmails = array_fill_keys($existingEmails, true);
+
+        $passwordHash = Hash::make('password');
+        $now = Date::now();
+
+        $rows = [];
+        for ($i = 0; $i < $staffCount - 1; $i++) {
+            $rows[] = $this->buildUserRow($takenNames, $takenEmails, $passwordHash, $now, $staffRoleId);
+        }
+
+        for ($i = 0; $i < $moderatorCount; $i++) {
+            $rows[] = $this->buildUserRow($takenNames, $takenEmails, $passwordHash, $now, $moderatorRoleId);
+        }
+
+        for ($i = 0; $i < $userCount; $i++) {
+            $rows[] = $this->buildUserRow($takenNames, $takenEmails, $passwordHash, $now);
+        }
+
+        return $this->bulkInsertReturningIds('users', $rows);
+    }
+
+    /**
+     * Bulk-create follow relationships, giving the test account exactly 15 followers and 15 followed users and
+     * roughly 70% of the remaining users 1-10 followers and 1-10 followed users.
+     *
+     * @param  non-empty-list<int>  $userIds
+     */
+    private function seedUserFollows(array $userIds): void
     {
-        $allUsers = User::all();
+        $testAccountId = $this->testAccount->id;
+        $otherIds = array_values(array_filter($userIds, fn (int $id): bool => $id !== $testAccountId));
 
-        progress(
-            label: 'Adding user follows...',
-            steps: $allUsers,
-            callback: function ($user) use ($allUsers): void {
-                // Special handling for test account
-                if ($user->id === $this->testAccount->id) {
-                    $this->seedTestAccountFollows($user, $allUsers);
+        if ($otherIds === []) {
+            return;
+        }
 
-                    return;
-                }
+        $now = Date::now();
+        $pairs = [];
+        $rows = [];
 
-                // Regular random follow logic for other users
-                $this->seedRandomUserFollows($user, $allUsers);
+        $addFollow = function (int $followerId, int $followingId) use (&$pairs, &$rows, $now): void {
+            if ($followerId === $followingId) {
+                return;
             }
-        );
-    }
 
-    /**
-     * Seed follows for the test account.
-     *
-     * @param  Collection<int, User>  $allUsers
-     */
-    private function seedTestAccountFollows(User $testAccount, Collection $allUsers): void
-    {
-        // Test account should have exactly 15 followers and follow exactly 15 users
-        $otherUsers = $allUsers->where('id', '!=', $testAccount->id);
+            $pairKey = $followerId.':'.$followingId;
+            if (isset($pairs[$pairKey])) {
+                return;
+            }
 
-        // Give test account 15 followers
-        $followers = $otherUsers->random(15)->pluck('id')->toArray();
-        $testAccount->followers()->attach($followers);
+            $pairs[$pairKey] = true;
+            $rows[] = [
+                'follower_id' => $followerId,
+                'following_id' => $followingId,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        };
 
-        // Make test account follow 15 different users (avoiding overlap where possible)
-        $following = $otherUsers->whereNotIn('id', $followers)
-            ->random(min(15, $otherUsers->whereNotIn('id', $followers)->count()))
-            ->pluck('id')
-            ->toArray();
-
-        if (count($following) < 15) {
-            // If we don't have enough non-followers, fill from all other users
-            $remaining = $otherUsers->whereNotIn('id', $following)
-                ->random(15 - count($following))
-                ->pluck('id')
-                ->toArray();
-            $following = array_merge($following, $remaining);
+        $followerIds = $this->randomElements($otherIds, min(15, count($otherIds)));
+        foreach ($followerIds as $followerId) {
+            $addFollow($followerId, $testAccountId);
         }
 
-        $testAccount->following()->attach($following);
-    }
-
-    /**
-     * Seed random follows for regular users.
-     *
-     * @param  Collection<int, User>  $allUsers
-     */
-    private function seedRandomUserFollows(User $user, Collection $allUsers): void
-    {
-        $hasFollowers = random_int(0, 100) < 70; // 70% chance to have followers
-        $isFollowing = random_int(0, 100) < 70; // 70% chance to be following other users
-
-        if ($hasFollowers) {
-            $followers = $allUsers->random(random_int(1, 10))->pluck('id')->toArray();
-            $user->followers()->attach($followers);
+        $followerSet = array_fill_keys($followerIds, true);
+        $followingPool = array_values(array_filter($otherIds, fn (int $id): bool => ! isset($followerSet[$id])));
+        if ($followingPool === []) {
+            $followingPool = $otherIds;
         }
 
-        if ($isFollowing) {
-            $following = $allUsers->random(random_int(1, 10))->pluck('id')->toArray();
-            $user->following()->attach($following);
+        foreach ($this->randomElements($followingPool, min(15, count($followingPool))) as $followingId) {
+            $addFollow($testAccountId, $followingId);
         }
+
+        $maxFollows = min(10, count($userIds));
+        foreach ($otherIds as $userId) {
+            if (random_int(0, 100) < 70) {
+                foreach ($this->randomElements($userIds, random_int(1, $maxFollows)) as $followerId) {
+                    $addFollow($followerId, $userId);
+                }
+            }
+
+            if (random_int(0, 100) < 70) {
+                foreach ($this->randomElements($userIds, random_int(1, $maxFollows)) as $followingId) {
+                    $addFollow($userId, $followingId);
+                }
+            }
+        }
+
+        $this->bulkInsert('user_follows', $rows, 1000);
     }
 }

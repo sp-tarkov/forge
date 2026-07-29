@@ -29,7 +29,7 @@ return new class extends Migration
             $table->dropIndex('visitors_last_activity_index');
 
             // Drop foreign key
-            $table->dropForeign('visitors_user_id_foreign');
+            $table->dropForeign(['user_id']);
 
             // Drop columns no longer needed for peak-only tracking
             $table->dropColumn('type');

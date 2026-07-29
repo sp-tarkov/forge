@@ -17,8 +17,8 @@ describe('block relationship validation', function (): void {
             ['authorIds.*' => [new NoBlockRelationship($user)]]
         );
 
-        expect($validator->fails())->toBeTrue();
-        expect($validator->errors()->first('authorIds.0'))->toBe('Blocked Target cannot be added as an author.');
+        expect($validator->fails())->toBeTrue()
+            ->and($validator->errors()->first('authorIds.0'))->toBe('Blocked Target cannot be added as an author.');
     });
 
     it('fails when the target has blocked the user', function (): void {

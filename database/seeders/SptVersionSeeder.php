@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Models\SptVersion;
+use Database\Seeders\Traits\SeederHelpers;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Date;
 
 final class SptVersionSeeder extends Seeder
 {
+    use SeederHelpers;
+
     /**
      * Run the database seeds.
      */
@@ -18,7 +22,7 @@ final class SptVersionSeeder extends Seeder
     }
 
     /**
-     * Seed SPT versions that match the constraints used in ModVersionFactory.
+     * Bulk-create SPT versions that match the constraints used in ModVersionFactory, skipping ones that exist.
      */
     private function seedSptVersions(): void
     {
@@ -50,7 +54,18 @@ final class SptVersionSeeder extends Seeder
 
         $colorClasses = ['cyan', 'lime', 'green', 'yellow', 'red', 'orange'];
 
+        /** @var list<string> $existingVersions */
+        $existingVersions = SptVersion::query()->pluck('version')->all();
+        $existingVersionSet = array_fill_keys($existingVersions, true);
+
+        $now = Date::now();
+
+        $rows = [];
         foreach ($versions as $version) {
+            if (isset($existingVersionSet[$version])) {
+                continue;
+            }
+
             $parts = explode('.', $version);
             $major = (int) $parts[0];
             $minor = (int) $parts[1];
@@ -59,9 +74,8 @@ final class SptVersionSeeder extends Seeder
             // Use different colors for different major versions
             $colorClass = $colorClasses[$major % count($colorClasses)];
 
-            SptVersion::query()->firstOrCreate([
+            $rows[] = [
                 'version' => $version,
-            ], [
                 'version_major' => $major,
                 'version_minor' => $minor,
                 'version_patch' => $patch,
@@ -69,11 +83,12 @@ final class SptVersionSeeder extends Seeder
                 'mod_count' => 0,
                 'link' => 'https://github.com/sp-tarkov/build/releases/tag/'.$version,
                 'color_class' => $colorClass,
-                'publish_date' => now()->subDays(random_int(30, 365)),
-            ]);
+                'publish_date' => $now->subDays(random_int(30, 365)),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
         }
 
-        $count = SptVersion::query()->count();
-        $this->command->outputComponents()->success(sprintf('Created %s SPT versions', $count));
+        $this->bulkInsert('spt_versions', $rows);
     }
 }

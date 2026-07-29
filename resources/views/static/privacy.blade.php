@@ -72,7 +72,7 @@
     <p>At The Forge, we take your privacy seriously. This Privacy Policy explains how we collect, use, store, and
         protect your personal information when you use our website and services.</p>
 
-    <p><strong>Quick Summary:</strong></p>
+    <h4 id="quick-summary">Quick Summary:</h4>
     <ul>
         <li>We only collect information needed to provide our services</li>
         <li>We don't sell your personal data to third parties</li>
@@ -80,7 +80,7 @@
         <li>We use industry-standard security measures to protect your information</li>
     </ul>
 
-    <p><strong>Who We Are:</strong></p>
+    <h4 id="who-we-are">Who We Are:</h4>
     <ul>
         <li><strong>Service:</strong> The Forge (Single Player Tarkov modding platform)</li>
         <li><strong>Website:</strong> https://forge.sp-tarkov.com</li>
@@ -91,7 +91,7 @@
 
     <h3 id="information-you-provide">2.1 Information You Provide Directly</h3>
 
-    <p><strong>Account Registration:</strong></p>
+    <h4 id="account-registration">Account Registration:</h4>
     <ul>
         <li>Email address (required)</li>
         <li>Username/display name</li>
@@ -99,7 +99,7 @@
         <li>Profile information (optional bio, avatar, location)</li>
     </ul>
 
-    <p><strong>Content Submissions:</strong></p>
+    <h4 id="content-submissions">Content Submissions:</h4>
     <ul>
         <li>Mod files and associated metadata</li>
         <li>Forum posts and comments</li>
@@ -107,7 +107,7 @@
         <li>Images and screenshots</li>
     </ul>
 
-    <p><strong>Communications:</strong></p>
+    <h4 id="communications">Communications:</h4>
     <ul>
         <li>Private messages through our in-site messaging system</li>
         <li>Support ticket messages</li>
@@ -117,7 +117,7 @@
 
     <h3 id="information-collected-automatically">2.2 Information Collected Automatically</h3>
 
-    <p><strong>Website Usage Data:</strong></p>
+    <h4 id="website-usage-data">Website Usage Data:</h4>
     <ul>
         <li>Pages visited and time spent</li>
         <li>Click patterns and navigation paths</li>
@@ -125,7 +125,7 @@
         <li>Download history and file interactions</li>
     </ul>
 
-    <p><strong>Technical Information:</strong></p>
+    <h4 id="technical-information">Technical Information:</h4>
     <ul>
         <li>IP address and general location</li>
         <li>Browser type and version</li>
@@ -134,7 +134,7 @@
         <li>Screen resolution and display settings</li>
     </ul>
 
-    <p><strong>Performance Data:</strong></p>
+    <h4 id="performance-data">Performance Data:</h4>
     <ul>
         <li>Page load times</li>
         <li>Error messages and crash reports</li>
@@ -145,7 +145,7 @@
 
     <p>When you log in using external services, we receive:</p>
 
-    <p><strong>Discord:</strong></p>
+    <h4 id="discord">Discord:</h4>
     <ul>
         <li>Username and discriminator</li>
         <li>Avatar image</li>
@@ -154,7 +154,7 @@
 
     <h2 id="how-we-use-information">3. How We Use Your Information</h2>
 
-    <h3>3.1 Core Service Functions</h3>
+    <h3 id="3-1-core-service-functions">3.1 Core Service Functions</h3>
     <ul>
         <li><strong>Account Management:</strong> Creating and maintaining your user account</li>
         <li><strong>Content Delivery:</strong> Hosting and distributing your mod submissions</li>
@@ -162,7 +162,7 @@
         <li><strong>File Management:</strong> Tracking downloads, ratings, and user preferences</li>
     </ul>
 
-    <h3>3.2 Communication</h3>
+    <h3 id="3-2-communication">3.2 Communication</h3>
     <ul>
         <li><strong>Service Updates:</strong> Notifying you about important changes or maintenance</li>
         <li><strong>Community Management:</strong> Sending moderation notices or policy updates</li>
@@ -172,7 +172,7 @@
         <li><strong>Marketing:</strong> Newsletter and promotional emails (with your consent)</li>
     </ul>
 
-    <h3>3.3 Platform Improvement</h3>
+    <h3 id="3-3-platform-improvement">3.3 Platform Improvement</h3>
     <ul>
         <li><strong>Analytics:</strong> Understanding how users interact with our platform</li>
         <li><strong>Performance Optimization:</strong> Improving site speed and reliability</li>
@@ -180,7 +180,7 @@
         <li><strong>Security:</strong> Detecting and preventing abuse, spam, and security threats</li>
     </ul>
 
-    <h3>3.4 Legal Compliance</h3>
+    <h3 id="3-4-legal-compliance">3.4 Legal Compliance</h3>
     <ul>
         <li><strong>Terms Enforcement:</strong> Investigating violations of our Terms of Service</li>
         <li><strong>Legal Obligations:</strong> Complying with applicable laws and regulations</li>
@@ -191,28 +191,28 @@
 
     <p>We process your personal data based on:</p>
 
-    <p><strong>Legitimate Interests (Art. 6(1)(f)):</strong></p>
+    <h4 id="legitimate-interests-art-6-1-f">Legitimate Interests (Art. 6(1)(f)):</h4>
     <ul>
         <li>Providing and improving our services</li>
         <li>Ensuring platform security and preventing abuse</li>
         <li>Analyzing usage patterns for service optimization</li>
     </ul>
 
-    <p><strong>Contract Performance (Art. 6(1)(b)):</strong></p>
+    <h4 id="contract-performance-art-6-1-b">Contract Performance (Art. 6(1)(b)):</h4>
     <ul>
         <li>Creating and managing your account</li>
         <li>Delivering services you've requested</li>
         <li>Processing your content submissions</li>
     </ul>
 
-    <p><strong>Consent (Art. 6(1)(a)):</strong></p>
+    <h4 id="consent-art-6-1-a">Consent (Art. 6(1)(a)):</h4>
     <ul>
         <li>Marketing communications</li>
         <li>Optional data collection (analytics cookies)</li>
         <li>Third-party service integrations</li>
     </ul>
 
-    <p><strong>Legal Compliance (Art. 6(1)(c)):</strong></p>
+    <h4 id="legal-compliance-art-6-1-c">Legal Compliance (Art. 6(1)(c)):</h4>
     <ul>
         <li>Responding to lawful requests from authorities</li>
         <li>Complying with data protection regulations</li>
@@ -220,7 +220,7 @@
 
     <h2 id="data-sharing-disclosure">5. Data Sharing and Disclosure</h2>
 
-    <h3>5.1 Public Information</h3>
+    <h3 id="5-1-public-information">5.1 Public Information</h3>
     <p>The following information is publicly visible by design:</p>
     <ul>
         <li>Username and profile information</li>
@@ -230,33 +230,33 @@
         <li>Public activity history</li>
     </ul>
 
-    <p><strong>Private Information:</strong></p>
+    <h4 id="private-information">Private Information:</h4>
     <ul>
         <li>Private messages remain confidential between sender and recipient</li>
         <li>Message content is not shared with third parties except as required by law</li>
         <li>Staff may access messages only for Terms of Service enforcement or legal compliance</li>
     </ul>
 
-    <h3>5.2 Third-Party Services</h3>
+    <h3 id="5-2-third-party-services">5.2 Third-Party Services</h3>
 
-    <p><strong>Analytics Services:</strong></p>
+    <h4 id="analytics-services">Analytics Services:</h4>
     <ul>
         <li>Google Analytics: Anonymized usage statistics</li>
         <li>Error tracking services: Technical error reports</li>
     </ul>
 
-    <p><strong>Content Delivery:</strong></p>
+    <h4 id="content-delivery">Content Delivery:</h4>
     <ul>
         <li>CDN providers: For faster file downloads</li>
         <li>Cloud storage: For reliable file hosting</li>
     </ul>
 
-    <p><strong>Communication Tools:</strong></p>
+    <h4 id="communication-tools">Communication Tools:</h4>
     <ul>
         <li>Email services: For transactional and marketing emails</li>
     </ul>
 
-    <h3>5.3 Legal Requirements</h3>
+    <h3 id="5-3-legal-requirements">5.3 Legal Requirements</h3>
     <p>We may disclose information when required by law:</p>
     <ul>
         <li>Court orders or legal process</li>
@@ -265,7 +265,7 @@
         <li>Terms of Service enforcement</li>
     </ul>
 
-    <h3>5.4 Business Transfers</h3>
+    <h3 id="5-4-business-transfers">5.4 Business Transfers</h3>
     <p>In the event of a merger, acquisition, or sale:</p>
     <ul>
         <li>User data may be transferred to the new entity</li>
@@ -275,14 +275,14 @@
 
     <h2 id="data-retention">6. Data Retention</h2>
 
-    <h3>6.1 Account Data</h3>
+    <h3 id="6-1-account-data">6.1 Account Data</h3>
     <ul>
         <li><strong>Active accounts:</strong> Retained while account exists</li>
         <li><strong>Deleted accounts:</strong> Personal data removed within 30 days</li>
         <li><strong>Legal holds:</strong> May retain data longer if required by law</li>
     </ul>
 
-    <h3>6.2 Content Data</h3>
+    <h3 id="6-2-content-data">6.2 Content Data</h3>
     <ul>
         <li><strong>Published mods:</strong> Retained indefinitely for community benefit</li>
         <li><strong>Forum posts:</strong> Retained to maintain discussion continuity</li>
@@ -290,7 +290,7 @@
         <li><strong>Deleted conversations:</strong> Permanently removed within 30 days of deletion</li>
     </ul>
 
-    <h3>6.3 Technical Data</h3>
+    <h3 id="6-3-technical-data">6.3 Technical Data</h3>
     <ul>
         <li><strong>Server logs:</strong> Retained for 90 days for security and debugging</li>
         <li><strong>Analytics data:</strong> Aggregated data retained indefinitely</li>
@@ -299,7 +299,7 @@
 
     <h2 id="data-security">7. Data Security</h2>
 
-    <h3>7.1 Technical Safeguards</h3>
+    <h3 id="7-1-technical-safeguards">7.1 Technical Safeguards</h3>
     <ul>
         <li><strong>Encryption:</strong> Data encrypted in transit (TLS/SSL)</li>
         <li><strong>Access Controls:</strong> Limited staff access on need-to-know basis</li>
@@ -307,7 +307,7 @@
         <li><strong>Regular Updates:</strong> Security patches applied promptly</li>
     </ul>
 
-    <h3>7.2 Breach Notification</h3>
+    <h3 id="7-2-breach-notification">7.2 Breach Notification</h3>
     <p>In the event of a data breach:</p>
     <ul>
         <li><strong>Immediate Action:</strong> Contain and investigate the incident</li>
@@ -318,14 +318,14 @@
 
     <h2 id="your-privacy-rights">8. Your Privacy Rights</h2>
 
-    <h3>8.1 Access and Portability</h3>
+    <h3 id="8-1-access-and-portability">8.1 Access and Portability</h3>
     <ul>
         <li><strong>Right to Access:</strong> Request a copy of your personal data</li>
         <li><strong>Data Portability:</strong> Download your data in a structured format</li>
         <li><strong>Account Dashboard:</strong> View and manage your information online</li>
     </ul>
 
-    <h3>8.2 Correction and Deletion</h3>
+    <h3 id="8-2-correction-and-deletion">8.2 Correction and Deletion</h3>
     <ul>
         <li><strong>Right to Rectification:</strong> Correct inaccurate or outdated information</li>
         <li><strong>Right to Erasure:</strong> Request deletion of your personal data</li>
@@ -333,14 +333,14 @@
         <li><strong>Account Settings:</strong> Update your profile and preferences directly</li>
     </ul>
 
-    <h3>8.3 Control and Objection</h3>
+    <h3 id="8-3-control-and-objection">8.3 Control and Objection</h3>
     <ul>
         <li><strong>Right to Object:</strong> Opt out of data processing for legitimate interests</li>
         <li><strong>Marketing Opt-out:</strong> Unsubscribe from promotional communications</li>
         <li><strong>Consent Withdrawal:</strong> Revoke consent for optional data processing</li>
     </ul>
 
-    <h3>8.4 Processing Restrictions</h3>
+    <h3 id="8-4-processing-restrictions">8.4 Processing Restrictions</h3>
     <ul>
         <li><strong>Right to Restriction:</strong> Limit how we process your data</li>
         <li><strong>Data Disputes:</strong> Temporarily halt processing during investigations</li>
@@ -349,21 +349,21 @@
 
     <h2 id="cookies-tracking">9. Cookies and Tracking</h2>
 
-    <h3>9.1 Cookie Types</h3>
+    <h3 id="9-1-cookie-types">9.1 Cookie Types</h3>
 
-    <p><strong>Essential Cookies (Always Active):</strong></p>
+    <h4 id="essential-cookies-always-active">Essential Cookies (Always Active):</h4>
     <ul>
         <li>Authentication and session management</li>
         <li>Security and fraud prevention</li>
         <li>Core website functionality</li>
     </ul>
 
-    <h3>9.2 Cookie Management</h3>
+    <h3 id="9-2-cookie-management">9.2 Cookie Management</h3>
     <ul>
         <li><strong>Browser Controls:</strong> Adjust settings in your browser</li>
     </ul>
 
-    <h3>9.3 Do Not Track</h3>
+    <h3 id="9-3-do-not-track">9.3 Do Not Track</h3>
     <p>We respect Do Not Track signals where technically feasible, but note that this may limit some website
         functionality.</p>
 
@@ -371,7 +371,7 @@
 
     <p><strong>Primary Storage:</strong> Data is primarily stored in Beauharnois, Canada.</p>
 
-    <p><strong>Cross-Border Transfers:</strong></p>
+    <h4 id="cross-border-transfers">Cross-Border Transfers:</h4>
     <ul>
         <li>Some third-party services may process data outside Canada</li>
         <li>We ensure adequate protections through standard contractual clauses</li>
@@ -384,7 +384,7 @@
     <p>The Forge requires users to be at least 18 years old. We do not knowingly collect personal information from
         children under 18.</p>
 
-    <p><strong>If we discover underage users:</strong></p>
+    <h4 id="if-we-discover-underage-users">If we discover underage users:</h4>
     <ul>
         <li>Account will be immediately suspended</li>
         <li>Personal data will be deleted</li>
@@ -396,19 +396,19 @@
 
     <h2 id="changes-policy">12. Changes to This Policy</h2>
 
-    <h3>12.1 Update Process</h3>
+    <h3 id="12-1-update-process">12.1 Update Process</h3>
     <ul>
         <li><strong>Regular Review:</strong> Policy reviewed annually or as needed</li>
         <li><strong>Legal Changes:</strong> Updates for new regulations or court decisions</li>
         <li><strong>Service Changes:</strong> Modifications when we add new features</li>
     </ul>
 
-    <h3>12.2 Notification Methods</h3>
+    <h3 id="12-2-notification-methods">12.2 Notification Methods</h3>
     <ul>
         <li><strong>Email Notice:</strong> Sent to all registered users for significant changes</li>
     </ul>
 
-    <h3>12.3 Your Options</h3>
+    <h3 id="12-3-your-options">12.3 Your Options</h3>
     <ul>
         <li><strong>Continue Using:</strong> Acceptance of updated policy</li>
         <li><strong>Object to Changes:</strong> Contact us to discuss concerns</li>
@@ -417,36 +417,36 @@
 
     <h2 id="contact-information">13. Contact Information</h2>
 
-    <h3>13.1 General Privacy Questions</h3>
+    <h3 id="13-1-general-privacy-questions">13.1 General Privacy Questions</h3>
     <p><strong>Email:</strong> singleplayertarkov@gmail.com<br><strong>Response Time:</strong> Within 5 business days
     </p>
 
-    <h3>13.2 Data Protection Officer</h3>
+    <h3 id="13-2-data-protection-officer">13.2 Data Protection Officer</h3>
     <p><strong>Name:</strong> Refringe<br><strong>Email:</strong> singleplayertarkov@gmail.com</p>
 
-    <h3>13.3 Data Subject Requests</h3>
-    <p><strong>For GDPR/CCPA requests:</strong></p>
+    <h3 id="13-3-data-subject-requests">13.3 Data Subject Requests</h3>
+    <h4 id="for-gdpr-ccpa-requests">For GDPR/CCPA requests:</h4>
     <ul>
         <li><strong>Email:</strong> singleplayertarkov@gmail.com</li>
         <li><strong>Processing Time:</strong> 30 days maximum</li>
     </ul>
 
-    <h3>13.4 Security Issues</h3>
-    <p><strong>For data security concerns:</strong></p>
+    <h3 id="13-4-security-issues">13.4 Security Issues</h3>
+    <h4 id="for-data-security-concerns">For data security concerns:</h4>
     <ul>
         <li><strong>Email:</strong> singleplayertarkov@gmail.com</li>
         <li><strong>Response Time:</strong> Within 24 hours for critical issues</li>
     </ul>
 
-    <h3>13.5 Complaints</h3>
-    <p><strong>Supervisory Authority (Canada):</strong></p>
+    <h3 id="13-5-complaints">13.5 Complaints</h3>
+    <h4 id="supervisory-authority-canada">Supervisory Authority (Canada):</h4>
     <ul>
         <li>Office of the Privacy Commissioner of Canada</li>
         <li>Website: https://www.priv.gc.ca/</li>
         <li>Phone: 1-800-282-1376</li>
     </ul>
 
-    <p><strong>EU/EEA Residents:</strong></p>
+    <h4 id="eu-eea-residents">EU/EEA Residents:</h4>
     <ul>
         <li>Contact your local data protection authority</li>
         <li>List available at: https://edpb.europa.eu/about-edpb/about-edpb/members_en</li>
@@ -454,7 +454,7 @@
 
     <hr>
 
-    <h2>Privacy Summary</h2>
+    <h2 id="privacy-summary">Privacy Summary</h2>
 
     <p><strong>What we collect:</strong> Information needed to provide our modding platform services<br>
         <strong>How we use it:</strong> Account management, content delivery, platform improvement<br>

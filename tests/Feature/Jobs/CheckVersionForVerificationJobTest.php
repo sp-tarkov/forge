@@ -37,9 +37,8 @@ it('dispatches verification job when download link has changed', function (): vo
     new CheckVersionForVerificationJob(ModVersion::class, $modVersion->id)->handle(resolve(ChangeDetectionService::class));
 
     Queue::assertPushed(RunVerificationJob::class);
-    expect(VerificationResult::query()->count())->toBe(1);
-    expect(VerificationResult::query()->first())
-        ->status->toBe(VerificationStatus::Pending);
+    expect(VerificationResult::query()->count())->toBe(1)
+        ->and(VerificationResult::query()->first())->status->toBe(VerificationStatus::Pending);
 });
 
 it('does not dispatch when no change detected', function (): void {
@@ -123,9 +122,9 @@ it('updates fingerprint columns when values change', function (): void {
 
     $modVersion->refresh();
 
-    expect($modVersion->content_length)->toBe(54321);
-    expect($modVersion->etag)->toBe('"fresh-etag"');
-    expect($modVersion->last_modified_header)->toBe('Thu, 10 Apr 2025 12:00:00 GMT');
+    expect($modVersion->content_length)->toBe(54321)
+        ->and($modVersion->etag)->toBe('"fresh-etag"')
+        ->and($modVersion->last_modified_header)->toBe('Thu, 10 Apr 2025 12:00:00 GMT');
 });
 
 it('skips mod versions only compatible with SPT versions below the minimum without making a request', function (): void {
@@ -183,10 +182,8 @@ it('dispatches verification with the checks updated trigger when the latest comp
     new CheckVersionForVerificationJob(ModVersion::class, $modVersion->id)->handle(resolve(ChangeDetectionService::class));
 
     Queue::assertPushed(RunVerificationJob::class);
-    expect(VerificationResult::query()->count())->toBe(2);
-    expect(VerificationResult::query()->latest('id')->first())
-        ->status->toBe(VerificationStatus::Pending)
-        ->trigger->toBe(VerificationTrigger::ChecksUpdated);
+    expect(VerificationResult::query()->count())->toBe(2)
+        ->and(VerificationResult::query()->latest('id')->first())->status->toBe(VerificationStatus::Pending)->trigger->toBe(VerificationTrigger::ChecksUpdated);
 });
 
 it('does not dispatch when the latest completed result matches the latest checks version', function (): void {
@@ -303,9 +300,8 @@ it('dispatches with the change detected trigger when the file changed and the ch
     new CheckVersionForVerificationJob(ModVersion::class, $modVersion->id)->handle(resolve(ChangeDetectionService::class));
 
     Queue::assertPushed(RunVerificationJob::class);
-    expect(VerificationResult::query()->count())->toBe(2);
-    expect(VerificationResult::query()->latest('id')->first())
-        ->trigger->toBe(VerificationTrigger::ChangeDetected);
+    expect(VerificationResult::query()->count())->toBe(2)
+        ->and(VerificationResult::query()->latest('id')->first())->trigger->toBe(VerificationTrigger::ChangeDetected);
 });
 
 it('does not dispatch for an older checks version when a fresh pending verification exists', function (): void {

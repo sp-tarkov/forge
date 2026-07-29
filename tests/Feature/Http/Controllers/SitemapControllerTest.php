@@ -39,9 +39,9 @@ it('returns the sitemap index referencing every child sitemap', function (): voi
 
     $xml = simplexml_load_string((string) $response->getContent());
 
-    expect($xml)->not->toBeFalse();
-    expect($xml->getName())->toBe('sitemapindex');
-    expect(count($xml->sitemap))->toBe(5);
+    expect($xml)->toBeInstanceOf(SimpleXMLElement::class)
+        ->and($xml->getName())->toBe('sitemapindex')
+        ->and($xml->sitemap)->toHaveCount(5);
 });
 
 it('lists the static and landing pages', function (): void {
@@ -55,8 +55,8 @@ it('lists the static and landing pages', function (): void {
 
     $xml = simplexml_load_string((string) $response->getContent());
 
-    expect($xml)->not->toBeFalse();
-    expect($xml->getName())->toBe('urlset');
+    expect($xml)->toBeInstanceOf(SimpleXMLElement::class)
+        ->and($xml->getName())->toBe('urlset');
 });
 
 it('includes publicly visible mods and excludes hidden ones', function (): void {

@@ -42,9 +42,9 @@ describe('descendant sweep', function (): void {
 
         $this->action->execute($reply->fresh());
 
-        expect(Comment::query()->whereKey($root->id)->exists())->toBeTrue();
-        expect(Comment::query()->whereKey($reply->id)->exists())->toBeFalse();
-        expect(Comment::query()->whereKey($grandchild->id)->exists())->toBeFalse();
+        expect(Comment::query()->whereKey($root->id)->exists())->toBeTrue()
+            ->and(Comment::query()->whereKey($reply->id)->exists())->toBeFalse()
+            ->and(Comment::query()->whereKey($grandchild->id)->exists())->toBeFalse();
     });
 
     it('walks multiple generations from the target', function (): void {
@@ -55,10 +55,10 @@ describe('descendant sweep', function (): void {
 
         $this->action->execute($root->fresh());
 
-        expect(Comment::query()->whereKey($root->id)->exists())->toBeFalse();
-        expect(Comment::query()->whereKey($reply->id)->exists())->toBeFalse();
-        expect(Comment::query()->whereKey($grandchild->id)->exists())->toBeFalse();
-        expect(Comment::query()->whereKey($greatGrandchild->id)->exists())->toBeFalse();
+        expect(Comment::query()->whereKey($root->id)->exists())->toBeFalse()
+            ->and(Comment::query()->whereKey($reply->id)->exists())->toBeFalse()
+            ->and(Comment::query()->whereKey($grandchild->id)->exists())->toBeFalse()
+            ->and(Comment::query()->whereKey($greatGrandchild->id)->exists())->toBeFalse();
     });
 
     it('leaves sibling branches untouched when deleting one reply', function (): void {
@@ -70,11 +70,11 @@ describe('descendant sweep', function (): void {
 
         $this->action->execute($targetReply->fresh());
 
-        expect(Comment::query()->whereKey($root->id)->exists())->toBeTrue();
-        expect(Comment::query()->whereKey($siblingReply->id)->exists())->toBeTrue();
-        expect(Comment::query()->whereKey($siblingChild->id)->exists())->toBeTrue();
-        expect(Comment::query()->whereKey($targetReply->id)->exists())->toBeFalse();
-        expect(Comment::query()->whereKey($targetChild->id)->exists())->toBeFalse();
+        expect(Comment::query()->whereKey($root->id)->exists())->toBeTrue()
+            ->and(Comment::query()->whereKey($siblingReply->id)->exists())->toBeTrue()
+            ->and(Comment::query()->whereKey($siblingChild->id)->exists())->toBeTrue()
+            ->and(Comment::query()->whereKey($targetReply->id)->exists())->toBeFalse()
+            ->and(Comment::query()->whereKey($targetChild->id)->exists())->toBeFalse();
     });
 
     it('leaves unrelated threads on the same mod untouched', function (): void {
@@ -86,10 +86,10 @@ describe('descendant sweep', function (): void {
 
         $this->action->execute($targetRoot->fresh());
 
-        expect(Comment::query()->whereKey($targetRoot->id)->exists())->toBeFalse();
-        expect(Comment::query()->whereKey($targetReply->id)->exists())->toBeFalse();
-        expect(Comment::query()->whereKey($unrelatedRoot->id)->exists())->toBeTrue();
-        expect(Comment::query()->whereKey($unrelatedReply->id)->exists())->toBeTrue();
+        expect(Comment::query()->whereKey($targetRoot->id)->exists())->toBeFalse()
+            ->and(Comment::query()->whereKey($targetReply->id)->exists())->toBeFalse()
+            ->and(Comment::query()->whereKey($unrelatedRoot->id)->exists())->toBeTrue()
+            ->and(Comment::query()->whereKey($unrelatedReply->id)->exists())->toBeTrue();
     });
 });
 
@@ -105,13 +105,11 @@ describe('transaction safety', function (): void {
         });
 
         expect(fn () => $this->action->execute($root->fresh()))
-            ->toThrow(RuntimeException::class, 'simulated failure');
-
-        expect(Comment::query()->whereKey($root->id)->exists())->toBeTrue();
-        expect(Comment::query()->whereKey($reply->id)->exists())->toBeTrue();
-        expect(TrackingEvent::query()
-            ->where('event_name', TrackingEventType::COMMENT_HARD_DELETE->value)
-            ->where('visitable_id', $root->id)
-            ->exists())->toBeFalse();
+            ->toThrow(RuntimeException::class, 'simulated failure')
+            ->and(Comment::query()->whereKey($root->id)->exists())->toBeTrue()
+            ->and(Comment::query()->whereKey($reply->id)->exists())->toBeTrue()
+            ->and(TrackingEvent::query()
+                ->where('event_name', TrackingEventType::COMMENT_HARD_DELETE->value)
+                ->where('visitable_id', $root->id)->exists())->toBeFalse();
     });
 });

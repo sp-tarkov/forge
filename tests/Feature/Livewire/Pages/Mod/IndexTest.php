@@ -98,8 +98,7 @@ describe('Index', function (): void {
 
             // Initial state should be default versions (array), All Versions unchecked
             $initialVersions = $component->get('sptVersions');
-            expect($initialVersions)->toBeArray();
-            expect($initialVersions)->not->toBeEmpty();
+            expect($initialVersions)->toBeArray()->not->toBeEmpty();
 
             // Toggle to all versions - should switch to 'all', all specific versions unchecked
             $component->call('toggleVersionFilter', 'all');
@@ -108,8 +107,7 @@ describe('Index', function (): void {
             // Toggle all versions again - should switch back to default versions, All Versions unchecked
             $component->call('toggleVersionFilter', 'all');
             $backToDefaults = $component->get('sptVersions');
-            expect($backToDefaults)->toBeArray();
-            expect($backToDefaults)->not->toBeEmpty();
+            expect($backToDefaults)->toBeArray()->not->toBeEmpty();
 
             // Should not throw any errors
             $component->assertOk();
@@ -123,8 +121,7 @@ describe('Index', function (): void {
 
             // Start with default versions (array)
             $initialVersions = $component->get('sptVersions');
-            expect($initialVersions)->toBeArray();
-            expect($initialVersions)->not->toBeEmpty();
+            expect($initialVersions)->toBeArray()->not->toBeEmpty();
 
             // Toggle to all versions first
             $component->call('toggleVersionFilter', 'all');
@@ -133,8 +130,8 @@ describe('Index', function (): void {
             // Now toggle a specific version - should switch from "all" to just that version (auto-uncheck All)
             $component->call('toggleVersionFilter', '3.11.4');
             $versionsAfterToggle = $component->get('sptVersions');
-            expect($versionsAfterToggle)->toBeArray();
-            expect($versionsAfterToggle)->toBe(['3.11.4']);
+            expect($versionsAfterToggle)->toBeArray()
+                ->toBe(['3.11.4']);
 
             // Toggle the same version again - should remove it and switch to "all" (no versions selected)
             $component->call('toggleVersionFilter', '3.11.4');
@@ -149,8 +146,7 @@ describe('Index', function (): void {
 
             // Start with default versions
             $initialVersions = $component->get('sptVersions');
-            expect($initialVersions)->toBeArray();
-            expect($initialVersions)->not->toContain('legacy');
+            expect($initialVersions)->toBeArray()->not->toContain('legacy');
 
             // Toggle to all versions first
             $component->call('toggleVersionFilter', 'all');
@@ -159,8 +155,8 @@ describe('Index', function (): void {
             // Toggle legacy version - should switch from "all" to just legacy
             $component->call('toggleVersionFilter', 'legacy');
             $versionsAfterLegacy = $component->get('sptVersions');
-            expect($versionsAfterLegacy)->toBeArray();
-            expect($versionsAfterLegacy)->toBe(['legacy']);
+            expect($versionsAfterLegacy)->toBeArray()
+                ->toBe(['legacy']);
 
             // Toggle legacy again to remove it - should switch to "all" (no versions left)
             $component->call('toggleVersionFilter', 'legacy');
@@ -177,8 +173,7 @@ describe('Index', function (): void {
 
             // Start with default versions (not 'all')
             $initialVersions = $component->get('sptVersions');
-            expect($initialVersions)->toBeArray();
-            expect($initialVersions)->not->toBeEmpty();
+            expect($initialVersions)->toBeArray()->not->toBeEmpty();
 
             // Toggle 'all' - should switch to 'all' (clearing all specific selections)
             $component->call('toggleVersionFilter', 'all');
@@ -187,8 +182,7 @@ describe('Index', function (): void {
             // Toggle 'all' again - should uncheck "All" and go back to defaults
             $component->call('toggleVersionFilter', 'all');
             $backToDefaults = $component->get('sptVersions');
-            expect($backToDefaults)->toBeArray();
-            expect($backToDefaults)->not->toBeEmpty();
+            expect($backToDefaults)->toBeArray()->not->toBeEmpty();
 
             // Toggle 'all' once more - should go back to 'all'
             $component->call('toggleVersionFilter', 'all');
@@ -197,8 +191,8 @@ describe('Index', function (): void {
             // Toggle a specific version from 'all' - should switch to defaults and toggle that version
             $component->call('toggleVersionFilter', 'legacy');
             $versionsWithLegacy = $component->get('sptVersions');
-            expect($versionsWithLegacy)->toBeArray();
-            expect($versionsWithLegacy)->toContain('legacy');
+            expect($versionsWithLegacy)->toBeArray()
+                ->toContain('legacy');
         });
 
         it('ensures checkbox states are explicitly set correctly', function (): void {
@@ -218,8 +212,8 @@ describe('Index', function (): void {
             // Add a legacy version from 'all' - All Versions should be unchecked, legacy should be checked
             $component->call('toggleVersionFilter', 'legacy');
             $versionsWithLegacy = $component->get('sptVersions');
-            expect($versionsWithLegacy)->toBeArray();
-            expect($versionsWithLegacy)->toContain('legacy');
+            expect($versionsWithLegacy)->toBeArray()
+                ->toContain('legacy');
 
             // Go back to 'all' - All Versions should be checked, legacy should be unchecked
             $component->call('toggleVersionFilter', 'all');
@@ -244,8 +238,7 @@ describe('Index', function (): void {
             if (in_array('3.11.0', $initialVersions)) {
                 $component->call('toggleVersionFilter', '3.11.0');
                 $afterDeselect = $component->get('sptVersions');
-                expect($afterDeselect)->toBeArray();
-                expect($afterDeselect)->not->toContain('3.11.0');
+                expect($afterDeselect)->toBeArray()->not->toContain('3.11.0');
             }
 
             // 3. Select "All Versions"
@@ -283,9 +276,8 @@ describe('Index', function (): void {
 
             // Should always use default versions (latest minor) when no URL parameter
             $versions = $component->get('sptVersions');
-            expect($versions)->toBeArray();
-            expect($versions)->toContain('3.11.4', '3.11.0');
-            expect($versions)->not->toContain('3.10.5');
+            expect($versions)->toBeArray()
+                ->toContain('3.11.4', '3.11.0')->not->toContain('3.10.5');
         });
 
         it('uses URL versions when explicitly provided', function (): void {
@@ -302,8 +294,8 @@ describe('Index', function (): void {
 
             // Should use URL-provided versions
             $versions = $component->get('sptVersions');
-            expect($versions)->toBeArray();
-            expect($versions)->toBe(['3.10.5']);
+            expect($versions)->toBeArray()
+                ->toBe(['3.10.5']);
         });
 
         it('handles malformed query parameter gracefully', function (): void {
@@ -408,9 +400,9 @@ describe('Index', function (): void {
 
             // Initial state - should have default versions
             $initial = $checkboxStates();
-            expect($initial['all_versions_checked'])->toBeFalse();
-            expect($initial['3.11.0_checked'])->toBeTrue();
-            expect($initial['3.11.4_checked'])->toBeTrue();
+            expect($initial['all_versions_checked'])->toBeFalse()
+                ->and($initial['3.11.0_checked'])->toBeTrue()
+                ->and($initial['3.11.4_checked'])->toBeTrue();
 
             // Select specific versions
             $component->call('toggleVersionFilter', 'all');
@@ -418,19 +410,19 @@ describe('Index', function (): void {
             $component->call('toggleVersionFilter', 'legacy');
 
             $afterSelecting = $checkboxStates();
-            expect($afterSelecting['3.11.0_checked'])->toBeTrue();
-            expect($afterSelecting['legacy_checked'])->toBeTrue();
-            expect($afterSelecting['all_versions_checked'])->toBeFalse();
+            expect($afterSelecting['3.11.0_checked'])->toBeTrue()
+                ->and($afterSelecting['legacy_checked'])->toBeTrue()
+                ->and($afterSelecting['all_versions_checked'])->toBeFalse();
 
             // Select "All Versions" - should uncheck all others
             $component->call('toggleVersionFilter', 'all');
 
             $final = $checkboxStates();
-            expect($final['all_versions_checked'])->toBeTrue();
-            expect($final['3.11.0_checked'])->toBeFalse();
-            expect($final['3.11.4_checked'])->toBeFalse();
-            expect($final['3.10.5_checked'])->toBeFalse();
-            expect($final['legacy_checked'])->toBeFalse();
+            expect($final['all_versions_checked'])->toBeTrue()
+                ->and($final['3.11.0_checked'])->toBeFalse()
+                ->and($final['3.11.4_checked'])->toBeFalse()
+                ->and($final['3.10.5_checked'])->toBeFalse()
+                ->and($final['legacy_checked'])->toBeFalse();
         });
     });
 
@@ -441,8 +433,8 @@ describe('Index', function (): void {
 
             $component = Livewire::test('pages::mod.index');
 
-            expect($component->get('filterCount'))->toBe(0);
-            expect($component->get('activeFilterChips'))->toBe([]);
+            expect($component->get('filterCount'))->toBe(0)
+                ->and($component->get('activeFilterChips'))->toBe([]);
 
             $component->assertDontSee('Active filters:');
             $component->assertDontSee('Clear all');
@@ -456,18 +448,18 @@ describe('Index', function (): void {
                 ->set('query', 'stash');
 
             $chips = $component->get('activeFilterChips');
-            expect($component->get('filterCount'))->toBe(1);
-            expect($chips)->toHaveCount(1);
-            expect($chips[0]->key)->toBe('query');
-            expect($chips[0]->label)->toContain('stash');
-            expect($chips[0]->removeAction)->toBe("clearFilter('query')");
+            expect($component->get('filterCount'))->toBe(1)
+                ->and($chips)->toHaveCount(1)
+                ->and($chips[0]->key)->toBe('query')
+                ->and($chips[0]->label)->toContain('stash')
+                ->and($chips[0]->removeAction)->toBe("clearFilter('query')");
 
             $component->assertSee('Active filters:');
 
             $component->call('clearFilter', 'query');
 
-            expect($component->get('query'))->toBe('');
-            expect($component->get('filterCount'))->toBe(0);
+            expect($component->get('query'))->toBe('')
+                ->and($component->get('filterCount'))->toBe(0);
         });
 
         it('shows an all versions chip when all versions is selected', function (): void {
@@ -477,10 +469,10 @@ describe('Index', function (): void {
                 ->call('toggleVersionFilter', 'all');
 
             $chips = $component->get('activeFilterChips');
-            expect($component->get('filterCount'))->toBe(1);
-            expect($chips[0]->key)->toBe('versions-all');
-            expect($chips[0]->label)->toBe('All SPT versions');
-            expect($chips[0]->removeAction)->toBe("toggleVersionFilter('all')");
+            expect($component->get('filterCount'))->toBe(1)
+                ->and($chips[0]->key)->toBe('versions-all')
+                ->and($chips[0]->label)->toBe('All SPT versions')
+                ->and($chips[0]->removeAction)->toBe("toggleVersionFilter('all')");
 
             $component->call('toggleVersionFilter', 'all');
             expect($component->get('filterCount'))->toBe(0);
@@ -504,10 +496,10 @@ describe('Index', function (): void {
                 ->test('pages::mod.index');
 
             $chips = $component->get('activeFilterChips');
-            expect($component->get('filterCount'))->toBe(1);
-            expect($chips[0]->key)->toBe('version-3.10.5');
-            expect($chips[0]->label)->toBe('SPT 3.10.5');
-            expect($chips[0]->removeAction)->toBe("toggleVersionFilter('3.10.5')");
+            expect($component->get('filterCount'))->toBe(1)
+                ->and($chips[0]->key)->toBe('version-3.10.5')
+                ->and($chips[0]->label)->toBe('SPT 3.10.5')
+                ->and($chips[0]->removeAction)->toBe("toggleVersionFilter('3.10.5')");
         });
 
         it('replaces the last version chip with the all versions chip when removed', function (): void {
@@ -521,8 +513,8 @@ describe('Index', function (): void {
             expect($component->get('sptVersions'))->toBe('all');
 
             $chips = $component->get('activeFilterChips');
-            expect($component->get('filterCount'))->toBe(1);
-            expect($chips[0]->key)->toBe('versions-all');
+            expect($component->get('filterCount'))->toBe(1)
+                ->and($chips[0]->key)->toBe('versions-all');
         });
 
         it('labels the legacy selection chip', function (): void {
@@ -532,8 +524,8 @@ describe('Index', function (): void {
                 ->test('pages::mod.index');
 
             $chips = $component->get('activeFilterChips');
-            expect($component->get('filterCount'))->toBe(1);
-            expect($chips[0]->label)->toBe('Legacy versions');
+            expect($component->get('filterCount'))->toBe(1)
+                ->and($chips[0]->label)->toBe('Legacy versions');
         });
 
         it('collapses more than five selected versions into a summary chip', function (): void {
@@ -544,14 +536,14 @@ describe('Index', function (): void {
             ])->test('pages::mod.index');
 
             $chips = $component->get('activeFilterChips');
-            expect($chips)->toHaveCount(1);
-            expect($chips[0]->key)->toBe('versions-summary');
-            expect($chips[0]->label)->toBe('6 SPT versions');
-            expect($chips[0]->removeAction)->toBe("clearFilter('versions')");
+            expect($chips)->toHaveCount(1)
+                ->and($chips[0]->key)->toBe('versions-summary')
+                ->and($chips[0]->label)->toBe('6 SPT versions')
+                ->and($chips[0]->removeAction)->toBe("clearFilter('versions')");
 
             $component->call('clearFilter', 'versions');
-            expect($component->get('filterCount'))->toBe(0);
-            expect($component->get('sptVersions'))->toContain('3.11.4');
+            expect($component->get('filterCount'))->toBe(0)
+                ->and($component->get('sptVersions'))->toContain('3.11.4');
         });
 
         it('shows chips for featured, fika, and category filters', function (): void {
@@ -576,8 +568,8 @@ describe('Index', function (): void {
             expect($component->get('fikaCompatibility'))->toBeFalse();
 
             $component->call('clearFilter', 'category');
-            expect($component->get('category'))->toBe('');
-            expect($component->get('filterCount'))->toBe(0);
+            expect($component->get('category'))->toBe('')
+                ->and($component->get('filterCount'))->toBe(0);
         });
 
         it('labels the excluded featured chip', function (): void {
@@ -587,8 +579,8 @@ describe('Index', function (): void {
                 ->set('featured', 'exclude');
 
             $chips = $component->get('activeFilterChips');
-            expect($component->get('filterCount'))->toBe(1);
-            expect($chips[0]->label)->toBe('Featured: excluded');
+            expect($component->get('filterCount'))->toBe(1)
+                ->and($chips[0]->label)->toBe('Featured: excluded');
         });
 
         it('shows chips for the ai generation filter', function (): void {
@@ -598,16 +590,16 @@ describe('Index', function (): void {
                 ->set('aiContent', 'only');
 
             $chips = $component->get('activeFilterChips');
-            expect($component->get('filterCount'))->toBe(1);
-            expect($chips[0]->label)->toBe('AI generation only');
+            expect($component->get('filterCount'))->toBe(1)
+                ->and($chips[0]->label)->toBe('AI generation only');
 
             $component->set('aiContent', 'exclude');
             $chips = $component->get('activeFilterChips');
             expect($chips[0]->label)->toBe('AI generation: excluded');
 
             $component->call('clearFilter', 'ai');
-            expect($component->get('aiContent'))->toBe('include');
-            expect($component->get('filterCount'))->toBe(0);
+            expect($component->get('aiContent'))->toBe('include')
+                ->and($component->get('filterCount'))->toBe(0);
         });
 
         it('falls back to the raw slug for an unknown category', function (): void {
@@ -617,8 +609,8 @@ describe('Index', function (): void {
                 ->set('category', 'nonexistent');
 
             $chips = $component->get('activeFilterChips');
-            expect($component->get('filterCount'))->toBe(1);
-            expect($chips[0]->label)->toBe('nonexistent');
+            expect($component->get('filterCount'))->toBe(1)
+                ->and($chips[0]->label)->toBe('nonexistent');
         });
 
         it('ignores unknown filter names in clearFilter', function (): void {
@@ -629,8 +621,8 @@ describe('Index', function (): void {
                 ->call('clearFilter', 'bogus')
                 ->assertOk();
 
-            expect($component->get('query'))->toBe('still here');
-            expect($component->get('filterCount'))->toBe(1);
+            expect($component->get('query'))->toBe('still here')
+                ->and($component->get('filterCount'))->toBe(1);
         });
 
         it('clears every chip with the clear all action', function (): void {
@@ -646,8 +638,8 @@ describe('Index', function (): void {
 
             $component->call('resetFilters');
 
-            expect($component->get('filterCount'))->toBe(0);
-            expect($component->get('activeFilterChips'))->toBe([]);
+            expect($component->get('filterCount'))->toBe(0)
+                ->and($component->get('activeFilterChips'))->toBe([]);
         });
     });
 
@@ -662,8 +654,8 @@ describe('Index', function (): void {
 
             $fresh = Livewire::test('pages::mod.index');
 
-            expect($fresh->get('sptVersions'))->toContain('3.11.4');
-            expect($fresh->get('filterCount'))->toBe(0);
+            expect($fresh->get('sptVersions'))->toContain('3.11.4')
+                ->and($fresh->get('filterCount'))->toBe(0);
         });
 
         it('resets the featured filter on a fresh visit', function (): void {
@@ -674,8 +666,8 @@ describe('Index', function (): void {
 
             $fresh = Livewire::test('pages::mod.index');
 
-            expect($fresh->get('featured'))->toBe('include');
-            expect($fresh->get('filterCount'))->toBe(0);
+            expect($fresh->get('featured'))->toBe('include')
+                ->and($fresh->get('filterCount'))->toBe(0);
         });
 
         it('resets the ai generation filter on a fresh visit', function (): void {
@@ -686,8 +678,8 @@ describe('Index', function (): void {
 
             $fresh = Livewire::test('pages::mod.index');
 
-            expect($fresh->get('aiContent'))->toBe('include');
-            expect($fresh->get('filterCount'))->toBe(0);
+            expect($fresh->get('aiContent'))->toBe('include')
+                ->and($fresh->get('filterCount'))->toBe(0);
         });
 
         it('resets the fika filter on a fresh visit', function (): void {
@@ -698,8 +690,8 @@ describe('Index', function (): void {
 
             $fresh = Livewire::test('pages::mod.index');
 
-            expect($fresh->get('fikaCompatibility'))->toBeFalse();
-            expect($fresh->get('filterCount'))->toBe(0);
+            expect($fresh->get('fikaCompatibility'))->toBeFalse()
+                ->and($fresh->get('filterCount'))->toBe(0);
         });
 
         it('persists the sort order and per page on a fresh visit', function (): void {
@@ -711,9 +703,9 @@ describe('Index', function (): void {
 
             $fresh = Livewire::test('pages::mod.index');
 
-            expect($fresh->get('order'))->toBe('downloaded');
-            expect($fresh->get('perPage'))->toBe(24);
-            expect($fresh->get('filterCount'))->toBe(0);
+            expect($fresh->get('order'))->toBe('downloaded')
+                ->and($fresh->get('perPage'))->toBe(24)
+                ->and($fresh->get('filterCount'))->toBe(0);
         });
 
         it('keeps tracking new releases when versions were customized', function (): void {
@@ -727,8 +719,8 @@ describe('Index', function (): void {
 
             $fresh = Livewire::test('pages::mod.index');
 
-            expect($fresh->get('sptVersions'))->toContain('3.12.0');
-            expect($fresh->get('filterCount'))->toBe(0);
+            expect($fresh->get('sptVersions'))->toContain('3.12.0')
+                ->and($fresh->get('filterCount'))->toBe(0);
         });
     });
 
@@ -932,9 +924,9 @@ describe('Filter Options', function (): void {
 
             // Should not include unpublished 4.0.0
             expect($versionStrings)->not->toContain('4.0.0');
-            expect($versionStrings)->toContain('3.11.0');
-            expect($versionStrings)->toContain('3.10.0');
-            expect($versionStrings)->toContain('3.9.0');
+            expect($versionStrings)->toContain('3.11.0')
+                ->toContain('3.10.0')
+                ->toContain('3.9.0');
         });
 
         it('includes unpublished SPT versions in filter options for administrators', function (): void {
@@ -957,8 +949,8 @@ describe('Filter Options', function (): void {
 
             // Should include unpublished 4.0.0 for admin (4.0 is now in last 3 minors)
             expect($versionStrings)->toContain('4.0.0');
-            expect($versionStrings)->toContain('3.11.0');
-            expect($versionStrings)->toContain('3.10.0');
+            expect($versionStrings)->toContain('3.11.0')
+                ->toContain('3.10.0');
             // 3.9.0 may not be in the list if 4.0 is now one of the last 3 minors
         });
 

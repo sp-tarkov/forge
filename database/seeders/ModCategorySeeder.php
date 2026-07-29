@@ -4,118 +4,56 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\ModCategory;
+use Database\Seeders\Traits\SeederHelpers;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Str;
 
 final class ModCategorySeeder extends Seeder
 {
+    use SeederHelpers;
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        // Create flat categories (formerly root and child categories merged)
-        ModCategory::factory()->create([
-            'title' => 'Weapons',
-            'description' => 'Weapon mods for SPT',
-        ]);
+        $categories = [
+            'Weapons' => 'Weapon mods for SPT',
+            'Items' => 'Item mods for SPT',
+            'Maps' => 'Map mods for SPT',
+            'Traders' => 'Trader mods for SPT',
+            'AI & Bots' => 'AI and bot behavior mods',
+            'User Interface' => 'UI and HUD mods',
+            'Gameplay' => 'Gameplay modification mods',
+            'Tools & Utilities' => 'Tools and utility mods',
+            'Assault Rifles' => 'Assault rifle weapon mods',
+            'Pistols' => 'Pistol weapon mods',
+            'Sniper Rifles' => 'Sniper rifle weapon mods',
+            'Armor' => 'Armor item mods',
+            'Medical' => 'Medical item mods',
+            'Difficulty' => 'Difficulty adjustment mods',
+            'Economy' => 'Economy and loot mods',
+            'Shotguns' => 'Shotgun weapon mods',
+            'SMGs' => 'Submachine gun weapon mods',
+            'Consumables' => 'Consumable item mods',
+            'Quests' => 'Quest and mission mods',
+            'Audio' => 'Audio and sound mods',
+        ];
 
-        ModCategory::factory()->create([
-            'title' => 'Items',
-            'description' => 'Item mods for SPT',
-        ]);
+        $now = Date::now();
 
-        ModCategory::factory()->create([
-            'title' => 'Maps',
-            'description' => 'Map mods for SPT',
-        ]);
+        $rows = [];
+        foreach ($categories as $title => $description) {
+            $rows[] = [
+                'title' => $title,
+                'slug' => Str::slug($title),
+                'description' => $description,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
 
-        ModCategory::factory()->create([
-            'title' => 'Traders',
-            'description' => 'Trader mods for SPT',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'AI & Bots',
-            'description' => 'AI and bot behavior mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'User Interface',
-            'description' => 'UI and HUD mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'Gameplay',
-            'description' => 'Gameplay modification mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'Tools & Utilities',
-            'description' => 'Tools and utility mods',
-        ]);
-
-        // Former subcategories, now flat categories
-        ModCategory::factory()->create([
-            'title' => 'Assault Rifles',
-            'description' => 'Assault rifle weapon mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'Pistols',
-            'description' => 'Pistol weapon mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'Sniper Rifles',
-            'description' => 'Sniper rifle weapon mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'Armor',
-            'description' => 'Armor item mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'Medical',
-            'description' => 'Medical item mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'Difficulty',
-            'description' => 'Difficulty adjustment mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'Economy',
-            'description' => 'Economy and loot mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'Shotguns',
-            'description' => 'Shotgun weapon mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'SMGs',
-            'description' => 'Submachine gun weapon mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'Consumables',
-            'description' => 'Consumable item mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'Quests',
-            'description' => 'Quest and mission mods',
-        ]);
-
-        ModCategory::factory()->create([
-            'title' => 'Audio',
-            'description' => 'Audio and sound mods',
-        ]);
-
-        $this->command->outputComponents()->info('Mod categories seeded');
+        $this->bulkInsert('mod_categories', $rows);
     }
 }

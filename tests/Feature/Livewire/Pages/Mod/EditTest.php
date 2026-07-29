@@ -131,7 +131,7 @@ describe('Mod Edit Form', function (): void {
                 ->call('save')
                 ->assertHasErrors(['authorIds.0']);
 
-            expect($mod->fresh()->additionalAuthors->pluck('id')->all())->toBe([]);
+            expect($mod->fresh()->additionalAuthors->pluck('id')->all())->toBeEmpty();
         });
 
         it('keeps an existing author who blocked the owner after being added', function (): void {
@@ -244,11 +244,11 @@ describe('Mod Editing Authorization', function (): void {
 
         // Verify the mod was updated in the database
         $mod->refresh();
-        expect($mod->name)->toBe('Updated Mod Name');
-        expect($mod->guid)->toBe('com.test.updatedmod');
-        expect($mod->teaser)->toBe('Updated mod teaser');
-        expect($mod->description)->toBe('Updated mod description with more details');
-        expect($mod->license_id)->toBe($license->id);
+        expect($mod->name)->toBe('Updated Mod Name')
+            ->and($mod->guid)->toBe('com.test.updatedmod')
+            ->and($mod->teaser)->toBe('Updated mod teaser')
+            ->and($mod->description)->toBe('Updated mod description with more details')
+            ->and($mod->license_id)->toBe($license->id);
 
         // The owner can still access the edit page after the update, now showing the new name
         $this->get('/mod/'.$mod->id.'/edit')
@@ -294,11 +294,11 @@ describe('Mod Editing Authorization', function (): void {
 
         // Verify the mod was updated in the database
         $mod->refresh();
-        expect($mod->name)->toBe('Updated by Author');
-        expect($mod->guid)->toBe('com.author.collaborativemod');
-        expect($mod->teaser)->toBe('Updated by collaborative author');
-        expect($mod->description)->toBe('This mod was updated by one of its authors');
-        expect($mod->license_id)->toBe($license->id);
+        expect($mod->name)->toBe('Updated by Author')
+            ->and($mod->guid)->toBe('com.author.collaborativemod')
+            ->and($mod->teaser)->toBe('Updated by collaborative author')
+            ->and($mod->description)->toBe('This mod was updated by one of its authors')
+            ->and($mod->license_id)->toBe($license->id);
     });
 
     it('prevents unauthorized users from editing mods', function (): void {
@@ -359,13 +359,13 @@ describe('Mod Editing Functionality', function (): void {
 
         // Verify all fields were updated
         $mod->refresh();
-        expect($mod->name)->toBe('Comprehensive Update');
-        expect($mod->guid)->toBe('com.comprehensive.update');
-        expect($mod->teaser)->toBe('Comprehensive teaser update');
-        expect($mod->description)->toBe('Comprehensive description update');
-        expect($mod->license_id)->toBe($license->id);
-        expect($mod->contains_ai_content)->toBeTrue();
-        expect($mod->contains_ads)->toBeFalse();
+        expect($mod->name)->toBe('Comprehensive Update')
+            ->and($mod->guid)->toBe('com.comprehensive.update')
+            ->and($mod->teaser)->toBe('Comprehensive teaser update')
+            ->and($mod->description)->toBe('Comprehensive description update')
+            ->and($mod->license_id)->toBe($license->id)
+            ->and($mod->contains_ai_content)->toBeTrue()
+            ->and($mod->contains_ads)->toBeFalse();
     });
 
     it('shows validation errors when required fields are empty', function (): void {
@@ -414,8 +414,8 @@ describe('Mod Editing Functionality', function (): void {
 
         // Verify the mod was updated
         $mod->refresh();
-        expect($mod->name)->toBe('Successfully Updated Mod');
-        expect($mod->guid)->toBe('com.success.updated');
+        expect($mod->name)->toBe('Successfully Updated Mod')
+            ->and($mod->guid)->toBe('com.success.updated');
     });
 });
 
@@ -470,8 +470,8 @@ describe('Custom AI Disclosure', function (): void {
             ->assertRedirect();
 
         $mod->refresh();
-        expect($mod->contains_ai_content)->toBeTrue();
-        expect($mod->custom_ai_disclosure)->toBe('Used AI to refactor a helper class.');
+        expect($mod->contains_ai_content)->toBeTrue()
+            ->and($mod->custom_ai_disclosure)->toBe('Used AI to refactor a helper class.');
     });
 
     it('clears the custom AI disclosure when AI content is disabled', function (): void {
@@ -492,8 +492,8 @@ describe('Custom AI Disclosure', function (): void {
             ->assertRedirect();
 
         $mod->refresh();
-        expect($mod->contains_ai_content)->toBeFalse();
-        expect($mod->custom_ai_disclosure)->toBeNull();
+        expect($mod->contains_ai_content)->toBeFalse()
+            ->and($mod->custom_ai_disclosure)->toBeNull();
     });
 
     it('requires a disclosure message when the message is emptied while AI content remains enabled', function (): void {
@@ -553,7 +553,7 @@ describe('Thumbnail Management', function (): void {
             ->call('deleteExistingThumbnail');
 
         $mod->refresh();
-        expect($mod->thumbnail)->toBe('')
+        expect($mod->thumbnail)->toBeEmpty()
             ->and($mod->thumbnail_hash)->toBe('');
 
         Storage::disk(config('filesystems.asset_upload', 'public'))

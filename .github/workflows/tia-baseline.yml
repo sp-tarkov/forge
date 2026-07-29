@@ -1,0 +1,97 @@
+name: TIA Baseline
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  COMPOSER_AUTH: '{"http-basic": {"composer.fluxui.dev": {"username": "${{ secrets.FLUX_USERNAME }}", "password": "${{ secrets.FLUX_LICENSE_KEY }}"}}}'
+
+jobs:
+  # Records the Tia dependency graph for the Feature and Unit suites and publishes it as the pest-tia-baseline
+  # artifact. Developers running `pest --tia` with `baselined()` enabled download this artifact through the GitHub
+  # CLI, skipping the local recording cost.
+  baseline:
+    runs-on: ubuntu-latest
+
+    name: Record Baseline
+
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: testing
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+
+    services:
+      postgres:
+        image: postgres:18
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: testing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        options: --health-cmd=pg_isready --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: ./.github/action/php
+        with:
+          php-version: 8.5
+          coverage: pcov
+
+      - name: Install Composer Dependencies
+        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Setup Node.js
+        uses: ./.github/action/node
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Prepare Laravel Environment
+        run: |
+          php -r "file_exists('.env') || copy('.env.ci', '.env');"
+          php artisan key:generate
+          php artisan optimize
+
+      - name: Build Front-end Assets
+        run: npm run build
+
+      - name: Run Database Migrations
+        run: php artisan migrate
+
+      - name: Link Storage
+        run: php artisan storage:link
+
+      - name: Record Tia Baseline
+        run: ./vendor/bin/pest --parallel --tia --coverage --fresh --testsuite=Feature,Unit
+
+      - name: Resolve Tia Baseline Path
+        id: baseline
+        run: echo "path=$(./vendor/bin/pest --baseline)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Tia Baseline
+        uses: actions/upload-artifact@v7
+        with:
+          name: pest-tia-baseline
+          path: ${{ steps.baseline.outputs.path }}
+          include-hidden-files: true
+          retention-days: 30
+
+      - name: Display Laravel Log
+        if: failure()
+        run: cat storage/logs/laravel.log

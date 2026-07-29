@@ -6,14 +6,13 @@ namespace Database\Seeders\Traits;
 
 use App\Enums\SpamStatus;
 use App\Enums\TrackingEventType;
-use App\Models\Comment;
-use App\Models\Mod;
-use App\Models\ModVersion;
+use Carbon\CarbonInterface;
 use DateTimeImmutable;
 use Faker\Factory;
 use Faker\Generator;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 trait SeederHelpers
 {
@@ -93,36 +92,6 @@ trait SeederHelpers
     }
 
     /**
-     * Get a trackable model for the given event type.
-     *
-     * @param  Collection<int, Mod>  $mods
-     * @param  Collection<int, ModVersion>  $modVersions
-     */
-    protected function getTrackableForEventType(TrackingEventType $eventType, $mods, $modVersions): ?Model
-    {
-        return match ($eventType) {
-            TrackingEventType::MOD_DOWNLOAD,
-            TrackingEventType::MOD_CREATE,
-            TrackingEventType::MOD_EDIT,
-            TrackingEventType::MOD_DELETE,
-            TrackingEventType::MOD_REPORT => $mods->random(),
-
-            TrackingEventType::VERSION_CREATE,
-            TrackingEventType::VERSION_EDIT,
-            TrackingEventType::VERSION_DELETE => $modVersions->random(),
-
-            TrackingEventType::COMMENT_CREATE,
-            TrackingEventType::COMMENT_EDIT,
-            TrackingEventType::COMMENT_SOFT_DELETE,
-            TrackingEventType::COMMENT_LIKE,
-            TrackingEventType::COMMENT_UNLIKE,
-            TrackingEventType::COMMENT_REPORT => Comment::query()->inRandomOrder()->first(),
-
-            default => null,
-        };
-    }
-
-    /**
      * Get a random timestamp with realistic distribution.
      */
     protected function getRandomTimestamp(): DateTimeImmutable
@@ -148,6 +117,150 @@ trait SeederHelpers
         // 15% older than 3 months (up to 6 months)
         return DateTimeImmutable::createFromMutable($this->faker->dateTimeBetween('-6 months', '-3 months'));
 
+    }
+
+    /**
+     * Get a random timestamp within the given number of past days.
+     */
+    protected function randomPastDate(int $maxDays): CarbonInterface
+    {
+        return Date::now()->subDays(random_int(0, $maxDays))->subHours(random_int(0, 23));
+    }
+
+    /**
+     * Insert rows into the given table in chunks.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @param  int<1, max>  $chunkSize
+     */
+    protected function bulkInsert(string $table, array $rows, int $chunkSize = 500): void
+    {
+        foreach (array_chunk($rows, $chunkSize) as $chunk) {
+            DB::table($table)->insert($chunk);
+        }
+    }
+
+    /**
+     * Insert rows into the given table in chunks and return the new auto-increment IDs in insertion order.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @param  int<1, max>  $chunkSize
+     * @return list<int>
+     */
+    protected function bulkInsertReturningIds(string $table, array $rows, int $chunkSize = 500): array
+    {
+        if ($rows === []) {
+            return [];
+        }
+
+        $previousMaxId = DB::table($table)->max('id') ?? 0;
+
+        $this->bulkInsert($table, $rows, $chunkSize);
+
+        /** @var list<int> */
+        return DB::table($table)
+            ->where('id', '>', $previousMaxId)
+            ->orderBy('id')
+            ->pluck('id')
+            ->all();
+    }
+
+    /**
+     * Pick one random element from the list.
+     *
+     * @template TValue
+     *
+     * @param  non-empty-list<TValue>  $items
+     * @return TValue
+     */
+    protected function randomElement(array $items): mixed
+    {
+        return $items[random_int(0, count($items) - 1)];
+    }
+
+    /**
+     * Pick the given number of distinct random elements from the list.
+     *
+     * @template TValue
+     *
+     * @param  non-empty-list<TValue>  $items
+     * @param  int<1, max>  $count
+     * @return list<TValue>
+     */
+    protected function randomElements(array $items, int $count): array
+    {
+        $remaining = $items;
+        $selected = [];
+
+        for ($i = 0; $i < $count; $i++) {
+            $index = random_int(0, count($remaining) - 1);
+            $selected[] = $remaining[$index];
+            array_splice($remaining, $index, 1);
+        }
+
+        return $selected;
+    }
+
+    /**
+     * Generate a value not already present in the taken set and reserve it.
+     *
+     * @param  callable(): string  $generator
+     * @param  array<string, true>  $taken
+     */
+    protected function uniqueValue(callable $generator, array &$taken): string
+    {
+        do {
+            $value = $generator();
+        } while (isset($taken[$value]));
+
+        $taken[$value] = true;
+
+        return $value;
+    }
+
+    /**
+     * Build a user row with a unique name and email, mirroring the user factory fields.
+     *
+     * @param  array<string, true>  $takenNames
+     * @param  array<string, true>  $takenEmails
+     * @return array<string, mixed>
+     */
+    protected function buildUserRow(
+        array &$takenNames,
+        array &$takenEmails,
+        string $passwordHash,
+        CarbonInterface $timestamp,
+        ?int $userRoleId = null,
+    ): array {
+        return [
+            'name' => $this->uniqueValue(fn (): string => $this->faker->userName(), $takenNames),
+            'email' => $this->uniqueValue(fn (): string => $this->faker->safeEmail(), $takenEmails),
+            'email_verified_at' => $timestamp,
+            'password' => $passwordHash,
+            'about' => $this->faker->paragraphs(random_int(1, 10), true),
+            'remember_token' => Str::random(10),
+            'timezone' => $this->faker->timezone(),
+            'user_role_id' => $userRoleId,
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ];
+    }
+
+    /**
+     * Build a virus total link row for the given linkable model.
+     *
+     * @return array<string, mixed>
+     */
+    protected function virusTotalLinkRow(string $linkableType, int $linkableId, CarbonInterface $timestamp): array
+    {
+        return [
+            'linkable_type' => $linkableType,
+            'linkable_id' => $linkableId,
+            'url' => 'https://www.virustotal.com/gui/file/'.$this->faker->sha256(),
+            'label' => random_int(1, 10) <= 3 ? $this->randomElement(['Main File', 'Alternative Download', 'Mirror']) : '',
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ];
     }
 
     /**

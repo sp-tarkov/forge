@@ -7,6 +7,9 @@ use App\Jobs\GenerateUserImageVariants;
 use App\Models\User;
 use App\Services\ThumbnailService;
 use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\MakesAnimatedTestImages;
+
+pest()->use(MakesAnimatedTestImages::class);
 
 function makeUserImageTestImage(int $width, int $height): string
 {
@@ -105,7 +108,7 @@ it('clears variants when the user has no image path', function (): void {
 });
 
 it('keeps animation in profile photo variants', function (): void {
-    Storage::disk('public')->put('profile-photos/animated.gif', makeAnimatedTestImage(3, 512, 512));
+    Storage::disk('public')->put('profile-photos/animated.gif', $this->makeAnimatedTestImage(3, 512, 512));
     $user = User::factory()->create(['profile_photo_path' => 'profile-photos/animated.gif']);
 
     new GenerateUserImageVariants($user, UserImageType::ProfilePhoto)->handle(resolve(ThumbnailService::class));
@@ -118,7 +121,7 @@ it('keeps animation in profile photo variants', function (): void {
 });
 
 it('flattens animation in cover photo variants', function (): void {
-    Storage::disk('public')->put('cover-photos/animated.gif', makeAnimatedTestImage(3, 1500, 750));
+    Storage::disk('public')->put('cover-photos/animated.gif', $this->makeAnimatedTestImage(3, 1500, 750));
     $user = User::factory()->create(['cover_photo_path' => 'cover-photos/animated.gif']);
 
     new GenerateUserImageVariants($user, UserImageType::CoverPhoto)->handle(resolve(ThumbnailService::class));

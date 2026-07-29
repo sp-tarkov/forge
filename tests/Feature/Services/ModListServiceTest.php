@@ -26,9 +26,9 @@ describe('addMod', function (): void {
 
         $item = resolve(ModListService::class)->addMod($list, $mod);
 
-        expect($item->listable_type)->toBe(Mod::class);
-        expect($item->listable_id)->toBe($mod->id);
-        expect($list->fresh()->itemCount())->toBe(1);
+        expect($item->listable_type)->toBe(Mod::class)
+            ->and($item->listable_id)->toBe($mod->id)
+            ->and($list->fresh()->itemCount())->toBe(1);
     });
 
     it('is idempotent when adding the same mod twice', function (): void {
@@ -51,8 +51,8 @@ describe('addMod', function (): void {
 
         resolve(ModListService::class)->addMod($list, $mod, collect([$dep]));
 
-        expect($list->fresh()->itemCount())->toBe(2);
-        expect($list->containsMod($dep->id))->toBeTrue();
+        expect($list->fresh()->itemCount())->toBe(2)
+            ->and($list->containsMod($dep->id))->toBeTrue();
     });
 
     it('throws when cascade would exceed the per-list cap', function (): void {
@@ -65,9 +65,8 @@ describe('addMod', function (): void {
         $dep2 = Mod::factory()->create();
 
         expect(fn () => resolve(ModListService::class)->addMod($list, $mod, collect([$dep1, $dep2])))
-            ->toThrow(ModListCapacityExceededException::class);
-
-        expect($list->fresh()->itemCount())->toBe(0);
+            ->toThrow(ModListCapacityExceededException::class)
+            ->and($list->fresh()->itemCount())->toBe(0);
     });
 });
 
@@ -109,7 +108,7 @@ describe('suggestedDependencies', function (): void {
 
         $suggested = resolve(ModListService::class)->suggestedDependencies($list, $modA);
 
-        expect($suggested->pluck('id')->all())->toBe([]);
+        expect($suggested->pluck('id')->all())->toBeEmpty();
         unset($modC);
     });
 
@@ -190,8 +189,8 @@ describe('addMods', function (): void {
 
         $added = resolve(ModListService::class)->addMods($list, $mods);
 
-        expect($added)->toBe(3);
-        expect($list->fresh()->itemCount())->toBe(3);
+        expect($added)->toBe(3)
+            ->and($list->fresh()->itemCount())->toBe(3);
         foreach ($mods as $mod) {
             expect($list->containsMod($mod->id))->toBeTrue();
         }
@@ -207,8 +206,8 @@ describe('addMods', function (): void {
 
         $added = resolve(ModListService::class)->addMods($list, collect([$existing, $newOne]));
 
-        expect($added)->toBe(1);
-        expect($list->fresh()->itemCount())->toBe(2);
+        expect($added)->toBe(1)
+            ->and($list->fresh()->itemCount())->toBe(2);
     });
 
     it('returns zero and writes nothing when given an empty collection', function (): void {
@@ -217,8 +216,8 @@ describe('addMods', function (): void {
 
         $added = resolve(ModListService::class)->addMods($list, collect());
 
-        expect($added)->toBe(0);
-        expect($list->fresh()->itemCount())->toBe(0);
+        expect($added)->toBe(0)
+            ->and($list->fresh()->itemCount())->toBe(0);
     });
 
     it('throws when the bulk add would exceed the per-list cap', function (): void {
@@ -228,9 +227,8 @@ describe('addMods', function (): void {
         $mods = Mod::factory()->count(3)->create();
 
         expect(fn () => resolve(ModListService::class)->addMods($list, $mods))
-            ->toThrow(ModListCapacityExceededException::class);
-
-        expect($list->fresh()->itemCount())->toBe(0);
+            ->toThrow(ModListCapacityExceededException::class)
+            ->and($list->fresh()->itemCount())->toBe(0);
     });
 });
 
@@ -253,9 +251,9 @@ describe('addAddon', function (): void {
 
         resolve(ModListService::class)->addAddon($list, $addon, includeParentMod: true);
 
-        expect($list->fresh()->itemCount())->toBe(2);
-        expect($list->containsMod($mod->id))->toBeTrue();
-        expect($list->containsAddon($addon->id))->toBeTrue();
+        expect($list->fresh()->itemCount())->toBe(2)
+            ->and($list->containsMod($mod->id))->toBeTrue()
+            ->and($list->containsAddon($addon->id))->toBeTrue();
     });
 
     it('throws when adding an addon plus its parent would exceed the cap', function (): void {
@@ -266,9 +264,8 @@ describe('addAddon', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id]);
 
         expect(fn () => resolve(ModListService::class)->addAddon($list, $addon, includeParentMod: true))
-            ->toThrow(ModListCapacityExceededException::class);
-
-        expect($list->fresh()->itemCount())->toBe(0);
+            ->toThrow(ModListCapacityExceededException::class)
+            ->and($list->fresh()->itemCount())->toBe(0);
     });
 });
 
@@ -306,10 +303,10 @@ describe('removeItem cascade', function (): void {
         $modAItem = $list->items()->where('listable_type', Mod::class)->where('listable_id', $modA->id)->first();
         $svc->removeItem($list, $modAItem);
 
-        expect($list->fresh()->itemCount())->toBe(2);
-        expect($list->containsMod($modB->id))->toBeTrue();
-        expect($list->containsAddon($addonB->id))->toBeTrue();
-        expect($list->containsAddon($addonA->id))->toBeFalse();
+        expect($list->fresh()->itemCount())->toBe(2)
+            ->and($list->containsMod($modB->id))->toBeTrue()
+            ->and($list->containsAddon($addonB->id))->toBeTrue()
+            ->and($list->containsAddon($addonA->id))->toBeFalse();
     });
 
     it('removes unpublished addon items when their parent mod is removed', function (): void {
@@ -343,12 +340,12 @@ describe('toggleFavourite', function (): void {
 
         $svc = resolve(ModListService::class);
         $added = $svc->toggleFavourite($fav, $mod);
-        expect($added)->toBeTrue();
-        expect($fav->fresh()->containsMod($mod->id))->toBeTrue();
+        expect($added)->toBeTrue()
+            ->and($fav->fresh()->containsMod($mod->id))->toBeTrue();
 
         $removed = $svc->toggleFavourite($fav->fresh(), $mod);
-        expect($removed)->toBeFalse();
-        expect($fav->fresh()->containsMod($mod->id))->toBeFalse();
+        expect($removed)->toBeFalse()
+            ->and($fav->fresh()->containsMod($mod->id))->toBeFalse();
     });
 
     it('throws when Favourites is already full', function (): void {
@@ -399,8 +396,8 @@ describe('ensureFavouritesFor', function (): void {
 
         $favourites = resolve(ModListService::class)->ensureFavouritesFor($user);
 
-        expect($favourites->is_default)->toBeTrue();
-        expect($favourites->visibility)->toBe(ListVisibility::Private);
+        expect($favourites->is_default)->toBeTrue()
+            ->and($favourites->visibility)->toBe(ListVisibility::Private);
     });
 });
 
@@ -484,11 +481,11 @@ describe('createList', function (): void {
 
         $list = resolve(ModListService::class)->createList($user, '  Spaced Title  ', ListVisibility::Private);
 
-        expect($list->owner_id)->toBe($user->id);
-        expect($list->title)->toBe('Spaced Title');
-        expect($list->visibility)->toBe(ListVisibility::Private);
-        expect($list->comments_disabled)->toBeTrue();
-        expect($list->is_default)->toBeFalse();
+        expect($list->owner_id)->toBe($user->id)
+            ->and($list->title)->toBe('Spaced Title')
+            ->and($list->visibility)->toBe(ListVisibility::Private)
+            ->and($list->comments_disabled)->toBeTrue()
+            ->and($list->is_default)->toBeFalse();
     });
 });
 
@@ -503,9 +500,9 @@ describe('resolveListVersion', function (): void {
 
         $resolved = resolve(ModListService::class)->resolveListVersion($list, $mod);
 
-        expect($resolved)->toBeInstanceOf(ResolvedListVersion::class);
-        expect($resolved->version?->id)->toBe($modVersion->id);
-        expect($resolved->isIncompatible)->toBeFalse();
+        expect($resolved)->toBeInstanceOf(ResolvedListVersion::class)
+            ->and($resolved->version?->id)->toBe($modVersion->id)
+            ->and($resolved->isIncompatible)->toBeFalse();
     });
 
     it('returns the exact-match version, not the latest, when the mod supports the target SPT', function (): void {
@@ -521,8 +518,8 @@ describe('resolveListVersion', function (): void {
 
         $resolved = resolve(ModListService::class)->resolveListVersion($list, $mod);
 
-        expect($resolved->version?->id)->toBe($matchingVer->id);
-        expect($resolved->isIncompatible)->toBeFalse();
+        expect($resolved->version?->id)->toBe($matchingVer->id)
+            ->and($resolved->isIncompatible)->toBeFalse();
     });
 
     it('returns the nearest-lower-SPT version with isIncompatible=true when there is no exact match', function (): void {
@@ -536,8 +533,8 @@ describe('resolveListVersion', function (): void {
 
         $resolved = resolve(ModListService::class)->resolveListVersion($list, $mod);
 
-        expect($resolved->version?->id)->toBe($olderVer->id);
-        expect($resolved->isIncompatible)->toBeTrue();
+        expect($resolved->version?->id)->toBe($olderVer->id)
+            ->and($resolved->isIncompatible)->toBeTrue();
     });
 
     it('returns latestVersion with isIncompatible=true when the mod only supports newer SPTs', function (): void {
@@ -551,8 +548,8 @@ describe('resolveListVersion', function (): void {
 
         $resolved = resolve(ModListService::class)->resolveListVersion($list, $mod);
 
-        expect($resolved->version?->id)->toBe($newerVer->id);
-        expect($resolved->isIncompatible)->toBeTrue();
+        expect($resolved->version?->id)->toBe($newerVer->id)
+            ->and($resolved->isIncompatible)->toBeTrue();
     });
 
     it('pins displaySptVersion to the list target on an exact match even when the version supports newer SPTs', function (): void {
@@ -566,9 +563,9 @@ describe('resolveListVersion', function (): void {
 
         $resolved = resolve(ModListService::class)->resolveListVersion($list, $mod);
 
-        expect($resolved->version?->id)->toBe($version->id);
-        expect($resolved->isIncompatible)->toBeFalse();
-        expect($resolved->displaySptVersion?->id)->toBe($target->id);
+        expect($resolved->version?->id)->toBe($version->id)
+            ->and($resolved->isIncompatible)->toBeFalse()
+            ->and($resolved->displaySptVersion?->id)->toBe($target->id);
     });
 
     it("leaves displaySptVersion null on a closest-fallback match so the card shows the version's own SPT", function (): void {
@@ -623,12 +620,12 @@ describe('resolveListVersions (bulk)', function (): void {
             collect([$compatMod, $olderMod, $newerOnlyMod]),
         );
 
-        expect($resolved->get($compatMod->id)->version?->id)->toBe($compatVer->id);
-        expect($resolved->get($compatMod->id)->isIncompatible)->toBeFalse();
-        expect($resolved->get($olderMod->id)->version?->id)->toBe($olderVer->id);
-        expect($resolved->get($olderMod->id)->isIncompatible)->toBeTrue();
-        expect($resolved->get($newerOnlyMod->id)->version?->id)->toBe($newerOnlyVer->id);
-        expect($resolved->get($newerOnlyMod->id)->isIncompatible)->toBeTrue();
+        expect($resolved->get($compatMod->id)->version?->id)->toBe($compatVer->id)
+            ->and($resolved->get($compatMod->id)->isIncompatible)->toBeFalse()
+            ->and($resolved->get($olderMod->id)->version?->id)->toBe($olderVer->id)
+            ->and($resolved->get($olderMod->id)->isIncompatible)->toBeTrue()
+            ->and($resolved->get($newerOnlyMod->id)->version?->id)->toBe($newerOnlyVer->id)
+            ->and($resolved->get($newerOnlyMod->id)->isIncompatible)->toBeTrue();
     });
 
     it('issues a bounded number of queries regardless of mod count', function (): void {
@@ -734,9 +731,9 @@ describe('forking', function (): void {
 
         $fork = resolve(ModListService::class)->forkList($actor, $source, 'My Forked List');
 
-        expect($fork->owner_id)->toBe($actor->id);
-        expect($fork->title)->toBe('My Forked List');
-        expect($fork->forked_from_list_id)->toBe($source->id);
+        expect($fork->owner_id)->toBe($actor->id)
+            ->and($fork->title)->toBe('My Forked List')
+            ->and($fork->forked_from_list_id)->toBe($source->id);
     });
 
     it('starts the new list as Private with comments disabled regardless of source visibility', function (): void {
@@ -745,9 +742,9 @@ describe('forking', function (): void {
 
         $fork = resolve(ModListService::class)->forkList($actor, $source, 'Fork');
 
-        expect($fork->visibility)->toBe(ListVisibility::Private);
-        expect($fork->comments_disabled)->toBeTrue();
-        expect($fork->share_token)->toBeNull();
+        expect($fork->visibility)->toBe(ListVisibility::Private)
+            ->and($fork->comments_disabled)->toBeTrue()
+            ->and($fork->share_token)->toBeNull();
     });
 
     it('copies description and spt target from the source', function (): void {
@@ -760,8 +757,8 @@ describe('forking', function (): void {
 
         $fork = resolve(ModListService::class)->forkList($actor, $source, 'Fork');
 
-        expect($fork->description)->toBe('A curated list.');
-        expect($fork->spt_version_id)->toBe($spt->id);
+        expect($fork->description)->toBe('A curated list.')
+            ->and($fork->spt_version_id)->toBe($spt->id);
     });
 
     it('copies items preserving listable, position, and note', function (): void {
@@ -799,16 +796,16 @@ describe('forking', function (): void {
         expect($items->count())->toBe(3);
 
         $modAItem = $items->firstWhere(fn (ModListItem $item): bool => $item->listable_type === Mod::class && $item->listable_id === $modA->id);
-        expect($modAItem?->note)->toBe('Pinned');
-        expect($modAItem?->position)->toBe(1);
+        expect($modAItem?->note)->toBe('Pinned')
+            ->and($modAItem?->position)->toBe(1);
 
         $addonItem = $items->firstWhere(fn (ModListItem $item): bool => $item->listable_type === Addon::class && $item->listable_id === $addon->id);
-        expect($addonItem?->note)->toBeNull();
-        expect($addonItem?->position)->toBe(2);
+        expect($addonItem?->note)->toBeNull()
+            ->and($addonItem?->position)->toBe(2);
 
         $modBItem = $items->firstWhere(fn (ModListItem $item): bool => $item->listable_type === Mod::class && $item->listable_id === $modB->id);
-        expect($modBItem?->note)->toBe('Recommended');
-        expect($modBItem?->position)->toBe(3);
+        expect($modBItem?->note)->toBe('Recommended')
+            ->and($modBItem?->position)->toBe(3);
     });
 
     it('tracks the immediate parent so forks of forks chain', function (): void {
@@ -820,8 +817,8 @@ describe('forking', function (): void {
         $listB = resolve(ModListService::class)->forkList($userB, $listA, 'B fork');
         $listC = resolve(ModListService::class)->forkList($userC, $listB, 'C fork');
 
-        expect($listB->forked_from_list_id)->toBe($listA->id);
-        expect($listC->forked_from_list_id)->toBe($listB->id);
+        expect($listB->forked_from_list_id)->toBe($listA->id)
+            ->and($listC->forked_from_list_id)->toBe($listB->id);
     });
 
     it('produces a non-default list when forking the actors own Favourites', function (): void {
@@ -838,9 +835,9 @@ describe('forking', function (): void {
 
         $fork = resolve(ModListService::class)->forkList($user, $favourites, 'My Favs Snapshot');
 
-        expect($fork->is_default)->toBeFalse();
-        expect($fork->visibility)->toBe(ListVisibility::Private);
-        expect($fork->itemCount())->toBe(2);
+        expect($fork->is_default)->toBeFalse()
+            ->and($fork->visibility)->toBe(ListVisibility::Private)
+            ->and($fork->itemCount())->toBe(2);
     });
 
     it('throws when the source has more items than the configured per-list cap', function (): void {
@@ -859,9 +856,8 @@ describe('forking', function (): void {
         $actor = User::factory()->create();
 
         expect(fn () => resolve(ModListService::class)->forkList($actor, $source, 'Fork'))
-            ->toThrow(ModListCapacityExceededException::class);
-
-        expect(ModList::query()->where('forked_from_list_id', $source->id)->count())->toBe(0);
+            ->toThrow(ModListCapacityExceededException::class)
+            ->and(ModList::query()->where('forked_from_list_id', $source->id)->count())->toBe(0);
     });
 
     it('copies the thumbnail file to a new path', function (): void {
@@ -877,11 +873,11 @@ describe('forking', function (): void {
 
         $fork = resolve(ModListService::class)->forkList($actor, $source, 'Fork');
 
-        expect($fork->thumbnail)->not->toBe('list-thumbnails/source.jpg');
-        expect($fork->thumbnail)->not->toBeNull();
-        expect(Storage::disk($disk)->exists((string) $fork->thumbnail))->toBeTrue();
-        expect(Storage::disk($disk)->exists('list-thumbnails/source.jpg'))->toBeTrue();
-        expect($fork->thumbnail_hash)->toBe('abc123');
+        expect($fork->thumbnail)->not->toBeNull()
+            ->not->toBe('list-thumbnails/source.jpg')
+            ->and(Storage::disk($disk)->exists((string) $fork->thumbnail))->toBeTrue()
+            ->and(Storage::disk($disk)->exists('list-thumbnails/source.jpg'))->toBeTrue()
+            ->and($fork->thumbnail_hash)->toBe('abc123');
     });
 
     it('falls back to no thumbnail when the source file is missing on disk', function (): void {

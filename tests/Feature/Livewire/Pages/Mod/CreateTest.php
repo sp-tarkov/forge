@@ -288,8 +288,8 @@ describe('Mod Create Form', function (): void {
 
             // Verify the mod was created with no GUID (empty input is stored as null)
             $mod = Mod::query()->where('name', 'Test Mod')->first();
-            expect($mod)->not->toBeNull();
-            expect($mod->guid)->toBeNull();
+            expect($mod)->not->toBeNull()
+                ->and($mod->guid)->toBeNull();
         });
 
         it('validates GUID format when provided', function (): void {
@@ -360,9 +360,9 @@ describe('Mod Create Form', function (): void {
                 ->assertRedirect();
 
             $mod = Mod::query()->where('name', 'AI Disclosure Mod')->first();
-            expect($mod)->not->toBeNull();
-            expect($mod->contains_ai_content)->toBeTrue();
-            expect($mod->custom_ai_disclosure)->toBe('Used AI to draft documentation.');
+            expect($mod)->not->toBeNull()
+                ->and($mod->contains_ai_content)->toBeTrue()
+                ->and($mod->custom_ai_disclosure)->toBe('Used AI to draft documentation.');
         });
 
         it('requires a disclosure message when AI content is enabled', function (): void {
@@ -406,9 +406,9 @@ describe('Mod Create Form', function (): void {
                 ->assertRedirect();
 
             $mod = Mod::query()->where('name', 'No AI Mod')->first();
-            expect($mod)->not->toBeNull();
-            expect($mod->contains_ai_content)->toBeFalse();
-            expect($mod->custom_ai_disclosure)->toBeNull();
+            expect($mod)->not->toBeNull()
+                ->and($mod->contains_ai_content)->toBeFalse()
+                ->and($mod->custom_ai_disclosure)->toBeNull();
         });
 
         it('rejects a custom AI disclosure longer than 1000 characters', function (): void {

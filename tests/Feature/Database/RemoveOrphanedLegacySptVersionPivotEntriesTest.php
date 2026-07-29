@@ -55,7 +55,7 @@ it('removes orphaned pivot entries linked to 0.0.0 with non-matching constraints
         ->exists())->toBeFalse();
 
     // Verify no SPT versions are linked (constraint doesn't match any)
-    expect($modVersion->fresh()->sptVersions)->toHaveCount(0);
+    expect($modVersion->fresh()->sptVersions)->toBeEmpty();
 });
 
 it('removes orphaned pivot entries with empty constraints', function (): void {
@@ -91,7 +91,7 @@ it('removes orphaned pivot entries with empty constraints', function (): void {
         ->where('spt_version_id', $this->legacySptVersion->id)
         ->exists())->toBeFalse();
 
-    expect($modVersion->fresh()->sptVersions)->toHaveCount(0);
+    expect($modVersion->fresh()->sptVersions)->toBeEmpty();
 });
 
 it('preserves valid SPT version links for resolvable constraints', function (): void {

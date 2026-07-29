@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V0;
 
 use App\Models\AddonVersion;
+use App\Support\Api\V0\QueryBuilder\AbstractQueryBuilder;
+use App\Support\Api\V0\QueryBuilder\AddonVersionQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
@@ -27,6 +29,26 @@ final class AddonVersionResource extends JsonResource
      * Whether to show all fields.
      */
     private bool $showAllFields = true;
+
+    /**
+     * The query builder that hydrated the version, whose field contract bounds this response.
+     *
+     * @var class-string<AbstractQueryBuilder<AddonVersion>>
+     */
+    private string $queryBuilder = AddonVersionQueryBuilder::class;
+
+    /**
+     * Set the query builder that hydrated the version. Fields outside that builder's contract are omitted from the
+     * response.
+     *
+     * @param  class-string<AbstractQueryBuilder<AddonVersion>>  $queryBuilder
+     */
+    public function hydratedBy(string $queryBuilder): self
+    {
+        $this->queryBuilder = $queryBuilder;
+
+        return $this;
+    }
 
     /**
      * Transform the resource into an array.
@@ -98,15 +120,24 @@ final class AddonVersionResource extends JsonResource
     }
 
     /**
-     * Check if a field should be included in the response.
+     * Check if a field should be included in the response. The id is always included; every other field must be
+     * exposed by the hydrating query builder and either requested or covered by an unfiltered request.
      *
      * @param  string  $field  The field name to check
      * @return bool Whether the field should be included
      */
     private function shouldInclude(string $field): bool
     {
-        return $this->showAllFields
-            || in_array($field, $this->requestedFields, true)
-            || $field === 'id'; // ID is always included
+        if ($field === 'id') {
+            return true;
+        }
+
+        $queryBuilder = $this->queryBuilder;
+
+        if (! in_array($field, $queryBuilder::getAllAllowedFields(), true)) {
+            return false;
+        }
+
+        return $this->showAllFields || in_array($field, $this->requestedFields, true);
     }
 }

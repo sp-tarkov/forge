@@ -33,10 +33,10 @@ it('detects change when version has never been verified', function (): void {
 
     $result = $this->service->check($modVersion);
 
-    expect($result->changed)->toBeTrue();
-    expect($result->unreachable)->toBeFalse();
-    expect($result->contentLength)->toBe(12345);
-    expect($result->etag)->toBe('"abc123"');
+    expect($result->changed)->toBeTrue()
+        ->and($result->unreachable)->toBeFalse()
+        ->and($result->contentLength)->toBe(12345)
+        ->and($result->etag)->toBe('"abc123"');
 });
 
 it('detects change when etag differs', function (): void {
@@ -90,8 +90,8 @@ it('marks as unreachable when request fails', function (): void {
 
     $result = $this->service->check($modVersion);
 
-    expect($result->unreachable)->toBeTrue();
-    expect($result->changed)->toBeFalse();
+    expect($result->unreachable)->toBeTrue()
+        ->and($result->changed)->toBeFalse();
 });
 
 it('marks as unreachable when connection fails', function (): void {
@@ -131,8 +131,8 @@ it('returns unreachable for empty link', function (): void {
 
     $result = $this->service->check($modVersion);
 
-    expect($result->unreachable)->toBeTrue();
-    expect($result->changed)->toBeFalse();
+    expect($result->unreachable)->toBeTrue()
+        ->and($result->changed)->toBeFalse();
 });
 
 it('never requests a link that resolves to an internal address', function (string $link): void {
@@ -142,8 +142,8 @@ it('never requests a link that resolves to an internal address', function (strin
 
     $result = $this->service->check($modVersion);
 
-    expect($result->unreachable)->toBeTrue();
-    expect($result->changed)->toBeFalse();
+    expect($result->unreachable)->toBeTrue()
+        ->and($result->changed)->toBeFalse();
 
     Http::assertNothingSent();
 })->with([

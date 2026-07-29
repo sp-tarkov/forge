@@ -96,16 +96,16 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
             ->where('spt_version_id', $publishedSpt->id)
             ->first();
         $publishedPivot = $publishedRelation ? $publishedRelation->pivot : null;
-        expect($publishedPivot)->not->toBeNull();
-        expect($publishedPivot->pinned_to_spt_publish)->toBeFalse();
+        expect($publishedPivot)->not->toBeNull()
+            ->and($publishedPivot->pinned_to_spt_publish)->toBeFalse();
 
         $unpublishedRelation = $modVersion->sptVersions()
             ->withoutGlobalScopes()
             ->where('spt_version_id', $unpublishedSpt->id)
             ->first();
         $unpublishedPivot = $unpublishedRelation ? $unpublishedRelation->pivot : null;
-        expect($unpublishedPivot)->not->toBeNull();
-        expect($unpublishedPivot->pinned_to_spt_publish)->toBeTrue();
+        expect($unpublishedPivot)->not->toBeNull()
+            ->and($unpublishedPivot->pinned_to_spt_publish)->toBeTrue();
     });
 
     it('clears pinning for published SPT versions even if mod is already published', function (): void {
@@ -145,8 +145,8 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
             ->where('spt_version_id', $sptVersion->id)
             ->first();
         $pivot = $sptRelation ? $sptRelation->pivot : null;
-        expect($pivot)->not->toBeNull();
-        expect($pivot->pinned_to_spt_publish)->toBeFalse();
+        expect($pivot)->not->toBeNull()
+            ->and($pivot->pinned_to_spt_publish)->toBeFalse();
     });
 
     it('only processes SPT versions with pinned mod versions', function (): void {
@@ -182,8 +182,8 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
             ->where('spt_version_id', $sptWithoutPins->id)
             ->first();
         $pivot = $sptRelation ? $sptRelation->pivot : null;
-        expect($pivot)->not->toBeNull();
-        expect($pivot->pinned_to_spt_publish)->toBeFalse();
+        expect($pivot)->not->toBeNull()
+            ->and($pivot->pinned_to_spt_publish)->toBeFalse();
     });
 
     it('handles multiple mod versions pinned to the same SPT version', function (): void {
@@ -273,8 +273,8 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
             ->where('spt_version_id', $spt1->id)
             ->first();
         $pivot1 = $sptRelation1 ? $sptRelation1->pivot : null;
-        expect($pivot1)->not->toBeNull();
-        expect($pivot1->pinned_to_spt_publish)->toBeFalse();
+        expect($pivot1)->not->toBeNull()
+            ->and($pivot1->pinned_to_spt_publish)->toBeFalse();
 
         // Second SPT should still be pinned
         $sptRelation2 = $modVersion->sptVersions()
@@ -282,8 +282,8 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
             ->where('spt_version_id', $spt2->id)
             ->first();
         $pivot2 = $sptRelation2 ? $sptRelation2->pivot : null;
-        expect($pivot2)->not->toBeNull();
-        expect($pivot2->pinned_to_spt_publish)->toBeTrue();
+        expect($pivot2)->not->toBeNull()
+            ->and($pivot2->pinned_to_spt_publish)->toBeTrue();
 
         // Now simulate the second SPT version publishing
         $spt2->publish_date = Date::now()->subMinute();

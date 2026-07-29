@@ -73,7 +73,7 @@
         modders, players, and enthusiasts who share a passion for Single Player Tarkov. These Community Standards ensure
         everyone can participate in a welcoming, productive environment.</p>
 
-    <p><strong>Our Core Values:</strong></p>
+    <h4 id="our-core-values">Our Core Values:</h4>
     <ul>
         <li><strong>Respect:</strong> Treat all community members with dignity and courtesy</li>
         <li><strong>Collaboration:</strong> Support each other's projects and learning</li>
@@ -85,7 +85,7 @@
 
     <h3 id="basic-conduct">2.1 Basic Conduct</h3>
 
-    <p><strong>Be Civil and Respectful:</strong></p>
+    <h4 id="be-civil-and-respectful">Be Civil and Respectful:</h4>
     <ul>
         <li>Treat all users with courtesy and respect</li>
         <li>Use appropriate language - no profanity, slurs, or offensive content</li>
@@ -93,7 +93,7 @@
         <li>Remember there's a real person behind every username</li>
     </ul>
 
-    <p><strong>Be Constructive:</strong></p>
+    <h4 id="be-constructive">Be Constructive:</h4>
     <ul>
         <li>Provide helpful feedback instead of just criticism</li>
         <li>Stay on-topic in discussions and threads</li>
@@ -101,7 +101,7 @@
         <li>Help newcomers learn and improve</li>
     </ul>
 
-    <p><strong>Be Honest:</strong></p>
+    <h4 id="be-honest">Be Honest:</h4>
     <ul>
         <li>Don't misrepresent your work or identity</li>
         <li>Give proper credit to original creators</li>
@@ -111,7 +111,7 @@
 
     <h3 id="prohibited-behavior">2.2 Prohibited Behavior</h3>
 
-    <p><strong>Harassment and Abuse:</strong></p>
+    <h4 id="harassment-and-abuse">Harassment and Abuse:</h4>
     <ul>
         <li>No personal attacks, insults, or targeted harassment</li>
         <li>No doxxing or sharing private information without consent</li>
@@ -119,7 +119,7 @@
         <li>No discrimination based on race, gender, religion, sexuality, or other personal characteristics</li>
     </ul>
 
-    <p><strong>Disruptive Activities:</strong></p>
+    <h4 id="disruptive-activities">Disruptive Activities:</h4>
     <ul>
         <li>No trolling, flame baiting, or deliberately provocative behavior</li>
         <li>No spam, excessive posting, or off-topic content</li>
@@ -127,7 +127,7 @@
         <li>No attempts to circumvent bans or suspensions</li>
     </ul>
 
-    <p><strong>Platform Abuse:</strong></p>
+    <h4 id="platform-abuse">Platform Abuse:</h4>
     <ul>
         <li>No creating multiple accounts to evade restrictions</li>
         <li>No vote manipulation or fake reviews/ratings</li>
@@ -139,7 +139,7 @@
 
     <h3 id="appropriate-content">3.1 Appropriate Content</h3>
 
-    <p><strong>What We Welcome:</strong></p>
+    <h4 id="what-we-welcome">What We Welcome:</h4>
     <ul>
         <li>Original mod creations and improvements</li>
         <li>Constructive tutorials and guides</li>
@@ -148,7 +148,7 @@
         <li>Community feedback and suggestions</li>
     </ul>
 
-    <p><strong>Language and Communication:</strong></p>
+    <h4 id="language-and-communication">Language and Communication:</h4>
     <ul>
         <li>Primary language is English for public discussions</li>
         <li>Translation tools are welcome for accessibility</li>
@@ -158,7 +158,7 @@
 
     <h3 id="inappropriate-content">3.2 Inappropriate Content</h3>
 
-    <p><strong>Strictly Prohibited:</strong></p>
+    <h4 id="strictly-prohibited">Strictly Prohibited:</h4>
     <ul>
         <li><strong>Adult Content:</strong> No nudity, sexual content, or overly suggestive material</li>
         <li><strong>Piracy:</strong> No sharing or requesting copyrighted game files or software</li>
@@ -167,7 +167,7 @@
         <li><strong>Dangerous Content:</strong> No instructions for harmful or illegal activities</li>
     </ul>
 
-    <p><strong>Restricted Content:</strong></p>
+    <h4 id="restricted-content">Restricted Content:</h4>
     <ul>
         <li><strong>Politics:</strong> Keep political discussions off the platform</li>
         <li><strong>Religion:</strong> Avoid religious debates and proselytizing</li>
@@ -177,7 +177,7 @@
 
     <h3 id="intellectual-property">3.3 Intellectual Property</h3>
 
-    <p><strong>Respecting Creators:</strong></p>
+    <h4 id="respecting-creators">Respecting Creators:</h4>
     <ul>
         <li>Only upload content you own or have permission to share</li>
         <li>Give proper credit to original authors and contributors</li>
@@ -185,7 +185,7 @@
         <li>Don't claim others' work as your own</li>
     </ul>
 
-    <p><strong>Using Others' Content:</strong></p>
+    <h4 id="using-others-content">Using Others' Content:</h4>
     <ul>
         <li>Always ask permission before modifying or redistributing</li>
         <li>Follow the permissions set by original creators</li>
@@ -197,7 +197,7 @@
 
     <h3 id="forum-etiquette">4.1 Forum Etiquette</h3>
 
-    <p><strong>Starting Discussions:</strong></p>
+    <h4 id="starting-discussions">Starting Discussions:</h4>
     <ul>
         <li>Use clear, descriptive thread titles</li>
         <li>Post in the appropriate category/section</li>
@@ -205,7 +205,7 @@
         <li>Provide context and relevant information</li>
     </ul>
 
-    <p><strong>Participating in Discussions:</strong></p>
+    <h4 id="participating-in-discussions">Participating in Discussions:</h4>
     <ul>
         <li>Stay on-topic with the original post</li>
         <li>Quote relevant parts when responding to long posts</li>
@@ -213,7 +213,7 @@
         <li>Use formatting (bold, italics) sparingly and appropriately</li>
     </ul>
 
-    <p><strong>Managing Conflicts:</strong></p>
+    <h4 id="managing-conflicts">Managing Conflicts:</h4>
     <ul>
         <li>Address ideas, not individuals</li>
         <li>Take heated discussions to private messages when appropriate</li>
@@ -223,7 +223,7 @@
 
     <h3 id="help-support">4.2 Help and Support</h3>
 
-    <p><strong>Asking for Help:</strong></p>
+    <h4 id="asking-for-help">Asking for Help:</h4>
     <ul>
         <li>Provide detailed information about your issue</li>
         <li>Include relevant system specs, mod lists, and error messages</li>
@@ -231,7 +231,7 @@
         <li>Thank those who help you</li>
     </ul>
 
-    <p><strong>Providing Help:</strong></p>
+    <h4 id="providing-help">Providing Help:</h4>
     <ul>
         <li>Be patient with users who are learning</li>
         <li>Provide step-by-step instructions when possible</li>
@@ -243,7 +243,7 @@
 
     <h3 id="quality-standards">5.1 Quality Standards</h3>
 
-    <p><strong>File Requirements:</strong></p>
+    <h4 id="file-requirements">File Requirements:</h4>
     <ul>
         <li>Files must be functional and tested before upload</li>
         <li>Include clear installation instructions</li>
@@ -251,7 +251,7 @@
         <li>Tag files appropriately for easy discovery</li>
     </ul>
 
-    <p><strong>Documentation:</strong></p>
+    <h4 id="documentation">Documentation:</h4>
     <ul>
         <li>Include readme files with installation steps</li>
         <li>List mod dependencies and compatibility requirements</li>
@@ -261,7 +261,7 @@
 
     <h3 id="prohibited-mods">5.2 Prohibited Mods and Tools</h3>
 
-    <p><strong>Cheating and Exploits:</strong></p>
+    <h4 id="cheating-and-exploits">Cheating and Exploits:</h4>
     <ul>
         <li>No mods designed for use in live Escape From Tarkov</li>
         <li>No tools that could be used for competitive advantage in multiplayer games</li>
@@ -269,7 +269,7 @@
         <li>Development and testing tools are allowed if clearly labelled</li>
     </ul>
 
-    <p><strong>Malicious Software:</strong></p>
+    <h4 id="malicious-software">Malicious Software:</h4>
     <ul>
         <li>No viruses, malware, or potentially harmful executables</li>
         <li>All executable files must be from verified, open-source projects</li>
@@ -277,7 +277,7 @@
         <li>No files that secretly collect user data or phone home</li>
     </ul>
 
-    <p><strong>Inappropriate Modifications:</strong></p>
+    <h4 id="inappropriate-modifications">Inappropriate Modifications:</h4>
     <ul>
         <li>No mods that add adult or sexual content</li>
         <li>No content promoting real-world violence or illegal activities</li>
@@ -287,9 +287,9 @@
 
     <h2 id="private-messaging">6. Private Messaging Guidelines</h2>
 
-    <h3>6.1 Appropriate Use</h3>
+    <h3 id="6-1-appropriate-use">6.1 Appropriate Use</h3>
 
-    <p><strong>Private Messages Are For:</strong></p>
+    <h4 id="private-messages-are-for">Private Messages Are For:</h4>
     <ul>
         <li>Discussing mod collaborations and permissions</li>
         <li>Providing detailed technical support</li>
@@ -297,9 +297,9 @@
         <li>Sharing contact information for projects</li>
     </ul>
 
-    <h3>6.2 Prohibited Use</h3>
+    <h3 id="6-2-prohibited-use">6.2 Prohibited Use</h3>
 
-    <p><strong>Don't Use Private Messages For:</strong></p>
+    <h4 id="don-t-use-private-messages-for">Don't Use Private Messages For:</h4>
     <ul>
         <li>Harassment or continued arguments from public threads</li>
         <li>Spam or unsolicited promotional content</li>
@@ -307,7 +307,7 @@
         <li>Coordinating violations of community standards</li>
     </ul>
 
-    <p><strong>Privacy Expectations:</strong></p>
+    <h4 id="privacy-expectations">Privacy Expectations:</h4>
     <ul>
         <li>Messages are private between sender and recipient</li>
         <li>Staff may review messages for Terms of Service enforcement</li>
@@ -319,7 +319,7 @@
 
     <h3 id="how-to-report">7.1 How to Report</h3>
 
-    <p><strong>What to Report:</strong></p>
+    <h4 id="what-to-report">What to Report:</h4>
     <ul>
         <li>Violations of these Community Standards</li>
         <li>Terms of Service breaches</li>
@@ -328,7 +328,7 @@
         <li>User behavior that makes the community unwelcome</li>
     </ul>
 
-    <p><strong>How to Report:</strong></p>
+    <h4 id="how-to-report-2">How to Report:</h4>
     <ul>
         <li>Use the "Report" button on posts, comments, and files</li>
         <li>Contact staff directly for serious issues: singleplayertarkov@gmail.com</li>
@@ -336,9 +336,9 @@
         <li>Don't report content simply because you don't like it</li>
     </ul>
 
-    <h3>7.2 What Not to Report</h3>
+    <h3 id="7-2-what-not-to-report">7.2 What Not to Report</h3>
 
-    <p><strong>Inappropriate Reports:</strong></p>
+    <h4 id="inappropriate-reports">Inappropriate Reports:</h4>
     <ul>
         <li>Personal disagreements or subjective preferences</li>
         <li>Content that doesn't violate rules but you dislike</li>
@@ -348,7 +348,7 @@
 
     <h3 id="community-moderation">7.3 Community Self-Moderation</h3>
 
-    <p><strong>Positive Community Actions:</strong></p>
+    <h4 id="positive-community-actions">Positive Community Actions:</h4>
     <ul>
         <li>Help newcomers learn the rules</li>
         <li>Encourage quality content and constructive discussions</li>
@@ -356,7 +356,7 @@
         <li>Thank and acknowledge helpful community members</li>
     </ul>
 
-    <p><strong>What Not to Do:</strong></p>
+    <h4 id="what-not-to-do">What Not to Do:</h4>
     <ul>
         <li>Don't act as a "vigilante" moderator</li>
         <li>Don't publicly call out rule violations</li>
@@ -366,9 +366,9 @@
 
     <h2 id="consequences-appeals">8. Consequences and Appeals</h2>
 
-    <h3>8.1 Progressive Enforcement</h3>
+    <h3 id="8-1-progressive-enforcement">8.1 Progressive Enforcement</h3>
 
-    <p><strong>Typical Progression:</strong></p>
+    <h4 id="typical-progression">Typical Progression:</h4>
     <ol>
         <li><strong>Informal Warning:</strong> Staff guidance on rule adherence</li>
         <li><strong>Formal Warning:</strong> Official notice added to account</li>
@@ -377,7 +377,7 @@
         <li><strong>Permanent Ban:</strong> Complete removal from the platform</li>
     </ol>
 
-    <p><strong>Factors Considered:</strong></p>
+    <h4 id="factors-considered">Factors Considered:</h4>
     <ul>
         <li>Severity of the violation</li>
         <li>Intent and context of the behavior</li>
@@ -385,9 +385,10 @@
         <li>Impact on the community</li>
     </ul>
 
-    <h3>8.2 Immediate Actions</h3>
+    <h3 id="8-2-immediate-actions">8.2 Immediate Actions</h3>
 
-    <p><strong>Serious violations may result in immediate suspension or ban:</strong></p>
+    <h4 id="serious-violations-may-result-in-immediate-suspension-or-ban">Serious violations may result in immediate
+        suspension or ban:</h4>
     <ul>
         <li>Threats of violence or doxxing</li>
         <li>Sharing illegal content</li>
@@ -395,9 +396,9 @@
         <li>Coordinated harassment or abuse</li>
     </ul>
 
-    <h3>8.3 Appeals Process</h3>
+    <h3 id="8-3-appeals-process">8.3 Appeals Process</h3>
 
-    <p><strong>If you believe enforcement action was unfair:</strong></p>
+    <h4 id="if-you-believe-enforcement-action-was-unfair">If you believe enforcement action was unfair:</h4>
     <ol>
         <li><strong>Contact staff</strong> at singleplayertarkov@gmail.com</li>
         <li><strong>Provide specific details</strong> about why you believe the action was incorrect</li>
@@ -405,7 +406,7 @@
         <li><strong>Be respectful</strong> in your communication - hostility won't help your case</li>
     </ol>
 
-    <p><strong>Appeal Guidelines:</strong></p>
+    <h4 id="appeal-guidelines">Appeal Guidelines:</h4>
     <ul>
         <li>Appeals must be submitted within 30 days of the action</li>
         <li>Provide new information or evidence not previously considered</li>
@@ -415,9 +416,9 @@
 
     <h2 id="special-guidelines">9. Special Guidelines</h2>
 
-    <h3>9.1 Content Creator Guidelines</h3>
+    <h3 id="9-1-content-creator-guidelines">9.1 Content Creator Guidelines</h3>
 
-    <p><strong>For Prominent Community Members:</strong></p>
+    <h4 id="for-prominent-community-members">For Prominent Community Members:</h4>
     <ul>
         <li>Set a positive example for behavior and content quality</li>
         <li>Be responsive to community feedback and bug reports</li>
@@ -425,9 +426,9 @@
         <li>Help mentor newcomers to modding</li>
     </ul>
 
-    <h3>9.2 External Communities</h3>
+    <h3 id="9-2-external-communities">9.2 External Communities</h3>
 
-    <p><strong>Representing The Forge Elsewhere:</strong></p>
+    <h4 id="representing-the-forge-elsewhere">Representing The Forge Elsewhere:</h4>
     <ul>
         <li>Be respectful when discussing The Forge on other platforms</li>
         <li>Don't use your status here to promote unrelated content</li>
@@ -435,9 +436,9 @@
         <li>Follow other communities' rules when cross-posting content</li>
     </ul>
 
-    <h3>9.3 Events and Contests</h3>
+    <h3 id="9-3-events-and-contests">9.3 Events and Contests</h3>
 
-    <p><strong>During community events:</strong></p>
+    <h4 id="during-community-events">During community events:</h4>
     <ul>
         <li>Follow event-specific rules in addition to these standards</li>
         <li>Be a good sport whether winning or losing</li>
@@ -452,9 +453,9 @@
             class="text-cyan-400 underline transition-colors hover:text-cyan-200"
         >Contact page</a> for detailed information on how to reach our staff and community.</p>
 
-    <h3>10.1 Questions About Standards</h3>
+    <h3 id="10-1-questions-about-standards">10.1 Questions About Standards</h3>
 
-    <p><strong>If you're unsure about something:</strong></p>
+    <h4 id="if-you-re-unsure-about-something">If you're unsure about something:</h4>
     <ul>
         <li>Ask <a
                 href="{{ route('static.contact') }}"
@@ -468,9 +469,9 @@
             >Discord server or email</a></li>
     </ul>
 
-    <h3>10.2 Conflict Resolution</h3>
+    <h3 id="10-2-conflict-resolution">10.2 Conflict Resolution</h3>
 
-    <p><strong>For disputes with other users:</strong></p>
+    <h4 id="for-disputes-with-other-users">For disputes with other users:</h4>
     <ul>
         <li>Try to resolve issues through private discussion first</li>
         <li>Use respectful communication and assume good faith</li>
@@ -481,9 +482,9 @@
             >staff</a> if you cannot reach a resolution</li>
     </ul>
 
-    <h3>10.3 Improving the Community</h3>
+    <h3 id="10-3-improving-the-community">10.3 Improving the Community</h3>
 
-    <p><strong>Your feedback helps us improve:</strong></p>
+    <h4 id="your-feedback-helps-us-improve">Your feedback helps us improve:</h4>
     <ul>
         <li>Suggest clarifications to these standards</li>
         <li>Report gaps in coverage or unclear areas</li>
@@ -493,11 +494,11 @@
 
     <hr>
 
-    <h2>Community Standards Summary</h2>
+    <h2 id="community-standards-summary">Community Standards Summary</h2>
 
     <p><strong>The Golden Rule:</strong> Treat others as you want to be treated.</p>
 
-    <p><strong>Core Expectations:</strong></p>
+    <h4 id="core-expectations">Core Expectations:</h4>
     <ul>
         <li><strong>Be respectful</strong> to all community members</li>
         <li><strong>Create quality content</strong> that follows our guidelines</li>
@@ -506,7 +507,7 @@
         <li><strong>Help newcomers</strong> learn and improve</li>
     </ul>
 
-    <p><strong>Zero Tolerance For:</strong></p>
+    <h4 id="zero-tolerance-for">Zero Tolerance For:</h4>
     <ul>
         <li>Harassment, threats, or discrimination</li>
         <li>Piracy or sharing copyrighted content</li>

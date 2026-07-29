@@ -6,22 +6,42 @@ namespace Database\Seeders;
 
 use App\Enums\ListVisibility;
 use App\Models\Addon;
-use App\Models\Comment;
-use App\Models\CommentReaction;
 use App\Models\Mod;
 use App\Models\ModList;
 use App\Models\User;
-use Database\Factories\CommentFactory;
+use Carbon\CarbonInterface;
 use Database\Seeders\Traits\SeederHelpers;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Collection;
-use Laravel\Prompts\Progress;
-
-use function Laravel\Prompts\progress;
+use Illuminate\Support\Facades\Date;
 
 final class CommentSeeder extends Seeder
 {
     use SeederHelpers;
+
+    /**
+     * Sample non-English comment bodies paired with their English translations, keyed by ISO 639-1 language code.
+     *
+     * @var array<string, non-empty-list<array{string, string}>>
+     */
+    private const array TRANSLATED_SAMPLES = [
+        'ru' => [
+            ['Отличный мод, спасибо за вашу работу! Всё работает без проблем.', 'Great mod, thank you for your work! Everything runs without any problems.'],
+            ['Подскажите, пожалуйста, как установить этот мод на последнюю версию игры?', 'Could you please tell me how to install this mod on the latest version of the game?'],
+            ['После обновления игра вылетает при загрузке рейда. Помогите, пожалуйста!', 'After the update the game crashes when loading a raid. Please help!'],
+        ],
+        'de' => [
+            ['Der Mod funktioniert bei mir einwandfrei. Vielen Dank für die tolle Arbeit!', 'The mod works flawlessly for me. Many thanks for the great work!'],
+            ['Danke für dieses großartige Update, jetzt läuft wieder alles!', 'Thanks for this great update, everything runs again now!'],
+        ],
+        'fr' => [
+            ['Ce mod est vraiment excellent, merci beaucoup pour votre travail!', 'This mod is really excellent, thank you very much for your work!'],
+            ['Le mod ne se charge plus après la dernière mise à jour, une solution?', 'The mod no longer loads after the latest update, any solution?'],
+        ],
+        'zh' => [
+            ['这个模组太棒了，感谢你的辛勤工作！', 'This mod is amazing, thank you for your hard work!'],
+            ['请问这个模组支持最新版本吗？', 'Does this mod support the latest version?'],
+        ],
+    ];
 
     /**
      * Run the database seeds.
@@ -30,300 +50,277 @@ final class CommentSeeder extends Seeder
     {
         $this->initializeFaker();
 
-        $mods = Mod::all();
-        $addons = Addon::query()->where('comments_disabled', false)->get();
-        $lists = ModList::query()
+        /** @var list<int> $userIds */
+        $userIds = User::query()->pluck('id')->all();
+        $commentables = $this->collectCommentables();
+
+        if ($userIds === [] || $commentables === []) {
+            return;
+        }
+
+        [$parentRows, $parentVersions] = $this->buildParentComments($commentables, $userIds);
+        $parentIds = $this->bulkInsertReturningIds('comments', $parentRows);
+
+        [$replyRows, $replyVersions, $replyRootIds] = $this->buildReplies($parentRows, $parentIds, $userIds);
+        $replyIds = $this->bulkInsertReturningIds('comments', $replyRows);
+
+        [$nestedRows, $nestedVersions] = $this->buildNestedReplies($replyRows, $replyIds, $replyRootIds, $userIds);
+        $nestedIds = $this->bulkInsertReturningIds('comments', $nestedRows);
+
+        $this->seedCommentVersions([
+            [$parentIds, $parentVersions],
+            [$replyIds, $replyVersions],
+            [$nestedIds, $nestedVersions],
+        ]);
+
+        $this->seedCommentReactions([...$parentIds, ...$replyIds, ...$nestedIds], $userIds);
+    }
+
+    /**
+     * Gather commentable targets with their maximum parent comment counts.
+     *
+     * @return list<array{class-string, int, int}>
+     */
+    private function collectCommentables(): array
+    {
+        /** @var list<int> $modIds */
+        $modIds = Mod::query()->pluck('id')->all();
+        /** @var list<int> $addonIds */
+        $addonIds = Addon::query()->where('comments_disabled', false)->pluck('id')->all();
+        /** @var list<int> $listIds */
+        $listIds = ModList::query()
             ->where('is_default', false)
             ->where('comments_disabled', false)
             ->whereIn('visibility', [ListVisibility::Public, ListVisibility::Hidden])
-            ->get();
-        $allUsers = User::all();
+            ->pluck('id')
+            ->all();
 
-        // Add comments to mods
-        $this->seedCommentsForMods($mods, $allUsers);
-
-        // Add comments to addons
-        $this->seedCommentsForAddons($addons, $allUsers);
-
-        // Add comments to mod lists
-        $this->seedCommentsForLists($lists, $allUsers);
-
-        // Add reactions to all comments
-        $this->seedCommentReactions($allUsers);
-    }
-
-    /**
-     * Seed comments for mods.
-     *
-     * @param  Collection<int, Mod>  $mods
-     * @param  Collection<int, User>  $allUsers
-     */
-    private function seedCommentsForMods(Collection $mods, Collection $allUsers): void
-    {
-        Comment::withoutEvents(function () use ($mods, $allUsers): void {
-            progress(
-                label: 'Adding Comments...',
-                steps: $mods,
-                callback: function (Mod $mod, Progress $progress) use ($allUsers): void {
-                    $this->seedModComments($mod, $allUsers);
-                }
-            );
-        });
-    }
-
-    /**
-     * Seed comments for addons.
-     *
-     * @param  Collection<int, Addon>  $addons
-     * @param  Collection<int, User>  $allUsers
-     */
-    private function seedCommentsForAddons(Collection $addons, Collection $allUsers): void
-    {
-        if ($addons->isEmpty()) {
-            return;
+        $targets = [];
+        foreach ($modIds as $modId) {
+            $targets[] = [Mod::class, $modId, 20];
         }
 
-        Comment::withoutEvents(function () use ($addons, $allUsers): void {
-            progress(
-                label: 'Adding Addon Comments...',
-                steps: $addons,
-                callback: function (Addon $addon, Progress $progress) use ($allUsers): void {
-                    $this->seedAddonComments($addon, $allUsers);
-                }
-            );
-        });
+        foreach ($addonIds as $addonId) {
+            $targets[] = [Addon::class, $addonId, 15];
+        }
+
+        foreach ($listIds as $listId) {
+            $targets[] = [ModList::class, $listId, 10];
+        }
+
+        return $targets;
     }
 
     /**
-     * Seed comments for a single addon.
+     * Build 1-N parent comment rows for each commentable target.
      *
-     * @param  Collection<int, User>  $allUsers
+     * @param  list<array{class-string, int, int}>  $commentables
+     * @param  non-empty-list<int>  $userIds
+     * @return array{0: list<array<string, mixed>>, 1: list<array<string, mixed>>}
      */
-    private function seedAddonComments(Addon $addon, Collection $allUsers): void
+    private function buildParentComments(array $commentables, array $userIds): array
     {
-        // Create 1-15 parent comments (fewer than mods typically)
-        $parentCommentCount = random_int(1, 15);
+        $rows = [];
+        $versions = [];
 
-        for ($i = 0; $i < $parentCommentCount; $i++) {
-            $comment = $this->createComment($addon, $allUsers);
-
-            // For each comment, 30% chance to have replies
-            if (random_int(0, 9) < 3) {
-                $this->createReplies($comment, $allUsers);
+        foreach ($commentables as [$commentableType, $commentableId, $maxParents]) {
+            $parentCommentCount = random_int(1, $maxParents);
+            for ($i = 0; $i < $parentCommentCount; $i++) {
+                [$row, $version] = $this->buildComment($commentableType, $commentableId, $userIds, null, null, 10, 30);
+                $rows[] = $row;
+                $versions[] = $version;
             }
         }
+
+        return [$rows, $versions];
     }
 
     /**
-     * Seed comments for mod lists.
+     * Build 1-4 first-level reply rows for roughly 30% of the parent comments.
      *
-     * @param  Collection<int, ModList>  $lists
-     * @param  Collection<int, User>  $allUsers
+     * @param  list<array<string, mixed>>  $parentRows
+     * @param  list<int>  $parentIds
+     * @param  non-empty-list<int>  $userIds
+     * @return array{0: list<array<string, mixed>>, 1: list<array<string, mixed>>, 2: list<int>}
      */
-    private function seedCommentsForLists(Collection $lists, Collection $allUsers): void
+    private function buildReplies(array $parentRows, array $parentIds, array $userIds): array
     {
-        if ($lists->isEmpty()) {
-            return;
-        }
+        $rows = [];
+        $versions = [];
+        $rootIds = [];
 
-        Comment::withoutEvents(function () use ($lists, $allUsers): void {
-            progress(
-                label: 'Adding Mod List Comments...',
-                steps: $lists,
-                callback: function (ModList $list, Progress $progress) use ($allUsers): void {
-                    $this->seedListComments($list, $allUsers);
-                }
-            );
-        });
-    }
+        foreach ($parentIds as $index => $parentId) {
+            if (random_int(0, 9) >= 3) {
+                continue;
+            }
 
-    /**
-     * Seed comments for a single mod list.
-     *
-     * @param  Collection<int, User>  $allUsers
-     */
-    private function seedListComments(ModList $list, Collection $allUsers): void
-    {
-        // Create 1-10 parent comments (lists tend to draw less traffic than mods)
-        $parentCommentCount = random_int(1, 10);
+            /** @var class-string $commentableType */
+            $commentableType = $parentRows[$index]['commentable_type'];
+            /** @var int $commentableId */
+            $commentableId = $parentRows[$index]['commentable_id'];
 
-        for ($i = 0; $i < $parentCommentCount; $i++) {
-            $comment = $this->createComment($list, $allUsers);
-
-            // For each comment, 25% chance to have replies
-            if (random_int(0, 9) < 3) {
-                $this->createReplies($comment, $allUsers);
+            $replyCount = random_int(1, 4);
+            for ($i = 0; $i < $replyCount; $i++) {
+                [$row, $version] = $this->buildComment($commentableType, $commentableId, $userIds, $parentId, $parentId, 8, 15);
+                $rows[] = $row;
+                $versions[] = $version;
+                $rootIds[] = $parentId;
             }
         }
+
+        return [$rows, $versions, $rootIds];
     }
 
     /**
-     * Seed comments for a single mod.
+     * Build 1-2 nested reply rows for roughly 40% of the first-level replies.
      *
-     * @param  Collection<int, User>  $allUsers
+     * @param  list<array<string, mixed>>  $replyRows
+     * @param  list<int>  $replyIds
+     * @param  list<int>  $replyRootIds
+     * @param  non-empty-list<int>  $userIds
+     * @return array{0: list<array<string, mixed>>, 1: list<array<string, mixed>>}
      */
-    private function seedModComments(Mod $mod, Collection $allUsers): void
+    private function buildNestedReplies(array $replyRows, array $replyIds, array $replyRootIds, array $userIds): array
     {
-        // Create 1-20 parent comments with varied spam statuses
-        $parentCommentCount = random_int(1, 20);
+        $rows = [];
+        $versions = [];
 
-        for ($i = 0; $i < $parentCommentCount; $i++) {
-            $comment = $this->createComment($mod, $allUsers);
+        foreach ($replyIds as $index => $replyId) {
+            if (random_int(0, 9) >= 4) {
+                continue;
+            }
 
-            // For each comment, 30% chance to have replies
-            if (random_int(0, 9) < 3) {
-                $this->createReplies($comment, $allUsers);
+            /** @var class-string $commentableType */
+            $commentableType = $replyRows[$index]['commentable_type'];
+            /** @var int $commentableId */
+            $commentableId = $replyRows[$index]['commentable_id'];
+
+            $nestedReplyCount = random_int(1, 2);
+            for ($i = 0; $i < $nestedReplyCount; $i++) {
+                [$row, $version] = $this->buildComment($commentableType, $commentableId, $userIds, $replyId, $replyRootIds[$index], 5, 15);
+                $rows[] = $row;
+                $versions[] = $version;
             }
         }
+
+        return [$rows, $versions];
     }
 
     /**
-     * Create a single comment.
+     * Build one comment row and its matching initial version payload.
      *
-     * @param  Collection<int, User>  $allUsers
+     * @param  non-empty-list<int>  $userIds
+     * @return array{0: array<string, mixed>, 1: array<string, mixed>}
      */
-    private function createComment(Addon|Mod|ModList $commentable, Collection $allUsers): Comment
-    {
-        $spamStatus = $this->getRandomSpamStatus();
-        $isDeleted = random_int(0, 100) < 10; // 10% chance to be deleted
+    private function buildComment(
+        string $commentableType,
+        int $commentableId,
+        array $userIds,
+        ?int $parentId,
+        ?int $rootId,
+        int $deletionChance,
+        int $deletionWindowDays,
+    ): array {
+        $createdAt = Date::now()->subDays(random_int(0, 30))->subHours(random_int(0, 23));
 
-        $commentData = [
-            'spam_status' => $spamStatus,
+        $row = [
+            'user_id' => $this->randomElement($userIds),
+            'commentable_type' => $commentableType,
+            'commentable_id' => $commentableId,
+            'parent_id' => $parentId,
+            'root_id' => $rootId,
+            'spam_status' => $this->getRandomSpamStatus(),
+            'spam_metadata' => null,
+            'spam_checked_at' => null,
+            'spam_recheck_count' => 0,
+            'deleted_at' => random_int(0, 100) < $deletionChance ? Date::now()->subDays(random_int(1, $deletionWindowDays)) : null,
+            'created_at' => $createdAt,
+            'updated_at' => $createdAt,
         ];
 
-        if ($isDeleted) {
-            $commentData['deleted_at'] = now()->subDays(random_int(1, 30));
-        }
-
-        return $this->commentFactoryWithVersion()
-            ->recycle([$commentable])
-            ->recycle($allUsers)
-            ->createOne($commentData);
+        return [$row, $this->buildVersionPayload($createdAt)];
     }
 
     /**
-     * Build a comment factory with an initial version, roughly ten percent of which are non-English comments that
-     * carry a stored English translation.
+     * Build an initial version payload, roughly ten percent of which are non-English bodies with a stored English
+     * translation.
+     *
+     * @return array<string, mixed>
      */
-    private function commentFactoryWithVersion(): CommentFactory
+    private function buildVersionPayload(CarbonInterface $createdAt): array
     {
         if (random_int(0, 99) < 10) {
-            return Comment::factory()->translated();
+            $language = $this->randomElement(array_keys(self::TRANSLATED_SAMPLES));
+            [$body, $translatedBody] = $this->randomElement(self::TRANSLATED_SAMPLES[$language]);
+
+            return [
+                'body' => $body,
+                'version_number' => 1,
+                'created_at' => $createdAt,
+                'detected_language' => $language,
+                'translated_body' => $translatedBody,
+                'translation_metadata' => json_encode(['provider' => 'anthropic', 'model' => 'claude-haiku-4-5']),
+                'language_detected_at' => $createdAt,
+                'translated_at' => $createdAt,
+            ];
         }
 
-        return Comment::factory()->withVersion();
-    }
-
-    /**
-     * Create replies to a comment.
-     *
-     * @param  Collection<int, User>  $allUsers
-     */
-    private function createReplies(Comment $parentComment, Collection $allUsers): void
-    {
-        // Create 1-4 replies to the parent comment
-        $replyCount = random_int(1, 4);
-
-        for ($j = 0; $j < $replyCount; $j++) {
-            $firstLevelReply = $this->createReply($parentComment, $allUsers, 8);
-
-            // For each first-level reply, 40% chance to have nested replies
-            if (random_int(0, 9) < 4) {
-                $this->createNestedReplies($firstLevelReply, $allUsers);
-            }
-        }
-    }
-
-    /**
-     * Create a reply to a comment.
-     *
-     * @param  Collection<int, User>  $allUsers
-     */
-    private function createReply(Comment $parentComment, Collection $allUsers, int $deletionChance): Comment
-    {
-        $spamStatus = $this->getRandomSpamStatus();
-        $isDeleted = random_int(0, 100) < $deletionChance;
-
-        $replyData = [
-            'spam_status' => $spamStatus,
+        return [
+            'body' => $this->faker->paragraphs(random_int(1, 3), true),
+            'version_number' => 1,
+            'created_at' => $createdAt,
+            'detected_language' => null,
+            'translated_body' => null,
+            'translation_metadata' => null,
+            'language_detected_at' => null,
+            'translated_at' => null,
         ];
-
-        if ($isDeleted) {
-            $replyData['deleted_at'] = now()->subDays(random_int(1, 15));
-        }
-
-        return $this->commentFactoryWithVersion()
-            ->reply($parentComment)
-            ->recycle($allUsers)
-            ->createOne($replyData);
     }
 
     /**
-     * Create nested replies.
+     * Bulk-create the initial version row for every comment.
      *
-     * @param  Collection<int, User>  $allUsers
+     * @param  list<array{0: list<int>, 1: list<array<string, mixed>>}>  $waves
      */
-    private function createNestedReplies(Comment $firstLevelReply, Collection $allUsers): void
+    private function seedCommentVersions(array $waves): void
     {
-        // Create 1-2 nested replies
-        $nestedReplyCount = random_int(1, 2);
-
-        for ($k = 0; $k < $nestedReplyCount; $k++) {
-            $this->createReply($firstLevelReply, $allUsers, 5);
-        }
-    }
-
-    /**
-     * Seed reactions for comments.
-     *
-     * @param  Collection<int, User>  $allUsers
-     */
-    private function seedCommentReactions(Collection $allUsers): void
-    {
-        CommentReaction::withoutEvents(function () use ($allUsers): void {
-            progress(
-                label: 'Adding Comment Reactions...',
-                steps: Comment::all(),
-                callback: function (Comment $comment, Progress $progress) use ($allUsers): void {
-                    // 40% chance to have reactions
-                    if (random_int(0, 9) < 4) {
-                        $this->addReactionsToComment($comment, $allUsers);
-                    }
-                }
-            );
-        });
-    }
-
-    /**
-     * Add reactions to a comment.
-     *
-     * @param  Collection<int, User>  $allUsers
-     */
-    private function addReactionsToComment(Comment $comment, Collection $allUsers): void
-    {
-        // Add 1-5 reactions from different users (but no more than available users)
-        $maxReactions = min(5, $allUsers->count());
-        if ($maxReactions < 1) {
-            return;
-        }
-
-        $reactionCount = random_int(1, $maxReactions);
-
-        // Use shuffle and take to ensure unique users
-        $reactingUsers = $allUsers->shuffle()->take($reactionCount);
-
-        foreach ($reactingUsers as $user) {
-            // Check if this user has already reacted to this comment
-            $existingReaction = CommentReaction::query()->where('user_id', $user->id)
-                ->where('comment_id', $comment->id)
-                ->exists();
-
-            if (! $existingReaction) {
-                CommentReaction::factory()
-                    ->recycle([$comment])
-                    ->recycle([$user])
-                    ->create();
+        $rows = [];
+        foreach ($waves as [$commentIds, $versions]) {
+            foreach ($commentIds as $index => $commentId) {
+                $rows[] = ['comment_id' => $commentId] + $versions[$index];
             }
         }
+
+        $this->bulkInsert('comment_versions', $rows, 1000);
+    }
+
+    /**
+     * Bulk-create 1-5 reactions from distinct users for roughly 40% of the comments.
+     *
+     * @param  list<int>  $commentIds
+     * @param  non-empty-list<int>  $userIds
+     */
+    private function seedCommentReactions(array $commentIds, array $userIds): void
+    {
+        $maxReactions = min(5, count($userIds));
+
+        $rows = [];
+        foreach ($commentIds as $commentId) {
+            if (random_int(0, 9) >= 4) {
+                continue;
+            }
+
+            $createdAt = Date::now()->subDays(random_int(0, 30))->subHours(random_int(0, 23));
+            foreach ($this->randomElements($userIds, random_int(1, $maxReactions)) as $userId) {
+                $rows[] = [
+                    'user_id' => $userId,
+                    'comment_id' => $commentId,
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt,
+                ];
+            }
+        }
+
+        $this->bulkInsert('comment_reactions', $rows, 1000);
     }
 }

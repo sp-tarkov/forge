@@ -46,13 +46,13 @@ it('generates valid rss xml structure', function (): void {
 
     $xml = simplexml_load_string((string) $response->getContent());
 
-    expect($xml)->not->toBeFalse();
-    expect($xml->getName())->toBe('rss');
-    expect((string) $xml['version'])->toBe('2.0');
-    expect($xml->channel)->not->toBeNull();
-    expect($xml->channel->title)->not->toBeNull();
-    expect($xml->channel->link)->not->toBeNull();
-    expect($xml->channel->description)->not->toBeNull();
+    expect($xml)->toBeInstanceOf(SimpleXMLElement::class)
+        ->and($xml->getName())->toBe('rss')
+        ->and((string) $xml['version'])->toBe('2.0')
+        ->and($xml->channel)->not->toBeNull()
+        ->and($xml->channel->title)->not->toBeNull()
+        ->and($xml->channel->link)->not->toBeNull()
+        ->and($xml->channel->description)->not->toBeNull();
 });
 
 it('includes mods in rss items', function (): void {
@@ -72,7 +72,7 @@ it('includes mods in rss items', function (): void {
     $xml = simplexml_load_string((string) $response->getContent());
     $items = $xml->channel->item;
 
-    expect(count($items))->toBe(3);
+    expect($items)->toHaveCount(3);
 
     // Check that all mod titles are present (order may vary)
     $titles = [];
@@ -101,8 +101,8 @@ it('filters mods by search query', function (): void {
     $xml = simplexml_load_string((string) $response->getContent());
     $items = $xml->channel->item;
 
-    expect(count($items))->toBe(1);
-    expect((string) $items[0]->title)->toBe('Weapon Pack');
+    expect($items)->toHaveCount(1)
+        ->and((string) $items[0]->title)->toBe('Weapon Pack');
 });
 
 it('filters mods by featured status', function (): void {
@@ -121,8 +121,8 @@ it('filters mods by featured status', function (): void {
     $xml = simplexml_load_string((string) $response->getContent());
     $items = $xml->channel->item;
 
-    expect(count($items))->toBe(1);
-    expect((string) $items[0]->title)->toBe('Featured Mod');
+    expect($items)->toHaveCount(1)
+        ->and((string) $items[0]->title)->toBe('Featured Mod');
 });
 
 it('filters mods by ai generated content status', function (): void {
@@ -141,8 +141,8 @@ it('filters mods by ai generated content status', function (): void {
     $xml = simplexml_load_string((string) $response->getContent());
     $items = $xml->channel->item;
 
-    expect(count($items))->toBe(1);
-    expect((string) $items[0]->title)->toBe('Human Mod');
+    expect($items)->toHaveCount(1)
+        ->and((string) $items[0]->title)->toBe('Human Mod');
 });
 
 it('filters mods by category', function (): void {
@@ -161,8 +161,8 @@ it('filters mods by category', function (): void {
     $xml = simplexml_load_string((string) $response->getContent());
     $items = $xml->channel->item;
 
-    expect(count($items))->toBe(1);
-    expect((string) $items[0]->title)->toBe('Weapon Mod');
+    expect($items)->toHaveCount(1)
+        ->and((string) $items[0]->title)->toBe('Weapon Mod');
 });
 
 it('sorts mods by downloads when specified', function (): void {
@@ -217,8 +217,8 @@ it('sorts mods by downloads when specified', function (): void {
     $unpopularPos = array_search('Less Popular Mod ABC', $titles, true);
 
     // Both should be present
-    expect($popularPos)->not->toBeFalse();
-    expect($unpopularPos)->not->toBeFalse();
+    expect($popularPos)->toBeInt();
+    expect($unpopularPos)->toBeInt();
 
     // Popular mod should come before unpopular mod
     expect($popularPos)->toBeLessThan($unpopularPos);
@@ -263,8 +263,7 @@ it('filters mods by spt versions', function (): void {
         }
     }
 
-    expect($titles)->toContain('Unique Mod for 3.9.1');
-    expect($titles)->not->toContain('Unique Mod for 3.8.1');
+    expect($titles)->toContain('Unique Mod for 3.9.1')->not->toContain('Unique Mod for 3.8.1');
 });
 
 it('handles multiple spt versions with comma separation', function (): void {
@@ -342,7 +341,7 @@ it('shows all versions when versions parameter is all', function (): void {
     $xml = simplexml_load_string((string) $response->getContent());
     $items = $xml->channel->item;
 
-    expect(count($items))->toBe(2);
+    expect($items)->toHaveCount(2);
 });
 
 it('updates feed description based on filters', function (): void {
@@ -362,10 +361,10 @@ it('updates feed description based on filters', function (): void {
     $xml = simplexml_load_string((string) $response->getContent());
     $description = (string) $xml->channel->description;
 
-    expect($description)->toContain('matching "test"');
-    expect($description)->toContain('featured mods only');
-    expect($description)->toContain('excluding AI generated mods');
-    expect($description)->toContain('sorted by most downloaded');
+    expect($description)->toContain('matching "test"')
+        ->toContain('featured mods only')
+        ->toContain('excluding AI generated mods')
+        ->toContain('sorted by most downloaded');
 });
 
 it('describes the feed as sorted by most favourited', function (): void {
@@ -458,6 +457,6 @@ it('respects mod access permissions', function (): void {
     $xml = simplexml_load_string((string) $response->getContent());
     $items = $xml->channel->item;
 
-    expect(count($items))->toBe(1);
-    expect((string) $items[0]->title)->toBe('Enabled Mod');
+    expect($items)->toHaveCount(1)
+        ->and((string) $items[0]->title)->toBe('Enabled Mod');
 });

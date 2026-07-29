@@ -19,8 +19,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 
-use function Laravel\Prompts\progress;
-
 final class ModListSeeder extends Seeder
 {
     use SeederHelpers;
@@ -287,8 +285,6 @@ final class ModListSeeder extends Seeder
                 ModListItem::query()->insert($favouriteRows);
             }
         }
-
-        $this->command->outputComponents()->info('Test account demo lists seeded for: '.$testAccount->email);
     }
 
     /**
@@ -631,12 +627,9 @@ final class ModListSeeder extends Seeder
             return;
         }
 
-        $listChunks = array_chunk($listRows, self::LIST_INSERT_CHUNK);
-        progress(
-            label: 'Inserting Mod Lists...',
-            steps: $listChunks,
-            callback: fn (array $chunk): bool => ModList::query()->insert($chunk),
-        );
+        foreach (array_chunk($listRows, self::LIST_INSERT_CHUNK) as $chunk) {
+            ModList::query()->insert($chunk);
+        }
 
         // Look up the inserted IDs by (owner_id, slug) so we can attach items.
         $slugs = array_column($listRows, 'slug');
@@ -667,12 +660,9 @@ final class ModListSeeder extends Seeder
             return;
         }
 
-        $itemChunks = array_chunk($itemRows, self::ITEM_INSERT_CHUNK);
-        progress(
-            label: 'Inserting Mod List Items...',
-            steps: $itemChunks,
-            callback: fn (array $chunk): bool => ModListItem::query()->insert($chunk),
-        );
+        foreach (array_chunk($itemRows, self::ITEM_INSERT_CHUNK) as $chunk) {
+            ModListItem::query()->insert($chunk);
+        }
     }
 
     /**
@@ -807,12 +797,9 @@ final class ModListSeeder extends Seeder
             return;
         }
 
-        $listChunks = array_chunk($listRows, self::LIST_INSERT_CHUNK);
-        progress(
-            label: 'Inserting Forked Mod Lists...',
-            steps: $listChunks,
-            callback: fn (array $chunk): bool => ModList::query()->insert($chunk),
-        );
+        foreach (array_chunk($listRows, self::LIST_INSERT_CHUNK) as $chunk) {
+            ModList::query()->insert($chunk);
+        }
 
         $slugs = array_column($listRows, 'slug');
 

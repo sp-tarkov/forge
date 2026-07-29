@@ -39,7 +39,7 @@ describe('VersionMatcher::satisfiedBy', function (): void {
     });
 
     it('returns an empty list when nothing matches', function (): void {
-        expect(VersionMatcher::satisfiedBy(['1.0.0', '2.0.0'], '~4.4.3'))->toBe([]);
+        expect(VersionMatcher::satisfiedBy(['1.0.0', '2.0.0'], '~4.4.3'))->toBeEmpty();
     });
 });
 

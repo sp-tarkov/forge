@@ -104,8 +104,6 @@ describe('Database Notification Data', function (): void {
         $user = User::factory()->create();
 
         $data = (new ContentGuidelinesUpdatedNotification)->toArray($user);
-
-        expect($data['title'])->toBe('Content Guidelines Updated');
-        expect($data['url'])->toBe(route('static.content-guidelines'));
+        expect($data)->toMatchArray(['title' => 'Content Guidelines Updated', 'url' => route('static.content-guidelines')]);
     });
 });

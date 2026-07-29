@@ -304,16 +304,7 @@ final class AddonQueryBuilder extends AbstractQueryBuilder
      */
     protected function filterByCreatedBetween(Builder $query, ?string $range): void
     {
-        if (! $range) {
-            return;
-        }
-
-        $dates = explode(',', $range);
-        if (count($dates) !== 2) {
-            return;
-        }
-
-        $query->whereBetween('addons.created_at', $dates);
+        $this->applyDateRangeFilter($query, 'addons.created_at', $range);
     }
 
     /**
@@ -323,16 +314,7 @@ final class AddonQueryBuilder extends AbstractQueryBuilder
      */
     protected function filterByUpdatedBetween(Builder $query, ?string $range): void
     {
-        if (! $range) {
-            return;
-        }
-
-        $dates = explode(',', $range);
-        if (count($dates) !== 2) {
-            return;
-        }
-
-        $query->whereBetween('addons.updated_at', $dates);
+        $this->applyDateRangeFilter($query, 'addons.updated_at', $range);
     }
 
     /**
@@ -342,15 +324,6 @@ final class AddonQueryBuilder extends AbstractQueryBuilder
      */
     protected function filterByPublishedBetween(Builder $query, ?string $range): void
     {
-        if (! $range) {
-            return;
-        }
-
-        $dates = explode(',', $range);
-        if (count($dates) !== 2) {
-            return;
-        }
-
-        $query->whereBetween('addons.published_at', $dates);
+        $this->applyDateRangeFilter($query, 'addons.published_at', $range);
     }
 }

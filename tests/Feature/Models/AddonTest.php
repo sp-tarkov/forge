@@ -98,8 +98,8 @@ describe('searchability', function (): void {
 
         $searchArray = $addon->toSearchableArray();
 
-        expect($searchArray)->toHaveKey('thumbnail');
-        expect($searchArray['thumbnail'])->toBe($addon->thumbnailUrl);
+        expect($searchArray)->toHaveKey('thumbnail')
+            ->and($searchArray['thumbnail'])->toBe($addon->thumbnailUrl);
     });
 
     it('includes empty string thumbnail in searchable array when not available', function (): void {
@@ -112,8 +112,8 @@ describe('searchability', function (): void {
 
         $searchArray = $addon->toSearchableArray();
 
-        expect($searchArray)->toHaveKey('thumbnail');
-        expect($searchArray['thumbnail'])->toBe('');
+        expect($searchArray)->toHaveKey('thumbnail')
+            ->and($searchArray['thumbnail'])->toBe('');
     });
 });
 
@@ -200,8 +200,8 @@ describe('detachment functionality', function (): void {
 
         $addon->refresh();
 
-        expect($addon->isDetached())->toBeTrue();
-        expect($addon->detached_by_user_id)->toBe($modOwner->id);
+        expect($addon->isDetached())->toBeTrue()
+            ->and($addon->detached_by_user_id)->toBe($modOwner->id);
     });
 
     it('keeps addon accessible after detachment', function (): void {
@@ -215,8 +215,8 @@ describe('detachment functionality', function (): void {
 
         $addon->refresh();
 
-        expect($addon)->not->toBeNull();
-        expect($addon->published_at)->not->toBeNull();
+        expect($addon)->not->toBeNull()
+            ->and($addon->published_at)->not->toBeNull();
     });
 
     it('preserves addon data after detachment', function (): void {
@@ -237,9 +237,9 @@ describe('detachment functionality', function (): void {
 
         $addon->refresh();
 
-        expect($addon->name)->toBe($originalName);
-        expect($addon->downloads)->toBe($originalDownloads);
-        expect($addon->owner_id)->toBe($originalOwnerId);
+        expect($addon->name)->toBe($originalName)
+            ->and($addon->downloads)->toBe($originalDownloads)
+            ->and($addon->owner_id)->toBe($originalOwnerId);
     });
 
     it('maintains mod relationship after detachment', function (): void {
@@ -253,8 +253,8 @@ describe('detachment functionality', function (): void {
 
         $addon->refresh();
 
-        expect($addon->mod_id)->toBe($mod->id);
-        expect($addon->mod)->not->toBeNull();
+        expect($addon->mod_id)->toBe($mod->id)
+            ->and($addon->mod)->not->toBeNull();
     });
 });
 
@@ -266,8 +266,8 @@ describe('detached addon visibility', function (): void {
 
         $attachedAddons = $mod->attachedAddons;
 
-        expect($attachedAddons->contains($attachedAddon))->toBeTrue();
-        expect($attachedAddons->contains($detachedAddon))->toBeFalse();
+        expect($attachedAddons->contains($attachedAddon))->toBeTrue()
+            ->and($attachedAddons->contains($detachedAddon))->toBeFalse();
     });
 
     it('includes detached addons in all addons relationship', function (): void {
@@ -277,8 +277,8 @@ describe('detached addon visibility', function (): void {
 
         $allAddons = $mod->addons;
 
-        expect($allAddons->contains($attachedAddon))->toBeTrue();
-        expect($allAddons->contains($detachedAddon))->toBeTrue();
+        expect($allAddons->contains($attachedAddon))->toBeTrue()
+            ->and($allAddons->contains($detachedAddon))->toBeTrue();
     });
 
     it('shows detached addons in search results', function (): void {
@@ -289,8 +289,8 @@ describe('detached addon visibility', function (): void {
 
         $searchArray = $detachedAddon->toSearchableArray();
 
-        expect($searchArray['is_detached'])->toBeTrue();
-        expect($searchArray['name'])->toBe('Unique Detached Addon Name');
+        expect($searchArray['is_detached'])->toBeTrue()
+            ->and($searchArray['name'])->toBe('Unique Detached Addon Name');
     });
 
     it('marks detached status in searchable array', function (): void {
@@ -506,8 +506,8 @@ describe('attachment functionality', function (): void {
 
         $addon->refresh();
 
-        expect($addon->isDetached())->toBeFalse();
-        expect($addon->detached_by_user_id)->toBeNull();
+        expect($addon->isDetached())->toBeFalse()
+            ->and($addon->detached_by_user_id)->toBeNull();
     });
 
     it('makes addon visible in attachedAddons relationship after attach', function (): void {
@@ -543,9 +543,9 @@ describe('attachment functionality', function (): void {
 
         $addon->refresh();
 
-        expect($addon->name)->toBe($originalName);
-        expect($addon->downloads)->toBe($originalDownloads);
-        expect($addon->owner_id)->toBe($originalOwnerId);
+        expect($addon->name)->toBe($originalName)
+            ->and($addon->downloads)->toBe($originalDownloads)
+            ->and($addon->owner_id)->toBe($originalOwnerId);
     });
 
     it('maintains mod relationship after attachment', function (): void {
@@ -558,8 +558,8 @@ describe('attachment functionality', function (): void {
 
         $addon->refresh();
 
-        expect($addon->mod_id)->toBe($mod->id);
-        expect($addon->mod)->not->toBeNull();
+        expect($addon->mod_id)->toBe($mod->id)
+            ->and($addon->mod)->not->toBeNull();
     });
 
     it('updates searchable array after attachment', function (): void {
@@ -666,8 +666,8 @@ describe('AI content lock on edit', function (): void {
             ->assertHasNoErrors();
 
         $addon->refresh();
-        expect($addon->contains_ai_content)->toBeTrue();
-        expect($addon->contains_ai_content_locked)->toBeTrue();
+        expect($addon->contains_ai_content)->toBeTrue()
+            ->and($addon->contains_ai_content_locked)->toBeTrue();
     });
 
     it('prevents non-staff from changing contains_ai_content when locked', function (): void {
@@ -687,8 +687,8 @@ describe('AI content lock on edit', function (): void {
             ->assertHasNoErrors();
 
         $addon->refresh();
-        expect($addon->contains_ai_content)->toBeTrue();
-        expect($addon->contains_ai_content_locked)->toBeTrue();
+        expect($addon->contains_ai_content)->toBeTrue()
+            ->and($addon->contains_ai_content_locked)->toBeTrue();
     });
 
     it('allows staff to unlock the contains_ai_content flag', function (): void {
@@ -708,8 +708,8 @@ describe('AI content lock on edit', function (): void {
             ->assertHasNoErrors();
 
         $addon->refresh();
-        expect($addon->contains_ai_content)->toBeFalse();
-        expect($addon->contains_ai_content_locked)->toBeFalse();
+        expect($addon->contains_ai_content)->toBeFalse()
+            ->and($addon->contains_ai_content_locked)->toBeFalse();
     });
 
     it('allows non-staff to update contains_ai_content when not locked', function (): void {
@@ -729,8 +729,8 @@ describe('AI content lock on edit', function (): void {
             ->assertHasNoErrors();
 
         $addon->refresh();
-        expect($addon->contains_ai_content)->toBeTrue();
-        expect($addon->contains_ai_content_locked)->toBeFalse();
+        expect($addon->contains_ai_content)->toBeTrue()
+            ->and($addon->contains_ai_content_locked)->toBeFalse();
     });
 });
 
@@ -1158,9 +1158,9 @@ describe('sorting by downloads', function (): void {
         $addon2->refresh();
         $addon3->refresh();
 
-        expect($addon1->downloads)->toBe(5);
-        expect($addon2->downloads)->toBe(5000);
-        expect($addon3->downloads)->toBe(250);
+        expect($addon1->downloads)->toBe(5)
+            ->and($addon2->downloads)->toBe(5000)
+            ->and($addon3->downloads)->toBe(250);
 
         Livewire::withoutLazyLoading()
             ->test('mod.show.addons-tab', ['modId' => $mod->id])

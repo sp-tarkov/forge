@@ -9,7 +9,7 @@ describe('custom AI disclosure markdown rendering', function (): void {
     it('returns an empty string when the mod has no custom AI disclosure', function (): void {
         $mod = Mod::factory()->create(['custom_ai_disclosure' => null]);
 
-        expect($mod->custom_ai_disclosure_html)->toBe('');
+        expect($mod->custom_ai_disclosure_html)->toBeEmpty();
     });
 
     it('renders markdown formatting in mod custom AI disclosure to safe HTML', function (): void {
@@ -39,7 +39,7 @@ describe('custom AI disclosure markdown rendering', function (): void {
         $mod = Mod::factory()->create();
         $addon = Addon::factory()->for($mod)->create(['custom_ai_disclosure' => null]);
 
-        expect($addon->custom_ai_disclosure_html)->toBe('');
+        expect($addon->custom_ai_disclosure_html)->toBeEmpty();
     });
 
     it('renders markdown formatting in addon custom AI disclosure to safe HTML', function (): void {

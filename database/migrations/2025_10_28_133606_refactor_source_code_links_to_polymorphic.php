@@ -29,10 +29,16 @@ return new class extends Migration
                 'sourceable_id' => DB::raw('mod_id'),
             ]);
 
-        // Drop the old mod_id column and its constraints
-        // Note: Foreign key name is still 'mod_source_code_links_mod_id_foreign' after table rename
+        // Drop the old mod_id column and its constraints. SQLite drops the foreign key by column; other drivers drop
+        // the constraint named 'mod_source_code_links_mod_id_foreign'.
         Schema::table('source_code_links', function (Blueprint $table): void {
-            $table->dropForeign('mod_source_code_links_mod_id_foreign');
+            if (DB::getDriverName() === 'sqlite') {
+                $table->dropForeign(['mod_id']);
+            } else {
+                $table->dropForeign('mod_source_code_links_mod_id_foreign');
+            }
+
+            $table->dropIndex('mod_source_code_links_mod_id_index');
             $table->dropColumn('mod_id');
         });
     }
@@ -45,6 +51,7 @@ return new class extends Migration
                 ->after('id')
                 ->constrained('mods')
                 ->cascadeOnDelete();
+            $table->index('mod_id', 'mod_source_code_links_mod_id_index');
         });
 
         // Migrate data back to mod_id

@@ -10,7 +10,7 @@ it('records an API request under its route name', function (): void {
     $data = resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'));
 
     expect($data['requests'])->toHaveKey('api.v0.ping|GET|200')
-        ->and($data['clients'])->not->toBe([]);
+        ->and($data['clients'])->not->toBeEmpty();
 });
 
 it('records unmatched API paths under a sentinel route name', function (): void {
@@ -31,7 +31,7 @@ it('records CORS preflights under the preflight sentinel and not the unmatched m
     $data = resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'));
 
     expect(array_keys($data['requests']))->toContain('api.v0.preflight|OPTIONS|204')
-        ->and($data['unmatched'])->toBe([]);
+        ->and($data['unmatched'])->toBeEmpty();
 });
 
 it('answers CORS preflights with the configured max age and read-only methods', function (): void {
@@ -49,7 +49,7 @@ it('answers CORS preflights with the configured max age and read-only methods', 
 it('does not record matched routes into the unmatched map', function (): void {
     $this->getJson('/api/v0/ping')->assertOk();
 
-    expect(resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'))['unmatched'])->toBe([]);
+    expect(resolve(ApiUsageStore::class)->readBucket(now()->utc()->format('YmdHi'))['unmatched'])->toBeEmpty();
 });
 
 it('does not record when tracking is disabled', function (): void {
@@ -57,11 +57,11 @@ it('does not record when tracking is disabled', function (): void {
 
     $this->getJson('/api/v0/ping')->assertOk();
 
-    expect(resolve(ApiUsageStore::class)->pendingBuckets())->toBe([]);
+    expect(resolve(ApiUsageStore::class)->pendingBuckets())->toBeEmpty();
 });
 
 it('ignores requests outside the v0 API surface', function (): void {
     $this->get('/up')->assertOk();
 
-    expect(resolve(ApiUsageStore::class)->pendingBuckets())->toBe([]);
+    expect(resolve(ApiUsageStore::class)->pendingBuckets())->toBeEmpty();
 });

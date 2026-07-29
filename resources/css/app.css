@@ -445,6 +445,29 @@ button {
     }
 }
 
+.static-content {
+    :is(h2, h3, h4) > a.heading-permalink {
+        @apply inline-flex items-center gap-1 text-inherit no-underline;
+
+        &::after {
+            @apply inline-block size-[0.75em] shrink-0 bg-current opacity-0 transition-opacity content-[''];
+
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23000'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244'/%3E%3C/svg%3E");
+            mask-repeat: no-repeat;
+            mask-position: center;
+            mask-size: contain;
+        }
+
+        &:hover {
+            @apply underline;
+
+            &::after {
+                @apply opacity-100;
+            }
+        }
+    }
+}
+
 .ribbon {
     --f: 0.5em;
     position: absolute;

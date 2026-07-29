@@ -209,8 +209,8 @@ describe('publishing', function (): void {
             ->assertSet('addonPublished', true);
 
         $addon->refresh();
-        expect($addon->published_at)->not->toBeNull();
-        expect($addon->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate.' '.$publishTime)->format('Y-m-d H:i:s'));
+        expect($addon->published_at)->not->toBeNull()
+            ->and($addon->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate.' '.$publishTime)->format('Y-m-d H:i:s'));
     });
 
     it('allows addon owners to unpublish an addon', function (): void {

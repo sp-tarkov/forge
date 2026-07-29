@@ -312,8 +312,8 @@ it('sends individual notifications for multiple new versions of same mod', funct
     // Assert both versions were marked as notified
     $version1->refresh();
     $version2->refresh();
-    expect($version1->discord_notification_sent)->toBeTrue();
-    expect($version2->discord_notification_sent)->toBeTrue();
+    expect($version1->discord_notification_sent)->toBeTrue()
+        ->and($version2->discord_notification_sent)->toBeTrue();
 
     // Verify TWO separate notifications were sent (one for each version)
     Http::assertSentCount(2);
@@ -573,8 +573,8 @@ it('does not send version update notification when new mod is created', function
     // Assert both versions were marked as notified
     $version1->refresh();
     $version2->refresh();
-    expect($version1->discord_notification_sent)->toBeTrue();
-    expect($version2->discord_notification_sent)->toBeTrue();
+    expect($version1->discord_notification_sent)->toBeTrue()
+        ->and($version2->discord_notification_sent)->toBeTrue();
 
     // Verify only ONE Discord notification was sent (for the new mod, not for version updates)
     Http::assertSentCount(1);
@@ -1163,14 +1163,14 @@ it('marks all published addon versions as notified when new addon notification i
     // Assert published versions were marked as notified
     $version1->refresh();
     $version2->refresh();
-    expect($version1->discord_notification_sent)->toBeTrue();
-    expect($version2->discord_notification_sent)->toBeTrue();
+    expect($version1->discord_notification_sent)->toBeTrue()
+        ->and($version2->discord_notification_sent)->toBeTrue();
 
     // Assert unpublished/future versions were NOT marked (scope filters them)
     $unpublishedVersion->refresh();
     $futureVersion->refresh();
-    expect($unpublishedVersion->discord_notification_sent)->toBeFalse();
-    expect($futureVersion->discord_notification_sent)->toBeFalse();
+    expect($unpublishedVersion->discord_notification_sent)->toBeFalse()
+        ->and($futureVersion->discord_notification_sent)->toBeFalse();
 });
 
 it('sends addon notifications to the addons webhook url', function (): void {

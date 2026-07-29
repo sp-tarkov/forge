@@ -11,6 +11,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use Tests\Concerns\MakesAnimatedTestImages;
+
+pest()->use(MakesAnimatedTestImages::class);
 
 function makeProfileFormTestUpload(string $format, int $width = 256, int $height = 256): UploadedFile
 {
@@ -121,7 +124,7 @@ describe('profile images', function (): void {
         $this->actingAs(User::factory()->create());
 
         Livewire::test('profile.update-profile-form')
-            ->set('photo', UploadedFile::fake()->createWithContent('avatar.gif', makeAnimatedTestImage(121, 200, 200)))
+            ->set('photo', UploadedFile::fake()->createWithContent('avatar.gif', $this->makeAnimatedTestImage(121, 200, 200)))
             ->assertHasErrors('photo');
     });
 
@@ -129,7 +132,7 @@ describe('profile images', function (): void {
         $this->actingAs(User::factory()->create());
 
         Livewire::test('profile.update-profile-form')
-            ->set('photo', UploadedFile::fake()->createWithContent('avatar.gif', makeAnimatedTestImage(3, 200, 200)))
+            ->set('photo', UploadedFile::fake()->createWithContent('avatar.gif', $this->makeAnimatedTestImage(3, 200, 200)))
             ->assertHasNoErrors('photo');
     });
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V0;
 
 use App\Models\SptVersion;
+use App\Support\Api\V0\QueryBuilder\AbstractQueryBuilder;
 use App\Support\Api\V0\QueryBuilder\SptVersionQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -28,6 +29,26 @@ final class SptVersionResource extends JsonResource
      * Whether to show all fields.
      */
     private bool $showAllFields = true;
+
+    /**
+     * The query builder that hydrated the version, whose field contract bounds this response.
+     *
+     * @var class-string<AbstractQueryBuilder<SptVersion>>
+     */
+    private string $queryBuilder = SptVersionQueryBuilder::class;
+
+    /**
+     * Set the query builder that hydrated the version. Fields outside that builder's contract are omitted from the
+     * response.
+     *
+     * @param  class-string<AbstractQueryBuilder<SptVersion>>  $queryBuilder
+     */
+    public function hydratedBy(string $queryBuilder): self
+    {
+        $this->queryBuilder = $queryBuilder;
+
+        return $this;
+    }
 
     /**
      * Transform the resource into an array.
@@ -94,12 +115,22 @@ final class SptVersionResource extends JsonResource
         return $data;
     }
 
+    /**
+     * Check if a field should be included in the response. Required fields are always included; every other field must
+     * be exposed by the hydrating query builder and either requested or covered by an unfiltered request.
+     */
     private function shouldInclude(string $field): bool
     {
-        $requiredFields = SptVersionQueryBuilder::getRequiredFields();
+        $queryBuilder = $this->queryBuilder;
 
-        return $this->showAllFields
-            || in_array($field, $this->requestedFields, true)
-            || in_array($field, $requiredFields, true);
+        if (in_array($field, $queryBuilder::getRequiredFields(), true)) {
+            return true;
+        }
+
+        if (! in_array($field, $queryBuilder::getAllAllowedFields(), true)) {
+            return false;
+        }
+
+        return $this->showAllFields || in_array($field, $this->requestedFields, true);
     }
 }

@@ -16,8 +16,8 @@ describe('Mod Autocomplete Component', function (): void {
             ->set('search', 'Beta');
 
         $filteredMods = $component->get('filteredMods');
-        expect($filteredMods)->toHaveCount(1);
-        expect($filteredMods->first()->name)->toBe('Beta Mod');
+        expect($filteredMods)->toHaveCount(1)
+            ->and($filteredMods->first()->name)->toBe('Beta Mod');
     });
 
     it('excludes specified mod from results', function (): void {
@@ -29,8 +29,8 @@ describe('Mod Autocomplete Component', function (): void {
             ->set('search', 'Alpha');
 
         $filteredMods = $component->get('filteredMods');
-        expect($filteredMods)->toHaveCount(1);
-        expect($filteredMods->first()->id)->toBe($mod3->id);
+        expect($filteredMods)->toHaveCount(1)
+            ->and($filteredMods->first()->id)->toBe($mod3->id);
     });
 
     it('selects a mod via wire:model', function (): void {
@@ -88,6 +88,6 @@ describe('Mod Autocomplete Component', function (): void {
             ->set('search', '');
 
         $filteredMods = $component->get('filteredMods');
-        expect($filteredMods)->toHaveCount(0);
+        expect($filteredMods)->toBeEmpty();
     });
 });

@@ -63,8 +63,8 @@ it('broadcasts on correct public and private channels', function (): void {
     $verifiable = $result->verifiable;
     $slug = $result->verifiable_type === ModVersion::class ? 'mod-version' : 'addon-version';
 
-    expect($channels[0]->name)->toBe(sprintf('verification.%s.%d', $slug, $result->verifiable_id));
-    expect($channels[1]->name)->toBe('private-admin.verification');
+    expect($channels[0]->name)->toBe(sprintf('verification.%s.%d', $slug, $result->verifiable_id))
+        ->and($channels[1]->name)->toBe('private-admin.verification');
 });
 
 it('broadcasts correct minimal payload', function (): void {

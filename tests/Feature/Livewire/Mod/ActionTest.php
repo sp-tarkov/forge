@@ -215,8 +215,8 @@ describe('mod publishing functionality', function (): void {
             ->assertSet('modPublished', true);
 
         $mod->refresh();
-        expect($mod->published_at)->not->toBeNull();
-        expect($mod->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate.' '.$publishTime)->format('Y-m-d H:i:s'));
+        expect($mod->published_at)->not->toBeNull()
+            ->and($mod->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate.' '.$publishTime)->format('Y-m-d H:i:s'));
     });
 
     it('allows mod owners to unpublish a mod', function (): void {
@@ -553,8 +553,8 @@ describe('mod version publishing functionality', function (): void {
             ->assertSet('versionPublished', true);
 
         $version->refresh();
-        expect($version->published_at)->not->toBeNull();
-        expect($version->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate.' '.$publishTime)->format('Y-m-d H:i:s'));
+        expect($version->published_at)->not->toBeNull()
+            ->and($version->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate.' '.$publishTime)->format('Y-m-d H:i:s'));
     });
 
     it('allows mod owners to unpublish a version', function (): void {

@@ -48,7 +48,7 @@ describe('buildTree', function (): void {
     });
 
     it('returns an empty array for an empty path list', function (): void {
-        expect(FileTreeNode::buildTree([]))->toBe([]);
+        expect(FileTreeNode::buildTree([]))->toBeEmpty();
     });
 
     it('dedupes duplicate paths', function (): void {

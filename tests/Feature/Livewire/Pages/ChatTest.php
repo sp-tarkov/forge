@@ -111,7 +111,7 @@ describe('messaging', function (): void {
             ->assertSee('Second message');
 
         // Verify both messages are in the database
-        $this->assertEquals(2, $conversation->messages()->count());
+        expect($conversation->messages()->count())->toEqual(2);
     });
 
     it('correctly tracks unread count after first message via Chat component', function (): void {
@@ -138,8 +138,8 @@ describe('messaging', function (): void {
 
         // Verify conversation has the message
         $conversation->refresh();
-        expect($conversation->messages()->count())->toBe(1);
-        expect($conversation->last_message_id)->not->toBeNull();
+        expect($conversation->messages()->count())->toBe(1)
+            ->and($conversation->last_message_id)->not->toBeNull();
 
         // User2 should see unread count
         expect($conversation->getUnreadCountForUser($user2))->toBe(1);
@@ -477,8 +477,8 @@ describe('blocking and archiving interaction', function (): void {
 
         // Blocker should be able to find the blocked user in search
         $searchResults = User::conversationSearch($blocker, 'UniqueBlockedUser')->get();
-        expect($searchResults)->toHaveCount(1);
-        expect($searchResults->first()->id)->toBe($blocked->id);
+        expect($searchResults)->toHaveCount(1)
+            ->and($searchResults->first()->id)->toBe($blocked->id);
 
         // Blocker CAN unarchive their own archived conversation (they're the blocker)
         $this->actingAs($blocker);

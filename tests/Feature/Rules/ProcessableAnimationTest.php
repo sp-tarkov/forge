@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Rules\ProcessableAnimation;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Validator;
+use Tests\Concerns\MakesAnimatedTestImages;
+
+pest()->use(MakesAnimatedTestImages::class);
 
 /**
  * Handcraft a GIF whose header claims the given dimensions and frame count without carrying real pixel data, so
@@ -38,13 +41,13 @@ it('passes a static image', function (): void {
     $file = UploadedFile::fake()->createWithContent('avatar.png', $image->getImageBlob());
     $image->clear();
 
-    expect(validateProcessableAnimation($file))->toBe([]);
+    expect(validateProcessableAnimation($file))->toBeEmpty();
 });
 
 it('passes a small animation', function (): void {
-    $file = UploadedFile::fake()->createWithContent('avatar.gif', makeAnimatedTestImage(3, 64, 64));
+    $file = UploadedFile::fake()->createWithContent('avatar.gif', $this->makeAnimatedTestImage(3, 64, 64));
 
-    expect(validateProcessableAnimation($file))->toBe([]);
+    expect(validateProcessableAnimation($file))->toBeEmpty();
 });
 
 it('rejects an animation with too many frames', function (): void {
@@ -69,5 +72,5 @@ it('rejects an image over the decode ceiling', function (): void {
 it('passes non-image content through for the mimes rule to reject', function (): void {
     $file = UploadedFile::fake()->createWithContent('avatar.txt', 'plain text content');
 
-    expect(validateProcessableAnimation($file))->toBe([]);
+    expect(validateProcessableAnimation($file))->toBeEmpty();
 });

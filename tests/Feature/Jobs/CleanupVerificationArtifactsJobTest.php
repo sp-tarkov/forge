@@ -67,8 +67,8 @@ it('deletes orphaned temp files older than twice the job runtime and keeps fresh
     try {
         new CleanupVerificationArtifactsJob()->handle();
 
-        expect(file_exists($oldFile))->toBeFalse();
-        expect(file_exists($freshFile))->toBeTrue();
+        expect(file_exists($oldFile))->toBeFalse()
+            ->and(file_exists($freshFile))->toBeTrue();
     } finally {
         @unlink($oldFile);
         @unlink($freshFile);

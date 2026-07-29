@@ -15,11 +15,11 @@ describe('fromContainer', function (): void {
             'data' => ['files' => 3],
         ]);
 
-        expect($check->name)->toBe('archive_extraction');
-        expect($check->status)->toBe(VerificationCheckStatus::Passed);
-        expect($check->reportOnly)->toBeFalse();
-        expect($check->message)->toBeNull();
-        expect($check->data)->toBe(['files' => 3]);
+        expect($check->name)->toBe('archive_extraction')
+            ->and($check->status)->toBe(VerificationCheckStatus::Passed)
+            ->and($check->reportOnly)->toBeFalse()
+            ->and($check->message)->toBeNull()
+            ->and($check->data)->toBe(['files' => 3]);
     });
 
     it('resolves an unrecognized status to a failure', function (): void {
@@ -36,12 +36,12 @@ describe('fromContainer', function (): void {
     ]);
 
     it('coerces report_only to a boolean and defaults it to false', function (): void {
-        expect(VerificationCheck::fromContainer(['name' => 'x', 'status' => 'passed'])->reportOnly)->toBeFalse();
-        expect(VerificationCheck::fromContainer(['name' => 'x', 'status' => 'passed', 'report_only' => 1])->reportOnly)->toBeTrue();
+        expect(VerificationCheck::fromContainer(['name' => 'x', 'status' => 'passed'])->reportOnly)->toBeFalse()
+            ->and(VerificationCheck::fromContainer(['name' => 'x', 'status' => 'passed', 'report_only' => 1])->reportOnly)->toBeTrue();
     });
 
     it('drops a non-array data payload', function (): void {
-        expect(VerificationCheck::fromContainer(['name' => 'x', 'status' => 'passed', 'data' => 'nope'])->data)->toBe([]);
+        expect(VerificationCheck::fromContainer(['name' => 'x', 'status' => 'passed', 'data' => 'nope'])->data)->toBeEmpty();
     });
 
     it('caps an overlong name and message', function (): void {
@@ -51,43 +51,43 @@ describe('fromContainer', function (): void {
             'message' => str_repeat('b', 5000),
         ]);
 
-        expect(mb_strlen($check->name))->toBe(100);
-        expect(mb_strlen((string) $check->message))->toBe(2000);
+        expect($check->name)->toHaveLength(100)
+            ->and((string) $check->message)->toHaveLength(2000);
     });
 });
 
 describe('helpers', function (): void {
     it('reports enforcing status from report_only', function (): void {
-        expect(new VerificationCheck('x', VerificationCheckStatus::Passed, false, null)->isEnforcing())->toBeTrue();
-        expect(new VerificationCheck('x', VerificationCheckStatus::Passed, true, null)->isEnforcing())->toBeFalse();
+        expect(new VerificationCheck('x', VerificationCheckStatus::Passed, false, null)->isEnforcing())->toBeTrue()
+            ->and(new VerificationCheck('x', VerificationCheckStatus::Passed, true, null)->isEnforcing())->toBeFalse();
     });
 
     it('reports passed and failed from status', function (): void {
         $passed = new VerificationCheck('x', VerificationCheckStatus::Passed, false, null);
         $failed = new VerificationCheck('x', VerificationCheckStatus::Failed, false, null);
 
-        expect($passed->passed())->toBeTrue();
-        expect($passed->failed())->toBeFalse();
-        expect($failed->failed())->toBeTrue();
-        expect($failed->passed())->toBeFalse();
+        expect($passed->passed())->toBeTrue()
+            ->and($passed->failed())->toBeFalse()
+            ->and($failed->failed())->toBeTrue()
+            ->and($failed->passed())->toBeFalse();
     });
 
     it('reports skipped from status', function (): void {
         $skipped = new VerificationCheck('x', VerificationCheckStatus::Skipped, false, null);
         $passed = new VerificationCheck('x', VerificationCheckStatus::Passed, false, null);
 
-        expect($skipped->skipped())->toBeTrue();
-        expect($passed->skipped())->toBeFalse();
+        expect($skipped->skipped())->toBeTrue()
+            ->and($passed->skipped())->toBeFalse();
     });
 
     it('resolves the display label and description from the check name', function (): void {
         $known = new VerificationCheck('archive_extraction', VerificationCheckStatus::Passed, false, null);
         $unknown = new VerificationCheck('mystery_check', VerificationCheckStatus::Passed, false, null);
 
-        expect($known->label())->toBe('Archive Extraction');
-        expect($known->description())->toContain('unpacked safely');
-        expect($unknown->label())->toBe('Mystery Check');
-        expect($unknown->description())->toBeNull();
+        expect($known->label())->toBe('Archive Extraction')
+            ->and($known->description())->toContain('unpacked safely')
+            ->and($unknown->label())->toBe('Mystery Check')
+            ->and($unknown->description())->toBeNull();
     });
 
     it('round-trips through toArray', function (): void {

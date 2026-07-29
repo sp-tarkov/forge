@@ -10,13 +10,13 @@ describe('labelFor', function (): void {
     });
 
     it('resolves the labels for the dll checks', function (): void {
-        expect(VerificationCheckType::labelFor('dll_guid_match'))->toBe('GUID Match');
-        expect(VerificationCheckType::labelFor('dll_version_match'))->toBe('Version Match');
+        expect(VerificationCheckType::labelFor('dll_guid_match'))->toBe('GUID Match')
+            ->and(VerificationCheckType::labelFor('dll_version_match'))->toBe('Version Match');
     });
 
     it('resolves the labels for the location checks', function (): void {
-        expect(VerificationCheckType::labelFor('client_plugin_location'))->toBe('Client Mod Location');
-        expect(VerificationCheckType::labelFor('server_mod_location'))->toBe('Server Mod Location');
+        expect(VerificationCheckType::labelFor('client_plugin_location'))->toBe('Client Mod Location')
+            ->and(VerificationCheckType::labelFor('server_mod_location'))->toBe('Server Mod Location');
     });
 
     it('humanizes an unknown check name', function (): void {
@@ -37,7 +37,7 @@ describe('descriptionFor', function (): void {
 
 describe('presentation', function (): void {
     it('offers a non-empty label and description for every case', function (VerificationCheckType $type): void {
-        expect($type->label())->toBeString()->not->toBeEmpty();
-        expect($type->description())->toBeString()->not->toBeEmpty();
+        expect($type->label())->toBeString()->not->toBeEmpty()
+            ->and($type->description())->toBeString()->not->toBeEmpty();
     })->with(VerificationCheckType::cases());
 });

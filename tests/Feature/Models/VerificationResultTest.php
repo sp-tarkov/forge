@@ -61,8 +61,8 @@ it('can be accessed from mod version via verification results relationship', fun
     VerificationResult::factory()->forModVersion($modVersion)->passed()->create();
     VerificationResult::factory()->forModVersion($modVersion)->failed()->create();
 
-    expect($modVersion->verificationResults)->toHaveCount(2);
-    expect($modVersion->latestVerificationResult)->not->toBeNull();
+    expect($modVersion->verificationResults)->toHaveCount(2)
+        ->and($modVersion->latestVerificationResult)->not->toBeNull();
 });
 
 it('casts status and trigger to enums', function (): void {
@@ -73,8 +73,8 @@ it('casts status and trigger to enums', function (): void {
 
     $result->refresh();
 
-    expect($result->status)->toBe(VerificationStatus::Running);
-    expect($result->trigger)->toBe(VerificationTrigger::ChangeDetected);
+    expect($result->status)->toBe(VerificationStatus::Running)
+        ->and($result->trigger)->toBe(VerificationTrigger::ChangeDetected);
 });
 
 it('creates a pending result and dispatches the verification job', function (): void {
@@ -220,8 +220,8 @@ it('casts file_tree and details to arrays', function (): void {
 
     $result->refresh();
 
-    expect($result->file_tree)->toBe(['package.json', 'src/mod.ts']);
-    expect($result->details)->toBe(['download' => ['duration_seconds' => 1.5]]);
+    expect($result->file_tree)->toBe(['package.json', 'src/mod.ts'])
+        ->and($result->details)->toBe(['download' => ['duration_seconds' => 1.5]]);
 });
 
 it('casts checks to an array and stores the check-suite version', function (): void {
@@ -236,8 +236,8 @@ it('casts checks to an array and stores the check-suite version', function (): v
 
     $result->refresh();
 
-    expect($result->checks)->toEqual($checks);
-    expect($result->checks_version)->toBe('3');
+    expect($result->checks)->toEqual($checks)
+        ->and($result->checks_version)->toBe('3');
 });
 
 it('leads the display checks with a passed file download check', function (): void {
@@ -280,5 +280,5 @@ it('synthesizes a failed archive extraction check when a failed run recorded no 
 it('returns no display checks when the run has no recorded download outcome', function (): void {
     $result = VerificationResult::factory()->create();
 
-    expect($result->displayChecks())->toBe([]);
+    expect($result->displayChecks())->toBeEmpty();
 });

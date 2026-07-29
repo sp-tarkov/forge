@@ -8,7 +8,7 @@ inputs:
   php-extensions:
     description: PHP extensions to install.
     required: false
-    default: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, gd, redis, igbinary, msgpack, memcached, gmp, :php-psr
+    default: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, pdo_pgsql, gd, redis, igbinary, msgpack, memcached, gmp, :php-psr
   redis-options:
     description: Redis options to compile with.
     required: false
@@ -17,6 +17,10 @@ inputs:
     description: Redis libraries to install.
     required: false
     default: liblz4-dev, liblzf-dev, libzstd-dev
+  coverage:
+    description: Coverage driver to enable.
+    required: false
+    default: none
 
 runs:
   using: composite
@@ -56,7 +60,7 @@ runs:
         extensions: ${{ inputs.php-extensions }}
         ini-values: error_reporting=E_ALL
         tools: composer:v2
-        coverage: none
+        coverage: ${{ inputs.coverage }}
       env:
         REDIS_CONFIGURE_OPTS: ${{ inputs.redis-options }}
         REDIS_LIBS: ${{ inputs.redis-libs }}

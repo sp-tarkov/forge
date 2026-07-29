@@ -6,6 +6,7 @@
     "license": "MPL-2.0",
     "require": {
         "php": "^8.5",
+        "ext-bcmath": "*",
         "ext-curl": "*",
         "ext-imagick": "*",
         "ext-intl": "*",
@@ -36,7 +37,7 @@
         "mchev/banhammer": "^2.5.0",
         "meilisearch/meilisearch-php": "^1.16.1",
         "mobiledetect/mobiledetectlib": "~4.8.10",
-        "nightowl/agent": "^1.4",
+        "nightowl/agent": "^2.0",
         "nitotm/efficient-language-detector": "^3.2",
         "nunomaduro/essentials": "^1.2",
         "shetabit/visitor": "^4.5.5",
@@ -59,9 +60,11 @@
         "laravel/tinker": "^3.0.2",
         "mockery/mockery": "^1.6.12",
         "nunomaduro/collision": "^8.9.4",
-        "pestphp/pest": "^4.7.0",
-        "pestphp/pest-plugin-browser": "^4.3.1",
-        "pestphp/pest-plugin-type-coverage": "^4.0.4",
+        "pestphp/pest": "^5.0",
+        "pestphp/pest-plugin-browser": "^5.0",
+        "pestphp/pest-plugin-phpstan": "^5.0",
+        "pestphp/pest-plugin-rector": "^5.0",
+        "pestphp/pest-plugin-type-coverage": "^5.0",
         "rector/rector": "^2.4.4",
         "roave/security-advisories": "dev-latest"
     },
@@ -104,6 +107,17 @@
             "npx playwright install",
             "./vendor/bin/pest --parallel --compact --testsuite=Feature,Unit",
             "./vendor/bin/pest --parallel --compact --testsuite=Browser"
+        ],
+        "test:pgsql": [
+            "DB_CONNECTION=pgsql DB_DATABASE=testing DB_CHARSET=utf8 ./vendor/bin/pest --no-tia --parallel --compact --testsuite=Feature,Unit"
+        ],
+        "test:sqlite": [
+            "@php -r \"file_exists('database/testing.sqlite') || touch('database/testing.sqlite');\"",
+            "DB_CONNECTION=sqlite DB_DATABASE=database/testing.sqlite ./vendor/bin/pest --no-tia --parallel --compact --testsuite=Feature,Unit"
+        ],
+        "test:drivers": [
+            "@test:pgsql",
+            "@test:sqlite"
         ],
         "format": [
             "@pint",

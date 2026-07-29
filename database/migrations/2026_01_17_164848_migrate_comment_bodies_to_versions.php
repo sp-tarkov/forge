@@ -17,7 +17,7 @@ return new class extends Migration
         // First, create version records for all existing comments
         DB::statement("
             INSERT INTO comment_versions (comment_id, body, version_number, created_at)
-            SELECT id, body, 1, COALESCE(created_at, NOW())
+            SELECT id, body, 1, COALESCE(created_at, CURRENT_TIMESTAMP)
             FROM comments
             WHERE body IS NOT NULL AND body != ''
         ");

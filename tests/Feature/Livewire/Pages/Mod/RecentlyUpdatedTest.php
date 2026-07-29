@@ -166,10 +166,10 @@ describe('ordering', function (): void {
 
         // Check the order by looking at the mods array order
         $mods = $component->viewData('mods');
-        expect($mods->count())->toBe(3);
-        expect($mods[0]->name)->toBe('Newest Mod');
-        expect($mods[1]->name)->toBe('Newer Mod');
-        expect($mods[2]->name)->toBe('Older Mod');
+        expect($mods->count())->toBe(3)
+            ->and($mods[0]->name)->toBe('Newest Mod')
+            ->and($mods[1]->name)->toBe('Newer Mod')
+            ->and($mods[2]->name)->toBe('Older Mod');
     });
 });
 
@@ -212,8 +212,8 @@ describe('timestamp tracking', function (): void {
         expect($component->get('previousViewedAt'))->not->toBeNull();
 
         $mods = $component->viewData('mods');
-        expect($mods->count())->toBe(1);
-        expect($mods[0]->name)->toBe('New Mod');
+        expect($mods->count())->toBe(1)
+            ->and($mods[0]->name)->toBe('New Mod');
     });
 });
 
@@ -226,8 +226,8 @@ describe('markAsRead action', function (): void {
             ->dispatch('mark-updated-as-read');
 
         $user->refresh();
-        expect($user->mods_updated_viewed_at)->not->toBeNull();
-        expect($user->mods_updated_viewed_at->diffInSeconds(now()))->toBeLessThan(5);
+        expect($user->mods_updated_viewed_at)->not->toBeNull()
+            ->and($user->mods_updated_viewed_at->diffInSeconds(now()))->toBeLessThan(5);
     });
 
     it('bumps an existing mods_updated_viewed_at timestamp when the mark-updated-as-read event is dispatched', function (): void {
@@ -270,8 +270,8 @@ describe('markAsRead action', function (): void {
             ->dispatch('mark-updated-as-read');
 
         $mods = $component->viewData('mods');
-        expect($mods->count())->toBe(1);
-        expect($mods[0]->name)->toBe('New Mod');
+        expect($mods->count())->toBe(1)
+            ->and($mods[0]->name)->toBe('New Mod');
     });
 });
 

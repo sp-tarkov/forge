@@ -137,9 +137,9 @@ describe('custom AI disclosure', function (): void {
             ->assertRedirect();
 
         $addon = Addon::query()->where('name', 'AI Disclosure Addon')->first();
-        expect($addon)->not->toBeNull();
-        expect($addon->contains_ai_content)->toBeTrue();
-        expect($addon->custom_ai_disclosure)->toBe('Used AI to draft documentation.');
+        expect($addon)->not->toBeNull()
+            ->and($addon->contains_ai_content)->toBeTrue()
+            ->and($addon->custom_ai_disclosure)->toBe('Used AI to draft documentation.');
     });
 
     it('requires a disclosure message when AI content is enabled', function (): void {
@@ -181,9 +181,9 @@ describe('custom AI disclosure', function (): void {
             ->assertRedirect();
 
         $addon = Addon::query()->where('name', 'No AI Addon')->first();
-        expect($addon)->not->toBeNull();
-        expect($addon->contains_ai_content)->toBeFalse();
-        expect($addon->custom_ai_disclosure)->toBeNull();
+        expect($addon)->not->toBeNull()
+            ->and($addon->contains_ai_content)->toBeFalse()
+            ->and($addon->custom_ai_disclosure)->toBeNull();
     });
 
     it('rejects a custom AI disclosure longer than 1000 characters', function (): void {

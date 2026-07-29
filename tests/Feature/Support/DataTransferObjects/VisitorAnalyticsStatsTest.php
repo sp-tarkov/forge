@@ -42,7 +42,7 @@ it('coerces missing and malformed payload data to safe defaults', function (): v
     expect($stats->totalEvents)->toBe(0)
         ->and($stats->uniqueUsers)->toBe(0)
         ->and($stats->topEvents)->toBe([['event_name' => '', 'count' => 7]])
-        ->and($stats->dailyEvents)->toBe([]);
+        ->and($stats->dailyEvents)->toBeEmpty();
 });
 
 it('reports staleness based on the computed-at timestamp', function (): void {

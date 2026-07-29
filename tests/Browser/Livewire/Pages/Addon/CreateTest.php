@@ -64,8 +64,8 @@ describe('license selection', function (): void {
             ->waitForText('Addon Created');
 
         $addon = Addon::query()->where('name', 'Test Addon')->first();
-        expect($addon)->not->toBeNull();
-        expect($addon->license_id)->toBe($license->id);
+        expect($addon)->not->toBeNull()
+            ->and($addon->license_id)->toBe($license->id);
     });
 });
 
@@ -92,8 +92,8 @@ describe('creation through the UI', function (): void {
             ->assertSee('Test Addon');
 
         $addon = Addon::query()->where('name', 'Test Addon')->first();
-        expect($addon)->not->toBeNull();
-        expect($addon->name)->toBe('Test Addon');
+        expect($addon)->not->toBeNull()
+            ->and($addon->name)->toBe('Test Addon');
     });
 
     it('shows validation errors when creating addon with invalid data', function (): void {

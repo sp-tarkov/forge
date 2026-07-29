@@ -31,13 +31,13 @@ describe('ReportComponent', function (): void {
                     'reportableType' => $mod::class,
                 ]);
 
-            expect($component->get('reportableId'))->toBe($mod->id);
-            expect($component->get('reportableType'))->toBe($mod::class);
-            expect($component->get('variant'))->toBe('link');
-            expect($component->get('reason'))->toBe(ReportReason::OTHER);
-            expect($component->get('context'))->toBe('');
-            expect($component->get('showReportModal'))->toBeFalse();
-            expect($component->get('submitted'))->toBeFalse();
+            expect($component->get('reportableId'))->toBe($mod->id)
+                ->and($component->get('reportableType'))->toBe($mod::class)
+                ->and($component->get('variant'))->toBe('link')
+                ->and($component->get('reason'))->toBe(ReportReason::OTHER)
+                ->and($component->get('context'))->toBe('')
+                ->and($component->get('showReportModal'))->toBeFalse()
+                ->and($component->get('submitted'))->toBeFalse();
         });
 
         it('can be mounted with a custom variant', function (): void {
@@ -64,8 +64,8 @@ describe('ReportComponent', function (): void {
                     'reportableType' => $comment::class,
                 ]);
 
-            expect($component->get('reportableId'))->toBe($comment->id);
-            expect($component->get('reportableType'))->toBe($comment::class);
+            expect($component->get('reportableId'))->toBe($comment->id)
+                ->and($component->get('reportableType'))->toBe($comment::class);
         });
     });
 
@@ -224,12 +224,12 @@ describe('ReportComponent', function (): void {
             expect(Report::query()->count())->toBe(1);
 
             $report = Report::query()->first();
-            expect($report->reporter_id)->toBe($user->id);
-            expect($report->reportable_type)->toBe($mod::class);
-            expect($report->reportable_id)->toBe($mod->id);
-            expect($report->reason)->toBe(ReportReason::SPAM);
-            expect($report->context)->toBe('This is spam content');
-            expect($report->status)->toBe(ReportStatus::PENDING);
+            expect($report->reporter_id)->toBe($user->id)
+                ->and($report->reportable_type)->toBe($mod::class)
+                ->and($report->reportable_id)->toBe($mod->id)
+                ->and($report->reason)->toBe(ReportReason::SPAM)
+                ->and($report->context)->toBe('This is spam content')
+                ->and($report->status)->toBe(ReportStatus::PENDING);
         });
 
         it('creates a report with minimal required data', function (): void {
@@ -248,8 +248,8 @@ describe('ReportComponent', function (): void {
             expect(Report::query()->count())->toBe(1);
 
             $report = Report::query()->first();
-            expect($report->reason)->toBe(ReportReason::OTHER);
-            expect($report->context)->toBe('');
+            expect($report->reason)->toBe(ReportReason::OTHER)
+                ->and($report->context)->toBe('');
         });
 
         it('validates reason field is valid enum value', function (): void {
@@ -264,9 +264,8 @@ describe('ReportComponent', function (): void {
                     ])
                     ->set('reason', 'invalid_reason')
                     ->call('submit');
-            })->toThrow(Exception::class);
-
-            expect(Report::query()->count())->toBe(0);
+            })->toThrow(Exception::class)
+                ->and(Report::query()->count())->toBe(0);
         });
 
         it('validates context field maximum length', function (): void {
@@ -302,8 +301,8 @@ describe('ReportComponent', function (): void {
                 ->call('submit')
                 ->assertHasNoErrors();
 
-            expect(Report::query()->count())->toBe(1);
-            expect(Report::query()->first()->context)->toBe($maxContext);
+            expect(Report::query()->count())->toBe(1)
+                ->and(Report::query()->first()->context)->toBe($maxContext);
         });
 
         it('resets form fields after successful submission', function (): void {
@@ -319,8 +318,8 @@ describe('ReportComponent', function (): void {
                 ->set('context', 'This is spam')
                 ->call('submit');
 
-            expect($component->get('reason'))->toBe(ReportReason::OTHER);
-            expect($component->get('context'))->toBe('');
+            expect($component->get('reason'))->toBe(ReportReason::OTHER)
+                ->and($component->get('context'))->toBe('');
         });
 
         it('switches to thank you content after submission', function (): void {
@@ -336,8 +335,8 @@ describe('ReportComponent', function (): void {
                 ->set('reason', ReportReason::SPAM)
                 ->call('submit');
 
-            expect($component->get('showReportModal'))->toBeTrue();
-            expect($component->get('submitted'))->toBeTrue();
+            expect($component->get('showReportModal'))->toBeTrue()
+                ->and($component->get('submitted'))->toBeTrue();
         });
 
         it('prevents unauthorized users from submitting reports', function (): void {
@@ -410,9 +409,9 @@ describe('ReportComponent', function (): void {
             expect(Report::query()->count())->toBe(1);
 
             $report = Report::query()->first();
-            expect($report->reporter_id)->toBe($user->id);
-            expect($report->reportable_type)->toBe($comment::class);
-            expect($report->reportable_id)->toBe($comment->id);
+            expect($report->reporter_id)->toBe($user->id)
+                ->and($report->reportable_type)->toBe($comment::class)
+                ->and($report->reportable_id)->toBe($comment->id);
         });
     });
 
@@ -508,8 +507,8 @@ describe('ReportComponent', function (): void {
                 ->assertHasNoErrors();
 
             $report = Report::query()->first();
-            expect($report->reportable_type)->toBe(Mod::class);
-            expect($report->reportable_id)->toBe($mod->id);
+            expect($report->reportable_type)->toBe(Mod::class)
+                ->and($report->reportable_id)->toBe($mod->id);
         });
 
         it('works with comment reports', function (): void {
@@ -526,8 +525,8 @@ describe('ReportComponent', function (): void {
                 ->assertHasNoErrors();
 
             $report = Report::query()->first();
-            expect($report->reportable_type)->toBe(Comment::class);
-            expect($report->reportable_id)->toBe($comment->id);
+            expect($report->reportable_type)->toBe(Comment::class)
+                ->and($report->reportable_id)->toBe($comment->id);
         });
 
         it('works with user reports', function (): void {
@@ -544,9 +543,9 @@ describe('ReportComponent', function (): void {
                 ->assertHasNoErrors();
 
             $report = Report::query()->first();
-            expect($report->reportable_type)->toBe(User::class);
-            expect($report->reportable_id)->toBe($reportedUser->id);
-            expect($report->reporter_id)->toBe($reporter->id);
+            expect($report->reportable_type)->toBe(User::class)
+                ->and($report->reportable_id)->toBe($reportedUser->id)
+                ->and($report->reporter_id)->toBe($reporter->id);
         });
 
         it('works with mod list reports', function (): void {
@@ -563,8 +562,8 @@ describe('ReportComponent', function (): void {
                 ->assertHasNoErrors();
 
             $report = Report::query()->first();
-            expect($report->reportable_type)->toBe(ModList::class);
-            expect($report->reportable_id)->toBe($modList->id);
+            expect($report->reportable_type)->toBe(ModList::class)
+                ->and($report->reportable_id)->toBe($modList->id);
         });
     });
 
@@ -579,8 +578,8 @@ describe('ReportComponent', function (): void {
                     'reportableType' => $modList::class,
                 ]);
 
-            expect($component->get('reportableId'))->toBe($modList->id);
-            expect($component->get('reportableType'))->toBe(ModList::class);
+            expect($component->get('reportableId'))->toBe($modList->id)
+                ->and($component->get('reportableType'))->toBe(ModList::class);
         });
 
         it('allows a verified non-owner to report a mod list', function (): void {
@@ -686,13 +685,12 @@ describe('ReportComponent', function (): void {
                 ->set('context', 'Mod 2 harassment')
                 ->set('showReportModal', false);
 
-            expect($component1->get('reason'))->toBe(ReportReason::SPAM);
-            expect($component1->get('context'))->toBe('Mod 1 spam');
-            expect($component1->get('showReportModal'))->toBeTrue();
-
-            expect($component2->get('reason'))->toBe(ReportReason::HARASSMENT);
-            expect($component2->get('context'))->toBe('Mod 2 harassment');
-            expect($component2->get('showReportModal'))->toBeFalse();
+            expect($component1->get('reason'))->toBe(ReportReason::SPAM)
+                ->and($component1->get('context'))->toBe('Mod 1 spam')
+                ->and($component1->get('showReportModal'))->toBeTrue()
+                ->and($component2->get('reason'))->toBe(ReportReason::HARASSMENT)
+                ->and($component2->get('context'))->toBe('Mod 2 harassment')
+                ->and($component2->get('showReportModal'))->toBeFalse();
         });
 
         it('handles modal state correctly after submission', function (): void {
@@ -706,14 +704,14 @@ describe('ReportComponent', function (): void {
                 ])
                 ->set('showReportModal', true);
 
-            expect($component->get('showReportModal'))->toBeTrue();
-            expect($component->get('submitted'))->toBeFalse();
+            expect($component->get('showReportModal'))->toBeTrue()
+                ->and($component->get('submitted'))->toBeFalse();
 
             $component->set('reason', ReportReason::SPAM)
                 ->call('submit');
 
-            expect($component->get('showReportModal'))->toBeTrue();
-            expect($component->get('submitted'))->toBeTrue();
+            expect($component->get('showReportModal'))->toBeTrue()
+                ->and($component->get('submitted'))->toBeTrue();
         });
     });
 

@@ -228,13 +228,13 @@ it('allows toggling conversation notification preferences', function (): void {
 
     // Toggle off
     $isEnabled = $conversation->toggleNotificationForUser($user);
-    expect($isEnabled)->toBeFalse();
-    expect($conversation->isNotificationEnabledForUser($user))->toBeFalse();
+    expect($isEnabled)->toBeFalse()
+        ->and($conversation->isNotificationEnabledForUser($user))->toBeFalse();
 
     // Toggle back on
     $isEnabled = $conversation->toggleNotificationForUser($user);
-    expect($isEnabled)->toBeTrue();
-    expect($conversation->isNotificationEnabledForUser($user))->toBeTrue();
+    expect($isEnabled)->toBeTrue()
+        ->and($conversation->isNotificationEnabledForUser($user))->toBeTrue();
 });
 
 it('uses global preference when no conversation-specific preference exists', function (): void {
@@ -340,8 +340,8 @@ it('unarchives conversation when new message is sent', function (): void {
     $conversation->archiveFor($user1);
     $conversation->archiveFor($user2);
 
-    expect($conversation->isArchivedBy($user1))->toBeTrue();
-    expect($conversation->isArchivedBy($user2))->toBeTrue();
+    expect($conversation->isArchivedBy($user1))->toBeTrue()
+        ->and($conversation->isArchivedBy($user2))->toBeTrue();
 
     // Send a new message
     Message::factory()->create([
@@ -379,8 +379,8 @@ it('allows user to unsubscribe from chat notifications', function (): void {
     $subscription = $conversation->subscriptions()
         ->where('user_id', $user->id)
         ->first();
-    expect($subscription)->not->toBeNull();
-    expect($subscription->notifications_enabled)->toBeFalse();
+    expect($subscription)->not->toBeNull()
+        ->and($subscription->notifications_enabled)->toBeFalse();
 
     // Global preference should remain unchanged
     expect($user->fresh()->email_chat_notifications_enabled)->toBeTrue();

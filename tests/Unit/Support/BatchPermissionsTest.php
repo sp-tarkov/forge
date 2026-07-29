@@ -39,7 +39,7 @@ describe('BatchPermissions', function (): void {
         ]);
 
         expect($permissions->for(1))->toBe(['update' => true, 'delete' => false])
-            ->and($permissions->for(999))->toBe([]);
+            ->and($permissions->for(999))->toBeEmpty();
     });
 
     it('can check if model has permissions with has()', function (): void {
@@ -55,7 +55,7 @@ describe('BatchPermissions', function (): void {
         $permissions = new BatchPermissions;
 
         expect($permissions->can(1, 'update'))->toBeFalse()
-            ->and($permissions->for(1))->toBe([])
+            ->and($permissions->for(1))->toBeEmpty()
             ->and($permissions->has(1))->toBeFalse();
     });
 

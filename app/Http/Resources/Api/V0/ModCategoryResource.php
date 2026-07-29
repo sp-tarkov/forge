@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V0;
 
 use App\Models\ModCategory;
+use App\Support\Api\V0\QueryBuilder\AbstractQueryBuilder;
 use App\Support\Api\V0\QueryBuilder\ModCategoryQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,6 +27,26 @@ final class ModCategoryResource extends JsonResource
      * Whether to show all fields (no specific fields requested).
      */
     private bool $showAllFields = true;
+
+    /**
+     * The query builder that hydrated the category, whose field contract bounds this response.
+     *
+     * @var class-string<AbstractQueryBuilder<ModCategory>>
+     */
+    private string $queryBuilder = ModCategoryQueryBuilder::class;
+
+    /**
+     * Set the query builder that hydrated the category. Fields outside that builder's contract are omitted from the
+     * response.
+     *
+     * @param  class-string<AbstractQueryBuilder<ModCategory>>  $queryBuilder
+     */
+    public function hydratedBy(string $queryBuilder): self
+    {
+        $this->queryBuilder = $queryBuilder;
+
+        return $this;
+    }
 
     /**
      * Transform the resource into an array.
@@ -69,14 +90,21 @@ final class ModCategoryResource extends JsonResource
     }
 
     /**
-     * Check if a field should be included in the response.
+     * Check if a field should be included in the response. Required fields are always included; every other field must
+     * be exposed by the hydrating query builder and either requested or covered by an unfiltered request.
      */
     private function shouldInclude(string $field): bool
     {
-        $requiredFields = ModCategoryQueryBuilder::getRequiredFields();
+        $queryBuilder = $this->queryBuilder;
 
-        return $this->showAllFields
-            || in_array($field, $this->requestedFields, true)
-            || in_array($field, $requiredFields, true);
+        if (in_array($field, $queryBuilder::getRequiredFields(), true)) {
+            return true;
+        }
+
+        if (! in_array($field, $queryBuilder::getAllAllowedFields(), true)) {
+            return false;
+        }
+
+        return $this->showAllFields || in_array($field, $this->requestedFields, true);
     }
 }

@@ -45,18 +45,18 @@ describe('ReportSubmittedNotification', function (): void {
 
         $presentation = ReportSubmittedNotification::presentDatabaseNotification($record);
 
-        expect($presentation->iconName)->toBe('exclamation-triangle');
-        expect($presentation->iconColorRole)->toBe(NotificationColorRole::Red);
-        expect($presentation->headline)->toHaveCount(3);
-        expect($presentation->headline[0]->text)->toBe('Reporter User');
-        expect($presentation->headline[0]->emphasis)->toBe(HeadlineEmphasis::Strong);
-        expect($presentation->headline[2]->text)->toBe('spam');
-        expect($presentation->headline[2]->emphasis)->toBe(HeadlineEmphasis::Accent);
-        expect($presentation->summary)->toContain('reported');
-        expect($presentation->summary)->toContain('Bad Mod');
-        expect($presentation->preview)->toBe('Looks like spam.');
-        expect($presentation->previewQuoted)->toBeTrue();
-        expect($presentation->url)->toBe('/mod/1/bad-mod');
+        expect($presentation->iconName)->toBe('exclamation-triangle')
+            ->and($presentation->iconColorRole)->toBe(NotificationColorRole::Red)
+            ->and($presentation->headline)->toHaveCount(3)
+            ->and($presentation->headline[0]->text)->toBe('Reporter User')
+            ->and($presentation->headline[0]->emphasis)->toBe(HeadlineEmphasis::Strong)
+            ->and($presentation->headline[2]->text)->toBe('spam')
+            ->and($presentation->headline[2]->emphasis)->toBe(HeadlineEmphasis::Accent)
+            ->and($presentation->summary)->toContain('reported')
+            ->toContain('Bad Mod')
+            ->and($presentation->preview)->toBe('Looks like spam.')
+            ->and($presentation->previewQuoted)->toBeTrue()
+            ->and($presentation->url)->toBe('/mod/1/bad-mod');
     });
 
     it('falls back to defaults when data keys are missing', function (): void {
@@ -64,9 +64,9 @@ describe('ReportSubmittedNotification', function (): void {
 
         $presentation = ReportSubmittedNotification::presentDatabaseNotification($record);
 
-        expect($presentation->headline[0]->text)->toBe(__('Someone'));
-        expect($presentation->preview)->toBeNull();
-        expect($presentation->url)->toBeNull();
+        expect($presentation->headline[0]->text)->toBe(__('Someone'))
+            ->and($presentation->preview)->toBeNull()
+            ->and($presentation->url)->toBeNull();
     });
 });
 
@@ -81,13 +81,13 @@ describe('NewChatMessageNotification', function (): void {
 
         $presentation = NewChatMessageNotification::presentDatabaseNotification($record);
 
-        expect($presentation->iconName)->toBe('chat-bubble-left-right');
-        expect($presentation->iconColorRole)->toBe(NotificationColorRole::Purple);
-        expect($presentation->headline[0]->text)->toBe('Sender');
-        expect($presentation->headline[2]->text)->toBe(__('new message'));
-        expect($presentation->summary)->toBe(__('sent you a message'));
-        expect($presentation->preview)->toBe('Hi there.');
-        expect($presentation->url)->toBe('/chat/abc');
+        expect($presentation->iconName)->toBe('chat-bubble-left-right')
+            ->and($presentation->iconColorRole)->toBe(NotificationColorRole::Purple)
+            ->and($presentation->headline[0]->text)->toBe('Sender')
+            ->and($presentation->headline[2]->text)->toBe(__('new message'))
+            ->and($presentation->summary)->toBe(__('sent you a message'))
+            ->and($presentation->preview)->toBe('Hi there.')
+            ->and($presentation->url)->toBe('/chat/abc');
     });
 
     it('uses plural wording when message_count is greater than one', function (): void {
@@ -100,8 +100,8 @@ describe('NewChatMessageNotification', function (): void {
 
         $presentation = NewChatMessageNotification::presentDatabaseNotification($record);
 
-        expect($presentation->headline[2]->text)->toContain('3');
-        expect($presentation->summary)->toContain('3');
+        expect($presentation->headline[2]->text)->toContain('3')
+            ->and($presentation->summary)->toContain('3');
     });
 });
 
@@ -116,12 +116,12 @@ describe('NewCommentNotification', function (): void {
 
         $presentation = NewCommentNotification::presentDatabaseNotification($record);
 
-        expect($presentation->iconName)->toBe('chat-bubble-left-ellipsis');
-        expect($presentation->iconColorRole)->toBe(NotificationColorRole::Blue);
-        expect($presentation->headline[0]->text)->toBe('Commenter');
-        expect($presentation->headline[2]->text)->toBe('Some Mod');
-        expect($presentation->preview)->toBe('Nice mod.');
-        expect($presentation->url)->toBe('/mod/1/slug#comments-comment-1');
+        expect($presentation->iconName)->toBe('chat-bubble-left-ellipsis')
+            ->and($presentation->iconColorRole)->toBe(NotificationColorRole::Blue)
+            ->and($presentation->headline[0]->text)->toBe('Commenter')
+            ->and($presentation->headline[2]->text)->toBe('Some Mod')
+            ->and($presentation->preview)->toBe('Nice mod.')
+            ->and($presentation->url)->toBe('/mod/1/slug#comments-comment-1');
     });
 });
 
@@ -138,10 +138,10 @@ describe('CommentReplyNotification', function (): void {
         $reply = CommentReplyNotification::presentDatabaseNotification(makeNotification($this->user, CommentReplyNotification::class, $payload));
         $comment = NewCommentNotification::presentDatabaseNotification(makeNotification($this->user, NewCommentNotification::class, $payload));
 
-        expect($reply->iconName)->toBe($comment->iconName);
-        expect($reply->iconColorRole)->toBe($comment->iconColorRole);
-        expect($reply->summary)->toBe($comment->summary);
-        expect($reply->url)->toBe($comment->url);
+        expect($reply->iconName)->toBe($comment->iconName)
+            ->and($reply->iconColorRole)->toBe($comment->iconColorRole)
+            ->and($reply->summary)->toBe($comment->summary)
+            ->and($reply->url)->toBe($comment->url);
     });
 });
 
@@ -155,14 +155,14 @@ describe('ContentGuidelinesUpdatedNotification', function (): void {
 
         $presentation = ContentGuidelinesUpdatedNotification::presentDatabaseNotification($record);
 
-        expect($presentation->iconName)->toBe('megaphone');
-        expect($presentation->iconColorRole)->toBe(NotificationColorRole::Amber);
-        expect($presentation->headline)->toHaveCount(1);
-        expect($presentation->headline[0]->text)->toBe('Content Guidelines Updated');
-        expect($presentation->headline[0]->emphasis)->toBe(HeadlineEmphasis::Accent);
-        expect($presentation->preview)->toBe('Body text describing the change.');
-        expect($presentation->previewQuoted)->toBeFalse();
-        expect($presentation->url)->toBe('/content-guidelines');
+        expect($presentation->iconName)->toBe('megaphone')
+            ->and($presentation->iconColorRole)->toBe(NotificationColorRole::Amber)
+            ->and($presentation->headline)->toHaveCount(1)
+            ->and($presentation->headline[0]->text)->toBe('Content Guidelines Updated')
+            ->and($presentation->headline[0]->emphasis)->toBe(HeadlineEmphasis::Accent)
+            ->and($presentation->preview)->toBe('Body text describing the change.')
+            ->and($presentation->previewQuoted)->toBeFalse()
+            ->and($presentation->url)->toBe('/content-guidelines');
     });
 
     it('returns null preview and null url when data is empty', function (): void {
@@ -170,8 +170,8 @@ describe('ContentGuidelinesUpdatedNotification', function (): void {
 
         $presentation = ContentGuidelinesUpdatedNotification::presentDatabaseNotification($record);
 
-        expect($presentation->preview)->toBeNull();
-        expect($presentation->url)->toBeNull();
+        expect($presentation->preview)->toBeNull()
+            ->and($presentation->url)->toBeNull();
     });
 });
 
@@ -186,11 +186,11 @@ describe('UserBannedNotification', function (): void {
 
         $presentation = UserBannedNotification::presentDatabaseNotification($record);
 
-        expect($presentation->iconName)->toBe('no-symbol');
-        expect($presentation->iconColorRole)->toBe(NotificationColorRole::Red);
-        expect($presentation->headline[2]->text)->toBe(__('permanent'));
-        expect($presentation->preview)->toBe('Repeated abuse.');
-        expect($presentation->url)->toBeNull();
+        expect($presentation->iconName)->toBe('no-symbol')
+            ->and($presentation->iconColorRole)->toBe(NotificationColorRole::Red)
+            ->and($presentation->headline[2]->text)->toBe(__('permanent'))
+            ->and($presentation->preview)->toBe('Repeated abuse.')
+            ->and($presentation->url)->toBeNull();
     });
 
     it('reports a temporary suspension when is_permanent is false', function (): void {

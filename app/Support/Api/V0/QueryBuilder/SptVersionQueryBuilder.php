@@ -157,12 +157,7 @@ final class SptVersionQueryBuilder extends AbstractQueryBuilder
      */
     protected function filterByCreatedBetween(Builder $query, ?string $range): void
     {
-        if ($range === null) {
-            return;
-        }
-
-        [$start, $end] = explode(',', $range);
-        $query->whereBetween('spt_versions.created_at', [$start, $end]);
+        $this->applyDateRangeFilter($query, 'spt_versions.created_at', $range);
     }
 
     /**
@@ -172,12 +167,7 @@ final class SptVersionQueryBuilder extends AbstractQueryBuilder
      */
     protected function filterByUpdatedBetween(Builder $query, ?string $range): void
     {
-        if ($range === null) {
-            return;
-        }
-
-        [$start, $end] = explode(',', $range);
-        $query->whereBetween('spt_versions.updated_at', [$start, $end]);
+        $this->applyDateRangeFilter($query, 'spt_versions.updated_at', $range);
     }
 
     /**

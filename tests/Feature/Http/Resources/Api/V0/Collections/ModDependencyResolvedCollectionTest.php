@@ -21,5 +21,5 @@ it('skips a resolved dependency whose mod is hidden instead of reading id on nul
 
     $collection = new ModDependencyResolvedCollection(new EloquentCollection([$version]));
 
-    expect($collection->toArray(request()))->toBe([]);
+    expect($collection->toArray(request()))->toBeEmpty();
 });

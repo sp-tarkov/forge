@@ -6,6 +6,7 @@ namespace App\Http\Resources\Api\V0;
 
 use App\Http\Resources\Api\V0\Collections\ModDependencyResolvedCollection;
 use App\Models\ModVersion;
+use App\Support\Api\V0\QueryBuilder\AbstractQueryBuilder;
 use App\Support\Api\V0\QueryBuilder\ModVersionQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -29,6 +30,26 @@ final class ModVersionResource extends JsonResource
      * Whether to show all fields.
      */
     private bool $showAllFields = true;
+
+    /**
+     * The query builder that hydrated the version, whose field contract bounds this response.
+     *
+     * @var class-string<AbstractQueryBuilder<ModVersion>>
+     */
+    private string $queryBuilder = ModVersionQueryBuilder::class;
+
+    /**
+     * Set the query builder that hydrated the version. Fields outside that builder's contract are omitted from the
+     * response.
+     *
+     * @param  class-string<AbstractQueryBuilder<ModVersion>>  $queryBuilder
+     */
+    public function hydratedBy(string $queryBuilder): self
+    {
+        $this->queryBuilder = $queryBuilder;
+
+        return $this;
+    }
 
     /**
      * Transform the resource into an array.
@@ -111,17 +132,24 @@ final class ModVersionResource extends JsonResource
     }
 
     /**
-     * Check if a field should be included in the response.
+     * Check if a field should be included in the response. Required fields are always included; every other field must
+     * be exposed by the hydrating query builder and either requested or covered by an unfiltered request.
      *
      * @param  string  $field  The field name to check
      * @return bool Whether the field should be included
      */
     private function shouldInclude(string $field): bool
     {
-        $requiredFields = ModVersionQueryBuilder::getRequiredFields();
+        $queryBuilder = $this->queryBuilder;
 
-        return $this->showAllFields
-            || in_array($field, $this->requestedFields, true)
-            || in_array($field, $requiredFields, true);
+        if (in_array($field, $queryBuilder::getRequiredFields(), true)) {
+            return true;
+        }
+
+        if (! in_array($field, $queryBuilder::getAllAllowedFields(), true)) {
+            return false;
+        }
+
+        return $this->showAllFields || in_array($field, $this->requestedFields, true);
     }
 }

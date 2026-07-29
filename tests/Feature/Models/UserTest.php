@@ -116,8 +116,8 @@ describe('following', function (): void {
 
             $user->follow($user);
 
-            $this->assertEmpty($user->followers);
-            $this->assertEmpty($user->following);
+            expect($user->followers)->toBeEmpty()
+                ->and($user->following)->toBeEmpty();
         });
 
         it('can follow and unfollow another user', function (): void {
@@ -126,11 +126,11 @@ describe('following', function (): void {
 
             $user1->follow($user2);
 
-            $this->assertTrue($user1->isFollowing($user2));
+            expect($user1->isFollowing($user2))->toBeTrue();
 
             $user1->unfollow($user2);
 
-            $this->assertFalse($user1->isFollowing($user2));
+            expect($user1->isFollowing($user2))->toBeFalse();
         });
 
         it('cannot follow a user twice', function (): void {
@@ -140,25 +140,21 @@ describe('following', function (): void {
             $user1->follow($user2);
             $user1->follow($user2);
 
-            $this->assertCount(1, $user1->following);
-            $this->assertCount(1, $user2->followers);
+            expect($user1->following)->toHaveCount(1)
+                ->and($user2->followers)->toHaveCount(1);
         });
 
         describe('invalid inputs', function (): void {
             it('throws exception with null follow input', function (): void {
-                $this->expectException(TypeError::class);
-
                 $user = User::factory()->create();
 
-                $user->follow(null);
+                expect(fn () => $user->follow(null))->toThrow(TypeError::class);
             });
 
             it('throws exception with empty follow input', function (): void {
-                $this->expectException(ArgumentCountError::class);
-
                 $user = User::factory()->create();
 
-                $user->follow();
+                expect(fn () => $user->follow())->toThrow(ArgumentCountError::class);
             });
         });
     });
@@ -170,8 +166,8 @@ describe('following', function (): void {
 
             $user1->unfollow($user2);
 
-            $this->assertEmpty($user1->following);
-            $this->assertEmpty($user2->followers);
+            expect($user1->following)->toBeEmpty()
+                ->and($user2->followers)->toBeEmpty();
         });
 
         it('does not perform detach all when unfollowing random number', function (): void {
@@ -182,34 +178,29 @@ describe('following', function (): void {
             $user1->follow($user2);
             $user1->follow($user3);
 
-            $this->assertTrue($user1->isFollowing($user2));
-            $this->assertTrue($user1->isFollowing($user3));
-
-            $this->assertCount(2, $user1->following);
-            $this->assertCount(1, $user2->followers);
-            $this->assertCount(1, $user3->followers);
+            expect($user1->isFollowing($user2))->toBeTrue()
+                ->and($user1->isFollowing($user3))->toBeTrue()
+                ->and($user1->following)->toHaveCount(2)
+                ->and($user2->followers)->toHaveCount(1)
+                ->and($user3->followers)->toHaveCount(1);
 
             $user1->unfollow(111112222233333);
 
-            $this->assertTrue($user1->isFollowing($user2));
-            $this->assertTrue($user1->isFollowing($user3));
+            expect($user1->isFollowing($user2))->toBeTrue()
+                ->and($user1->isFollowing($user3))->toBeTrue();
         });
 
         describe('invalid inputs', function (): void {
             it('throws exception with null unfollow input', function (): void {
-                $this->expectException(TypeError::class);
-
                 $user = User::factory()->create();
 
-                $user->unfollow(null);
+                expect(fn () => $user->unfollow(null))->toThrow(TypeError::class);
             });
 
             it('throws exception with empty unfollow input', function (): void {
-                $this->expectException(ArgumentCountError::class);
-
                 $user = User::factory()->create();
 
-                $user->unfollow();
+                expect(fn () => $user->unfollow())->toThrow(ArgumentCountError::class);
             });
         });
     });
@@ -264,8 +255,8 @@ describe('disposable email detection', function (): void {
         $userWithDisposable = User::factory()->create(['email' => 'user@tempmail.com']);
         $userWithNormal = User::factory()->create(['email' => 'user@gmail.com']);
 
-        expect($userWithDisposable->hasDisposableEmail())->toBeTrue();
-        expect($userWithNormal->hasDisposableEmail())->toBeFalse();
+        expect($userWithDisposable->hasDisposableEmail())->toBeTrue()
+            ->and($userWithNormal->hasDisposableEmail())->toBeFalse();
     });
 
     it('handles invalid email formats gracefully', function (): void {
