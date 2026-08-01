@@ -107,7 +107,8 @@ jobs:
         run: |
           php -r "file_exists('.env') || copy('.env.ci', '.env');"
           php artisan key:generate
-          php artisan optimize
+          php artisan event:cache
+          php artisan route:cache
 
       - name: Create SQLite Database File
         if: matrix.driver == 'sqlite'
@@ -198,7 +199,8 @@ jobs:
         run: |
           php -r "file_exists('.env') || copy('.env.ci', '.env');"
           php artisan key:generate
-          php artisan optimize
+          php artisan event:cache
+          php artisan route:cache
 
       - name: Start Reverb Server
         run: php artisan reverb:start --host=127.0.0.1 --port=8080 &
@@ -210,6 +212,8 @@ jobs:
         run: php artisan storage:link
 
       - name: Run Tests
+        env:
+          BROADCAST_CONNECTION: reverb
         run: ./vendor/bin/pest --ci --no-tia --parallel --testsuite=Browser
 
       - name: Upload Screenshots
